@@ -1,7 +1,7 @@
 extern crate actix_web;
 extern crate env_logger;
 
-use actix_web::{server, App, HttpRequest, fs};
+use actix_web::{server, App, fs};
 use actix_web::middleware::Logger;
 
 fn main() {

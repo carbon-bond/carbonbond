@@ -5,7 +5,8 @@
 	"license": "MIT",
 	"scripts": {
 		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx .",
-		"build": "parcel src/index.html"
+		"build": "webpack",
+		"watch": "webpack --watch"
 	},
 	"dependencies": {
 		"@types/react": "^16.8.18",
@@ -14,12 +15,14 @@
 		"react-dom": "^16.8.6"
 	},
 	"devDependencies": {
+		"awesome-typescript-loader": "^5.2.1",
 		"babel-eslint": "^10.0.1",
 		"eslint": "^5.16.0",
 		"eslint-plugin-react": "^7.13.0",
 		"eslint-plugin-typescript": "^0.14.0",
-		"parcel-bundler": "^1.12.3",
-		"parcel-plugin-typescript": "^1.0.0",
-		"typescript": "^3.4.5"
+		"html-webpack-plugin": "^3.2.0",
+		"typescript": "^3.4.5",
+		"webpack": "^4.32.2",
+		"webpack-cli": "^3.3.2"
 	}
 }
