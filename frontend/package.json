@@ -4,7 +4,8 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
-		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx ."
+		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx .",
+		"build": "parcel src/index.html"
 	},
 	"dependencies": {
 		"@types/react": "^16.8.18",
@@ -18,6 +19,7 @@
 		"eslint-plugin-react": "^7.13.0",
 		"eslint-plugin-typescript": "^0.14.0",
 		"parcel-bundler": "^1.12.3",
+		"parcel-plugin-typescript": "^1.0.0",
 		"typescript": "^3.4.5"
 	}
 }
