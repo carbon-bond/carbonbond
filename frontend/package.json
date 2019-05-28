@@ -11,16 +11,19 @@
 	"dependencies": {
 		"@types/react": "^16.8.18",
 		"@types/react-dom": "^16.8.4",
+		"purecss": "^1.0.0",
 		"react": "^16.0.0",
 		"react-dom": "^16.8.6"
 	},
 	"devDependencies": {
 		"awesome-typescript-loader": "^5.2.1",
 		"babel-eslint": "^10.0.1",
+		"css-loader": "^2.1.1",
 		"eslint": "^5.16.0",
 		"eslint-plugin-react": "^7.13.0",
 		"eslint-plugin-typescript": "^0.14.0",
 		"html-webpack-plugin": "^3.2.0",
+		"style-loader": "^0.23.1",
 		"typescript": "^3.4.5",
 		"webpack": "^4.32.2",
 		"webpack-cli": "^3.3.2"
