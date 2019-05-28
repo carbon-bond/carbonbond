@@ -21,7 +21,7 @@ pub fn create_user<'a>(conn: &PgConnection,
     id: &'a str, password: &'a str
 ) -> models::User {
     use schema::users;
-    use rand::ThreadRng;
+    //use rand::ThreadRng;
     use rand::Rng;
     let salt: String = rand::thread_rng().gen::<[char; 32]>()
         .into_iter().collect();
