@@ -15,6 +15,19 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.ts$/,
+				use: [
+					{
+						loader: "babel-loader",
+						options: {
+							presets: [
+								"@babel/typescript",
+							],
+						}
+					},
+				]
+			},
+			{
 				test: /\.tsx$/,
 				use: [
 					{
