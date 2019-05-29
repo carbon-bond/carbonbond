@@ -2,9 +2,9 @@ use std::io::stdin;
 
 use carbon_bond::db;
 use carbon_bond::send_invite_email;
+use db::models::*;
 use db::schema::users::dsl::*;
 use diesel::prelude::*;
-use db::models::*;
 
 fn main() -> std::io::Result<()> {
     println!("碳鍵 - 資料庫管理介面");
@@ -36,7 +36,8 @@ fn main() -> std::io::Result<()> {
                     let words: Vec<&str> = buff.split_whitespace().collect();
                     if words.len() == 0 {
                         break;
-                    } if words.len() != 3 {
+                    }
+                    if words.len() != 3 {
                         println!("輸入格式錯誤");
                     } else {
                         db::create_user(&db_conn, words[0], words[1], words[2]);
@@ -49,8 +50,10 @@ fn main() -> std::io::Result<()> {
                     .load::<User>(&db_conn)
                     .expect("取使用者失敗");
                 for user in results {
-                    println!("id: {} email: {} 推薦額度: {}",
-                        user.id, user.email, user.invitation_credit);
+                    println!(
+                        "id: {} email: {} 推薦額度: {}",
+                        user.id, user.email, user.invitation_credit
+                    );
                 }
                 println!("\n");
             } else if opt == 3 {
@@ -62,7 +65,8 @@ fn main() -> std::io::Result<()> {
                     let words: Vec<&str> = buff.split_whitespace().collect();
                     if words.len() == 0 {
                         break;
-                    } if words.len() != 1 {
+                    }
+                    if words.len() != 1 {
                         println!("輸入格式錯誤");
                     } else {
                         send_invite_email(None, words[0]);

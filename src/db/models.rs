@@ -9,7 +9,7 @@ pub struct User {
     pub salt: Vec<u8>,
 }
 #[derive(Insertable)]
-#[table_name="users"]
+#[table_name = "users"]
 pub struct NewUser<'a> {
     pub id: &'a str,
     pub email: &'a str,
