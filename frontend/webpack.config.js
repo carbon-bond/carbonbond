@@ -2,24 +2,51 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-	entry: "./src/tsx/app.tsx",
+	entry: {
+		index: "./src/tsx/app.tsx"
+	},
 	resolve: {
 		extensions: [".ts", ".tsx", ".js"],
 	},
 	output: {
-		path: path.join(__dirname, "/dist"),
-		filename: "bundle.js"
+		path: path.resolve(__dirname, "dist"),
+		filename: "bundle.js",
 	},
 	module: {
 		rules: [
 			{
-				test: /\.css$/,
-				use: ["style-loader", "css-loader"],
+				test: /\.tsx$/,
+				use: [
+					{
+						loader: "babel-loader",
+						options: {
+							presets: [
+								"@babel/typescript",
+								"@babel/preset-react"
+							],
+							plugins: [
+								[
+									"react-css-modules",
+									{ generateScopedName: "[local]-[hash:base64:10]" }
+								]
+							]
+						}
+					},
+				]
 			},
 			{
-				test: /\.tsx?$/,
-				loader: "awesome-typescript-loader"
-			}
+				test: /\.css$/,
+				oneOf: [
+					{
+						// import 時，後綴 ?global 代表 css 作用到全域
+						resourceQuery: /^\?global$/,
+						use: ["style-loader", "css-loader"]
+					},
+					{
+						use: ["style-loader", "css-loader?modules&localIdentName=[local]-[hash:base64:10]", "postcss-loader"]
+					}
+				]
+			},
 		]
 	},
 	plugins: [
