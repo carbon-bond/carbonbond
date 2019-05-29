@@ -6,7 +6,7 @@ use std::env;
 
 pub mod models;
 pub mod schema;
-use models::{NewUser, User};
+use models::{NewUser, User, Invitation, NewInvitation};
 
 pub fn connect_db() -> PgConnection {
     dotenv().ok();
@@ -14,6 +14,15 @@ pub fn connect_db() -> PgConnection {
     let database_url = env::var("DATABASE_URL").expect("未設定資料庫位址");
     PgConnection::establish(&database_url)
         .expect(&format!("連線至 {} 時發生錯誤", database_url))
+}
+
+pub fn create_invitation(conn: &PgConnection, email: &str, code: &str) -> Invitation {
+    use schema::invitations;
+    let new_invitation = NewInvitation { code, email };
+    diesel::insert_into(invitations::table)
+        .values(&new_invitation)
+        .get_result(conn)
+        .expect("新增邀請失敗")
 }
 
 pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> User {

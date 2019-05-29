@@ -69,7 +69,7 @@ fn main() -> std::io::Result<()> {
                     if words.len() != 1 {
                         println!("輸入格式錯誤");
                     } else {
-                        send_invite_email(None, words[0]);
+                        send_invite_email(&db_conn, None, words[0]);
                     }
                 }
             } else if opt == 4 {

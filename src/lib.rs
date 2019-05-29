@@ -8,8 +8,17 @@ pub mod db;
 
 use std::env;
 
-pub fn send_invite_email(sender: Option<&str>, recv: &str) {
+use diesel::pg::PgConnection;
+pub fn send_invite_email(conn: &PgConnection, sender: Option<&str>, recv: &str) {
+    use rand::Rng;
+    use rand::distributions::Alphanumeric;
     use std::process::Command;
+
+    let invite_code: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(32)
+        .collect();
+    db::create_invitation(conn, recv, &invite_code);
 
     dotenv::dotenv().ok();
     let mailgun_api_key = env::var("MAILGUN_API_KEY").expect("未設置 mailgun api key");
@@ -20,7 +29,7 @@ pub fn send_invite_email(sender: Option<&str>, recv: &str) {
             "系統管理員"
         }
     };
-    let url = "http://carbon-bond.com";
+    let url = format!("http://carbon-bond.com/app/register/{}", invite_code);
     let welcome_title = "您已受邀加入碳鍵";
     let welcome_msg = format!(
         "<html> \

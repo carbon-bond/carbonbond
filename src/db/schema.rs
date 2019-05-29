@@ -1,4 +1,13 @@
 table! {
+    invitations (id) {
+        id -> Int4,
+        code -> Varchar,
+        email -> Varchar,
+        create_time -> Timestamp,
+    }
+}
+
+table! {
     users (id) {
         id -> Varchar,
         email -> Varchar,
@@ -7,3 +16,8 @@ table! {
         salt -> Bytea,
     }
 }
+
+allow_tables_to_appear_in_same_query!(
+    invitations,
+    users,
+);
