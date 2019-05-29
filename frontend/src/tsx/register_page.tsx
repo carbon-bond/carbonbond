@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { LoginContext, LoginState, RouteComponentProps } from "./types";
+import { LoginContext, Login, RouteComponentProps } from "./types";
 
 type Props = RouteComponentProps<{ invite_code: string }>;
 
-export class RegisterPage extends React.Component<Props, {}, LoginState> {
+export class RegisterPage extends React.Component<Props, {}, LoginContext> {
 	getInviteCode() {
 		let code = this.props.match.params.invite_code;
 		if (typeof code == "string") {
@@ -28,4 +28,4 @@ export class RegisterPage extends React.Component<Props, {}, LoginState> {
 		</div>;
 	}
 }
-RegisterPage.contextType = LoginContext;
+RegisterPage.contextType = Login;

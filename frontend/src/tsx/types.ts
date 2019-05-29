@@ -1,10 +1,13 @@
 import * as React from "react";
 import { RouteComponentProps } from "react-router";
 
-type LoginState = { login: false } | { login: true, user_id: string };
-const LoginContext = React.createContext<LoginState>({ login: false });
+type LoginContext = { login: false, setLogin: (user_id: string) => void }
+    | { login: true, user_id: string, unsetLogin: () => void };
+const Login = React.createContext<LoginContext>({ login: false, setLogin: () => {} });
 
 
 export {
-	LoginState, LoginContext, RouteComponentProps
+	LoginContext,
+	Login,
+	RouteComponentProps
 };

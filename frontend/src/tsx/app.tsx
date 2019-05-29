@@ -11,27 +11,28 @@ import "purecss/build/pure-min.css?global";
 // import "purecss/build/pure-min.css";
 import "../css/normal.css";
 
-import { LoginState, LoginContext } from "./types";
+import { LoginContext, Login } from "./types";
 import { Component } from "./component";
 import { RegisterPage } from "./register_page";
 
-class App extends React.Component<{}, { login_state: LoginState }> {
+class App extends React.Component<{}, { login: boolean, user_id: string|null }> {
 	constructor(props: {}) {
 		super(props);
 		this.state = {
-			login_state: { login: false }
+			login: false,
+			user_id: null,
 		};
 	}
 	setLoginState(user_id: string) {
-		if(this.state.login_state.login) {
+		if(this.state.login) {
 			throw "已登入的狀況下設置登入";
 		} else {
-			this.setState({ login_state: { login: true, user_id } });
+			this.setState({ login: true, user_id });
 		}
 	}
 	unsetLoginState() {
-		if(this.state.login_state.login) {
-			this.setState({ login_state: { login: false } });
+		if(this.state.login) {
+			this.setState({ login: false, user_id: null });
 		} else {
 			throw "未登入的狀況下還想登出";
 		}
@@ -67,10 +68,21 @@ class App extends React.Component<{}, { login_state: LoginState }> {
 		</div>;
 	}
 	render() {
+		let context: LoginContext = {
+			login: false,
+			setLogin: this.setLoginState.bind(this)
+		};
+		if(this.state.login && this.state.user_id) {
+			context = {
+				login: true,
+				user_id: this.state.user_id,
+				unsetLogin: this.unsetLoginState.bind(this)
+			};
+		}
 		return (
-			<LoginContext.Provider value={this.state.login_state}>
+			<Login.Provider value={context}>
 				{this.renderContent()}
-			</LoginContext.Provider>
+			</Login.Provider>
 		);
 	}
 }
