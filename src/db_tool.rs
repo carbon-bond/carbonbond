@@ -49,7 +49,7 @@ fn main() -> std::io::Result<()> {
                     .load::<User>(&db_conn)
                     .expect("取使用者失敗");
                 for user in results {
-                    print!("id: {} email: {} 推薦額度: {}",
+                    println!("id: {} email: {} 推薦額度: {}",
                         user.id, user.email, user.invitation_credit);
                 }
                 println!("\n");
