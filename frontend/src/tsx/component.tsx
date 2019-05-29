@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { LoginContext } from "./context"
+import { LoginContext } from "./types"
 
 function Component(props: { setLoginState: (id: string) => void, unsetLoginState: () => void }) {
 	return <LoginContext.Consumer>

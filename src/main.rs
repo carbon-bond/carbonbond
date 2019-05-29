@@ -1,8 +1,13 @@
 extern crate actix_web;
 extern crate env_logger;
 
-use actix_web::{server, App, fs};
+use actix_web::{server, App, fs, HttpRequest, Result as ActixResult};
 use actix_web::middleware::Logger;
+use fs::NamedFile;
+
+fn index(_req: &HttpRequest) -> ActixResult<NamedFile> {
+    Ok(NamedFile::open("./frontend/static/index.html")?)
+}
 
 fn main() {
     std::env::set_var("RUST_LOG", "actix_web=info");
@@ -12,13 +17,17 @@ fn main() {
         // App::new().prefix("/yo").resource("/", |r| r.f(index))
         //     .middleware(Logger::default())
         //     .middleware(Logger::new("%a %{User-Agent}i")),
-        App::new().handler(
-                "/",
-                fs::StaticFiles::new("./frontend/dist/")
-                    .unwrap()
-                    .show_files_listing())
-                    .middleware(Logger::default())
-                    .middleware(Logger::new("%a %{User-Agent}i")),
+        App::new()
+            .resource("/app/{tail:.*}", |r| r.f(index))
+            .resource("/app", |r| r.f(index))
+            .resource("/", |r| r.f(index))
+            .handler(
+            "/",
+            fs::StaticFiles::new("./frontend/static")
+                .unwrap()
+                .show_files_listing())
+            .middleware(Logger::default())
+            .middleware(Logger::new("%a %{User-Agent}i")) ,
         ])
         .bind("127.0.0.1:8080")
         .unwrap()
