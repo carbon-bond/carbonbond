@@ -25,7 +25,7 @@ export class RegisterPage extends React.Component<Props, {}, LoginState> {
 	render() {
 		return <div>
 			註冊頁
-        </div>;
+		</div>;
 	}
 }
 RegisterPage.contextType = LoginContext;
