@@ -9,3 +9,6 @@
 
 # config
 .env
+
+# node
+node_modules/
