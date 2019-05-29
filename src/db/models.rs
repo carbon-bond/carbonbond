@@ -3,7 +3,8 @@ use super::schema::users;
 #[derive(Queryable)]
 pub struct User {
     pub id: String,
-    pub recommend_credit: i32,
+    pub email: String,
+    pub invitation_credit: i32,
     pub password_bytes: Vec<u8>,
     pub salt: Vec<u8>,
 }
@@ -11,6 +12,7 @@ pub struct User {
 #[table_name="users"]
 pub struct NewUser<'a> {
     pub id: &'a str,
+    pub email: &'a str,
     pub password_bytes: Vec<u8>,
     pub salt: Vec<u8>,
 }

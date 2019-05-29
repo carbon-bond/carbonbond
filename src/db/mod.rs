@@ -17,8 +17,8 @@ pub fn connect_db() -> PgConnection {
         .expect(&format!("連線至 {} 時發生錯誤", database_url))
 }
 
-pub fn create_user<'a>(conn: &PgConnection,
-    id: &'a str, password: &'a str
+pub fn create_user(conn: &PgConnection,
+    email: &str, id: &str, password: &str,
 ) -> User {
     use schema::users;
     use rand::Rng;
@@ -27,6 +27,7 @@ pub fn create_user<'a>(conn: &PgConnection,
     let password_array = argon2rs::argon2i_simple(&password, &salt[..]);
     let new_user = NewUser {
         id, 
+        email,
         password_bytes: password_array.iter().map(|ch| *ch as u8).collect(),
         salt: salt.chars().map(|ch| ch as u8).collect()
     };

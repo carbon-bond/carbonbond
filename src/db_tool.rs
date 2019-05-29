@@ -30,16 +30,16 @@ fn main() -> std::io::Result<()> {
             } else if opt == 1 {
                 loop {
                     println!("> {}", p2);
-                    println!("> 請輸入 名字 密碼，或輸入空白行回到選單");
+                    println!("> 請輸入 信箱 名字 密碼，或輸入空白行回到選單");
                     buff.clear();
                     stdin().read_line(&mut buff)?;
                     let words: Vec<&str> = buff.split_whitespace().collect();
                     if words.len() == 0 {
                         break;
-                    } if words.len() != 2 {
+                    } if words.len() != 3 {
                         println!("輸入格式錯誤");
                     } else {
-                        db::create_user(&db_conn, words[0], words[1]);
+                        db::create_user(&db_conn, words[0], words[1], words[2]);
                         println!("成功新增使用者：{}", words[0]);
                     }
                 }
@@ -49,7 +49,8 @@ fn main() -> std::io::Result<()> {
                     .load::<User>(&db_conn)
                     .expect("取使用者失敗");
                 for user in results {
-                    print!("{} ", user.id);
+                    print!("id: {} email: {} 推薦額度: {}",
+                        user.id, user.email, user.invitation_credit);
                 }
                 println!("\n");
             } else if opt == 3 {
