@@ -12,16 +12,15 @@ pub fn connect_db() -> PgConnection {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+        .expect("未設定資料庫位址");
     PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+        .expect(&format!("連線至 {} 時發生錯誤", database_url))
 }
 
 pub fn create_user<'a>(conn: &PgConnection,
     id: &'a str, password: &'a str
-) -> models::User {
+) -> User {
     use schema::users;
-    //use rand::ThreadRng;
     use rand::Rng;
     let salt: String = rand::thread_rng().gen::<[char; 32]>()
         .into_iter().collect();
