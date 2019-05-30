@@ -1,9 +1,10 @@
+cargo-features = ["default-run"]
 [package]
 name = "carbon-bond"
 version = "0.1.0"
 authors = ["金剛 <yc1043@gmail.com>", "石墨 <why8ther@gmail.com>"]
 edition = "2018"
-# default-run = "server"
+default-run = "server"
 
 [dependencies]
 diesel = { version = "1.0.0", features = ["postgres"] }

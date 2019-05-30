@@ -1,6 +1,12 @@
 ## 版本
 
-1.35.0 stable 以上
+1.37.0-nightly 以上
+
+安裝
+``` sh
+rustup default nightly
+rustup update
+```
 
 ## rustfmt
 
@@ -14,16 +20,23 @@ rustup component add rustfmt
 cargo fmt
 ```
 
+若只想檢查語法但不想修改檔案，可以執行
+``` sh
+cargo fmt -- --check
+```
+
 可修改專案底下的 .rustfmt.toml 檔案來設定格式，詳見[官方文件](https://github.com/rust-lang/rustfmt/blob/master/Configurations.md)
 
-## vscode
+## vscode 建議設定
 
 安裝 [Rust (rls) 外掛](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust)
 
 並在 vscode 的 setting.json 設定
 
 ```
-"editor.formatOnSave": true,
+"[rust]":{
+    "editor.formatOnSave": true,
+}
 ```
 
-以使 vscode 在每次存檔時都自動 format
+即可使 vscode 在每次存檔時都自動 format
