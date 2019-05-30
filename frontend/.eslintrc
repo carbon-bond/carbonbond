@@ -24,7 +24,8 @@
         "no-undef": ["error"],
         "no-trailing-spaces": ["error"],
         "curly": ["error"],
-        "no-unused-vars": ["warn"],
+        // 沒用到的變數需要符合以 _ 開頭的命名規範
+        "no-unused-vars": ["warn", { "varsIgnorePattern": "_.*" }],
         "indent": [
             "error",
             "tab",
