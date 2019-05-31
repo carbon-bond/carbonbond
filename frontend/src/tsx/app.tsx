@@ -17,23 +17,23 @@ import { RegisterPage } from "./register_page";
 
 type LoginState = { login: true, user_id: string } | { login: false };
 
-function App() {
+function App(): JSX.Element {
 	let [login_state, setLoginState] = React.useState<LoginState>({ login: false });
-	function setLoginUI(user_id: string) {
+	function setLoginUI(user_id: string): void {
 		if(login_state.login) {
 			throw "已登入的狀況下設置登入";
 		} else {
 			setLoginState({ login: true, user_id });
 		}
 	}
-	function unsetLoginUI() {
+	function unsetLoginUI(): void {
 		if(login_state.login) {
 			setLoginState({ login: false });
 		} else {
 			throw "未登入的狀況下還想登出";
 		}
 	}
-	function renderContent() {
+	function renderContent(): JSX.Element {
 		return <div>
 			{/* HEADER */}
 			<Router>

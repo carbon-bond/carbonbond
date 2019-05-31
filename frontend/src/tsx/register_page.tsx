@@ -25,7 +25,7 @@ function fetchEmail(invite_code: string): Promise<string> {
 	});
 }
 
-export function RegisterPage(props: Props) {
+export function RegisterPage(props: Props): JSX.Element {
 	let [_email, setEmail] = React.useState("");
 	let [fetching, setFetching] = React.useState(true);
 

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Login } from "./types";
 
-function Component() {
+function Component(): JSX.Element {
 	return <Login.Consumer>
 		{
 			context => <div>
