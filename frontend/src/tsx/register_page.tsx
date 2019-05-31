@@ -54,8 +54,7 @@ export function RegisterPage(props: Props): JSX.Element {
 			props.history.replace("/app");
 		}
 	}, [login_context]);
-
-	if(fetching) {
+	if (fetching) {
 		return <div> 載入頁 </div>;
 	} else {
 		return <div> 註冊頁 </div>;
