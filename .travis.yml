@@ -4,8 +4,8 @@ rust:
 before_script:
     - rustup component add rustfmt
 script:
-    - cargo build --verbose --all
-    - cargo test --verbose --all
+    - cargo build --all
+    - cargo test --all
     - cargo fmt -- --check
 notifications:
-    webhooks: https://outlook.office.com/webhook/5556d3d5-845f-4f69-8d3b-02d4d6b6afc2@d2777a24-c405-4809-b21d-7b079e146d59/TravisCI/1f3606f6dcc345b799fd035d936c2b9a/19b1ac3e-233b-4fc9-858b-247faa7ec137
+    webhooks: https://outlook.office.com/webhook/5556d3d5-845f-4f69-8d3b-02d4d6b6afc2@d2777a24-c405-4809-b21d-7b079e146d59/TravisCI/42cd8ffb1731446e95b4438587bea819/19b1ac3e-233b-4fc9-858b-247faa7ec137
