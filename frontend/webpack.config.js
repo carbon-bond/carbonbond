@@ -6,6 +6,8 @@ module.exports = {
 		index: "./src/tsx/app.tsx"
 	},
 	resolve: {
+		mainFields: ["browser", "main", "module"],
+		// 不加這行的話，webpack 會在建置時讀到 graphql 的 index.mjs 而報錯
 		extensions: [".ts", ".tsx", ".js"],
 	},
 	output: {
