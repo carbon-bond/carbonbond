@@ -31,12 +31,17 @@ cargo fmt -- --check
 
 安裝 [Rust (rls) 外掛](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust)
 
-並在 vscode 的 setting.json 設定
+### 使用 stable 的 rls
 
+在 vscode 的 setting.json 設定
+```
+"rust-client.channel": "stable",
+```
+
+### 存檔時格式化程式碼
+在 vscode 的 setting.json 設定
 ```
 "[rust]":{
     "editor.formatOnSave": true,
 }
 ```
-
-即可使 vscode 在每次存檔時都自動 format
