@@ -3,7 +3,7 @@ import * as React from "react";
 import { Login } from "./types";
 import { RouteComponentProps } from "react-router";
 
-type Props = RouteComponentProps<{ invite_code: string }>;
+type Props = RouteComponentProps<{ invite_code?: string }>;
 
 function fetchEmail(invite_code: string): Promise<string> {
 	return fetch("/api/invite-code", {

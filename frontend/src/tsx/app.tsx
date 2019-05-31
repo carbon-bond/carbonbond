@@ -53,8 +53,9 @@ function App(): JSX.Element {
 							<Component></Component>
 						</div>
 					)}/>
-					<Route path="/app/register/:invite_code"
-						component={RegisterPage}/>
+					<Route path="/app/register/:invite_code" render={props =>
+						<RegisterPage {...props}/>
+					}/>
 					<Redirect to="/app"/>
 				</Switch>
 			</Router>
