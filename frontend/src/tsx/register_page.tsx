@@ -1,6 +1,7 @@
 import * as React from "react";
 
-import { Login, RouteComponentProps } from "./types";
+import { Login } from "./types";
+import { RouteComponentProps } from "react-router";
 
 type Props = RouteComponentProps<{ invite_code: string }>;
 
