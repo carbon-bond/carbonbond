@@ -5,9 +5,9 @@
         "commonjs": true,
         "es6": true
     },
-    "parser": "babel-eslint",
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2017,
+        "ecmaVersion": 2018,
         "sourceType": "module",
         "ecmaFeatures": {
             "experimentalObjectRestSpread": true,
@@ -16,7 +16,7 @@
     },
     "plugins": [
         "react",
-        "typescript"
+        "@typescript-eslint"
     ],
     "rules": {
         "guard-for-in": ["error"],
@@ -25,7 +25,11 @@
         "no-trailing-spaces": ["error"],
         "curly": ["error"],
         // 沒用到的變數需要符合以 _ 開頭的命名規範
-        "no-unused-vars": ["warn", { "varsIgnorePattern": "_.*" }],
+        "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "_.*" }],
+        "@typescript-eslint/semi": ["error"],
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/no-explicit-any": ["error"],
+        "@typescript-eslint/class-name-casing": ["error"],
         "indent": [
             "error",
             "tab",
