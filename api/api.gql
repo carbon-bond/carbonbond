@@ -1,0 +1,25 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Me {
+    login: Boolean!
+    id: String!
+}
+
+type Query {
+    # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
+    me: Me!
+}
+
+type Mutation {
+    # 登入（會 set-cookie）
+    login(id: String!, password: String!)
+    # 登出（清除 cookie）
+    logout()
+    # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
+    signup_by_invitation(code: String!, id: String!, password: String!)
+    # 邀請別人加入碳鍵，第二個參數 invition 是邀請人自己寫的邀請詞，會被嵌入邀請信
+    invite_signup(email: String!, invition: String!)
+}
