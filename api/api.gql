@@ -3,6 +3,10 @@ schema {
     mutation: Mutation
 }
 
+type Error {
+    message: String
+}
+
 type Me {
     login: Boolean!
     id: String!
@@ -15,11 +19,11 @@ type Query {
 
 type Mutation {
     # 登入（會 set-cookie）
-    login(id: String!, password: String!)
+    login(id: String!, password: String!): Error
     # 登出（清除 cookie）
-    logout()
+    logout(): Error
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
-    signup_by_invitation(code: String!, id: String!, password: String!)
+    signup_by_invitation(code: String!, id: String!, password: String!): Error
     # 邀請別人加入碳鍵，第二個參數 invition 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    invite_signup(email: String!, invition: String!)
+    invite_signup(email: String!, invition: String!): Error
 }
