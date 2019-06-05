@@ -1,7 +1,16 @@
+#[macro_use]
+extern crate diesel;
+extern crate argon2rs;
+extern crate dotenv;
+extern crate rand;
+
+pub mod db;
+pub mod email;
+
 use std::io::stdin;
 
-use carbon_bond::db;
-use carbon_bond::send_invite_email;
+// use carbon_bond::db;
+use crate::email::send_invite_email;
 use db::models::*;
 use db::schema::users::dsl::*;
 use diesel::prelude::*;

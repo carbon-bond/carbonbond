@@ -1,11 +1,4 @@
-#[macro_use]
-extern crate diesel;
-extern crate argon2rs;
-extern crate dotenv;
-extern crate rand;
-
-pub mod db;
-
+use crate::db;
 use std::env;
 
 use diesel::pg::PgConnection;
