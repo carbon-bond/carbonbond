@@ -1,15 +1,21 @@
 extern crate juniper;
 extern crate serde_json;
 
-use juniper::{FieldResult, Variables, EmptyMutation};
+use juniper::{FieldResult, EmptyMutation};
 use juniper::http::graphiql::graphiql_source;
 use actix_web::{HttpRequest, HttpResponse, Result as ActixResult};
+use actix_web::web;
 
 #[derive(juniper::GraphQLEnum, Clone, Copy)]
 enum Episode {
     NewHope,
     Empire,
     Jedi,
+}
+
+#[derive(juniper::GraphQLObject)]
+struct Me {
+    id: Option<String>,
 }
 
 struct Ctx(Episode);
@@ -22,29 +28,26 @@ struct Query;
     Context = Ctx,
 )]
 impl Query {
-    fn favoriteEpisode(context: &Ctx) -> FieldResult<Episode> {
-        Ok(context.0)
+    fn me(context: &Ctx) -> FieldResult<Me> {
+        Ok(Me {
+            id: Some("金剛".to_string()),
+        })
     }
 }
 
 type Schema = juniper::RootNode<'static, Query, EmptyMutation<Ctx>>;
 
-pub fn api(_req: &HttpRequest) -> ActixResult<String> {
+pub fn api(ql: web::Json<juniper::http::GraphQLRequest>) -> ActixResult<String> {
     let ctx = Ctx(Episode::NewHope);
 
-    let (res, _errors) = juniper::execute(
-        "query { favoriteEpisode }",
-        None,
-        &Schema::new(Query, EmptyMutation::new()),
-        &Variables::new(),
-        &ctx,
-    )
-    .unwrap();
+    let schema = Schema::new(Query, EmptyMutation::new());
+
+    let res = ql.execute(&schema, &ctx);
 
     Ok(serde_json::to_string(&res).unwrap())
 }
 
-pub fn graphiql(_req: &HttpRequest) -> HttpResponse {
+pub fn graphiql(_req: HttpRequest) -> HttpResponse {
     let html = graphiql_source("http://localhost:8080/api");
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")

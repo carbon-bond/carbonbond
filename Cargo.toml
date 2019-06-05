@@ -8,13 +8,15 @@ default-run = "server"
 
 [dependencies]
 diesel = { version = "1.0.0", features = ["postgres"] }
-actix-web = "0.7"
+actix-web = "1.0"
 env_logger = "0.6.1"
 dotenv = "0.9.0"
 rand = "0.6"
 argon2rs = "0.2.5"
 juniper = "0.12.0"
 serde_json = "1.0.39"
+actix-files = "0.1.1"
+actix-rt = "0.2.2"
 
 [[bin]]
 name = "server"

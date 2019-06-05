@@ -8,8 +8,8 @@ type Error {
 }
 
 type Me {
-    login: Boolean!
-    id: String!
+    # 若 id 爲 null，代表尚未登入
+    id: String
 }
 
 type Query {
