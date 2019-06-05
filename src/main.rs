@@ -1,5 +1,6 @@
 extern crate actix_web;
 extern crate env_logger;
+mod graphql;
 
 use actix_web::middleware::Logger;
 use actix_web::{fs, server, App, HttpRequest, Result as ActixResult};
@@ -14,10 +15,24 @@ fn main() {
     env_logger::init();
 
     server::new(|| {
+        let log_format = "
+                        '%r' %s
+                        Referer: %{Referer}i
+                        User-Agent: %{User-Agent}i
+                        IP: %a
+                        處理時間: %T 秒";
+
         vec![
-            // App::new().prefix("/yo").resource("/", |r| r.f(index))
-            //     .middleware(Logger::default())
-            //     .middleware(Logger::new("%a %{User-Agent}i")),
+            App::new()
+                .prefix("/api")
+                .resource("/", |r| r.f(graphql::api))
+                .resource("", |r| r.f(graphql::api))
+                .middleware(Logger::new(log_format)),
+            App::new()
+                .prefix("/graphiql")
+                .resource("/", |r| r.f(graphql::graphiql))
+                .resource("", |r| r.f(graphql::graphiql))
+                .middleware(Logger::new(log_format)),
             App::new()
                 .resource("/app/{tail:.*}", |r| r.f(index))
                 .resource("/app", |r| r.f(index))
@@ -28,8 +43,7 @@ fn main() {
                         .unwrap()
                         .show_files_listing(),
                 )
-                .middleware(Logger::default())
-                .middleware(Logger::new("%a %{User-Agent}i")),
+                .middleware(Logger::new(log_format)),
         ]
     })
     .bind("127.0.0.1:8080")
