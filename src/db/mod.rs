@@ -16,6 +16,17 @@ pub fn connect_db() -> PgConnection {
         .expect(&format!("連線至 {} 時發生錯誤", database_url))
 }
 
+pub fn delete_all(conn: &PgConnection) {
+    use schema::users;
+    use schema::invitations;
+    diesel::delete(users::table)
+        .execute(conn)
+        .expect("刪除 users 失敗");
+    diesel::delete(invitations::table)
+        .execute(conn)
+        .expect("刪除 invitations 失敗");
+}
+
 pub fn create_invitation(conn: &PgConnection, email: &str, code: &str) -> Invitation {
     use schema::invitations;
     let new_invitation = NewInvitation { code, email };

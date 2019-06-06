@@ -82,7 +82,7 @@ fn main() -> std::io::Result<()> {
                     }
                 }
             } else if opt == 4 {
-                panic!("尚未實作");
+                db::delete_all(&db_conn);
             } else {
                 println!("請輸入範圍內的正整數");
             }
