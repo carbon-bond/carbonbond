@@ -32,10 +32,16 @@ struct Query;
 impl Query {
     fn me(context: &Ctx) -> FieldResult<Me> {
         match context.session.get::<String>("id")? {
-            Some(id) => Ok(Me {
-                id: Some("金剛".to_string()),
-            }),
             None => Ok(Me { id: None }),
+            Some(id) => {
+                if id == "".to_string() {
+                    Ok(Me { id: None })
+                } else {
+                    Ok(Me {
+                        id: Some("金剛".to_string()),
+                    })
+                }
+            }
         }
     }
 }
@@ -48,6 +54,10 @@ struct Mutation;
 impl Mutation {
     fn login(context: &Ctx) -> FieldResult<Option<Error>> {
         context.session.set::<String>("id", "金剛".to_string())?;
+        Ok(None)
+    }
+    fn logout(context: &Ctx) -> FieldResult<Option<Error>> {
+        context.session.set::<String>("id", "".to_string())?;
         Ok(None)
     }
 }
