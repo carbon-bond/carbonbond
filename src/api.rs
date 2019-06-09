@@ -1,12 +1,12 @@
-extern crate juniper;
-extern crate serde_json;
-
 use juniper::{FieldResult};
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse, Result as ActixResult};
 use actix_web::web;
 use actix_session::{Session};
+use diesel::pg::PgConnection;
+use std::sync::{Arc, Mutex};
+use crate::email::send_invite_email;
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
@@ -20,6 +20,7 @@ struct Error {
 
 struct Ctx {
     session: Session,
+    conn: Arc<Mutex<PgConnection>>,
 }
 
 impl juniper::Context for Ctx {}
@@ -60,12 +61,30 @@ impl Mutation {
         context.session.set::<String>("id", "".to_string())?;
         Ok(None)
     }
+    fn invite_signup(context: &Ctx, email: String) -> FieldResult<Option<Error>> {
+        match context.session.get::<String>("id")? {
+            None => Ok(Some(Error {
+                message: "尚未登入".to_string(),
+            })),
+            Some(id) => {
+                send_invite_email(&context.conn.lock().unwrap(), Some(&id), &email);
+                Ok(None)
+            }
+        }
+    }
 }
 
 type Schema = juniper::RootNode<'static, Query, Mutation>;
 
-pub fn api(gql: web::Json<GraphQLRequest>, session: Session) -> ActixResult<String> {
-    let ctx = Ctx { session };
+pub fn api(
+    gql: web::Json<GraphQLRequest>,
+    session: Session,
+    conn: web::Data<Arc<Mutex<PgConnection>>>,
+) -> ActixResult<String> {
+    let ctx = Ctx {
+        session,
+        conn: (*conn).clone(),
+    };
     let schema = Schema::new(Query, Mutation);
     let res = gql.execute(&schema, &ctx);
     Ok(serde_json::to_string(&res).unwrap())
