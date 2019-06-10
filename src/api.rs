@@ -7,6 +7,7 @@ use actix_session::{Session};
 use diesel::pg::PgConnection;
 use std::sync::{Arc, Mutex};
 use crate::email::send_invite_email;
+use crate::db;
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
@@ -71,6 +72,15 @@ impl Mutation {
                 Ok(None)
             }
         }
+    }
+    fn signup_by_invitation(
+        context: &Ctx,
+        code: String,
+        id: String,
+        password: String,
+    ) -> FieldResult<Option<Error>> {
+        db::create_user_by_invitation(&context.conn.lock().unwrap(), &code, &id, &password);
+        Ok(None)
     }
 }
 

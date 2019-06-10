@@ -3,10 +3,13 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
+use rand::Rng;
 
 pub mod models;
 pub mod schema;
-use models::{NewUser, User, NewInvitation};
+use models::{NewUser, User, NewInvitation, Invitation};
+
+use schema::{invitations, users};
 
 pub fn connect_db() -> PgConnection {
     dotenv().ok();
@@ -17,8 +20,6 @@ pub fn connect_db() -> PgConnection {
 }
 
 pub fn delete_all(conn: &PgConnection) {
-    use schema::users;
-    use schema::invitations;
     diesel::delete(users::table)
         .execute(conn)
         .expect("刪除 users 失敗");
@@ -28,14 +29,12 @@ pub fn delete_all(conn: &PgConnection) {
 }
 
 pub fn create_invitation(conn: &PgConnection, sender: Option<&str>, email: &str) -> Option<String> {
-    use rand::Rng;
     use rand::distributions::Alphanumeric;
 
     let invite_code: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
         .collect();
-    use schema::invitations;
     let new_invitation = NewInvitation {
         code: &invite_code,
         email,
@@ -74,9 +73,34 @@ pub fn create_invitation(conn: &PgConnection, sender: Option<&str>, email: &str)
     }
 }
 
+pub fn create_user_by_invitation(
+    conn: &PgConnection,
+    code: &str,
+    id: &str,
+    password: &str,
+) -> User {
+    // TODO: 錯誤處理
+    let invitation = invitations::table
+        .filter(invitations::code.eq(code))
+        .first::<Invitation>(conn)
+        .expect("邀請碼不存在");
+
+    let salt: String = rand::thread_rng().gen::<[char; 32]>().into_iter().collect();
+    let password_array = argon2rs::argon2i_simple(&password, &salt[..]);
+
+    let new_user = NewUser {
+        id,
+        email: &invitation.email,
+        password_bytes: password_array.iter().map(|ch| *ch as u8).collect(),
+        salt: salt.chars().map(|ch| ch as u8).collect(),
+    };
+    diesel::insert_into(users::table)
+        .values(&new_user)
+        .get_result(conn)
+        .expect("新增使用者失敗")
+}
+
 pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> User {
-    use rand::Rng;
-    use schema::users;
     let salt: String = rand::thread_rng().gen::<[char; 32]>().into_iter().collect();
     let password_array = argon2rs::argon2i_simple(&password, &salt[..]);
     let new_user = NewUser {
