@@ -9,9 +9,10 @@ extern crate serde_json;
 use std::sync::{Arc, Mutex};
 
 mod api;
-
 mod db;
 mod email;
+mod signup;
+
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::middleware::Logger;

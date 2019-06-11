@@ -6,8 +6,10 @@ use actix_web::web;
 use actix_session::{Session};
 use diesel::pg::PgConnection;
 use std::sync::{Arc, Mutex};
-use crate::email::send_invite_email;
-use crate::db;
+
+use crate::email;
+use crate::signup;
+// use crate::db;
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
@@ -68,7 +70,7 @@ impl Mutation {
                 message: "尚未登入".to_string(),
             })),
             Some(id) => {
-                send_invite_email(&context.conn.lock().unwrap(), Some(&id), &email);
+                email::send_invite_email(&context.conn.lock().unwrap(), Some(&id), &email);
                 Ok(None)
             }
         }
@@ -79,7 +81,7 @@ impl Mutation {
         id: String,
         password: String,
     ) -> FieldResult<Option<Error>> {
-        db::create_user_by_invitation(&context.conn.lock().unwrap(), &code, &id, &password);
+        signup::create_user_by_invitation(&context.conn.lock().unwrap(), &code, &id, &password);
         Ok(None)
     }
 }

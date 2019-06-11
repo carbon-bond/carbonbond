@@ -5,15 +5,26 @@ extern crate dotenv;
 extern crate rand;
 
 pub mod db;
-pub mod email;
 
+pub mod email;
+pub mod signup;
 use std::io::stdin;
 
 // use carbon_bond::db;
 use crate::email::send_invite_email;
 use db::models::*;
 use db::schema::users::dsl::*;
+use db::schema::{users, invitations};
 use diesel::prelude::*;
+
+pub fn delete_all(conn: &PgConnection) {
+    diesel::delete(users::table)
+        .execute(conn)
+        .expect("刪除 users 失敗");
+    diesel::delete(invitations::table)
+        .execute(conn)
+        .expect("刪除 invitations 失敗");
+}
 
 fn main() -> std::io::Result<()> {
     println!("碳鍵 - 資料庫管理介面");
@@ -49,7 +60,7 @@ fn main() -> std::io::Result<()> {
                     if words.len() != 3 {
                         println!("輸入格式錯誤");
                     } else {
-                        db::create_user(&db_conn, words[0], words[1], words[2]);
+                        signup::create_user(&db_conn, words[0], words[1], words[2]);
                         println!("成功新增使用者：{}", words[0]);
                     }
                 }
@@ -82,7 +93,7 @@ fn main() -> std::io::Result<()> {
                     }
                 }
             } else if opt == 4 {
-                db::delete_all(&db_conn);
+                delete_all(&db_conn);
             } else {
                 println!("請輸入範圍內的正整數");
             }

@@ -1,14 +1,14 @@
-use crate::db;
 use std::env;
 use std::process::Command;
-
 use diesel::pg::PgConnection;
+use crate::signup;
+
 pub fn send_invite_email(
     conn: &PgConnection,
     sender_id: Option<&str>,
     recv_email: &str,
 ) -> Option<()> {
-    let invite_code = match db::create_invitation(conn, sender_id, recv_email) {
+    let invite_code = match signup::create_invitation(conn, sender_id, recv_email) {
         Some(code) => code,
         None => return Some(()),
     };
@@ -27,9 +27,8 @@ pub fn send_invite_email(
     let welcome_msg = format!(
         "<html> \
          <h1>歡迎！{} 推薦您加入碳鍵</h1> \
-         <p>請點選以下連結，開始你的碳鍵生活。</p> \
+         <p>請點選以下連結，嘴爆那些笨蛋吧！</p> \
          <a href=\"{}\">{}</a> <br/> \
-         <p>提高你的鍵能，嘴爆那些笨蛋吧！</p> \
          </html>",
         inviter_id, url, url
     );
