@@ -23,7 +23,7 @@ type Mutation {
     # 登出（清除 cookie）
     logout(): Error
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
-    signup_by_invitation(code: String!, id: String!, password: String!): Error
+    signupByInvitation(code: String!, id: String!, password: String!): Error
     # 邀請別人加入碳鍵，第二個參數 invition 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    invite_signup(email: String!, invitation: String!): Error
+    inviteSignup(email: String!): Error
 }
