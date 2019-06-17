@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 
 import "purecss/build/pure-min.css?global";
-// import "purecss/build/pure-min.css";
 import "../css/normal.css";
 
 import { LoginContext, Login } from "./types";
@@ -34,24 +33,12 @@ function App(): JSX.Element {
 		}
 	}
 	function renderContent(): JSX.Element {
-		return <div>
+		return <>
 			{/* HEADER */}
 			<Router>
 				<Switch>
 					<Route exact path="/app" render={() => (
-						<div>
-							<h1>金剛、石墨，參見！</h1>
-							<h2>outer h2</h2>
-							<div styleName="green">
-								<h2>h2</h2>
-								<h3>h3</h3>
-							</div>
-							<button className="pure-button">global</button>
-							{/* <button styleName="pure-button">local</button> */}
-							<div className="red">red global</div>
-							<div styleName="red">red local</div>
-							<Component></Component>
-						</div>
+						<Component></Component>
 					)}/>
 					<Route path="/app/register/:invite_code" render={props =>
 						<RegisterPage {...props}/>
@@ -59,7 +46,7 @@ function App(): JSX.Element {
 					<Redirect to="/app"/>
 				</Switch>
 			</Router>
-		</div>;
+		</>;
 	}
 	let context: LoginContext = {
 		login: false,
