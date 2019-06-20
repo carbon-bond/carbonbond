@@ -54,9 +54,9 @@
             background-color: #F4F4F4;
         }
         .userInfo {
-            cursor: pointer;
-            margin-left: 10px;
+            margin-left: 20px;
             margin-right: 10px;
+            cursor: pointer;
             width: 160px;
             height: 80%;
             display: flex;
@@ -71,6 +71,42 @@
             }
             .energy {
                 margin-left: 12px;
+            }
+        }
+        .wrap {
+            display: flex;
+            align-self: center;
+            position: relative;
+            justify-content: center;
+            .dropdown {
+                width: 85%;
+                position: absolute;
+                top: 50px;
+                display: flex;
+                flex-direction: column;
+                .triangle {
+                    align-self: center;
+                    position: relative;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 0 15 15 15;
+                    border-color: transparent transparent #FFDDAA transparent;
+                }
+                .features {
+                    padding-top: 15px;
+                    padding-left: 15px;
+                    padding-right: 15px;
+                    padding-bottom: 5px;
+                    border: #DDDDDD solid 1px;
+                    display: flex;
+                    flex-direction: column;
+                    .feature {
+                        cursor: pointer;
+                        font-size: 18px;
+                        margin-bottom: 10px;
+                    }
+                }
             }
         }
     }
