@@ -1,0 +1,35 @@
+.menubar {
+    width: 56px;
+    border-right-width: 1px;
+    border-right-color: #DDDDDD;
+    border-right-style: solid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    color: #777777;
+    .topSet {
+        .icon {
+            text-align: center;
+            margin-top: 12px;
+            height: 43px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+    }
+    .bottomSet {
+        .icon {
+            text-align: center;
+            margin-top: 12px;
+            height: 43px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+    }
+}
+.sidebar {
+    width: 300px;
+    border-right-width: 1px;
+    border-right-color: #DDDDDD;
+    border-right-style: solid;
+}

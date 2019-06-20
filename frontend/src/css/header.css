@@ -1,0 +1,77 @@
+.header {
+    border-bottom-width: 1px;
+    border-bottom-color: #DDDDDD;
+    border-bottom-style: solid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .leftSet {
+        margin-left: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .carbonbond {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 30px;
+            font-weight: bold;
+            img {
+                margin-right: 10px;
+                cursor: pointer;
+                width: 36px;
+                height: 36px;
+            }
+        }
+        .location {
+            color: blueviolet;
+            font-size: 18px;
+            margin-left: 35px;
+        }
+    }
+    .middleSet {
+        flex-grow: 0.85;
+        display: flex;
+        align-items: center;
+        input {
+            line-height: 28px;
+            width: 100%;
+        }
+    }
+    .rightSet {
+        display: flex;
+        justify-content: center;
+        height: 60px;
+        .icon {
+            cursor: pointer;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+        }
+        .userInfo:hover {
+            background-color: #F4F4F4;
+        }
+        .userInfo {
+            cursor: pointer;
+            margin-left: 10px;
+            margin-right: 10px;
+            width: 160px;
+            height: 80%;
+            display: flex;
+            align-self: center;
+            align-items: center;
+            .image {
+                font-size: 40px;
+            }
+            .userName {
+                margin-left: 5px;
+                color: brown;
+            }
+            .energy {
+                margin-left: 12px;
+            }
+        }
+    }
+}

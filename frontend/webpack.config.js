@@ -55,7 +55,7 @@ module.exports = {
 					{
 						// import 時，後綴 ?global 代表 css 作用到全域
 						resourceQuery: /^\?global$/,
-						use: ["style-loader", "css-loader"]
+						use: ["style-loader", "css-loader", "postcss-loader"]
 					},
 					{
 						use: ["style-loader", "css-loader?modules&localIdentName=[local]-[hash:base64:10]", "postcss-loader"]

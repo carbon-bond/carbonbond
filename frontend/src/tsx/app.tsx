@@ -7,12 +7,14 @@ import {
 	Redirect,
 } from "react-router-dom";
 
-import "purecss/build/pure-min.css?global";
-import "../css/normal.css";
+import "normalize.css?global";
+import "../css/layout.css?global";
 
 import { LoginContext, Login } from "./types";
-import { Component } from "./component";
+import { MainContent } from "./main_content";
 import { RegisterPage } from "./register_page";
+import { Header } from "./header";
+import { Sidebar } from "./sidebar";
 
 type LoginState = { login: true, user_id: string } | { login: false };
 
@@ -34,18 +36,23 @@ function App(): JSX.Element {
 	}
 	function renderContent(): JSX.Element {
 		return <>
-			{/* HEADER */}
-			<Router>
-				<Switch>
-					<Route exact path="/app" render={() => (
-						<Component></Component>
-					)}/>
-					<Route path="/app/register/:invite_code" render={props =>
-						<RegisterPage {...props}/>
-					}/>
-					<Redirect to="/app"/>
-				</Switch>
-			</Router>
+			<Header></Header>
+			<div className="other">
+				<Router>
+					<Switch>
+						<Route exact path="/app" render={() => (
+							<>
+								<Sidebar></Sidebar>
+								<MainContent></MainContent>
+							</>
+						)} />
+						<Route path="/app/register/:invite_code" render={props =>
+							<RegisterPage {...props}/>
+						}/>
+						<Redirect to="/app"/>
+					</Switch>
+				</Router>
+			</div>
 		</>;
 	}
 	let context: LoginContext = {
@@ -59,9 +66,11 @@ function App(): JSX.Element {
 		};
 	}
 	return (
-		<Login.Provider value={context}>
-			{renderContent()}
-		</Login.Provider>
+		<div className="app">
+			<Login.Provider value={context}>
+				{renderContent()}
+			</Login.Provider>
+		</div>
 	);
 }
 
