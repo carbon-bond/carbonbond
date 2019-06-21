@@ -50,34 +50,34 @@
             align-items: center;
             font-size: 24px;
         }
-        .userInfo:hover {
-            background-color: #F4F4F4;
-        }
-        .userInfo {
-            margin-left: 20px;
-            margin-right: 10px;
-            cursor: pointer;
-            width: 160px;
-            height: 80%;
-            display: flex;
-            align-self: center;
-            align-items: center;
-            .image {
-                font-size: 40px;
-            }
-            .userName {
-                margin-left: 5px;
-                color: brown;
-            }
-            .energy {
-                margin-left: 12px;
-            }
-        }
         .wrap {
             display: flex;
             align-self: center;
             position: relative;
             justify-content: center;
+            .userInfo:hover {
+                background-color: #F4F4F4;
+            }
+            .userInfo {
+                margin-left: 20px;
+                margin-right: 10px;
+                cursor: pointer;
+                width: 160px;
+                height: 80%;
+                display: flex;
+                align-self: center;
+                align-items: center;
+                .image {
+                    font-size: 40px;
+                }
+                .userName {
+                    margin-left: 5px;
+                    color: brown;
+                }
+                .energy {
+                    margin-left: 12px;
+                }
+            }
             .dropdown {
                 width: 85%;
                 position: absolute;
@@ -107,6 +107,13 @@
                         margin-bottom: 10px;
                     }
                 }
+            }
+            .login {
+                cursor: pointer;
+                font-size: 120%;
+                text-align: center;
+                padding-left: 20px;
+                padding-right: 20px;
             }
         }
     }

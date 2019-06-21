@@ -1,10 +1,10 @@
 import * as React from 'react';
 import '../css/header.css';
-// import { UserState } from "./global_state";
+import { UserState } from './global_state';
 
 function Header(): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
-	// const { user_state } = UserState.useContainer();
+	const { user_state } = UserState.useContainer();
 
 	function Dropdown(): JSX.Element {
 		if (extended) {
@@ -22,16 +22,25 @@ function Header(): JSX.Element {
 		}
 	}
 	function UserStatus(): JSX.Element {
-		return (
-			<div styleName="wrap">
-				<div styleName="userInfo" onClick={() => setExtended(!extended)}>
-					<div styleName="image">💂️</div>
-					<div styleName="userName">金剛</div>
-					<div styleName="energy">⚡ 275</div>
+		if (user_state.login) {
+			return <>
+				<div styleName="icon">♡</div>
+				<div styleName="icon">☠</div>
+				<div styleName="icon">🗞️</div>
+				<div styleName="wrap">
+					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
+						<div styleName="image">💂️</div>
+						<div styleName="userName">金剛</div>
+						<div styleName="energy">⚡ 275</div>
+					</div>
+					{Dropdown()}
 				</div>
-				{ Dropdown() }
-			</div>
-		);
+			</>;
+		} else {
+			return <div styleName="wrap">
+				<div styleName="login">登入 🔫</div>
+			</div>;
+		}
 	}
 	return (
 		<div className="header" styleName="header">
@@ -46,9 +55,6 @@ function Header(): JSX.Element {
 				<input type="text" placeholder="🔍 搜尋全站" />
 			</div>
 			<div styleName="rightSet">
-				<div styleName="icon">♡</div>
-				<div styleName="icon">☠</div>
-				<div styleName="icon">🗞️</div>
 				{ UserStatus() }
 			</div>
 		</div>
