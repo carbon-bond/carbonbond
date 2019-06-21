@@ -1,5 +1,5 @@
-import * as React from "react";
-import "../css/sidebar.css";
+import * as React from 'react';
+import '../css/sidebar.css';
 
 function Sidebar(): JSX.Element {
 	return (

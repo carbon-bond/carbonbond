@@ -1,5 +1,5 @@
-import * as React from "react";
-import "../css/header.css";
+import * as React from 'react';
+import '../css/header.css';
 // import { UserState } from "./global_state";
 
 function Header(): JSX.Element {
