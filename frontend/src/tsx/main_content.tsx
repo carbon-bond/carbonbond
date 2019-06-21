@@ -1,21 +1,21 @@
 import * as React from "react";
-import { Login } from "./types";
+import { UserState } from "./global_state";
 
 function MainContent(): JSX.Element {
-	const context = React.useContext(Login);
+	const { user_state, set_login, set_logout } = UserState.useContainer();
 	return (
 		<div>
 			<div>
 				<h1>金剛、石墨，參見！</h1>
-				<h1>{context.login ? context.user_id : "未登入"}</h1>
+				<h1>{user_state.login ? user_state.user_id : "未登入"}</h1>
 				{
 					(() => {
-						if (context.login) {
+						if (user_state.login) {
 							return <button className="pure-button"
-								onClick={context.unsetLogin}>登出</button>;
+								onClick={() => set_logout()}>登出</button>;
 						} else {
 							return <button className="pure-button"
-								onClick={() => context.setLogin("測試帳號")}>登入</button>;
+								onClick={() => set_login("金剛")}>登入</button>;
 						}
 					})()
 				}

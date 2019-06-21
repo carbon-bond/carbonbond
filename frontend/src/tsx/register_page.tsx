@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { Login } from "./types";
 import { RouteComponentProps } from "react-router";
+import { UserState } from "./global_state";
 
 type Props = RouteComponentProps<{ invite_code?: string }>;
 
@@ -28,6 +28,7 @@ function fetchEmail(invite_code: string): Promise<string> {
 export function RegisterPage(props: Props): JSX.Element {
 	let [_email, setEmail] = React.useState("");
 	let [fetching, setFetching] = React.useState(true);
+	let { user_state } = UserState.useContainer();
 
 	let getInviteCode = React.useCallback(() => {
 		let code = props.match.params.invite_code;
@@ -38,8 +39,6 @@ export function RegisterPage(props: Props): JSX.Element {
 		}
 	}, [props.match.params.invite_code]);
 
-	let login_context = React.useContext(Login);
-
 	React.useEffect(() => {
 		let invite_code = getInviteCode();
 		fetchEmail(invite_code).then(email => {
@@ -49,11 +48,12 @@ export function RegisterPage(props: Props): JSX.Element {
 	}, [getInviteCode]);
 
 	React.useEffect(() => {
-		if (login_context.login) {
+		if (user_state.login) {
 			// 跳轉回首頁
 			props.history.replace("/app");
 		}
-	}, [login_context]);
+	}, [user_state.login]);
+
 	if (fetching) {
 		return <div> 載入頁 </div>;
 	} else {
