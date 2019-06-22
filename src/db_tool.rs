@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate diesel;
-extern crate argon2rs;
 extern crate dotenv;
 extern crate rand;
 
@@ -89,7 +88,10 @@ fn main() -> std::io::Result<()> {
                     if words.len() != 1 {
                         println!("輸入格式錯誤");
                     } else {
-                        send_invite_email(&db_conn, None, words[0]);
+                        let invite_code = signup::create_invitation(&db_conn, None, words[0])
+                            .expect("無法建立邀請");
+                        send_invite_email(None, &invite_code, words[0])
+                            .expect("寄送邀請信失敗");
                     }
                 }
             } else if opt == 4 {

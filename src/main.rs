@@ -6,13 +6,14 @@ extern crate juniper;
 #[macro_use]
 extern crate diesel;
 extern crate serde_json;
-use std::sync::{Arc, Mutex};
 
 mod api;
 mod db;
 mod email;
+mod login;
 mod signup;
 
+use std::sync::{Arc, Mutex};
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::middleware::Logger;

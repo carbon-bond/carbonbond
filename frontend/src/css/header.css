@@ -118,3 +118,35 @@
         }
     }
 }
+
+.loginModal {
+    width: 40%;
+    height: 260px;
+    background-color: white;
+    border: #DDDDDD 1px solid;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .escape {
+        cursor: pointer;
+        font-size: 28px;
+        position: absolute;
+        top: -14px;
+        right: -14px;
+        color: red;
+    }
+    input {
+        position: relative;
+        width: 70%;
+        height: 40px;
+        margin: 10px;
+    }
+    button {
+        margin-top: 10px;
+    }
+}

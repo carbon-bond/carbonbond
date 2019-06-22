@@ -1,17 +1,28 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use rand::Rng;
-use argon2rs;
 use crate::db::models::{NewUser, User, NewInvitation, Invitation};
 use crate::db::schema;
 
-pub fn create_invitation(conn: &PgConnection, sender: Option<&str>, email: &str) -> Option<String> {
+#[derive(Debug)]
+pub enum Error {
+    InternalError,      // 不可控制的內部錯誤，如資料庫意外崩潰
+    LogicError(String), // 可控制的錯誤，如權限問題
+}
+
+// 回傳邀請碼
+pub fn create_invitation(
+    conn: &PgConnection,
+    sender: Option<&str>,
+    email: &str,
+) -> Result<String, Error> {
     use rand::distributions::Alphanumeric;
 
     let invite_code: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
         .collect();
+
     let new_invitation = NewInvitation {
         code: &invite_code,
         email,
@@ -35,9 +46,9 @@ pub fn create_invitation(conn: &PgConnection, sender: Option<&str>, email: &str)
                     .values(&new_invitation)
                     .execute(conn)
                     .expect("新增邀請失敗");
-                Some(invite_code)
+                Ok(invite_code)
             } else {
-                None
+                Err(Error::LogicError("邀請點數不足".to_string()))
             }
         }
         None => {
@@ -45,7 +56,7 @@ pub fn create_invitation(conn: &PgConnection, sender: Option<&str>, email: &str)
                 .values(&new_invitation)
                 .execute(conn)
                 .expect("新增邀請失敗");
-            Some(invite_code)
+            Ok(invite_code)
         }
     }
 }
@@ -55,36 +66,43 @@ pub fn create_user_by_invitation(
     code: &str,
     id: &str,
     password: &str,
-) -> User {
+) -> Result<(), Error> {
     // TODO: 錯誤處理
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
-        .expect("邀請碼不存在");
+        .expect("搜尋邀請碼失敗");
 
-    let salt: String = rand::thread_rng().gen::<[char; 32]>().into_iter().collect();
-    let password_array = argon2rs::argon2i_simple(&password, &salt[..]);
+    let salt = rand::thread_rng().gen::<[u8; 16]>();
+
+    let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
 
     let new_user = NewUser {
         id,
         email: &invitation.email,
-        password_bytes: password_array.iter().map(|ch| *ch as u8).collect(),
-        salt: salt.chars().map(|ch| ch as u8).collect(),
+        password_bytes: hash.to_vec(),
+        salt: salt.to_vec(),
     };
     diesel::insert_into(schema::users::table)
         .values(&new_user)
-        .get_result(conn)
-        .expect("新增使用者失敗")
+        .get_result::<User>(conn)
+        .expect("新增使用者失敗");
+
+    Ok(())
 }
 
+// NOTE: 伺服器尚未用到該函式，是 db-tool 在用
+// TODO: 錯誤處理
 pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> User {
-    let salt: String = rand::thread_rng().gen::<[char; 32]>().into_iter().collect();
-    let password_array = argon2rs::argon2i_simple(&password, &salt[..]);
+    let salt = rand::thread_rng().gen::<[u8; 16]>();
+
+    let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
+
     let new_user = NewUser {
         id,
         email,
-        password_bytes: password_array.iter().map(|ch| *ch as u8).collect(),
-        salt: salt.chars().map(|ch| ch as u8).collect(),
+        password_bytes: hash.to_vec(),
+        salt: salt.to_vec(),
     };
     diesel::insert_into(schema::users::table)
         .values(&new_user)
