@@ -6,7 +6,9 @@ import {
 	Route,
 	Redirect,
 } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
+import 'react-toastify/dist/ReactToastify.css?global';
 import 'normalize.css?global';
 import '../css/layout.css?global';
 
@@ -15,6 +17,8 @@ import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
+
+toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
 

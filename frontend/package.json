@@ -18,8 +18,10 @@
 		"react-dom": "^16.8.6",
 		"react-router": "^5.0.0",
 		"react-router-dom": "^5.0.0",
+		"react-toastify": "^5.3.1",
 		"types": "^0.1.1",
-		"unstated-next": "^1.1.0"
+		"unstated-next": "^1.1.0",
+		"use-onclickoutside": "^0.3.1"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.4.5",
