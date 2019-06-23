@@ -41,9 +41,7 @@ impl Query {
                 if id == "".to_string() {
                     Ok(Me { id: None })
                 } else {
-                    Ok(Me {
-                        id: Some("金剛".to_string()),
-                    })
+                    Ok(Me { id: Some(id) })
                 }
             }
         }

@@ -13,10 +13,12 @@ function useInputValue(initialValue: string = ''): { value: string, onChange: (e
 	};
 }
 
+
 function Header(): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
 	const { user_state, set_login, set_logout } = UserState.useContainer();
+	// useGetLoginState();
 
 	async function login_request(id: string, password: string): Promise<{}> {
 		const endpoint = 'http://localhost:8080/api';
