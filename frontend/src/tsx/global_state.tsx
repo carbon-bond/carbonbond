@@ -1,27 +1,15 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { GraphQLClient } from 'graphql-request';
+import * as api from './api';
 
 type UserState = { login: false } | { login: true, user_id: string };
-
-type Me = { me: { id: string | null } };
-
 
 function useUserState(): { user_state: UserState, set_login: Function, set_logout: Function } {
 	let [user_state, setLogin] = useState<UserState>({ login: false });
 
 	async function get_login_state(): Promise<{}> {
-		const endpoint = 'http://localhost:8080/api';
-		const graphQLClient = new GraphQLClient(endpoint);
-		const query = `
-			query {
-				me {
-					id
-				}
-			}
-		`;
-		const data: Me = await graphQLClient.request(query);
+		const data = await api.me_request();
 		if (data.me.id != null) {
 			setLogin({ login: true, user_id: data.me.id });
 		}

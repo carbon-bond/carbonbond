@@ -4,6 +4,21 @@ export type LoginResponse = {
 	login: null | { message: string }
 };
 
+export type Me = { me: { id: string | null } };
+
+async function me_request(): Promise<Me> {
+	const endpoint = 'http://localhost:8080/api';
+	const graphQLClient = new GraphQLClient(endpoint);
+	const query = `
+		query {
+			me {
+				id
+			}
+		}
+	`;
+	return await graphQLClient.request(query);
+}
+
 async function login_request(id: string, password: string): Promise<LoginResponse> {
 	const endpoint = 'http://localhost:8080/api';
 	const graphQLClient = new GraphQLClient(endpoint);
@@ -35,6 +50,7 @@ async function logout_request(): Promise<LogoutResponse> {
 }
 
 export {
+	me_request,
 	login_request,
 	logout_request
 };

@@ -35,6 +35,7 @@ function Header(): JSX.Element {
 			if (data.logout == null) {
 				set_logout();
 				setExtended(false);
+				toast('您已登出');
 			} else {
 				toast.error(data.logout.message);
 			}
@@ -47,18 +48,29 @@ function Header(): JSX.Element {
 	function LoginModal(): JSX.Element {
 		let id = useInputValue('');
 		let password = useInputValue('');
-		let ref = React.useRef(null);
-		useOnClickOutside(ref, () => setLogining(false));
-		function onKeyPress(e: React.KeyboardEvent<HTMLInputElement>): void {
+		let ref_all = React.useRef(null);
+		let ref_id = React.useRef<HTMLInputElement>(null);
+		useOnClickOutside(ref_all, () => setLogining(false));
+
+		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter') {
 				login_request(id.value, password.value);
+			} else if (e.key == 'Escape') {
+				setLogining(false);
 			}
 		}
+
+		React.useEffect(() => {
+			if (ref_id && ref_id.current) { // 判斷式只是爲了 TS 的型別檢查
+				ref_id.current.focus();
+			}
+		}, []);
+
 		if (logining) {
-			return <div ref={ref} styleName="loginModal">
+			return <div ref={ref_all} styleName="loginModal">
 				<div styleName="escape" onClick={ () => setLogining(false) }>✗</div>
-				<input type="text" placeholder="😎 使用者名稱" {...id} onKeyPress={onKeyPress} />
-				<input type="password" placeholder="🔒 密碼" {...password} onKeyPress={onKeyPress} />
+				<input ref={ref_id} type="text" placeholder="😎 使用者名稱" {...id} onKeyDown={onKeyDown} />
+				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
 				<button onClick={ () => login_request(id.value, password.value) }>登入</button>
 			</div>;
 		} else {

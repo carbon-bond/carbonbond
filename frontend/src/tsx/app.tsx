@@ -18,6 +18,7 @@ import { RegisterPage } from './register_page';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
 
+// 配置全域提醒
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
