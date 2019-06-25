@@ -28,7 +28,6 @@ function Header(): JSX.Element {
 		}
 		return {};
 	}
-
 	async function logout_request(): Promise<{}> {
 		try {
 			const data: api.LogoutResponse = await api.logout_request();
@@ -44,7 +43,6 @@ function Header(): JSX.Element {
 		}
 		return {};
 	}
-
 	function LoginModal(): JSX.Element {
 		let id = useInputValue('');
 		let password = useInputValue('');
@@ -79,30 +77,30 @@ function Header(): JSX.Element {
 	}
 
 	function Dropdown(): JSX.Element {
-		let ref = React.useRef(null);
-		useOnClickOutside(ref, () => setExtended(false));
-
 		if (extended) {
-			return <div ref={ref} styleName="dropdown">
+			return <div styleName="dropdown">
 				<div styleName="triangle"> </div>
 				<div styleName="features">
 					<div styleName="feature">🏯 我的城堡</div>
 					<div styleName="feature">🏆 榮耀／卷宗</div>
+					<div styleName="feature">🖅 寄發邀請信</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
 			</div>;
 		} else {
-			return <div ref={ref}></div>;
+			return <></>;
 		}
 	}
 	function UserStatus(): JSX.Element {
+		let ref = React.useRef(null);
+		useOnClickOutside(ref, () => setExtended(false));
 		if (user_state.login) {
 			return <>
 				<div styleName="icon">♡</div>
 				<div styleName="icon">☠</div>
 				<div styleName="icon">🗞️</div>
-				<div styleName="wrap">
+				<div ref={ref} styleName="wrap">
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
 						<div styleName="image">💂️</div>
 						<div styleName="userName">{user_state.user_id}</div>

@@ -42,13 +42,17 @@
     .rightSet {
         display: flex;
         justify-content: center;
+        align-items: center;
         height: 60px;
         .icon {
             cursor: pointer;
-            margin-right: 10px;
+            padding: 5px;
             display: flex;
             align-items: center;
             font-size: 24px;
+        }
+        .icon:hover {
+            background-color: #F4F4F4;
         }
         .wrap {
             display: flex;
@@ -101,6 +105,9 @@
                     border: #DDDDDD solid 1px;
                     display: flex;
                     flex-direction: column;
+                    .feature:hover {
+                        background-color: #F4F4F4;
+                    }
                     .feature {
                         cursor: pointer;
                         font-size: 18px;
