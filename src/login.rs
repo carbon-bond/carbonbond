@@ -2,12 +2,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use crate::db::models::User;
 use crate::db::schema;
-
-#[derive(Debug)]
-pub enum Error {
-    InternalError,      // 不可控制的內部錯誤，如資料庫意外崩潰
-    LogicError(String), // 可控制的錯誤，如權限問題
-}
+use crate::custom_error::Error;
 
 pub fn login(conn: &PgConnection, id: &str, password: &str) -> Result<(), Error> {
     // TODO: 對 SQL 查詢的錯誤做分類

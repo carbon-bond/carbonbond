@@ -1,10 +1,6 @@
 use std::env;
 use std::process::Command;
-
-#[derive(Debug)]
-pub enum Error {
-    InternalError, // 不可控制的內部錯誤，如資料庫意外崩潰
-}
+use crate::custom_error::Error;
 
 fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Result<String, Error> {
     dotenv::dotenv().ok();

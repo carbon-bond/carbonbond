@@ -1,10 +1,9 @@
 #[macro_use]
 extern crate diesel;
-extern crate dotenv;
-extern crate rand;
 
+pub mod custom_error;
+pub mod login;
 pub mod db;
-
 pub mod email;
 pub mod signup;
 use std::io::stdin;

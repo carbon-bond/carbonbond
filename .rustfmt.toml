@@ -2,3 +2,4 @@ ignore = [
 	"src/db/schema.rs"
 ]
 reorder_imports = false
+reorder_modules = false

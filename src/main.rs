@@ -12,6 +12,7 @@ mod db;
 mod email;
 mod login;
 mod signup;
+mod custom_error;
 
 use std::sync::{Arc, Mutex};
 use actix_files::Files;

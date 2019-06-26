@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 use crate::email;
 use crate::signup;
 use crate::login;
+use crate::custom_error;
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
@@ -56,10 +57,10 @@ struct Mutation;
 impl Mutation {
     fn login(context: &Ctx, id: String, password: String) -> FieldResult<Option<Error>> {
         match login::login(&context.conn.lock().unwrap(), &id, &password) {
-            Err(login::Error::InternalError) => {
+            Err(custom_error::Error::InternalError) => {
                 Err(FieldError::new("Internal Error", Value::null()))
             }
-            Err(login::Error::LogicError(description)) => Ok(Some(Error {
+            Err(custom_error::Error::LogicError(description)) => Ok(Some(Error {
                 message: description,
             })),
             Ok(()) => {
@@ -84,10 +85,10 @@ impl Mutation {
                     Some(&id),
                     &email,
                 ) {
-                    Err(signup::Error::InternalError) => {
+                    Err(custom_error::Error::InternalError) => {
                         return Err(FieldError::new("Internal Error", Value::null()));
                     }
-                    Err(signup::Error::LogicError(description)) => {
+                    Err(custom_error::Error::LogicError(description)) => {
                         return Ok(Some(Error {
                             message: description,
                         }));
@@ -95,8 +96,11 @@ impl Mutation {
                     Ok(code) => code,
                 };
                 match email::send_invite_email(Some(&id), &invite_code, &email) {
-                    Err(email::Error::InternalError) => {
+                    Err(custom_error::Error::InternalError) => {
                         return Err(FieldError::new("Internal Error", Value::null()));
+                    }
+                    Err(custom_error::Error::LogicError(_)) => {
+                        return Err(FieldError::new("不應拋出邏輯錯誤", Value::null()));
                     }
                     Ok(_) => Ok(None),
                 }
@@ -115,10 +119,10 @@ impl Mutation {
             &id,
             &password,
         ) {
-            Err(signup::Error::InternalError) => {
+            Err(custom_error::Error::InternalError) => {
                 return Err(FieldError::new("Internal Error", Value::null()));
             }
-            Err(signup::Error::LogicError(description)) => {
+            Err(custom_error::Error::LogicError(description)) => {
                 return Ok(Some(Error {
                     message: description,
                 }));
