@@ -30,6 +30,11 @@ pub struct NodeTemplate {
     attached_to: Vec<String>,
     structure: Vec<NodeCol>,
 }
+impl NodeTemplate {
+    pub fn to_string(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+}
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i32, name: &str) -> Result<i32, Error> {
@@ -62,7 +67,7 @@ pub fn create_node_template(
         .into_iter()
         .map(|t| models::NewNodeTemplate {
             board_id,
-            def: serde_json::to_string(t).unwrap(),
+            def: t.to_string(),
         })
         .collect();
     diesel::insert_into(schema::node_templates::table)

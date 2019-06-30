@@ -12,6 +12,19 @@ type Me {
     id: String
 }
 
+type Party {
+    name: String
+    # TODO 填入更多
+}
+
+type Board {
+    name: String
+    ruling_party: Party
+    parties: [Party]
+    # TODO 模板應該用字串還是物件?
+    node_templates: [String]
+}
+
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!

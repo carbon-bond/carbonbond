@@ -4,8 +4,9 @@ use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse};
 use actix_web::web;
 use actix_session::{Session};
-use diesel::pg::PgConnection;
 use std::sync::{Arc, Mutex};
+use diesel::prelude::*;
+use diesel::pg::PgConnection;
 
 use crate::email;
 use crate::signup;
@@ -15,6 +16,19 @@ use crate::custom_error;
 #[derive(juniper::GraphQLObject)]
 struct Me {
     id: Option<String>,
+}
+
+#[derive(juniper::GraphQLObject)]
+struct Party {
+    name: String,
+}
+
+#[derive(juniper::GraphQLObject)]
+struct Board {
+    board_name: String,
+    ruling_party: Option<Party>,
+    parties: Option<Vec<Party>>,
+    node_templates: Option<Vec<String>>,
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -45,6 +59,37 @@ impl Query {
                     Ok(Me { id: Some(id) })
                 }
             }
+        }
+    }
+    fn board(context: &Ctx, name: String) -> FieldResult<Option<Board>> {
+        use crate::db::schema::boards::dsl::*;
+        use crate::db::schema::node_templates::dsl::*;
+        use crate::db::schema::boards;
+        use crate::db::schema::node_templates;
+        use crate::db::models;
+        let conn = &*context.conn.lock().unwrap();
+        let results = boards
+            .filter(board_name.eq(&name))
+            .load::<models::Board>(conn)
+            .expect("取看板失敗");
+        if results.len() == 1 {
+            let b = &results[0];
+            let results = node_templates
+                .filter(board_id.eq(&b.id))
+                .load::<models::NodeTemplate>(conn)
+                .expect("取模板失敗");
+            let mut v = vec![];
+            for t in results.into_iter() {
+                v.push(t.def);
+            }
+            return Ok(Some(Board {
+                board_name: b.board_name.clone(),
+                ruling_party: None,
+                parties: None,
+                node_templates: Some(v),
+            }));
+        } else {
+            return Ok(None); // FIXME 用這種方式表達找不到板是不是很糟?
         }
     }
 }
