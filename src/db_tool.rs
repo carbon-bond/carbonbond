@@ -7,12 +7,13 @@ pub mod db;
 pub mod email;
 pub mod signup;
 use std::io::stdin;
+pub mod board;
 
 // use carbon_bond::db;
 use crate::email::send_invite_email;
 use db::models::*;
 use db::schema::users::dsl::*;
-use db::schema::{users, invitations};
+use db::schema::{users, invitations, boards, node_templates};
 use diesel::prelude::*;
 
 pub fn delete_all(conn: &PgConnection) {
@@ -22,6 +23,12 @@ pub fn delete_all(conn: &PgConnection) {
     diesel::delete(invitations::table)
         .execute(conn)
         .expect("刪除 invitations 失敗");
+    diesel::delete(boards::table)
+        .execute(conn)
+        .expect("刪除 boards 失敗");
+    diesel::delete(node_templates::table)
+        .execute(conn)
+        .expect("刪除 node_templates 失敗");
 }
 
 fn main() -> std::io::Result<()> {
@@ -32,13 +39,15 @@ fn main() -> std::io::Result<()> {
     let p2 = "[1] 新增使用者";
     let p3 = "[2] 檢視使用者名單";
     let p4 = "[3] 寄出邀請信";
-    let p5 = "[4] 清空資料庫";
+    let p5 = "[4] 新增看板";
+    let p6 = "[5] 清空資料庫";
     while opt != 0 {
         println!("{}", p1);
         println!("{}", p2);
         println!("{}", p3);
         println!("{}", p4);
         println!("{}", p5);
+        println!("{}", p6);
         let mut buff = String::new();
         stdin().read_line(&mut buff)?;
         if let Ok(_opt) = buff.replace("\n", "").parse::<u8>() {
@@ -94,6 +103,21 @@ fn main() -> std::io::Result<()> {
                     }
                 }
             } else if opt == 4 {
+                println!("> {}", p5);
+                println!("> 請輸入看板名，或輸入空白行回到選單");
+                buff.clear();
+                stdin().read_line(&mut buff)?;
+                let words: Vec<&str> = buff.split_whitespace().collect();
+                if words.len() == 0 {
+                    break;
+                }
+                if words.len() != 1 {
+                    println!("輸入格式錯誤");
+                } else {
+                    board::create_board(&db_conn, -1, words[0]);
+                    println!("成功新增看板：{}", words[0]);
+                }
+            } else if opt == 5 {
                 delete_all(&db_conn);
             } else {
                 println!("請輸入範圍內的正整數");

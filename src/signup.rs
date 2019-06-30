@@ -75,7 +75,7 @@ pub fn create_user_by_invitation(
     let new_user = NewUser {
         id,
         email: &invitation.email,
-        password_bytes: hash.to_vec(),
+        password_hashed: hash.to_vec(),
         salt: salt.to_vec(),
     };
     diesel::insert_into(schema::users::table)
@@ -96,7 +96,7 @@ pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -
     let new_user = NewUser {
         id,
         email,
-        password_bytes: hash.to_vec(),
+        password_hashed: hash.to_vec(),
         salt: salt.to_vec(),
     };
     diesel::insert_into(schema::users::table)

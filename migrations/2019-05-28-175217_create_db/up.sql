@@ -2,14 +2,27 @@ CREATE TABLE users (
   id VARCHAR(20) PRIMARY KEY,
   email VARCHAR(40) NOT NULL,
   invitation_credit INT NOT NULL DEFAULT 3,
-  password_bytes BYTEA NOT NULL,
+  password_hashed BYTEA NOT NULL,
   salt BYTEA NOT NULL,
   UNIQUE(email)
-)
+);
 
 CREATE TABLE invitations (
   id SERIAL PRIMARY KEY,
   code VARCHAR(32) NOT NULL,
   email VARCHAR(40) NOT NULL,
   create_time TIMESTAMP NOT NULL DEFAULT Now()
-)
+);
+
+CREATE TABLE boards (
+  id SERIAL PRIMARY KEY,
+  board_name VARCHAR(32) NOT NULL,
+  ruling_party_id SERIAL,
+  UNIQUE(board_name)
+);
+
+CREATE TABLE node_templates (
+  id SERIAL PRIMARY KEY,
+  board_id SERIAL,
+  def VARCHAR(1000) NOT NULL
+);

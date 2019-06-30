@@ -11,11 +11,10 @@ pub fn login(conn: &PgConnection, id: &str, password: &str) -> Result<(), Error>
         .first::<User>(conn)
         .map_err(|_| Error::LogicError("找不到 ID".to_string()))?;
 
-    // TODO: 把 password_bytes 改名爲 hash
     let equal = argon2::verify_raw(
         password.as_bytes(),
         &user.salt,
-        &user.password_bytes,
+        &user.password_hashed,
         &argon2::Config::default(),
     )
     .unwrap();

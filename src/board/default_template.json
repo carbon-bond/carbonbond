@@ -1,5 +1,5 @@
 [{ 
-    "class_name": "問題",
+    "template_name": "問題",
     "transfusable": false,
     "is_question": true,
     "show_in_linear_view": true,
@@ -15,7 +15,7 @@
     "version": 0
 },
 { 
-    "class_name": "回覆",
+    "template_name": "回覆",
     "transfusable": true,
     "is_question": false,
     "show_in_linear_view": true,
@@ -31,7 +31,7 @@
     "version": 0
 },
 { 
-    "class_name": "留言",
+    "template_name": "留言",
     "transfusable": true,
     "is_question": false,
     "show_in_linear_view": false,
