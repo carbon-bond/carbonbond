@@ -1,0 +1,48 @@
+[{ 
+    "class_name": "問題",
+    "transfusable": false,
+    "is_question": true,
+    "show_in_linear_view": true,
+    "rootable": true,
+    "threshold_to_post": {
+        "bond_energy": 0,
+        "identity": 0
+    },
+    "attached_to": [],
+    "structure": [
+        {"col_name": "內文", "col_type": "Text", "restriction": ""}
+    ],
+    "version": 0
+},
+{ 
+    "class_name": "回覆",
+    "transfusable": true,
+    "is_question": false,
+    "show_in_linear_view": true,
+    "rootable": false,
+    "threshold_to_post": {
+        "bond_energy": 0,
+        "identity": 0
+    },
+    "attached_to": ["問題"],
+    "structure": [
+        {"col_name": "內文", "col_type": "Text", "restriction": ""}
+    ],
+    "version": 0
+},
+{ 
+    "class_name": "留言",
+    "transfusable": true,
+    "is_question": false,
+    "show_in_linear_view": false,
+    "rootable": false,
+    "threshold_to_post": {
+        "bond_energy": 0,
+        "identity": 0
+    },
+    "attached_to": ["問題", "留言"],
+    "structure": [
+        {"col_name": "內文", "col_type": "Text", "restriction": ""}
+    ],
+    "version": 0
+}]
