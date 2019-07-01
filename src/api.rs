@@ -26,12 +26,12 @@ struct Me {
 }
 
 struct Party {
-    id: i32,
+    id: juniper::ID,
 }
 #[juniper::object]
 impl Party {
-    fn id(&self) -> i32 {
-        self.id
+    fn id(&self) -> juniper::ID {
+        self.id.clone()
     }
     fn name(&self) -> &str {
         // NOTE: 這裡是不是會發生 N+1 問題?
@@ -40,21 +40,21 @@ impl Party {
 }
 
 struct Board {
-    id: i32,
+    id: juniper::ID,
     name: String,
-    ruling_party_id: i32,
+    ruling_party_id: juniper::ID,
 }
 
 struct Article {
-    id: i32,
+    id: juniper::ID,
     name: String,
-    board_id: i32,
+    board_id: juniper::ID,
     author_id: String,
 }
 #[juniper::object(Context = Ctx)]
 impl Article {
-    fn id(&self) -> i32 {
-        self.id
+    fn id(&self) -> juniper::ID {
+        self.id.clone()
     }
     fn name(&self) -> &str {
         &self.name
@@ -62,22 +62,22 @@ impl Article {
     fn author_id(&self) -> &str {
         &self.author_id
     }
-    fn board_id(&self) -> i32 {
-        self.board_id
+    fn board_id(&self) -> juniper::ID {
+        self.board_id.clone()
     }
 }
 
 #[juniper::object(Context = Ctx)]
 impl Board {
-    fn id(&self) -> i32 {
-        self.id
+    fn id(&self) -> juniper::ID {
+        self.id.clone()
     }
     fn name(&self) -> &str {
         &self.name
     }
     fn ruling_party(&self) -> Party {
         Party {
-            id: self.ruling_party_id,
+            id: self.ruling_party_id.clone(),
         }
     }
     fn parties(&self) -> Vec<Party> {
@@ -88,7 +88,7 @@ impl Board {
         use crate::db::models;
         let conn = &*context.conn.lock().unwrap();
         let results = node_templates
-            .filter(board_id.eq(self.id))
+            .filter(board_id.eq(self.id.parse::<i64>().unwrap()))  // TODO: 拋出錯誤
             .load::<models::NodeTemplate>(conn)
             .expect("取模板失敗");
         results.into_iter().map(|t| t.def).collect()
@@ -132,9 +132,9 @@ impl Query {
         if results.len() == 1 {
             let b = &results[0];
             Ok(Board {
-                id: b.id,
+                id: juniper::ID::new(b.id.to_string()),
                 name: b.board_name.clone(),
-                ruling_party_id: b.ruling_party_id,
+                ruling_party_id: juniper::ID::new(b.ruling_party_id.to_string()),
             })
         } else {
             Err(custom_error::build_field_err("找不到看板", 404))

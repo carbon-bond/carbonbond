@@ -3,21 +3,19 @@ schema {
     mutation: Mutation
 }
 
-type Error {
-    message: String!
-}
-
 type Me {
     # 若 id 爲 null，代表尚未登入
     id: String
 }
 
 type Party {
+    id: ID
     name: String
     # TODO 填入更多
 }
 
 type Board {
+    id: ID
     name: String
     ruling_party: Party
     parties: [Party]
@@ -31,12 +29,33 @@ type Query {
 }
 
 type Mutation {
+    ### 註冊、登出入
+
     # 登入（會 set-cookie）
-    login(id: String!, password: String!): Error
+    login(id: String!, password: String!): Boolean
     # 登出（清除 cookie）
     logout(): Error
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
-    signupByInvitation(code: String!, id: String!, password: String!): Error
+    signupByInvitation(code: String!, id: String!, password: String!): Boolean
     # 邀請別人加入碳鍵，第二個參數 invition 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    inviteSignup(email: String!): Error
+    inviteSignup(email: String!): Boolean
+
+
+    ### 政黨
+
+    ## 政黨本身的生命週期
+    # 創建流亡政黨。創建者即黨主席。
+    createExiledParty(partyName: String!): Boolean
+    # 創建在野黨。創建者即黨主席。
+    createOutParty(partyName: String!, board: String!): Boolean
+    # 奪權。在野黨向執政黨發起挑戰。
+    tryRuling(partyName: String!, board: String!): Boolean
+    # 出走。開始流亡。
+    exile(partyName: String!): Boolean
+
+    ## 黨員
+
+    ### 板
+    # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
+    createBoard(name: String!): Boolean
 }

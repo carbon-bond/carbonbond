@@ -24,7 +24,7 @@ pub struct NodeTemplate {
     template_name: String,
     transfusable: bool,
     is_question: bool,
-    show_in_linear_view: bool,
+    show_in_list: bool,
     rootable: bool,
     threshold_to_post: Threshold,
     attached_to: Vec<String>,
@@ -37,7 +37,7 @@ impl NodeTemplate {
 }
 
 /// 回傳剛創的板的 id
-pub fn create_board(conn: &PgConnection, party_id: i32, name: &str) -> Result<i32, Error> {
+pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i64, Error> {
     let new_board = models::NewBoard {
         board_name: name,
         ruling_party_id: party_id,
@@ -49,7 +49,7 @@ pub fn create_board(conn: &PgConnection, party_id: i32, name: &str) -> Result<i3
         .expect("新增看板失敗");
 
     let txt =
-        fs::read_to_string("src/board/default_template.json").expect("讀取默認模板失敗");
+        fs::read_to_string("src/forum/default_template.json").expect("讀取默認模板失敗");
     let default_templates: Vec<NodeTemplate> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
     create_node_template(conn, board.id, &default_templates);
@@ -59,7 +59,7 @@ pub fn create_board(conn: &PgConnection, party_id: i32, name: &str) -> Result<i3
 
 pub fn create_node_template(
     conn: &PgConnection,
-    board_id: i32,
+    board_id: i64,
     templates: &Vec<NodeTemplate>,
 ) -> Result<(), Error> {
     // TODO 撞名檢查
@@ -80,8 +80,8 @@ pub fn create_node_template(
 pub fn create_article(
     conn: &PgConnection,
     author_id: String,
-    board_id: i32,
-    template_id: i32,
+    board_id: i64,
+    template_id: i64,
     article_name: String,
 ) -> Result<(), Error> {
     let new_article = models::NewArticle {
@@ -99,8 +99,8 @@ pub fn create_article(
 
 pub fn create_edge(
     conn: &PgConnection,
-    from_node: i32,
-    to_node: i32,
+    from_node: i64,
+    to_node: i64,
     transfuse: i32
 ) -> Result<(), Error> {
     let new_edge = models::NewEdge {

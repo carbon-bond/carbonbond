@@ -2,7 +2,7 @@
     "template_name": "問題",
     "transfusable": false,
     "is_question": true,
-    "show_in_linear_view": true,
+    "show_in_list": true,
     "rootable": true,
     "threshold_to_post": {
         "bond_energy": 0,
