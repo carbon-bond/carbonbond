@@ -220,6 +220,9 @@ impl Mutation {
             Ok(_) => Ok(true),
         }
     }
+    fn create_article(context: &Ctx) -> FieldResult<juniper::ID> {
+        unimplemented!();
+    }
 }
 
 type Schema = juniper::RootNode<'static, Query, Mutation>;

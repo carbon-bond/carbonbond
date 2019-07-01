@@ -1,40 +1,14 @@
 use std::fs;
 
 extern crate serde_json;
-use serde::{Serialize, Deserialize};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
 use crate::db::{models, schema};
 use crate::custom_error::Error;
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct Threshold {
-    bond_energy: i32,
-    identity: usize, // 0平民, 1黨員, 2黨代表, 3黨主席
-}
-#[derive(Deserialize, Serialize, Debug)]
-pub struct NodeCol {
-    col_name: String,
-    col_type: String,
-    restriction: String,
-}
-#[derive(Deserialize, Serialize, Debug)]
-pub struct NodeTemplate {
-    template_name: String,
-    transfusable: bool,
-    is_question: bool,
-    show_in_list: bool,
-    rootable: bool,
-    threshold_to_post: Threshold,
-    attached_to: Vec<String>,
-    structure: Vec<NodeCol>,
-}
-impl NodeTemplate {
-    pub fn to_string(&self) -> String {
-        serde_json::to_string(self).unwrap()
-    }
-}
+mod template;
+pub use template::{NodeCol, Threshold, TemplateBody};
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i64, Error> {
@@ -50,7 +24,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
 
     let txt =
         fs::read_to_string("config/default_templates.json").expect("讀取默認模板失敗");
-    let default_templates: Vec<NodeTemplate> =
+    let default_templates: Vec<TemplateBody> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
     create_node_template(conn, board.id, &default_templates);
 
@@ -60,7 +34,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
 pub fn create_node_template(
     conn: &PgConnection,
     board_id: i64,
-    templates: &Vec<NodeTemplate>,
+    templates: &Vec<TemplateBody>,
 ) -> Result<(), Error> {
     // TODO 撞名檢查
     let new_templates: Vec<models::NewNodeTemplate> = templates
@@ -114,4 +88,19 @@ pub fn create_edge(
         .execute(conn)
         .expect("新增連結失敗");
     Ok(())
+}
+
+pub fn get_template(conn: &PgConnection, template_id: i64) -> TemplateBody {
+    use crate::db::schema::node_templates::dsl::*;
+    let results = node_templates
+        .filter(id.eq(template_id))
+        .load::<models::NodeTemplate>(conn)
+        .expect("取模板失敗")
+        .pop()
+        .unwrap();
+    serde_json::from_str(&results.def).expect("解析模板失敗")
+}
+
+pub fn check_col_valid(col_struct: &Vec<NodeCol>, content: &Vec<String>) -> bool {
+    unimplemented!()
 }

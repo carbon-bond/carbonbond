@@ -19,6 +19,7 @@ serde = { version = "1.0", features = ["derive"] }
 actix-files = "0.1.1"
 actix-rt = "0.2.2"
 actix-session = "0.1.1"
+regex = "1"
 
 [[bin]]
 name = "server"

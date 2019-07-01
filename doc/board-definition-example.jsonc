@@ -11,7 +11,7 @@
         },
         "attached_to_to_post": [],
         "structure": [
-            {"col_name": "電影名稱", "col_type": "String", "restriction": ""},
+            {"col_name": "電影名稱", "col_type": "Str", "restriction": ""},
             {"col_name": "導演", "col_type": "[String]", "restriction": ""},
             {"col_name": "主演", "col_type": "[String]", "restriction": ""},
             {"col_name": "介紹", "col_type": "Text", "restriction": ""}
