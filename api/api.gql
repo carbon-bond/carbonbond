@@ -14,6 +14,12 @@ type Party {
     # TODO 填入更多
 }
 
+enum PartyPosition {
+    chairman,          # 黨主席
+    representative,    # 黨代表
+    member             # 黨員
+}
+
 type Board {
     id: ID
     name: String
@@ -44,16 +50,33 @@ type Mutation {
     ### 政黨
 
     ## 政黨本身的生命週期
-    # 創建流亡政黨。創建者即黨主席。
-    createExiledParty(partyName: String!): Boolean
+    # 創建流亡政黨。創建者即黨主席。回傳值爲政黨的 ID
+    createExiledParty(partyName: String!): ID
     # 創建在野黨。創建者即黨主席。
-    createOutParty(partyName: String!, board: String!): Boolean
-    # 奪權。在野黨向執政黨發起挑戰。
-    tryRuling(partyName: String!, board: String!): Boolean
-    # 出走。開始流亡。
+    createOutParty(partyName: String!, board: String!): ID
+    # 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
+    tryRuling(id: ID, board: String!): Boolean
+    # 出走。開始流亡。（權限：黨主席）
     exile(partyName: String!): Boolean
 
     ## 黨員
+    # 申請入黨。可能需要審核。
+    applyToJoinParty(PartyId: ID): Boolean
+    # 接受申請。（權限：黨代表以上）
+    acceptJoinParty(memberId: String, PartyId: ID): Boolean
+    # 拒絕申請。（權限：黨代表以上）
+    rejectJoinParty(memberId: String, PartyId: ID): Boolean
+    # 邀請入黨。（權限：黨代表以上？）
+    inviteToJoinParty(memberId: String, PartyId: ID): Boolean
+    # 離黨（黨主席退位後方可離黨）
+    leaveParty(PartyId: ID): Boolean
+    # 拔擢、貶謫（權限：黨主席？）
+    # 指派他人爲黨主席後，原主席退位成爲黨代表
+    assignPartyPosition(memberId: String, position: PartyPosition): Boolean
+
+    # TODO:
+    # - 罷免黨代表、黨主席機制
+    # - 黨內設定，例如：要什麼職位才能接受申請或進行拔擢、是否爲私密政黨、入黨是否需要審核。
 
     ### 板
     # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
