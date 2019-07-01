@@ -55,6 +55,8 @@ pub struct NodeTemplate {
     pub id: i64,
     pub board_id: i64,
     pub def: String,
+    pub is_active: bool,
+    pub replacing: Option<i64>,
 }
 #[derive(Insertable)]
 #[table_name = "node_templates"]

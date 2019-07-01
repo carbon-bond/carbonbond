@@ -1,4 +1,15 @@
 table! {
+    array_cols (id) {
+        id -> Int8,
+        article_id -> Int8,
+        c1 -> Nullable<Array<Text>>,
+        c2 -> Nullable<Array<Text>>,
+        c3 -> Nullable<Array<Text>>,
+        c4 -> Nullable<Array<Text>>,
+    }
+}
+
+table! {
     articles (id) {
         id -> Int8,
         template_id -> Int8,
@@ -21,7 +32,7 @@ table! {
         id -> Int8,
         from_node -> Int8,
         to_node -> Int8,
-        transfuse -> Nullable<Int4>,
+        transfuse -> Int4,
     }
 }
 
@@ -39,6 +50,27 @@ table! {
         id -> Int8,
         board_id -> Int8,
         def -> Varchar,
+        is_active -> Bool,
+        replacing -> Nullable<Int8>,
+    }
+}
+
+table! {
+    parties (id) {
+        id -> Int8,
+        board_id -> Int8,
+        party_name -> Varchar,
+    }
+}
+
+table! {
+    text_cols (id) {
+        id -> Int8,
+        article_id -> Int8,
+        c1 -> Nullable<Text>,
+        c2 -> Nullable<Text>,
+        c3 -> Nullable<Text>,
+        c4 -> Nullable<Text>,
     }
 }
 
@@ -52,11 +84,22 @@ table! {
     }
 }
 
+joinable!(array_cols -> articles (article_id));
+joinable!(articles -> boards (board_id));
+joinable!(articles -> node_templates (template_id));
+joinable!(articles -> users (author_id));
+joinable!(node_templates -> boards (board_id));
+joinable!(parties -> boards (board_id));
+joinable!(text_cols -> articles (article_id));
+
 allow_tables_to_appear_in_same_query!(
+    array_cols,
     articles,
     boards,
     edges,
     invitations,
     node_templates,
+    parties,
+    text_cols,
     users,
 );

@@ -67,6 +67,15 @@ impl Article {
     }
 }
 
+#[derive(juniper::GraphQLObject)]
+struct NodeTemplate {
+    id: juniper::ID,
+    board_id: juniper::ID,
+    def: String,
+    is_active: bool,
+    replacing: Option<juniper::ID>,
+}
+
 #[juniper::object(Context = Ctx)]
 impl Board {
     fn id(&self) -> juniper::ID {
@@ -83,7 +92,7 @@ impl Board {
     fn parties(&self) -> Vec<Party> {
         vec![]
     }
-    fn node_templates(&self, context: &Ctx) -> Vec<String> {
+    fn node_templates(&self, context: &Ctx) -> Vec<NodeTemplate> {
         use crate::db::schema::node_templates::dsl::*;
         use crate::db::models;
         let conn = &*context.conn.lock().unwrap();
@@ -91,7 +100,19 @@ impl Board {
             .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
             .load::<models::NodeTemplate>(conn)
             .expect("取模板失敗");
-        results.into_iter().map(|t| t.def).collect()
+        results
+            .into_iter()
+            .map(|t| NodeTemplate {
+                id: juniper::ID::new(t.id.to_string()),
+                board_id: juniper::ID::new(t.board_id.to_string()),
+                def: t.def,
+                is_active: t.is_active,
+                replacing: match t.replacing {
+                    Some(t) => Some(juniper::ID::new(t.to_string())),
+                    None => None,
+                },
+            })
+            .collect()
     }
     fn articles(&self, context: &Ctx, show_in_list: Option<bool>) -> Vec<Article> {
         vec![]
