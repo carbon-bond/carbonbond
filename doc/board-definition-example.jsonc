@@ -3,7 +3,7 @@
         "class_name": "電影簡介",
         "transfusable": false,
         "is_question": false,
-        "show_in_linear_view": true,
+        "show_in_list": true,
         "rootable": true,
         "threshold": {
             "bond_energy": 50,
@@ -22,7 +22,7 @@
         "class_name": "評論",
         "transfusable": false,
         "is_question": false,
-        "show_in_linear_view": true,
+        "show_in_list": true,
         "rootable": false,
         "threshold_to_post": {
             "bond_energy": 0,

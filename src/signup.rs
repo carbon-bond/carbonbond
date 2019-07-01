@@ -43,7 +43,7 @@ pub fn create_invitation(
                     .expect("新增邀請失敗");
                 Ok(invite_code)
             } else {
-                Err(Error::LogicError("邀請點數不足".to_string()))
+                Err(Error::LogicError("邀請點數不足".to_string(), 403))
             }
         }
         None => {

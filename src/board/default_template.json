@@ -18,7 +18,7 @@
     "template_name": "回覆",
     "transfusable": true,
     "is_question": false,
-    "show_in_linear_view": true,
+    "show_in_list": true,
     "rootable": false,
     "threshold_to_post": {
         "bond_energy": 0,
@@ -34,7 +34,7 @@
     "template_name": "留言",
     "transfusable": true,
     "is_question": false,
-    "show_in_linear_view": false,
+    "show_in_list": false,
     "rootable": false,
     "threshold_to_post": {
         "bond_energy": 0,
