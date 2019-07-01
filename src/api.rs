@@ -88,7 +88,7 @@ impl Board {
         use crate::db::models;
         let conn = &*context.conn.lock().unwrap();
         let results = node_templates
-            .filter(board_id.eq(self.id.parse::<i64>().unwrap()))  // TODO: 拋出錯誤
+            .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
             .load::<models::NodeTemplate>(conn)
             .expect("取模板失敗");
         results.into_iter().map(|t| t.def).collect()

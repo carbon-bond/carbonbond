@@ -49,7 +49,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
         .expect("新增看板失敗");
 
     let txt =
-        fs::read_to_string("src/forum/default_template.json").expect("讀取默認模板失敗");
+        fs::read_to_string("config/default_templates.json").expect("讀取默認模板失敗");
     let default_templates: Vec<NodeTemplate> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
     create_node_template(conn, board.id, &default_templates);
@@ -101,12 +101,12 @@ pub fn create_edge(
     conn: &PgConnection,
     from_node: i64,
     to_node: i64,
-    transfuse: i32
+    transfuse: i32,
 ) -> Result<(), Error> {
     let new_edge = models::NewEdge {
         from_node,
         to_node,
-        transfuse
+        transfuse,
     };
     // TODO 輸能相關
     diesel::insert_into(schema::edges::table)
