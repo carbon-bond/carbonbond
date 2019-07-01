@@ -2,6 +2,8 @@ use super::schema::invitations;
 use super::schema::users;
 use super::schema::boards;
 use super::schema::node_templates;
+use super::schema::edges;
+use super::schema::articles;
 
 #[derive(Queryable)]
 pub struct User {
@@ -59,4 +61,36 @@ pub struct NodeTemplate {
 pub struct NewNodeTemplate {
     pub board_id: i32,
     pub def: String,
+}
+
+#[derive(Queryable)]
+pub struct Edge {
+    pub id: i32,
+    pub from_node: i32,
+    pub to_node: i32,
+    pub transfuse: i32,
+}
+#[derive(Insertable)]
+#[table_name = "edges"]
+pub struct NewEdge {
+    pub from_node: i32,
+    pub to_node: i32,
+    pub transfuse: i32,
+}
+
+#[derive(Queryable)]
+pub struct Article {
+    pub id: i32,
+    pub board_id: i32,
+    pub template_id: i32,
+    pub author_id: String,
+    pub article_name: String,
+}
+#[derive(Insertable)]
+#[table_name = "articles"]
+pub struct NewArticle {
+    pub board_id: i32,
+    pub template_id: i32,
+    pub author_id: String,
+    pub article_name: String,
 }

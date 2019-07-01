@@ -47,8 +47,8 @@ struct Board {
 
 struct Article {
     id: i32,
-    board_id: i32,
     name: String,
+    board_id: i32,
     author_id: String,
 }
 #[juniper::object(Context = Ctx)]

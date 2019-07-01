@@ -7,7 +7,7 @@ pub mod db;
 pub mod email;
 pub mod signup;
 use std::io::stdin;
-pub mod board;
+pub mod forum;
 
 // use carbon_bond::db;
 use crate::email::send_invite_email;
@@ -114,7 +114,7 @@ fn main() -> std::io::Result<()> {
                 if words.len() != 1 {
                     println!("輸入格式錯誤");
                 } else {
-                    board::create_board(&db_conn, -1, words[0]);
+                    forum::create_board(&db_conn, -1, words[0]);
                     println!("成功新增看板：{}", words[0]);
                 }
             } else if opt == 5 {

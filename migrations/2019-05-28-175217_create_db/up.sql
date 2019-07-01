@@ -23,6 +23,21 @@ CREATE TABLE boards (
 
 CREATE TABLE node_templates (
   id SERIAL PRIMARY KEY,
-  board_id SERIAL,
+  board_id SERIAL NOT NULL,
   def VARCHAR(1000) NOT NULL
+);
+
+CREATE TABLE articles (
+  id SERIAL PRIMARY KEY,
+  template_id SERIAL,
+  board_id SERIAL NOT NULL,
+  author_id VARCHAR(20) NOT NULL,
+  article_name VARCHAR(50) NOT NULL,
+);
+
+CREATE TABLE edges (
+  id SERIAL PRIMARY KEY,
+  from_node SERIAL NOT NULL,
+  to_node SERIAL NOT NULL,
+  transfuse INT
 );
