@@ -1,6 +1,6 @@
 extern crate serde_json;
 use serde::{Serialize, Deserialize, Deserializer, Serializer};
-use serde::de::{self, Visitor, Error};
+use serde::de::{Visitor, Error};
 extern crate regex;
 use regex::Regex;
 
@@ -15,6 +15,7 @@ pub enum AtomType {
     Str,
     Text,
     Int,
+    Rating(usize),
 }
 fn str_to_atom_type<E: Error>(s: &str) -> Result<AtomType, E> {
     if s == "Str" {
@@ -24,16 +25,27 @@ fn str_to_atom_type<E: Error>(s: &str) -> Result<AtomType, E> {
     } else if s == "Int" {
         Ok(AtomType::Int)
     } else {
+        let re_rating = Regex::new(r"^Rating<(\d+)>$").unwrap();
+        match re_rating.captures_iter(s).last() {
+            Some(cap) => {
+                let max_res = cap[1].parse::<usize>();
+                if max_res.is_err() {
+                    return Err(E::custom(format!("解析 Rating 失敗: {}", s)));
+                }
+                return Ok(AtomType::Rating(max_res.unwrap()));
+            }
+            None => (),
+        }
         Err(E::custom(format!("解析原子類型失敗: {}", s)))
     }
 }
 fn atom_type_to_str(t: &AtomType) -> String {
     match t {
-        AtomType::Str => "Str",
-        AtomType::Text => "Text",
-        AtomType::Int => "Int",
+        AtomType::Str => "Str".to_owned(),
+        AtomType::Text => "Text".to_owned(),
+        AtomType::Int => "Int".to_owned(),
+        AtomType::Rating(max) => format!("Rating<{}>", max),
     }
-    .to_owned()
 }
 
 #[derive(Debug)]
@@ -50,9 +62,8 @@ impl<'de> Visitor<'de> for ColTypeVisitor {
         formatter.write_str("欄位結構")
     }
     fn visit_str<E: Error>(self, value: &str) -> Result<Self::Value, E> {
-        let re_arr = Regex::new(r"^\[([A-Za-z]+); *(\d+)\]$").unwrap();
-        let cap = re_arr.captures_iter(value).last();
-        match cap {
+        let re_arr = Regex::new(r"^\[([A-Za-z<>\d]+); *(\d+)\]$").unwrap();
+        match re_arr.captures_iter(value).last() {
             Some(cap_vec) => {
                 let atom = str_to_atom_type(&cap_vec[1])?;
                 let size_res = cap_vec[2].parse::<usize>();
