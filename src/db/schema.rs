@@ -12,10 +12,11 @@ table! {
 table! {
     articles (id) {
         id -> Int8,
+        title -> Varchar,
+        root_id -> Int8,
+        author_id -> Varchar,
         template_id -> Int8,
         board_id -> Int8,
-        author_id -> Varchar,
-        article_name -> Varchar,
     }
 }
 

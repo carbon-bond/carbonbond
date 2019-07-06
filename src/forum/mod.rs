@@ -55,14 +55,16 @@ pub fn create_article(
     conn: &PgConnection,
     author_id: String,
     board_id: i64,
+    root_id: i64,
     template_id: i64,
-    article_name: String,
+    title: String,
 ) -> Result<(), Error> {
     let new_article = models::NewArticle {
         board_id,
         template_id,
         author_id,
-        article_name,
+        title,
+        root_id
     };
     diesel::insert_into(schema::articles::table)
         .values(&new_article)

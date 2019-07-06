@@ -4,20 +4,16 @@ use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse};
 use actix_web::web;
 use actix_session::{Session};
-use std::sync::{Arc, Mutex};
 use diesel::prelude::*;
-use diesel::pg::PgConnection;
 
-use crate::email;
-use crate::signup;
-use crate::login;
+use crate::user::email;
+use crate::user::signup;
+use crate::user::login;
 use crate::custom_error;
 
-struct Ctx {
-    session: Session,
-    conn: Arc<Mutex<PgConnection>>,
-}
+use std::sync::{Arc, Mutex};
 
+use crate::Ctx;
 impl juniper::Context for Ctx {}
 
 #[derive(juniper::GraphQLObject)]

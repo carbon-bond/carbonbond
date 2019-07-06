@@ -3,17 +3,6 @@ extern crate actix_files;
 extern crate actix_rt;
 extern crate env_logger;
 extern crate juniper;
-#[macro_use]
-extern crate diesel;
-extern crate serde_json;
-
-mod api;
-mod db;
-mod email;
-mod login;
-mod signup;
-mod custom_error;
-mod forum;
 
 use std::sync::{Arc, Mutex};
 use actix_files::Files;
@@ -21,6 +10,8 @@ use actix_files::NamedFile;
 use actix_web::middleware::Logger;
 use actix_web::{HttpServer, web, App, HttpRequest, Result as ActixResult};
 use actix_session::{CookieSession};
+
+use carbonbond::{api, db};
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)

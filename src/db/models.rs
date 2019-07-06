@@ -83,16 +83,18 @@ pub struct NewEdge {
 #[derive(Queryable)]
 pub struct Article {
     pub id: i64,
+    pub root_id: i64,
     pub board_id: i64,
     pub template_id: i64,
     pub author_id: String,
-    pub article_name: String,
+    pub title: String,
 }
 #[derive(Insertable)]
 #[table_name = "articles"]
 pub struct NewArticle {
     pub board_id: i64,
+    pub root_id: i64,
     pub template_id: i64,
     pub author_id: String,
-    pub article_name: String,
+    pub title: String,
 }

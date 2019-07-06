@@ -1,6 +1,6 @@
 cargo-features = ["default-run"]
 [package]
-name = "carbon-bond"
+name = "carbonbond"
 version = "0.1.0"
 authors = ["金剛 <yc1043@gmail.com>", "石墨 <why8ther@gmail.com>"]
 edition = "2018"
@@ -28,3 +28,6 @@ path = "src/main.rs"
 [[bin]]
 name = "db-tool"
 path = "src/db_tool.rs"
+
+[lib]
+doctest = false

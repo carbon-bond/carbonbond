@@ -32,10 +32,11 @@ CREATE TABLE node_templates (
 
 CREATE TABLE articles (
   id BIGSERIAL PRIMARY KEY,
-  template_id BIGSERIAL REFERENCES node_templates(id) NOT NULL,
-  board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
+  title VARCHAR(50) NOT NULL,
+  root_id BIGINT NOT NULL REFERENCES articles,
   author_id VARCHAR(20) REFERENCES users(id) NOT NULL,
-  article_name VARCHAR(50) NOT NULL
+  template_id BIGSERIAL REFERENCES node_templates(id) NOT NULL,
+  board_id BIGSERIAL REFERENCES boards(id) NOT NULL
 );
 
 CREATE TABLE text_cols (

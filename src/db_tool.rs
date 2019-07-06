@@ -1,35 +1,18 @@
 #[macro_use]
 extern crate diesel;
 
-pub mod custom_error;
-pub mod login;
-pub mod db;
-pub mod email;
-pub mod signup;
 use std::io::stdin;
-pub mod forum;
 
 // use carbon_bond::db;
-use crate::email::send_invite_email;
+use carbonbond::user::{email, signup};
+
+use carbonbond::forum;
+
+use carbonbond::db;
 use db::models::*;
 use db::schema::users::dsl::*;
 use db::schema::{users, invitations, boards, node_templates};
 use diesel::prelude::*;
-
-pub fn delete_all(conn: &PgConnection) {
-    diesel::delete(users::table)
-        .execute(conn)
-        .expect("刪除 users 失敗");
-    diesel::delete(invitations::table)
-        .execute(conn)
-        .expect("刪除 invitations 失敗");
-    diesel::delete(boards::table)
-        .execute(conn)
-        .expect("刪除 boards 失敗");
-    diesel::delete(node_templates::table)
-        .execute(conn)
-        .expect("刪除 node_templates 失敗");
-}
 
 fn main() -> std::io::Result<()> {
     println!("碳鍵 - 資料庫管理介面");
@@ -40,14 +23,12 @@ fn main() -> std::io::Result<()> {
     let p3 = "[2] 檢視使用者名單";
     let p4 = "[3] 寄出邀請信";
     let p5 = "[4] 新增看板";
-    let p6 = "[5] 清空資料庫";
     while opt != 0 {
         println!("{}", p1);
         println!("{}", p2);
         println!("{}", p3);
         println!("{}", p4);
         println!("{}", p5);
-        println!("{}", p6);
         let mut buff = String::new();
         stdin().read_line(&mut buff)?;
         if let Ok(_opt) = buff.replace("\n", "").parse::<u8>() {
@@ -98,7 +79,7 @@ fn main() -> std::io::Result<()> {
                     } else {
                         let invite_code = signup::create_invitation(&db_conn, None, words[0])
                             .expect("無法建立邀請");
-                        send_invite_email(None, &invite_code, words[0])
+                        email::send_invite_email(None, &invite_code, words[0])
                             .expect("寄送邀請信失敗");
                     }
                 }
@@ -117,8 +98,6 @@ fn main() -> std::io::Result<()> {
                     forum::create_board(&db_conn, -1, words[0]);
                     println!("成功新增看板：{}", words[0]);
                 }
-            } else if opt == 5 {
-                delete_all(&db_conn);
             } else {
                 println!("請輸入範圍內的正整數");
             }
