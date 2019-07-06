@@ -1,20 +1,15 @@
-#[macro_use]
-extern crate diesel;
-
 use std::io::stdin;
 
-// use carbon_bond::db;
 use carbonbond::user::{email, signup};
-
 use carbonbond::forum;
-
+use carbonbond::party;
 use carbonbond::db;
+
 use db::models::*;
 use db::schema::users::dsl::*;
-use db::schema::{users, invitations, boards, node_templates};
 use diesel::prelude::*;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), failure::Error> {
     println!("碳鍵 - 資料庫管理介面");
     let db_conn = db::connect_db();
     let mut opt = 1;
@@ -23,12 +18,14 @@ fn main() -> std::io::Result<()> {
     let p3 = "[2] 檢視使用者名單";
     let p4 = "[3] 寄出邀請信";
     let p5 = "[4] 新增看板";
+    let p6 = "[5] 新增政黨";
     while opt != 0 {
         println!("{}", p1);
         println!("{}", p2);
         println!("{}", p3);
         println!("{}", p4);
         println!("{}", p5);
+        println!("{}", p6);
         let mut buff = String::new();
         stdin().read_line(&mut buff)?;
         if let Ok(_opt) = buff.replace("\n", "").parse::<u8>() {
@@ -95,8 +92,26 @@ fn main() -> std::io::Result<()> {
                 if words.len() != 1 {
                     println!("輸入格式錯誤");
                 } else {
-                    forum::create_board(&db_conn, -1, words[0]);
+                    forum::create_board(&db_conn, -1, words[0])?;
                     println!("成功新增看板：{}", words[0]);
+                }
+            } else if opt == 5 {
+                println!("> {}", p6);
+                println!("> 請輸入 黨名 [所屬看板]，或輸入空白行回到選單");
+                buff.clear();
+                stdin().read_line(&mut buff)?;
+                let words: Vec<&str> = buff.split_whitespace().collect();
+                match words.len() {
+                    0 => break,
+                    1 => {
+                        party::create_party(&db_conn, None, words[0])?;
+                        println!("成功新增政黨：{}", words[0]);
+                    }
+                    2 => {
+                        party::create_party_with_board_name(&db_conn, Some(words[1]), words[0])?;
+                        println!("成功新增 {}版 政黨：{}", words[1], words[0]);
+                    }
+                    _ => println!("輸入格式錯誤"),
                 }
             } else {
                 println!("請輸入範圍內的正整數");

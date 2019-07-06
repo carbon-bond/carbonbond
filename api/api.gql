@@ -17,7 +17,7 @@ type Party {
 enum PartyPosition {
     chairman,          # 黨主席
     representative,    # 黨代表
-    member             # 黨員
+    normal             # 一般黨員
 }
 
 type Board {

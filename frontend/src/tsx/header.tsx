@@ -16,12 +16,12 @@ function Header(): JSX.Element {
 	async function login_request(id: string, password: string): Promise<{}> {
 		try {
 			await api.login_request(id, password);
-				setLogining(false);
-				set_login(id);
-				toast('登入成功');
+			setLogining(false);
+			set_login(id);
+			toast('登入成功');
 		} catch (err) {
 			// console.log(JSON.stringify(err.response));
-			toast(err.message.split(":")[0]);
+			toast(err.message.split(':')[0]);
 			// TODO: 應該想辦法做更精細的錯誤處理
 		}
 		return {};
@@ -29,11 +29,11 @@ function Header(): JSX.Element {
 	async function logout_request(): Promise<{}> {
 		try {
 			await api.logout_request();
-				set_logout();
-				setExtended(false);
-				toast('您已登出');
+			set_logout();
+			setExtended(false);
+			toast('您已登出');
 		} catch (err) {
-			toast(err.message.split(":")[0]);
+			toast(err.message.split(':')[0]);
 			// TODO: 應該想辦法做更精細的錯誤處理
 		}
 		return {};

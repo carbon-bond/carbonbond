@@ -64,7 +64,7 @@ pub fn create_article(
         template_id,
         author_id,
         title,
-        root_id
+        root_id,
     };
     diesel::insert_into(schema::articles::table)
         .values(&new_article)

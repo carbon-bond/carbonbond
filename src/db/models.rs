@@ -1,6 +1,7 @@
 use super::schema::invitations;
 use super::schema::users;
 use super::schema::boards;
+use super::schema::parties;
 use super::schema::node_templates;
 use super::schema::edges;
 use super::schema::articles;
@@ -34,6 +35,20 @@ pub struct Invitation {
 pub struct NewInvitation<'a> {
     pub code: &'a str,
     pub email: &'a str,
+}
+
+#[derive(Queryable)]
+pub struct Party {
+    pub id: i64,
+    pub board_id: Option<i64>,
+    pub party_name: String,
+}
+
+#[derive(Insertable)]
+#[table_name = "parties"]
+pub struct NewParty<'a> {
+    pub board_id: Option<i64>,
+    pub party_name: &'a str,
 }
 
 #[derive(Queryable)]

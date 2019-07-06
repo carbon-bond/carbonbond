@@ -59,7 +59,7 @@ table! {
 table! {
     parties (id) {
         id -> Int8,
-        board_id -> Int8,
+        board_id -> Nullable<Int8>,
         party_name -> Varchar,
     }
 }

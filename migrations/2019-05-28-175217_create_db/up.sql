@@ -65,7 +65,7 @@ CREATE TABLE edges (
 
 CREATE TABLE parties (
   id BIGSERIAL PRIMARY KEY,
-  board_id BIGSERIAL REFERENCES boards(id),
+  board_id BIGINT REFERENCES boards(id),
   party_name VARCHAR(20) NOT NULL
 );
 
