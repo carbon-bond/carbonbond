@@ -15,31 +15,26 @@ function Header(): JSX.Element {
 
 	async function login_request(id: string, password: string): Promise<{}> {
 		try {
-			const data: api.LoginResponse = await api.login_request(id, password);
-			if (data.login == null) {
+			await api.login_request(id, password);
 				setLogining(false);
 				set_login(id);
 				toast('登入成功');
-			} else {
-				toast.error(data.login.message);
-			}
 		} catch (err) {
-			console.error(err);
+			// console.log(JSON.stringify(err.response));
+			toast(err.message.split(":")[0]);
+			// TODO: 應該想辦法做更精細的錯誤處理
 		}
 		return {};
 	}
 	async function logout_request(): Promise<{}> {
 		try {
-			const data: api.LogoutResponse = await api.logout_request();
-			if (data.logout == null) {
+			await api.logout_request();
 				set_logout();
 				setExtended(false);
 				toast('您已登出');
-			} else {
-				toast.error(data.logout.message);
-			}
 		} catch (err) {
-			console.error(err);
+			toast(err.message.split(":")[0]);
+			// TODO: 應該想辦法做更精細的錯誤處理
 		}
 		return {};
 	}
