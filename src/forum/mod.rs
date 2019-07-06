@@ -26,7 +26,8 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
         fs::read_to_string("config/default_templates.json").expect("讀取默認模板失敗");
     let default_templates: Vec<TemplateBody> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
-    create_node_template(conn, board.id, &default_templates);
+
+    create_node_template(conn, board.id, &default_templates)?;
 
     Ok(board.id)
 }
@@ -103,6 +104,6 @@ pub fn get_template(conn: &PgConnection, template_id: i64) -> TemplateBody {
     serde_json::from_str(&results.def).expect("解析模板失敗")
 }
 
-pub fn check_col_valid(col_struct: &Vec<NodeCol>, content: &Vec<String>) -> bool {
+pub fn check_col_valid(_col_struct: &Vec<NodeCol>, _content: &Vec<String>) -> bool {
     unimplemented!()
 }

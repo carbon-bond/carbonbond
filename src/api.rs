@@ -1,4 +1,4 @@
-use juniper::{Value, FieldResult, FieldError};
+use juniper::{FieldResult};
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse};
