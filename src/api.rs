@@ -13,7 +13,7 @@ use crate::custom_error;
 
 use std::sync::{Arc, Mutex};
 
-use crate::Ctx;
+use crate::{Ctx, Context};
 impl juniper::Context for Ctx {}
 
 #[derive(juniper::GraphQLObject)]
@@ -167,13 +167,13 @@ impl Mutation {
         match login::login(&context.get_pg_conn(), &id, &password) {
             Err(error) => error.to_field_result(),
             Ok(()) => {
-                context.add_id_to_session(id);
+                context.remember_id(id)?;
                 Ok(true)
             }
         }
     }
     fn logout(context: &Ctx) -> FieldResult<bool> {
-        context.clear_id_from_session()?;
+        context.forget_id()?;
         Ok(true)
     }
     fn invite_signup(context: &Ctx, email: String) -> FieldResult<bool> {

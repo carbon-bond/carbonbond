@@ -10,3 +10,5 @@ DROP TABLE articles;
 DROP TABLE node_templates;
 DROP TABLE boards;
 DROP TABLE users;
+
+DROP TABLE party_members;

@@ -14,31 +14,51 @@ extern crate failure;
 use actix_session::{Session};
 use std::sync::{Arc, Mutex, MutexGuard};
 use diesel::pg::PgConnection;
+use custom_error::Error;
+
+pub trait Context {
+    fn use_pg_conn<T, F: FnMut(&PgConnection) -> T>(&self, callback: F) -> T;
+    fn remember_id(&self, id: String) -> Result<(), Error>;
+    fn forget_id(&self) -> Result<(), Error>;
+    fn get_id(&self) -> Result<Option<String>, Error>;
+}
 
 pub struct Ctx {
     session: Session,
     conn: Arc<Mutex<PgConnection>>,
 }
-use actix_web::Error;
 impl Ctx {
     pub fn get_pg_conn(&self) -> MutexGuard<PgConnection> {
         self.conn.lock().unwrap()
     }
-    pub fn use_pg_conn<F>(&self, mut callback: F)
+}
+impl Context for Ctx {
+    fn use_pg_conn<T, F>(&self, mut callback: F) -> T
     where
-        F: FnMut(&PgConnection),
+        F: FnMut(&PgConnection) -> T,
     {
         let conn = &*self.conn.lock().unwrap();
-        callback(conn);
+        callback(conn)
     }
-    pub fn add_id_to_session(&self, id: String) -> Result<(), Error> {
-        self.session.set::<String>("id", id.to_string())
+    fn remember_id(&self, id: String) -> Result<(), Error> {
+        if self.session.set::<String>("id", id.to_string()).is_err() {
+            Err(Error::InternalError)
+        } else {
+            Ok(())
+        }
     }
-    pub fn clear_id_from_session(&self) -> Result<(), Error> {
-        self.session.set::<String>("id", "".to_string())
+    fn forget_id(&self) -> Result<(), Error> {
+        if self.session.set::<String>("id", "".to_string()).is_err() {
+            Err(Error::InternalError)
+        } else {
+            Ok(())
+        }
     }
-    pub fn get_id(&self) -> Result<Option<String>, Error> {
-        let id = self.session.get::<String>("id")?;
+    fn get_id(&self) -> Result<Option<String>, Error> {
+        let id = match self.session.get::<String>("id") {
+            Err(_) => return Err(Error::InternalError),
+            Ok(id) => id,
+        };
         if id.is_none() {
             Ok(None)
         } else {

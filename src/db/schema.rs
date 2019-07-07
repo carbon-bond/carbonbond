@@ -65,6 +65,15 @@ table! {
 }
 
 table! {
+    party_members (id) {
+        id -> Int8,
+        power -> Int2,
+        party_id -> Int8,
+        user_id -> Varchar,
+    }
+}
+
+table! {
     text_cols (id) {
         id -> Int8,
         article_id -> Int8,
@@ -91,6 +100,8 @@ joinable!(articles -> node_templates (template_id));
 joinable!(articles -> users (author_id));
 joinable!(node_templates -> boards (board_id));
 joinable!(parties -> boards (board_id));
+joinable!(party_members -> parties (party_id));
+joinable!(party_members -> users (user_id));
 joinable!(text_cols -> articles (article_id));
 
 allow_tables_to_appear_in_same_query!(
@@ -101,6 +112,7 @@ allow_tables_to_appear_in_same_query!(
     invitations,
     node_templates,
     parties,
+    party_members,
     text_cols,
     users,
 );

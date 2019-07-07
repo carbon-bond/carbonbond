@@ -6,7 +6,7 @@ use diesel::prelude::*;
 
 use crate::db::{models, schema};
 use crate::custom_error::Error;
-use crate::Ctx;
+use crate::Context;
 
 mod template;
 pub use template::{NodeCol, Threshold, TemplateBody};
@@ -14,41 +14,48 @@ pub use template::{NodeCol, Threshold, TemplateBody};
 pub mod operation;
 
 /// 回傳剛創的板的 id
-pub fn create_board(ctx: &Ctx, party_id: i64, name: &str) -> Result<i64, Error> {
+pub fn create_board<C: Context>(ctx: &C, party_id: i64, name: &str) -> Result<i64, Error> {
     // TODO: 撞名檢查，權限檢查，等等
-    operation::create_board(&*ctx.get_pg_conn(), party_id, name)
+    ctx.use_pg_conn(|conn| operation::create_board(conn, party_id, name))
 }
 
-pub fn create_node_template(
-    ctx: &Ctx,
+pub fn create_node_template<C: Context>(
+    ctx: C,
     board_id: i64,
     templates: &Vec<TemplateBody>,
 ) -> Result<(), Error> {
     // TODO: 權限檢查，等等
-    operation::create_node_template(&*ctx.get_pg_conn(), board_id, templates)
+    ctx.use_pg_conn(|conn| operation::create_node_template(conn, board_id, templates))
 }
 
-pub fn create_article(
-    ctx: &Ctx,
+pub fn create_article<C: Context>(
+    ctx: &C,
     author_id: String,
     board_id: i64,
     root_id: i64,
     template_id: i64,
     title: String,
 ) -> Result<(), Error> {
-    operation::create_article(
-        &*ctx.get_pg_conn(),
-        author_id,
-        board_id,
-        root_id,
-        template_id,
-        title,
-    )
+    ctx.use_pg_conn(|conn| {
+        operation::create_article(
+            conn,
+            author_id.clone(),
+            board_id,
+            root_id,
+            template_id,
+            title.clone(),
+        )
+    })
 }
 
-pub fn create_edge(ctx: &Ctx, from_node: i64, to_node: i64, transfuse: i32) -> Result<(), Error> {
+pub fn create_edge<C: Context>(
+    ctx: &C,
+    from_node: i64,
+    to_node: i64,
+    transfuse: i32,
+) -> Result<(), Error> {
     // TODO: 權限檢查，等等
-    operation::create_edge(&*ctx.get_pg_conn(), from_node, to_node, transfuse)
+    ctx.use_pg_conn(|conn| operation::create_edge(conn, from_node, to_node, transfuse))
 }
 
 pub fn get_template(conn: &PgConnection, template_id: i64) -> TemplateBody {
