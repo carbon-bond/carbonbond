@@ -20,7 +20,7 @@ pub trait Context {
     fn use_pg_conn<T, F: FnMut(&PgConnection) -> T>(&self, callback: F) -> T;
     fn remember_id(&self, id: String) -> Result<(), Error>;
     fn forget_id(&self) -> Result<(), Error>;
-    fn get_id(&self) -> Result<Option<String>, Error>;
+    fn get_id(&self) -> Option<String>;
 }
 
 pub struct Ctx {
@@ -54,19 +54,19 @@ impl Context for Ctx {
             Ok(())
         }
     }
-    fn get_id(&self) -> Result<Option<String>, Error> {
+    fn get_id(&self) -> Option<String> {
         let id = match self.session.get::<String>("id") {
-            Err(_) => return Err(Error::InternalError),
+            Err(_) => return None,
             Ok(id) => id,
         };
         if id.is_none() {
-            Ok(None)
+            None
         } else {
             let id = id.unwrap();
             if id == "" {
-                Ok(None)
+                None
             } else {
-                Ok(Some(id))
+                Some(id)
             }
         }
     }

@@ -1,10 +1,14 @@
 use std::io::{stdin, stdout};
 use std::io::Write;
 
-use carbonbond::user::{email, signup};
+use diesel::PgConnection;
+
+use carbonbond::Context;
+use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
+use carbonbond::custom_error::Error;
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -14,15 +18,41 @@ add 子命令：
     add party <政黨名> [看板名]
         如果不填看板名，會建立流亡政黨
     add board <流亡政黨 id> <看板名>
-as 子命令（尚未實作）：
+as 子命令：
     as <使用者名稱>
         db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
 invite 子命令：
     invite <信箱地址>
 ";
 
-fn match_subcommand() -> Result<(String, Vec<String>), failure::Error> {
-    print!("> ");
+struct DBToolCtx {
+    conn: PgConnection,
+    id: Option<String>,
+}
+impl Context for DBToolCtx {
+    fn use_pg_conn<T, F: FnMut(&PgConnection) -> T>(&self, mut callback: F) -> T {
+        callback(&self.conn)
+    }
+    fn remember_id(&self, id: String) -> Result<(), Error> {
+        let _s = self as *const Self as *mut Self;
+        unsafe {
+            (*_s).id = Some(id);
+        }
+        Ok(())
+    }
+    fn forget_id(&self) -> Result<(), Error> {
+        unimplemented!();
+    }
+    fn get_id(&self) -> Option<String> {
+        self.id.clone()
+    }
+}
+
+fn match_subcommand(ctx: &DBToolCtx) -> Result<(String, Vec<String>), failure::Error> {
+    match ctx.get_id() {
+        Some(id) => print!("{} > ", id),
+        _ => print!("> "),
+    }
     stdout().flush()?;
     let mut buff = String::new();
     loop {
@@ -35,7 +65,7 @@ fn match_subcommand() -> Result<(String, Vec<String>), failure::Error> {
     }
 }
 
-fn add_something(args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
     if args.len() < 2 {
         return Err(failure::format_err!("add 參數數量錯誤"));
     }
@@ -43,7 +73,7 @@ fn add_something(args: &Vec<String>) -> Result<(), failure::Error> {
     let sub_args = args[1..].to_vec();
     match something.as_ref() {
         "user" => add_user(&sub_args),
-        "party" => add_party(&sub_args),
+        "party" => add_party(ctx, &sub_args),
         "board" => add_board(&sub_args),
         other => Err(failure::format_err!("無法 add {}", other)),
     }
@@ -59,15 +89,15 @@ fn add_user(args: &Vec<String>) -> Result<(), failure::Error> {
     Ok(())
 }
 
-fn add_party(args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
     if args.len() == 1 {
         let party = &args[0];
-        let id = party::create_party(&db::connect_db(), None, party)?;
+        let id = party::create_party_with_board_name(ctx, None, party)?;
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else if args.len() == 2 {
         let (party, board) = (&args[0], &args[1]);
-        let id = party::create_party_with_board_name(&db::connect_db(), Some(board), party)?;
+        let id = party::create_party_with_board_name(ctx, Some(board), party)?;
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else {
@@ -90,13 +120,20 @@ fn invite(args: &Vec<String>) -> Result<(), failure::Error> {
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
+fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+    let id = args[0].clone();
+    find_user(&ctx.conn, &id)?;
+    ctx.remember_id(id).unwrap();
+    Ok(())
+}
 
-fn exec_command() -> Result<(), failure::Error> {
-    let (subcommand, args) = match_subcommand()?;
+fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
+    let (subcommand, args) = match_subcommand(ctx)?;
     match subcommand.as_ref() {
         "help" => println!("{}", HELP_MSG),
-        "add" => add_something(&args)?,
-        "as" => println!("as 子指令未實作"),
+        "h" => println!("{}", HELP_MSG),
+        "add" => add_something(ctx, &args)?,
+        "as" => as_user(ctx, &args)?,
         "invite" => invite(&args)?,
         other => println!("無 {} 指令", other),
     }
@@ -104,9 +141,13 @@ fn exec_command() -> Result<(), failure::Error> {
 }
 
 fn main() {
-    println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
+    println!("碳鍵 - 資料庫管理介面\n使用 help/h 查詢指令");
+    let mut ctx = DBToolCtx {
+        conn: db::connect_db(),
+        id: None,
+    };
     loop {
-        match exec_command() {
+        match exec_command(&mut ctx) {
             Err(error) => {
                 println!("執行失敗： {}", error);
             }

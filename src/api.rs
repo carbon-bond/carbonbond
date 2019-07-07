@@ -8,7 +8,7 @@ use diesel::prelude::*;
 
 use crate::user::email;
 use crate::user::signup;
-use crate::user::login;
+use crate::user;
 use crate::custom_error;
 
 use std::sync::{Arc, Mutex};
@@ -164,7 +164,7 @@ struct Mutation;
 )]
 impl Mutation {
     fn login(context: &Ctx, id: String, password: String) -> FieldResult<bool> {
-        match login::login(&context.get_pg_conn(), &id, &password) {
+        match user::login(&context.get_pg_conn(), &id, &password) {
             Err(error) => error.to_field_result(),
             Ok(()) => {
                 context.remember_id(id)?;

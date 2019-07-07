@@ -71,7 +71,7 @@ CREATE TABLE parties (
 
 CREATE TABLE party_members (
   id BIGSERIAL PRIMARY KEY,
-  power SMALLINT NOT NULL, -- 0~4 的整數，表示該人在黨中的地位
+  power SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
   party_id BIGSERIAL REFERENCES parties(id) NOT NULL,
   user_id VARCHAR(20) REFERENCES users(id) NOT NULL
 );

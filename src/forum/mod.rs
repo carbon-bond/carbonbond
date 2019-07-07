@@ -30,21 +30,14 @@ pub fn create_node_template<C: Context>(
 
 pub fn create_article<C: Context>(
     ctx: &C,
-    author_id: String,
+    author_id: &str,
     board_id: i64,
     root_id: i64,
     template_id: i64,
-    title: String,
+    title: &str,
 ) -> Result<(), Error> {
     ctx.use_pg_conn(|conn| {
-        operation::create_article(
-            conn,
-            author_id.clone(),
-            board_id,
-            root_id,
-            template_id,
-            title.clone(),
-        )
+        operation::create_article(conn, author_id, board_id, root_id, template_id, title)
     })
 }
 

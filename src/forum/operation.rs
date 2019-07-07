@@ -53,11 +53,11 @@ pub fn create_node_template(
 
 pub fn create_article(
     conn: &PgConnection,
-    author_id: String,
+    author_id: &str,
     board_id: i64,
     root_id: i64,
     template_id: i64,
-    title: String,
+    title: &str,
 ) -> Result<(), Error> {
     let new_article = models::NewArticle {
         board_id,

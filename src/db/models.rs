@@ -1,10 +1,4 @@
-use super::schema::invitations;
-use super::schema::users;
-use super::schema::boards;
-use super::schema::parties;
-use super::schema::node_templates;
-use super::schema::edges;
-use super::schema::articles;
+use super::schema::*;
 
 #[derive(Queryable)]
 pub struct User {
@@ -106,10 +100,24 @@ pub struct Article {
 }
 #[derive(Insertable)]
 #[table_name = "articles"]
-pub struct NewArticle {
+pub struct NewArticle<'a> {
     pub board_id: i64,
     pub root_id: i64,
     pub template_id: i64,
-    pub author_id: String,
-    pub title: String,
+    pub author_id: &'a str,
+    pub title: &'a str,
+}
+
+#[derive(Queryable)]
+pub struct PartyMember {
+    pub power: i16,
+    pub party_id: i64,
+    pub user_id: String,
+}
+#[derive(Insertable)]
+#[table_name = "party_members"]
+pub struct NewPartyMember<'a> {
+    pub power: i16,
+    pub party_id: i64,
+    pub user_id: &'a str,
 }
