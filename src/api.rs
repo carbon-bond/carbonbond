@@ -91,10 +91,9 @@ impl Board {
     fn node_templates(&self, context: &Ctx) -> Vec<NodeTemplate> {
         use crate::db::schema::node_templates::dsl::*;
         use crate::db::models;
-        let conn = &*context.conn.lock().unwrap();
         let results = node_templates
             .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
-            .load::<models::NodeTemplate>(conn)
+            .load::<models::NodeTemplate>(&*context.get_pg_conn())
             .expect("取模板失敗");
         results
             .into_iter()
@@ -141,10 +140,9 @@ impl Query {
     fn board(context: &Ctx, name: String) -> FieldResult<Board> {
         use crate::db::schema::boards::dsl::*;
         use crate::db::models;
-        let conn = &*context.conn.lock().unwrap();
         let results = boards
             .filter(board_name.eq(&name))
-            .load::<models::Board>(conn)
+            .load::<models::Board>(&*context.get_pg_conn())
             .expect("取看板失敗");
         if results.len() == 1 {
             let b = &results[0];
@@ -166,16 +164,16 @@ struct Mutation;
 )]
 impl Mutation {
     fn login(context: &Ctx, id: String, password: String) -> FieldResult<bool> {
-        match login::login(&context.conn.lock().unwrap(), &id, &password) {
+        match login::login(&context.get_pg_conn(), &id, &password) {
             Err(error) => error.to_field_result(),
             Ok(()) => {
-                context.session.set::<String>("id", id.to_string())?;
+                context.add_id_to_session(id);
                 Ok(true)
             }
         }
     }
     fn logout(context: &Ctx) -> FieldResult<bool> {
-        context.session.set::<String>("id", "".to_string())?;
+        context.clear_id_from_session()?;
         Ok(true)
     }
     fn invite_signup(context: &Ctx, email: String) -> FieldResult<bool> {
@@ -183,16 +181,13 @@ impl Mutation {
             None => Err(custom_error::build_field_err("尚未登入", 401)),
             Some(id) => {
                 // TODO: 寫宏來處理類似邏輯
-                let invite_code = match signup::create_invitation(
-                    &context.conn.lock().unwrap(),
-                    Some(&id),
-                    &email,
-                ) {
-                    Err(error) => {
-                        return error.to_field_result();
-                    }
-                    Ok(code) => code,
-                };
+                let invite_code =
+                    match signup::create_invitation(&context.get_pg_conn(), Some(&id), &email) {
+                        Err(error) => {
+                            return error.to_field_result();
+                        }
+                        Ok(code) => code,
+                    };
                 match email::send_invite_email(Some(&id), &invite_code, &email) {
                     Err(error) => error.to_field_result(),
                     Ok(_) => Ok(true),
@@ -206,12 +201,7 @@ impl Mutation {
         id: String,
         password: String,
     ) -> FieldResult<bool> {
-        match signup::create_user_by_invitation(
-            &context.conn.lock().unwrap(),
-            &code,
-            &id,
-            &password,
-        ) {
+        match signup::create_user_by_invitation(&context.get_pg_conn(), &code, &id, &password) {
             Err(error) => error.to_field_result(),
             Ok(_) => Ok(true),
         }

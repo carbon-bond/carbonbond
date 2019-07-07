@@ -80,7 +80,7 @@ fn add_board(args: &Vec<String>) -> Result<(), failure::Error> {
         return Err(failure::format_err!("add board 參數數量錯誤"));
     }
     let (party, board) = (args[0].parse::<i64>()?, &args[1]);
-    let id = forum::create_board(&db::connect_db(), party, board)?;
+    let id = forum::operation::create_board(&db::connect_db(), party, board)?;
     println!("成功建立看板，id = {}", id);
     Ok(())
 }
