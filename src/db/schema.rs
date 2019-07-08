@@ -12,11 +12,12 @@ table! {
 table! {
     articles (id) {
         id -> Int8,
-        title -> Varchar,
-        root_id -> Int8,
-        author_id -> Varchar,
-        template_id -> Int8,
         board_id -> Int8,
+        root_id -> Int8,
+        template_id -> Int8,
+        title -> Varchar,
+        author_id -> Varchar,
+        template_name -> Varchar,
     }
 }
 
@@ -33,7 +34,7 @@ table! {
         id -> Int8,
         from_node -> Int8,
         to_node -> Int8,
-        transfuse -> Int4,
+        transfuse -> Int2,
     }
 }
 

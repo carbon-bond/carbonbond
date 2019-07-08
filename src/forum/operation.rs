@@ -55,38 +55,51 @@ pub fn create_article(
     conn: &PgConnection,
     author_id: &str,
     board_id: i64,
-    root_id: i64,
+    root_id: Option<i64>,
     template_id: i64,
+    template_name: &str,
     title: &str,
-) -> Result<(), Error> {
+) -> Result<i64, Error> {
     let new_article = models::NewArticle {
         board_id,
         template_id,
         author_id,
         title,
-        root_id,
+        template_name,
+        root_id: root_id.unwrap_or(0),
     };
-    diesel::insert_into(schema::articles::table)
+    let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)
-        .execute(conn)
-        .expect("新增文章失敗");
-    Ok(())
+        .get_result(conn)
+        .map_err(|_| Error::InternalError)?;
+
+    if root_id.is_none() {
+        use schema::articles::{id, root_id};
+        diesel::update(schema::articles::table.filter(id.eq(article.id)))
+            .set(root_id.eq(article.id))
+            .execute(conn)
+            .map_err(|_| Error::InternalError)?;
+    }
+
+    Ok(article.id)
 }
 
-pub fn create_edge(
+pub fn create_edges(
     conn: &PgConnection,
-    from_node: i64,
-    to_node: i64,
-    transfuse: i32,
+    article_id: i64,
+    edges: &Vec<(i64, i16)>,
 ) -> Result<(), Error> {
-    let new_edge = models::NewEdge {
-        from_node,
-        to_node,
-        transfuse,
-    };
+    let new_edges: Vec<models::NewEdge> = edges
+        .iter()
+        .map(|&(to_node, transfuse)| models::NewEdge {
+            from_node: article_id,
+            to_node,
+            transfuse,
+        })
+        .collect();
     // TODO 輸能相關的資料庫操作
     diesel::insert_into(schema::edges::table)
-        .values(&new_edge)
+        .values(&new_edges)
         .execute(conn)
         .expect("新增連結失敗");
     Ok(())

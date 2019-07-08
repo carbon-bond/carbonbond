@@ -24,7 +24,7 @@
         "bond_energy": 0,
         "identity": 0
     },
-    "attached_to": ["問題", "留言"],
+    "attached_to": ["問題", "回覆", "留言"],
     "structure": [
         {"col_name": "內文", "col_type": "Text", "restriction": ""}
     ],
@@ -40,7 +40,7 @@
         "bond_energy": 0,
         "identity": 0
     },
-    "attached_to": ["問題", "留言"],
+    "attached_to": ["問題", "回覆", "留言"],
     "structure": [
         {"col_name": "內文", "col_type": "Text", "restriction": ""}
     ],

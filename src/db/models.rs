@@ -79,14 +79,14 @@ pub struct Edge {
     pub id: i64,
     pub from_node: i64,
     pub to_node: i64,
-    pub transfuse: i64,
+    pub transfuse: i16,
 }
 #[derive(Insertable)]
 #[table_name = "edges"]
 pub struct NewEdge {
     pub from_node: i64,
     pub to_node: i64,
-    pub transfuse: i32,
+    pub transfuse: i16,
 }
 
 #[derive(Queryable)]
@@ -95,15 +95,18 @@ pub struct Article {
     pub root_id: i64,
     pub board_id: i64,
     pub template_id: i64,
+    pub template_name: String,
     pub author_id: String,
     pub title: String,
 }
+
 #[derive(Insertable)]
 #[table_name = "articles"]
 pub struct NewArticle<'a> {
     pub board_id: i64,
     pub root_id: i64,
     pub template_id: i64,
+    pub template_name: &'a str,
     pub author_id: &'a str,
     pub title: &'a str,
 }

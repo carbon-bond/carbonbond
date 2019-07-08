@@ -20,6 +20,16 @@ enum PartyPosition {
     normal             # 一般黨員
 }
 
+type template {
+    
+}
+
+type Article {
+    id: ID
+    content: [String]
+
+}
+
 type Board {
     id: ID
     name: String
@@ -32,6 +42,8 @@ type Board {
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
+    board(id): Board!
+
 }
 
 type Mutation {

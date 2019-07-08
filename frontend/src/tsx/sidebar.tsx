@@ -10,6 +10,7 @@ function Sidebar(): JSX.Element {
 					<div styleName="icon">🔍</div>
 					<div styleName="icon">🗨️</div>
 					<div styleName="icon">🕭</div>
+					<div styleName="icon">💑</div>
 				</div>
 				<div styleName="bottomSet">
 					<div styleName="icon">🛍</div>

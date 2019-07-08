@@ -32,11 +32,12 @@ CREATE TABLE node_templates (
 
 CREATE TABLE articles (
   id BIGSERIAL PRIMARY KEY,
-  title VARCHAR(50) NOT NULL,
-  root_id BIGINT NOT NULL REFERENCES articles,
-  author_id VARCHAR(20) REFERENCES users(id) NOT NULL,
+  board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
+  root_id BIGINT REFERENCES articles(id) NOT NULL,
   template_id BIGSERIAL REFERENCES node_templates(id) NOT NULL,
-  board_id BIGSERIAL REFERENCES boards(id) NOT NULL
+  title VARCHAR(50) NOT NULL,
+  author_id VARCHAR(20) REFERENCES users(id) NOT NULL,
+  template_name VARCHAR(7) NOT NULL -- 加速查找用
 );
 
 CREATE TABLE text_cols (
@@ -60,7 +61,7 @@ CREATE TABLE edges (
   id BIGSERIAL PRIMARY KEY,
   from_node BIGSERIAL REFERENCES articles(id) NOT NULL,
   to_node BIGSERIAL REFERENCES articles(id) NOT NULL,
-  transfuse INT NOT NULL
+  transfuse SMALLINT NOT NULL
 );
 
 CREATE TABLE parties (
