@@ -16,7 +16,7 @@ import { UserState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { Header } from './header';
-import { Sidebar } from './sidebar';
+import { LeftPanel } from './leftpanel';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -31,7 +31,7 @@ function App(): JSX.Element {
 					<Switch>
 						<Route exact path="/app" render={() => (
 							<>
-								<Sidebar></Sidebar>
+								<LeftPanel></LeftPanel>
 								<MainContent></MainContent>
 							</>
 						)} />

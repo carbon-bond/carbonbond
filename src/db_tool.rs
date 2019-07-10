@@ -141,7 +141,7 @@ fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
 }
 
 fn main() {
-    println!("碳鍵 - 資料庫管理介面\n使用 help/h 查詢指令");
+    println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
     let mut ctx = DBToolCtx {
         conn: db::connect_db(),
         id: None,
