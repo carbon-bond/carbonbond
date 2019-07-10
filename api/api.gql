@@ -62,7 +62,7 @@ type Query {
     me: Me!
     board(id: ID!): Board!
     boardList: [Board]!
-    articleList(boardName: String!, showHidden: Boolean!, pageSize: Int!, offset: Int!): [Article]
+    articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
     
     articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
 }

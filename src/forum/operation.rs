@@ -22,8 +22,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
         .get_result(conn)
         .expect("新增看板失敗");
 
-    let txt =
-        fs::read_to_string("config/default_category.json").expect("讀取默認模板失敗");
+    let txt = fs::read_to_string("config/default_category.json").expect("讀取默認模板失敗");
     let default_categories: Vec<CategoryBody> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
 

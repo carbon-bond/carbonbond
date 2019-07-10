@@ -18,6 +18,6 @@ impl Error {
     }
 }
 
-pub fn build_field_err(msg: &str, code: i32) -> FieldError {
+fn build_field_err(msg: &str, code: i32) -> FieldError {
     FieldError::new(msg, Value::Scalar(DefaultScalarValue::Int(code)))
 }
