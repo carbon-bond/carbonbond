@@ -1,5 +1,5 @@
 [{ 
-    "template_name": "問題",
+    "name": "問題",
     "transfusable": false,
     "is_question": true,
     "show_in_list": true,
@@ -15,7 +15,7 @@
     "version": 0
 },
 { 
-    "template_name": "回覆",
+    "name": "回覆",
     "transfusable": true,
     "is_question": false,
     "show_in_list": true,
@@ -31,7 +31,7 @@
     "version": 0
 },
 { 
-    "template_name": "留言",
+    "name": "留言",
     "transfusable": true,
     "is_question": false,
     "show_in_list": false,

@@ -11,6 +11,7 @@ type Me {
 
 type User {
     id: String
+    energy: Int
 }
 
 type Party {
@@ -25,12 +26,7 @@ enum PartyPosition {
     normal             # 一般黨員
 }
 
-enum SortBy { # 預設就是時間
-    energy
-    heat # 討論熱度
-}
-
-type Template {
+type Category {
     
 }
 
@@ -41,30 +37,34 @@ type Edge {
 
 type Article {
     id: ID
-    content: [String]
     title: String
-    template: Template
-    edges_in(template_name: String): [Edge]
-    edges_out(template_name: String): [Edge]
+    categoryName: String
     author: User
     # TODO 鍵能?
+    energy: Int
+
+    content: [String]
+    edgesIn: [Edge]
+    edgesOut: [Edge]
 }
 
 type Board {
     id: ID
     name: String
-    ruling_party: Party
+    rulingParty: Party
     parties: [Party]
     # TODO 模板應該用字串還是物件?
-    node_templates: [String]
-    articles(show_in_list: Boolean, sort_by: SortBy, first: Int, offset: Int!): [Article] # 若不給 show_in_list 就會顯示全部
+    categories: [String]
 }
 
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
-    board(id: ID): Board!
-    article_in_tree(id: ID, first: Int, offset: Int!): [Article]
+    board(id: ID!): Board!
+    boardList: [Board]!
+    articleList(boardName: String!, showHidden: Boolean!, pageSize: Int!, offset: Int!): [Article]
+    
+    articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
 }
 
 type Mutation {

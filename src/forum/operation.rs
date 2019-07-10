@@ -7,8 +7,8 @@ use diesel::prelude::*;
 use crate::db::{models, schema};
 use crate::custom_error::Error;
 
-use super::template;
-pub use template::{NodeCol, Threshold, TemplateBody};
+use super::category_body;
+pub use category_body::{CategoryBody, ColSchema};
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i64, Error> {
@@ -23,29 +23,29 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
         .expect("新增看板失敗");
 
     let txt =
-        fs::read_to_string("config/default_templates.json").expect("讀取默認模板失敗");
-    let default_templates: Vec<TemplateBody> =
+        fs::read_to_string("config/default_category.json").expect("讀取默認模板失敗");
+    let default_categories: Vec<CategoryBody> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
 
-    create_template(conn, board.id, &default_templates)?;
+    create_category(conn, board.id, &default_categories)?;
 
     Ok(board.id)
 }
 
-pub fn create_template(
+pub fn create_category(
     conn: &PgConnection,
     board_id: i64,
-    templates: &Vec<TemplateBody>,
+    categories: &Vec<CategoryBody>,
 ) -> Result<(), Error> {
-    let new_templates: Vec<models::NewTemplate> = templates
+    let new_categories: Vec<models::NewCategory> = categories
         .into_iter()
-        .map(|t| models::NewTemplate {
+        .map(|t| models::NewCategory {
             board_id,
             def: t.to_string(),
         })
         .collect();
-    diesel::insert_into(schema::templates::table)
-        .values(&new_templates)
+    diesel::insert_into(schema::categories::table)
+        .values(&new_categories)
         .execute(conn)
         .expect("新增文章分類失敗");
     Ok(())
@@ -56,18 +56,18 @@ pub fn create_article(
     author_id: &str,
     board_id: i64,
     root_id: Option<i64>,
-    template_id: i64,
-    template: &TemplateBody,
+    category_id: i64,
+    category: &CategoryBody,
     title: &str,
 ) -> Result<i64, Error> {
     let new_article = models::NewArticle {
         board_id,
-        template_id,
+        category_id,
         author_id,
         title,
-        template_name: &template.template_name,
+        category_name: &category.name,
         root_id: root_id.unwrap_or(0),
-        show_in_list: template.show_in_list,
+        show_in_list: category.show_in_list,
     };
     let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)
@@ -106,6 +106,6 @@ pub fn create_edges(
     Ok(())
 }
 
-pub fn check_col_valid(_col_struct: &Vec<NodeCol>, _content: &Vec<String>) -> bool {
+pub fn check_col_valid(_col_struct: &Vec<ColSchema>, _content: &Vec<String>) -> bool {
     unimplemented!()
 }

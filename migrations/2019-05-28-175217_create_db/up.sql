@@ -21,12 +21,12 @@ CREATE TABLE boards (
   UNIQUE(board_name)
 );
 
-CREATE TABLE templates (
+CREATE TABLE categories (
   id BIGSERIAL PRIMARY KEY,
   board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
   def VARCHAR(1000) NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT true,
-  replacing BIGINT REFERENCES templates (id)
+  replacing BIGINT REFERENCES categories (id)
   -- BIGSERIAL 無法為 NULL，所以用 BIGINT
 );
 
@@ -34,10 +34,10 @@ CREATE TABLE articles (
   id BIGSERIAL PRIMARY KEY,
   board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
   root_id BIGINT REFERENCES articles(id) NOT NULL,
-  template_id BIGSERIAL REFERENCES templates(id) NOT NULL,
+  category_id BIGSERIAL REFERENCES categories(id) NOT NULL,
   title VARCHAR(50) NOT NULL,
   author_id VARCHAR(20) REFERENCES users(id) NOT NULL,
-  template_name VARCHAR(7) NOT NULL, -- 加速查找用
+  category_name VARCHAR(7) NOT NULL, -- 加速查找用
   show_in_list BOOLEAN NOT NULL
 );
 

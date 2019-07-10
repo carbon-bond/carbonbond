@@ -60,7 +60,7 @@ pub struct NewBoard<'a> {
 }
 
 #[derive(Queryable)]
-pub struct Template {
+pub struct Category {
     pub id: i64,
     pub board_id: i64,
     pub def: String,
@@ -68,8 +68,8 @@ pub struct Template {
     pub replacing: Option<i64>,
 }
 #[derive(Insertable)]
-#[table_name = "templates"]
-pub struct NewTemplate {
+#[table_name = "categories"]
+pub struct NewCategory {
     pub board_id: i64,
     pub def: String,
 }
@@ -94,8 +94,8 @@ pub struct Article {
     pub id: i64,
     pub root_id: i64,
     pub board_id: i64,
-    pub template_id: i64,
-    pub template_name: String,
+    pub category_id: i64,
+    pub category_name: String,
     pub author_id: String,
     pub title: String,
     pub show_in_list: bool,
@@ -106,8 +106,8 @@ pub struct Article {
 pub struct NewArticle<'a> {
     pub board_id: i64,
     pub root_id: i64,
-    pub template_id: i64,
-    pub template_name: &'a str,
+    pub category_id: i64,
+    pub category_name: &'a str,
     pub author_id: &'a str,
     pub title: &'a str,
     pub show_in_list: bool,

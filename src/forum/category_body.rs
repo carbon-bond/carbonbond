@@ -104,32 +104,32 @@ impl Serialize for ColType {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct NodeCol {
+pub struct ColSchema {
     pub col_name: String,
     pub col_type: ColType,
     pub restriction: String,
 }
 #[derive(Deserialize, Serialize, Debug)]
-pub struct TemplateBody {
-    pub template_name: String,
+pub struct CategoryBody {
+    pub name: String,
     pub transfusable: bool,
     pub is_question: bool,
     pub show_in_list: bool,
     pub rootable: bool,
     pub threshold_to_post: Threshold,
     pub attached_to: Vec<String>,
-    pub structure: Vec<NodeCol>,
+    pub structure: Vec<ColSchema>,
 }
-impl TemplateBody {
+impl CategoryBody {
     pub fn to_string(&self) -> String {
         serde_json::to_string(self).unwrap()
     }
-    pub fn from_string(s: &str) -> TemplateBody {
+    pub fn from_string(s: &str) -> CategoryBody {
         serde_json::from_str(s).expect("解析模板失敗")
     }
-    pub fn can_attach_to(&self, template_name: &str) -> bool {
+    pub fn can_attach_to(&self, category_name: &str) -> bool {
         for name in self.attached_to.iter() {
-            if name == template_name {
+            if name == category_name {
                 return true;
             }
         }
