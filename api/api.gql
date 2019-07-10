@@ -6,7 +6,6 @@ schema {
 type Me {
     # 若 id 爲 null，代表尚未登入
     id: String
-    # TODO 鍵能?
 }
 
 type User {
@@ -39,7 +38,7 @@ type Article {
     id: ID
     title: String
     categoryName: String
-    author: User
+    author_id: String
     # TODO 鍵能?
     energy: Int
 
@@ -50,7 +49,7 @@ type Article {
 
 type Board {
     id: ID
-    name: String
+    board_name: String
     rulingParty: Party
     parties: [Party]
     # TODO 模板應該用字串還是物件?
@@ -60,7 +59,7 @@ type Board {
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
-    board(id: ID!): Board!
+    board(name: String!): Board!
     boardList: [Board]!
     articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
     

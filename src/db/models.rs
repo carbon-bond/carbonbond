@@ -7,6 +7,7 @@ pub struct User {
     pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,
     pub salt: Vec<u8>,
+    pub create_time: std::time::SystemTime,
 }
 #[derive(Insertable)]
 #[table_name = "users"]
@@ -36,6 +37,7 @@ pub struct Party {
     pub id: i64,
     pub board_id: Option<i64>,
     pub party_name: String,
+    pub create_time: std::time::SystemTime,
 }
 
 #[derive(Insertable)]
@@ -50,6 +52,7 @@ pub struct Board {
     pub id: i64,
     pub board_name: String,
     pub ruling_party_id: i64,
+    pub create_time: std::time::SystemTime,
 }
 
 #[derive(Insertable)]
@@ -63,7 +66,7 @@ pub struct NewBoard<'a> {
 pub struct Category {
     pub id: i64,
     pub board_id: i64,
-    pub def: String,
+    pub body: String,
     pub is_active: bool,
     pub replacing: Option<i64>,
 }
@@ -71,7 +74,7 @@ pub struct Category {
 #[table_name = "categories"]
 pub struct NewCategory {
     pub board_id: i64,
-    pub def: String,
+    pub body: String,
 }
 
 #[derive(Queryable)]
@@ -99,6 +102,7 @@ pub struct Article {
     pub author_id: String,
     pub title: String,
     pub show_in_list: bool,
+    pub create_time: std::time::SystemTime,
 }
 
 #[derive(Insertable)]
@@ -117,12 +121,17 @@ pub struct NewArticle<'a> {
 pub struct PartyMember {
     pub power: i16,
     pub party_id: i64,
+    pub board_id: Option<i64>,
     pub user_id: String,
+    pub dedication_ratio: i16,
+    pub create_time: std::time::SystemTime,
 }
 #[derive(Insertable)]
 #[table_name = "party_members"]
 pub struct NewPartyMember<'a> {
     pub power: i16,
     pub party_id: i64,
+    pub board_id: Option<i64>,
     pub user_id: &'a str,
+    pub dedication_ratio: i16,
 }

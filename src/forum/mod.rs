@@ -94,6 +94,16 @@ pub fn get_articles_meta<C: Context>(
     }
 }
 
+pub fn get_board_by_name<C: Context>(ctx: &C, name: &str) -> Result<models::Board, Error> {
+    use schema::boards::dsl::*;
+    ctx.use_pg_conn(|conn| {
+        boards
+            .filter(board_name.eq(&name))
+            .first::<models::Board>(conn)
+            .or(Err(Error::LogicError("找不到看板", 404)))
+    })
+}
+
 pub fn get_category<C: Context>(
     ctx: &C,
     category_id: i64,
@@ -112,7 +122,7 @@ pub fn get_category<C: Context>(
     } else if is_active.is_some() && is_active.unwrap() != category.is_active {
         Err(Error::LogicError("分類活性錯誤", 403))
     } else {
-        Ok(CategoryBody::from_string(&category.def))
+        Ok(CategoryBody::from_string(&category.body))
     }
 }
 

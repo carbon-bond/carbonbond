@@ -40,7 +40,7 @@ pub fn create_category(
         .into_iter()
         .map(|t| models::NewCategory {
             board_id,
-            def: t.to_string(),
+            body: t.to_string(),
         })
         .collect();
     diesel::insert_into(schema::categories::table)

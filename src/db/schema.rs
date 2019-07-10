@@ -19,6 +19,7 @@ table! {
         author_id -> Varchar,
         category_name -> Varchar,
         show_in_list -> Bool,
+        create_time -> Timestamp,
     }
 }
 
@@ -27,6 +28,7 @@ table! {
         id -> Int8,
         board_name -> Varchar,
         ruling_party_id -> Int8,
+        create_time -> Timestamp,
     }
 }
 
@@ -34,7 +36,7 @@ table! {
     categories (id) {
         id -> Int8,
         board_id -> Int8,
-        def -> Varchar,
+        body -> Varchar,
         is_active -> Bool,
         replacing -> Nullable<Int8>,
     }
@@ -63,14 +65,18 @@ table! {
         id -> Int8,
         board_id -> Nullable<Int8>,
         party_name -> Varchar,
+        create_time -> Timestamp,
     }
 }
 
 table! {
     party_members (id) {
         id -> Int8,
+        board_id -> Nullable<Int8>,
         power -> Int2,
+        dedication_ratio -> Int2,
         party_id -> Int8,
+        create_time -> Timestamp,
         user_id -> Varchar,
     }
 }
@@ -93,6 +99,7 @@ table! {
         invitation_credit -> Int4,
         password_hashed -> Bytea,
         salt -> Bytea,
+        create_time -> Timestamp,
     }
 }
 
@@ -102,6 +109,7 @@ joinable!(articles -> categories (category_id));
 joinable!(articles -> users (author_id));
 joinable!(categories -> boards (board_id));
 joinable!(parties -> boards (board_id));
+joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
 joinable!(text_cols -> articles (article_id));

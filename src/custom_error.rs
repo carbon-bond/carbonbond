@@ -10,11 +10,13 @@ pub enum Error {
 
 impl Error {
     pub fn to_field_result<T>(&self) -> FieldResult<T> {
-        let err = match self {
+        Err(self.to_field_err())
+    }
+    pub fn to_field_err(&self) -> FieldError {
+        match self {
             Error::LogicError(msg, code) => build_field_err(msg, *code),
             _ => build_field_err("內部錯誤", 500),
-        };
-        Err(err)
+        }
     }
 }
 

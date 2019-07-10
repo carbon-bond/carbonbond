@@ -67,6 +67,8 @@ fn add_party_member(
         power,
         user_id,
         party_id,
+        dedication_ratio: 10,
+        board_id: None,
     };
     diesel::insert_into(schema::party_members::table)
         .values(&new_member)

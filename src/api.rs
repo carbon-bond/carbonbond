@@ -10,6 +10,8 @@ use crate::user::email;
 use crate::user::signup;
 use crate::user;
 use crate::custom_error::Error;
+use crate::db::{models as db_models, schema as db_schema};
+use crate::forum;
 
 use std::sync::{Arc, Mutex};
 
@@ -30,48 +32,37 @@ struct Party {
 }
 #[juniper::object]
 impl Party {
-    fn id(&self) -> juniper::ID {
-        self.id.clone()
+    fn id(&self) -> &juniper::ID {
+        &self.id
     }
     fn name(&self) -> &str {
         // NOTE: 這裡是不是會發生 N+1 問題?
         "TODO: 去資料庫查找"
     }
 }
+
+#[derive(juniper::GraphQLObject)]
 struct Article {
     id: juniper::ID,
-    name: String,
+    title: String,
     board_id: juniper::ID,
     author_id: String,
-}
-#[juniper::object(Context = Ctx)]
-impl Article {
-    fn id(&self) -> juniper::ID {
-        self.id.clone()
-    }
-    fn name(&self) -> &str {
-        &self.name
-    }
-    fn author_id(&self) -> &str {
-        &self.author_id
-    }
-    fn board_id(&self) -> juniper::ID {
-        self.board_id.clone()
-    }
+    category_name: String,
+    energy: i32,
 }
 
 #[derive(juniper::GraphQLObject)]
 struct Category {
     id: juniper::ID,
     board_id: juniper::ID,
-    def: String,
+    body: String,
     is_active: bool,
     replacing: Option<juniper::ID>,
 }
 
 struct Board {
     id: juniper::ID,
-    name: String,
+    board_name: String,
     ruling_party_id: juniper::ID,
 }
 
@@ -80,8 +71,8 @@ impl Board {
     fn id(&self) -> juniper::ID {
         self.id.clone()
     }
-    fn name(&self) -> &str {
-        &self.name
+    fn board_name(&self) -> &str {
+        &self.board_name
     }
     fn ruling_party(&self) -> Party {
         Party {
@@ -92,18 +83,17 @@ impl Board {
         vec![] // TODO: 抓出政黨
     }
     fn categories(&self, ctx: &Ctx) -> Vec<Category> {
-        use crate::db::schema::categories::dsl::*;
-        use crate::db::models;
+        use db_schema::categories::dsl::*;
         let results = categories
             .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
-            .load::<models::Category>(&*ctx.get_pg_conn())
+            .load::<db_models::Category>(&*ctx.get_pg_conn())
             .expect("取模板失敗");
         results
             .into_iter()
             .map(|t| Category {
                 id: juniper::ID::new(t.id.to_string()),
                 board_id: i64_to_id(t.board_id),
-                def: t.def,
+                body: t.body,
                 is_active: t.is_active,
                 replacing: match t.replacing {
                     Some(t) => Some(i64_to_id(t)),
@@ -133,46 +123,60 @@ impl Query {
         }
     }
     fn board(ctx: &Ctx, name: String) -> FieldResult<Board> {
-        use crate::db::schema::boards::dsl::*;
-        use crate::db::models;
-        let results = boards
-            .filter(board_name.eq(&name))
-            .load::<models::Board>(&*ctx.get_pg_conn())
-            .expect("取看板失敗");
-        if results.len() == 1 {
-            let b = &results[0];
-            Ok(Board {
-                id: juniper::ID::new(b.id.to_string()),
-                name: b.board_name.clone(),
-                ruling_party_id: juniper::ID::new(b.ruling_party_id.to_string()),
-            })
-        } else {
-            Error::LogicError("找不到看板", 404).to_field_result()
-        }
+        let board = forum::get_board_by_name(ctx, &name).map_err(|e| e.to_field_err())?;
+        Ok(Board {
+            id: i64_to_id(board.id),
+            board_name: board.board_name,
+            ruling_party_id: i64_to_id(board.ruling_party_id),
+        })
     }
-    fn boardList(ctx: &Ctx) -> FieldResult<Vec<Board>> {
-        use crate::db::schema::boards::dsl::*;
-        use crate::db::models;
+    fn board_list(ctx: &Ctx) -> FieldResult<Vec<Board>> {
+        use db_schema::boards::dsl::*;
         let board_vec = boards
-            .load::<models::Board>(&*ctx.get_pg_conn())
+            .load::<db_models::Board>(&*ctx.get_pg_conn())
             .or(Error::InternalError.to_field_result())?;
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
                 id: i64_to_id(b.id),
-                name: b.board_name,
+                board_name: b.board_name,
                 ruling_party_id: i64_to_id(b.ruling_party_id),
             })
             .collect())
     }
-    fn articleList(
+    fn article_list(
         ctx: &Ctx,
-        name: String,
+        board_name: String,
         offset: i32,
         page_size: i32,
         show_hidden: Option<bool>,
     ) -> FieldResult<Vec<Article>> {
-        unimplemented!();
+        use db_schema::articles::dsl::*;
+        let show_hidden = show_hidden.unwrap_or(false);
+        let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
+
+        let mut query = articles.filter(id.eq(board_id)).into_boxed();
+        if !show_hidden {
+            query = query.filter(show_in_list.eq(true));
+        }
+        let article_vec = query
+            .filter(id.eq(board.id))
+            .order(create_time.asc())
+            .offset(offset as i64)
+            .limit(page_size as i64)
+            .load::<db_models::Article>(&*ctx.get_pg_conn())
+            .or(Error::InternalError.to_field_result())?;
+        Ok(article_vec
+            .into_iter()
+            .map(|a| Article {
+                id: i64_to_id(a.id),
+                title: a.title.clone(),
+                board_id: i64_to_id(a.board_id),
+                author_id: a.author_id.clone(),
+                category_name: a.category_name,
+                energy: 0, // TODO: 鍵能
+            })
+            .collect())
     }
 }
 
