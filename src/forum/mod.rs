@@ -21,7 +21,7 @@ pub fn create_node_template<C: Context>(
     templates: &Vec<TemplateBody>,
 ) -> Result<(), Error> {
     // TODO: 權限檢查，等等
-    ctx.use_pg_conn(|conn| operation::create_node_template(conn, board_id, templates))
+    ctx.use_pg_conn(|conn| operation::create_template(conn, board_id, templates))
 }
 
 pub fn create_article<C: Context>(
@@ -32,7 +32,7 @@ pub fn create_article<C: Context>(
     template_id: i64,
     title: &str,
 ) -> Result<(), Error> {
-    let template = get_template(ctx, template_id)?;
+    let template = get_template(ctx, template_id, Some(board_id), Some(true))?;
     // TODO: 各項該做的檢查
     if !template.rootable && edges.len() == 0 {
         return Err(Error::LogicError("該分類不可為根", 403));
@@ -67,7 +67,7 @@ pub fn create_article<C: Context>(
             board_id,
             root_id,
             template_id,
-            &template.template_name,
+            &template,
             title,
         )?;
         // TODO 創造文章內容
@@ -94,16 +94,26 @@ pub fn get_articles_meta<C: Context>(
     }
 }
 
-pub fn get_template<C: Context>(ctx: &C, template_id: i64) -> Result<TemplateBody, Error> {
-    use crate::db::schema::node_templates::dsl::*;
-    let str_body = ctx.use_pg_conn(|conn| {
-        node_templates
-            .filter(id.eq(template_id))
-            .select(def)
-            .first::<String>(conn)
+pub fn get_template<C: Context>(
+    ctx: &C,
+    template_id: i64,
+    board_id: Option<i64>,
+    is_active: Option<bool>,
+) -> Result<TemplateBody, Error> {
+    use schema::templates::dsl;
+    let template = ctx.use_pg_conn(|conn| {
+        schema::templates::table
+            .filter(dsl::id.eq(template_id))
+            .first::<models::Template>(conn)
             .map_err(|_| Error::LogicError("找不到模板", 404))
     })?;
-    Ok(TemplateBody::from_string(&str_body))
+    if board_id.is_some() && board_id.unwrap() != template.board_id {
+        Err(Error::LogicError("該分類不屬於看板", 403))
+    } else if is_active.is_some() && is_active.unwrap() != template.is_active {
+        Err(Error::LogicError("分類活性錯誤", 403))
+    } else {
+        Ok(TemplateBody::from_string(&template.def))
+    }
 }
 
 pub fn check_col_valid(_col_struct: &Vec<NodeCol>, _content: &Vec<String>) -> bool {

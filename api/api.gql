@@ -6,6 +6,11 @@ schema {
 type Me {
     # 若 id 爲 null，代表尚未登入
     id: String
+    # TODO 鍵能?
+}
+
+type User {
+    id: String
 }
 
 type Party {
@@ -20,14 +25,29 @@ enum PartyPosition {
     normal             # 一般黨員
 }
 
-type template {
+enum SortBy { # 預設就是時間
+    energy
+    heat # 討論熱度
+}
+
+type Template {
     
+}
+
+type Edge {
+    article: Article
+    transfuse: Int
 }
 
 type Article {
     id: ID
     content: [String]
-
+    title: String
+    template: Template
+    edges_in(template_name: String): [Edge]
+    edges_out(template_name: String): [Edge]
+    author: User
+    # TODO 鍵能?
 }
 
 type Board {
@@ -37,13 +57,14 @@ type Board {
     parties: [Party]
     # TODO 模板應該用字串還是物件?
     node_templates: [String]
+    articles(show_in_list: Boolean, sort_by: SortBy, first: Int, offset: Int!): [Article] # 若不給 show_in_list 就會顯示全部
 }
 
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
-    board(id): Board!
-
+    board(id: ID): Board!
+    article_in_tree(id: ID, first: Int, offset: Int!): [Article]
 }
 
 type Mutation {

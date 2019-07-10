@@ -18,6 +18,7 @@ table! {
         title -> Varchar,
         author_id -> Varchar,
         template_name -> Varchar,
+        show_in_list -> Bool,
     }
 }
 
@@ -48,16 +49,6 @@ table! {
 }
 
 table! {
-    node_templates (id) {
-        id -> Int8,
-        board_id -> Int8,
-        def -> Varchar,
-        is_active -> Bool,
-        replacing -> Nullable<Int8>,
-    }
-}
-
-table! {
     parties (id) {
         id -> Int8,
         board_id -> Nullable<Int8>,
@@ -71,6 +62,16 @@ table! {
         power -> Int2,
         party_id -> Int8,
         user_id -> Varchar,
+    }
+}
+
+table! {
+    templates (id) {
+        id -> Int8,
+        board_id -> Int8,
+        def -> Varchar,
+        is_active -> Bool,
+        replacing -> Nullable<Int8>,
     }
 }
 
@@ -97,12 +98,12 @@ table! {
 
 joinable!(array_cols -> articles (article_id));
 joinable!(articles -> boards (board_id));
-joinable!(articles -> node_templates (template_id));
+joinable!(articles -> templates (template_id));
 joinable!(articles -> users (author_id));
-joinable!(node_templates -> boards (board_id));
 joinable!(parties -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
+joinable!(templates -> boards (board_id));
 joinable!(text_cols -> articles (article_id));
 
 allow_tables_to_appear_in_same_query!(
@@ -111,9 +112,9 @@ allow_tables_to_appear_in_same_query!(
     boards,
     edges,
     invitations,
-    node_templates,
     parties,
     party_members,
+    templates,
     text_cols,
     users,
 );

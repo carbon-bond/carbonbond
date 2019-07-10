@@ -27,24 +27,24 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     let default_templates: Vec<TemplateBody> =
         serde_json::from_str(&txt).expect("解析默認模板失敗");
 
-    create_node_template(conn, board.id, &default_templates)?;
+    create_template(conn, board.id, &default_templates)?;
 
     Ok(board.id)
 }
 
-pub fn create_node_template(
+pub fn create_template(
     conn: &PgConnection,
     board_id: i64,
     templates: &Vec<TemplateBody>,
 ) -> Result<(), Error> {
-    let new_templates: Vec<models::NewNodeTemplate> = templates
+    let new_templates: Vec<models::NewTemplate> = templates
         .into_iter()
-        .map(|t| models::NewNodeTemplate {
+        .map(|t| models::NewTemplate {
             board_id,
             def: t.to_string(),
         })
         .collect();
-    diesel::insert_into(schema::node_templates::table)
+    diesel::insert_into(schema::templates::table)
         .values(&new_templates)
         .execute(conn)
         .expect("新增文章分類失敗");
@@ -57,7 +57,7 @@ pub fn create_article(
     board_id: i64,
     root_id: Option<i64>,
     template_id: i64,
-    template_name: &str,
+    template: &TemplateBody,
     title: &str,
 ) -> Result<i64, Error> {
     let new_article = models::NewArticle {
@@ -65,8 +65,9 @@ pub fn create_article(
         template_id,
         author_id,
         title,
-        template_name,
+        template_name: &template.template_name,
         root_id: root_id.unwrap_or(0),
+        show_in_list: template.show_in_list,
     };
     let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)

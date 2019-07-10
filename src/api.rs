@@ -34,13 +34,6 @@ impl Party {
         "TODO: 去資料庫查找"
     }
 }
-
-struct Board {
-    id: juniper::ID,
-    name: String,
-    ruling_party_id: juniper::ID,
-}
-
 struct Article {
     id: juniper::ID,
     name: String,
@@ -72,6 +65,12 @@ struct NodeTemplate {
     replacing: Option<juniper::ID>,
 }
 
+struct Board {
+    id: juniper::ID,
+    name: String,
+    ruling_party_id: juniper::ID,
+}
+
 #[juniper::object(Context = Ctx)]
 impl Board {
     fn id(&self) -> juniper::ID {
@@ -89,11 +88,11 @@ impl Board {
         vec![]
     }
     fn node_templates(&self, context: &Ctx) -> Vec<NodeTemplate> {
-        use crate::db::schema::node_templates::dsl::*;
+        use crate::db::schema::templates::dsl::*;
         use crate::db::models;
-        let results = node_templates
+        let results = templates
             .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
-            .load::<models::NodeTemplate>(&*context.get_pg_conn())
+            .load::<models::Template>(&*context.get_pg_conn())
             .expect("取模板失敗");
         results
             .into_iter()
@@ -109,14 +108,17 @@ impl Board {
             })
             .collect()
     }
-    fn articles(&self, context: &Ctx, show_in_list: Option<bool>) -> Vec<Article> {
-        vec![]
+    fn articles(
+        &self,
+        context: &Ctx,
+        show_in_list: Option<bool>,
+        sort_by: Option<String>,
+        first: Option<i32>,
+        offset: i32,
+    ) -> FieldResult<Vec<Article>> {
+        let first = first.unwrap_or(0);
+        Ok(vec![])
     }
-}
-
-#[derive(juniper::GraphQLObject)]
-struct Error {
-    message: String,
 }
 
 struct Query;
