@@ -25,6 +25,7 @@ CREATE TABLE boards (
 
 CREATE TABLE categories (
   id BIGSERIAL PRIMARY KEY,
+  category_name VARCHAR(10) NOT NULL,
   board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
   body VARCHAR(1000) NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT true,
@@ -35,7 +36,7 @@ CREATE TABLE categories (
 CREATE TABLE articles (
   id BIGSERIAL PRIMARY KEY,
   board_id BIGSERIAL REFERENCES boards(id) NOT NULL,
-  root_id BIGINT REFERENCES articles(id) NOT NULL,
+  root_id BIGINT NOT NULL, -- 應該要 ref 自己
   category_id BIGSERIAL REFERENCES categories(id) NOT NULL,
   title VARCHAR(50) NOT NULL,
   author_id VARCHAR(20) REFERENCES users(id) NOT NULL,

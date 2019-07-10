@@ -35,6 +35,7 @@ table! {
 table! {
     categories (id) {
         id -> Int8,
+        category_name -> Varchar,
         board_id -> Int8,
         body -> Varchar,
         is_active -> Bool,

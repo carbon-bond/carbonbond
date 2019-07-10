@@ -26,20 +26,23 @@ pub fn create_category<C: Context>(
 
 pub fn create_article<C: Context>(
     ctx: &C,
-    author_id: &str,
-    board_id: i64,
+    board_name: &str,
     edges: &Vec<(i64, i16)>,
-    category_id: i64,
+    category_name: &str,
     title: &str,
-) -> Result<(), Error> {
-    let category = get_category(ctx, category_id, Some(board_id), Some(true))?;
+) -> Result<i64, Error> {
+    let author_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 403))?;
+    let board =
+        get_board_by_name(ctx, &board_name).or(Err(Error::LogicError("無此看板", 404)))?;
+    let category = get_category(ctx, category_name, board.id)?;
+    let c_body = CategoryBody::from_string(&category.body);
     // TODO: 各項該做的檢查
-    if !category.rootable && edges.len() == 0 {
+    if !c_body.rootable && edges.len() == 0 {
         return Err(Error::LogicError("該分類不可為根", 403));
     }
     let mut node_ids = Vec::<i64>::with_capacity(edges.len());
     for &(id, transfuse) in edges {
-        if !category.transfusable && transfuse != 0 {
+        if !c_body.transfusable && transfuse != 0 {
             return Err(Error::LogicError("該分類不可輸能", 403));
         }
         node_ids.push(id);
@@ -53,7 +56,7 @@ pub fn create_article<C: Context>(
         } else if root_id.unwrap() != article.root_id {
             return Err(Error::LogicError("內部連結指向不同主題樹", 403));
         }
-        if !category.can_attach_to(&article.category_name) {
+        if !c_body.can_attach_to(&article.category_name) {
             return Err(Error::LogicError(
                 "指定的兩個分類間不可建立關係",
                 403,
@@ -63,15 +66,16 @@ pub fn create_article<C: Context>(
     ctx.use_pg_conn(|conn| {
         let id = operation::create_article(
             conn,
-            author_id,
-            board_id,
+            &author_id,
+            board.id,
             root_id,
-            category_id,
-            &category,
+            category.id,
+            &c_body,
             title,
         )?;
         // TODO 創造文章內容
-        operation::create_edges(conn, id, edges)
+        operation::create_edges(conn, id, edges)?;
+        Ok(id)
     })
 }
 
@@ -106,26 +110,21 @@ pub fn get_board_by_name<C: Context>(ctx: &C, name: &str) -> Result<models::Boar
 
 pub fn get_category<C: Context>(
     ctx: &C,
-    category_id: i64,
-    board_id: Option<i64>,
-    is_active: Option<bool>,
-) -> Result<CategoryBody, Error> {
+    category_name: &str,
+    board_id: i64,
+) -> Result<models::Category, Error> {
     use schema::categories::dsl;
-    let category = ctx.use_pg_conn(|conn| {
-        schema::categories::table
-            .filter(dsl::id.eq(category_id))
+    ctx.use_pg_conn(|conn| {
+        dsl::categories
+            .filter(dsl::is_active.eq(true))
+            .filter(dsl::category_name.eq(category_name))
+            .filter(dsl::board_id.eq(board_id))
             .first::<models::Category>(conn)
-            .map_err(|_| Error::LogicError("找不到模板", 404))
-    })?;
-    if board_id.is_some() && board_id.unwrap() != category.board_id {
-        Err(Error::LogicError("該分類不屬於看板", 403))
-    } else if is_active.is_some() && is_active.unwrap() != category.is_active {
-        Err(Error::LogicError("分類活性錯誤", 403))
-    } else {
-        Ok(CategoryBody::from_string(&category.body))
-    }
+            .map_err(|_| Error::LogicError("找不到分類", 404))
+    })
 }
 
 pub fn check_col_valid(_col_struct: &Vec<ColSchema>, _content: &Vec<String>) -> bool {
-    unimplemented!()
+    // TODO
+    true
 }

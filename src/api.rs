@@ -21,6 +21,14 @@ impl juniper::Context for Ctx {}
 fn i64_to_id(id: i64) -> juniper::ID {
     juniper::ID::new(id.to_string())
 }
+fn id_to_i64(id: &juniper::ID) -> i64 {
+    id.parse::<i64>().unwrap()
+}
+fn systime_to_i32(time: std::time::SystemTime) -> i32 {
+    time.duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i32
+}
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
@@ -49,6 +57,7 @@ struct Article {
     author_id: String,
     category_name: String,
     energy: i32,
+    create_time: i32,
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -85,9 +94,9 @@ impl Board {
     fn categories(&self, ctx: &Ctx) -> Vec<Category> {
         use db_schema::categories::dsl::*;
         let results = categories
-            .filter(board_id.eq(self.id.parse::<i64>().unwrap())) // TODO: 拋出錯誤
+            .filter(board_id.eq(id_to_i64(&self.id))) // TODO: 拋出錯誤
             .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .expect("取模板失敗");
+            .expect("取分類失敗");
         results
             .into_iter()
             .map(|t| Category {
@@ -101,6 +110,20 @@ impl Board {
                 },
             })
             .collect()
+    }
+    fn article_count(&self, ctx: &Ctx, show_hidden: Option<bool>) -> FieldResult<i32> {
+        use db_schema::articles::dsl;
+        let show_hidden = show_hidden.unwrap_or(false);
+        let mut query = dsl::articles.into_boxed();
+        if !show_hidden {
+            query = query.filter(dsl::show_in_list.eq(true));
+        }
+        let count = query
+            .filter(dsl::board_id.eq(id_to_i64(&self.id)))
+            .count()
+            .get_result::<i64>(&*ctx.get_pg_conn())
+            .or(Error::InternalError.to_field_result())?;
+        Ok(count as i32)
     }
 }
 
@@ -151,21 +174,24 @@ impl Query {
         page_size: i32,
         show_hidden: Option<bool>,
     ) -> FieldResult<Vec<Article>> {
-        use db_schema::articles::dsl::*;
+        use db_schema::articles::dsl;
         let show_hidden = show_hidden.unwrap_or(false);
         let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
 
-        let mut query = articles.filter(id.eq(board_id)).into_boxed();
+        let mut query = dsl::articles
+            .filter(dsl::board_id.eq(board.id))
+            .into_boxed();
         if !show_hidden {
-            query = query.filter(show_in_list.eq(true));
+            query = query.filter(dsl::show_in_list.eq(true));
         }
+
         let article_vec = query
-            .filter(id.eq(board.id))
-            .order(create_time.asc())
+            .order(dsl::create_time.asc())
             .offset(offset as i64)
             .limit(page_size as i64)
             .load::<db_models::Article>(&*ctx.get_pg_conn())
             .or(Error::InternalError.to_field_result())?;
+
         Ok(article_vec
             .into_iter()
             .map(|a| Article {
@@ -174,6 +200,7 @@ impl Query {
                 board_id: i64_to_id(a.board_id),
                 author_id: a.author_id.clone(),
                 category_name: a.category_name,
+                create_time: systime_to_i32(a.create_time),
                 energy: 0, // TODO: 鍵能
             })
             .collect())
@@ -229,8 +256,16 @@ impl Mutation {
             Ok(_) => Ok(true),
         }
     }
-    fn create_article(ctx: &Ctx) -> FieldResult<juniper::ID> {
-        unimplemented!();
+    fn create_article(
+        ctx: &Ctx,
+        board_name: String,
+        category_name: String,
+        title: String,
+    ) -> FieldResult<juniper::ID> {
+        // TODO: 還缺乏 edge 和 content
+        let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title)
+            .map_err(|e| e.to_field_err())?;
+        Ok(i64_to_id(id))
     }
 }
 

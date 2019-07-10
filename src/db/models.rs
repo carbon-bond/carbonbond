@@ -65,6 +65,7 @@ pub struct NewBoard<'a> {
 #[derive(Queryable)]
 pub struct Category {
     pub id: i64,
+    pub category_name: String,
     pub board_id: i64,
     pub body: String,
     pub is_active: bool,
@@ -72,8 +73,9 @@ pub struct Category {
 }
 #[derive(Insertable)]
 #[table_name = "categories"]
-pub struct NewCategory {
+pub struct NewCategory<'a> {
     pub board_id: i64,
+    pub category_name: &'a str,
     pub body: String,
 }
 
@@ -92,15 +94,15 @@ pub struct NewEdge {
     pub transfuse: i16,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct Article {
     pub id: i64,
-    pub root_id: i64,
     pub board_id: i64,
+    pub root_id: i64,
     pub category_id: i64,
-    pub category_name: String,
-    pub author_id: String,
     pub title: String,
+    pub author_id: String,
+    pub category_name: String,
     pub show_in_list: bool,
     pub create_time: std::time::SystemTime,
 }
@@ -119,19 +121,19 @@ pub struct NewArticle<'a> {
 
 #[derive(Queryable)]
 pub struct PartyMember {
-    pub power: i16,
-    pub party_id: i64,
     pub board_id: Option<i64>,
-    pub user_id: String,
+    pub power: i16,
     pub dedication_ratio: i16,
+    pub party_id: i64,
     pub create_time: std::time::SystemTime,
+    pub user_id: String,
 }
 #[derive(Insertable)]
 #[table_name = "party_members"]
 pub struct NewPartyMember<'a> {
-    pub power: i16,
-    pub party_id: i64,
     pub board_id: Option<i64>,
-    pub user_id: &'a str,
+    pub power: i16,
     pub dedication_ratio: i16,
+    pub party_id: i64,
+    pub user_id: &'a str,
 }

@@ -125,7 +125,7 @@ impl CategoryBody {
         serde_json::to_string(self).unwrap()
     }
     pub fn from_string(s: &str) -> CategoryBody {
-        serde_json::from_str(s).expect("解析模板失敗")
+        serde_json::from_str(s).expect("解析分類失敗")
     }
     pub fn can_attach_to(&self, category_name: &str) -> bool {
         for name in self.attached_to.iter() {
