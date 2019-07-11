@@ -7,46 +7,57 @@ enum Option {
 	Chat,
 	Notify,
 	DiscoverFriend,
-	PluginStore
+	PluginStore,
+	None            // 側欄關閉
 }
 
 function PanelMain(option: Option): JSX.Element {
 	switch (option) {
 		case Option.Browse:
-			return <>瀏覽</>;
+			return <div styleName="sidebar">瀏覽</div>;
 		case Option.Search:
-			return <>搜尋</>;
+			return <div styleName="sidebar">搜尋</div>;
 		case Option.Chat:
-			return <>即時訊息</>;
+			return <div styleName="sidebar">即使訊息</div>;
 		case Option.Notify:
-			return <>通知</>;
+			return <div styleName="sidebar">通知</div>;
 		case Option.DiscoverFriend:
-			return <>交友</>;
+			return <div styleName="sidebar">交友</div>;
 		case Option.PluginStore:
-			return <>外掛市場</>;
+			return <div styleName="sidebar">外掛市場</div>;
+		case Option.None:
+			return <></>;
 	}
 }
 
 function LeftPanel(): JSX.Element {
 	const [option, setOption] = React.useState(Option.Browse);
 
+	function toggleOption(op: Option): (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void {
+		return () => {
+			if (op == option) {
+				setOption(Option.None);
+			} else {
+				setOption(op);
+			}
+		};
+	}
+
 	return (
 		<>
 			<div styleName="menubar">
 				<div styleName="topSet">
-					<div styleName="icon" onClick={() => {setOption(Option.Browse);}}>🗐</div>
-					<div styleName="icon" onClick={() => {setOption(Option.Search);}}>🔍</div>
-					<div styleName="icon" onClick={() => {setOption(Option.Chat);}}>🗨️</div>
-					<div styleName="icon" onClick={() => {setOption(Option.Notify);}}>🕭</div>
-					<div styleName="icon" onClick={() => {setOption(Option.DiscoverFriend);}}>💑</div>
+					<div styleName="icon" onClick={toggleOption(Option.Browse)}>🗐</div>
+					<div styleName="icon" onClick={toggleOption(Option.Search)}>🔍</div>
+					<div styleName="icon" onClick={toggleOption(Option.Chat)}>🗨️</div>
+					<div styleName="icon" onClick={toggleOption(Option.Notify)}>🕭</div>
+					<div styleName="icon" onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
 				</div>
 				<div styleName="bottomSet">
-					<div styleName="icon" onClick={() => {setOption(Option.PluginStore);}}>🛍</div>
+					<div styleName="icon" onClick={toggleOption(Option.Browse)}>🛍</div>
 				</div>
 			</div>
-			<div styleName="sidebar">
-				{PanelMain(option)}
-			</div>
+			{PanelMain(option)}
 		</>
 	);
 }
