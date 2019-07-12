@@ -17,7 +17,7 @@ add 子命令：
     add user <信箱地址> <使用者名稱> <密碼>
     add party <政黨名> [看板名]
         如果不填看板名，會建立流亡政黨
-    add board <流亡政黨 id> <看板名>
+    add board <流亡政黨名> <看板名>
 as 子命令：
     as <使用者名稱>
         db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
@@ -74,7 +74,7 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Err
     match something.as_ref() {
         "user" => add_user(&sub_args),
         "party" => add_party(ctx, &sub_args),
-        "board" => add_board(&sub_args),
+        "board" => add_board(ctx, &sub_args),
         other => Err(failure::format_err!("無法 add {}", other)),
     }
 }
@@ -105,12 +105,12 @@ fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> 
     }
 }
 
-fn add_board(args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
     if args.len() != 2 {
         return Err(failure::format_err!("add board 參數數量錯誤"));
     }
-    let (party, board) = (args[0].parse::<i64>()?, &args[1]);
-    let id = forum::operation::create_board(&db::connect_db(), party, board)?;
+    let (party, board) = (&args[0], &args[1]);
+    let id = forum::create_board(ctx, party, board)?;
     println!("成功建立看板，id = {}", id);
     Ok(())
 }

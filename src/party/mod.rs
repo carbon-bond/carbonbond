@@ -76,7 +76,7 @@ fn add_party_member(
     Ok(())
 }
 
-fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Party, Error> {
+pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Party, Error> {
     use schema::parties::dsl;
     let mut parties = dsl::parties
         .filter(dsl::party_name.eq(name))
@@ -87,4 +87,14 @@ fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Party, E
     } else {
         Err(Error::LogicError("找不到政黨", 404))
     }
+}
+
+pub fn get_member_power(conn: &PgConnection, user_id: &str, party_id: i64) -> Result<i16, Error> {
+    use schema::party_members::dsl;
+    let membership = dsl::party_members
+        .filter(dsl::party_id.eq(party_id))
+        .filter(dsl::user_id.eq(user_id))
+        .first::<models::PartyMember>(conn)
+        .or(Err(Error::LogicError("找不到成員", 404)))?;
+    Ok(membership.power)
 }

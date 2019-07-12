@@ -121,6 +121,7 @@ pub struct NewArticle<'a> {
 
 #[derive(Queryable)]
 pub struct PartyMember {
+    pub id: i64,
     pub board_id: Option<i64>,
     pub power: i16,
     pub dedication_ratio: i16,

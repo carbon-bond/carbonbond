@@ -3,6 +3,7 @@ use diesel::prelude::*;
 use crate::db::{models, schema};
 use crate::custom_error::Error;
 use crate::Context;
+use crate::party;
 
 mod category_body;
 pub use category_body::{ColSchema, CategoryBody};
@@ -10,9 +11,26 @@ pub use category_body::{ColSchema, CategoryBody};
 pub mod operation;
 
 /// 回傳剛創的板的 id
-pub fn create_board<C: Context>(ctx: &C, party_id: i64, name: &str) -> Result<i64, Error> {
+pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result<i64, Error> {
     // TODO: 撞名檢查，權限檢查，等等
-    ctx.use_pg_conn(|conn| operation::create_board(conn, party_id, name))
+    let user_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
+    if get_board_by_name(ctx, name).is_ok() {
+        Err(Error::LogicError("與其它看板重名", 403))
+    } else {
+        ctx.use_pg_conn(|conn| {
+            let party = party::get_party_by_name(conn, party_name)?;
+            if party.board_id.is_some() {
+                Err(Error::LogicError("並非流亡政黨", 403))
+            } else {
+                let power = party::get_member_power(conn, &user_id, party.id)?;
+                if power != 3 {
+                    Err(Error::LogicError("並非黨主席", 403))
+                } else {
+                    operation::create_board(conn, party.id, name)
+                }
+            }
+        })
+    }
 }
 
 pub fn create_category<C: Context>(
