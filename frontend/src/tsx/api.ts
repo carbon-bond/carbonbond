@@ -6,9 +6,12 @@ export type LoginResponse = {
 
 export type Me = { me: { id: string | null } };
 
+function getGraphQLClient(endpoint='/api'): GraphQLClient {
+	return new GraphQLClient(endpoint);
+}
+
 function me_request(): Promise<Me> {
-	const endpoint = 'http://localhost:8080/api';
-	const graphQLClient = new GraphQLClient(endpoint);
+	const graphQLClient = getGraphQLClient();
 	const query = `
 		query {
 			me {
@@ -20,8 +23,7 @@ function me_request(): Promise<Me> {
 }
 
 function login_request(id: string, password: string): Promise<LoginResponse> {
-	const endpoint = 'http://localhost:8080/api';
-	const graphQLClient = new GraphQLClient(endpoint);
+	const graphQLClient = getGraphQLClient();
 	const query = `
 			mutation {
 				login(id: "${id}", password: "${password}")
@@ -35,8 +37,7 @@ export type LogoutResponse = {
 };
 
 function logout_request(): Promise<LogoutResponse> {
-	const endpoint = 'http://localhost:8080/api';
-	const graphQLClient = new GraphQLClient(endpoint);
+	const graphQLClient = getGraphQLClient();
 	const query = `
 			mutation {
 				logout
@@ -49,4 +50,5 @@ export {
 	me_request,
 	login_request,
 	logout_request,
+	getGraphQLClient
 };

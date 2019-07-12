@@ -62,7 +62,7 @@ type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
     board(name: String!): Board!
-    boardList: [Board]!
+    boardList(ids: [ID]): [Board]!
     articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
     
     articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]

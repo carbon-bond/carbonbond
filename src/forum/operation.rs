@@ -25,8 +25,13 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     let txt = fs::read_to_string("config/default_category.json").expect("讀取默認分類失敗");
     let default_categories: Vec<CategoryBody> =
         serde_json::from_str(&txt).expect("解析默認分類失敗");
-
     create_category(conn, board.id, &default_categories)?;
+
+    // 將執政黨加入該板
+    diesel::update(schema::parties::table.filter(schema::parties::dsl::id.eq(party_id)))
+        .set(schema::parties::dsl::board_id.eq(board.id))
+        .execute(conn)
+        .or(Err(Error::InternalError))?;
 
     Ok(board.id)
 }

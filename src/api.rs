@@ -35,18 +35,11 @@ struct Me {
     id: Option<String>,
 }
 
+#[derive(juniper::GraphQLObject)]
 struct Party {
     id: juniper::ID,
-}
-#[juniper::object]
-impl Party {
-    fn id(&self) -> &juniper::ID {
-        &self.id
-    }
-    fn name(&self) -> &str {
-        // NOTE: 這裡是不是會發生 N+1 問題?
-        "TODO: 去資料庫查找"
-    }
+    party_name: String,
+    board_id: Option<juniper::ID>,
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -86,6 +79,8 @@ impl Board {
     fn ruling_party(&self) -> Party {
         Party {
             id: self.ruling_party_id.clone(),
+            party_name: "FIXME".to_owned(),
+            board_id: Some(self.id.clone()),
         }
     }
     fn parties(&self) -> Vec<Party> {
@@ -153,9 +148,14 @@ impl Query {
             ruling_party_id: i64_to_id(board.ruling_party_id),
         })
     }
-    fn board_list(ctx: &Ctx) -> FieldResult<Vec<Board>> {
+    fn board_list(ctx: &Ctx, ids: Option<Vec<juniper::ID>>) -> FieldResult<Vec<Board>> {
         use db_schema::boards::dsl::*;
-        let board_vec = boards
+        let mut query = boards.into_boxed();
+        if let Some(ids) = ids {
+            let ids: Vec<i64> = ids.iter().map(|t| id_to_i64(t)).collect();
+            query = query.filter(id.eq_any(ids));
+        }
+        let board_vec = query
             .load::<db_models::Board>(&*ctx.get_pg_conn())
             .or(Error::InternalError.to_field_result())?;
         Ok(board_vec
@@ -202,6 +202,28 @@ impl Query {
                 category_name: a.category_name,
                 create_time: systime_to_i32(a.create_time),
                 energy: 0, // TODO: 鍵能
+            })
+            .collect())
+    }
+    fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
+        use db_schema::parties::dsl;
+        let user_id = ctx
+            .get_id()
+            .ok_or(Error::LogicError("尚未登入", 403).to_field_err())?;
+        let mut query = dsl::parties.into_boxed();
+        if let Some(board_name) = board_name {
+            let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
+            query = query.filter(dsl::board_id.eq(board.id));
+        }
+        let party_vec = query
+            .load::<db_models::Party>(&*ctx.get_pg_conn())
+            .or(Error::InternalError.to_field_result())?;
+        Ok(party_vec
+            .into_iter()
+            .map(|p| Party {
+                id: i64_to_id(p.id),
+                party_name: p.party_name,
+                board_id: p.board_id.map(|id| i64_to_id(id)),
             })
             .collect())
     }
