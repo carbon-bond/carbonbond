@@ -3,15 +3,17 @@ const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from './api';
 
-type UserState = { login: false } | { login: true, user_id: string };
+type UserState = { login: false, fetching: boolean } | { login: true, user_id: string };
 
 function useUserState(): { user_state: UserState, set_login: Function, set_logout: Function } {
-	let [user_state, setLogin] = useState<UserState>({ login: false });
+	let [user_state, setLogin] = useState<UserState>({ login: false, fetching: true });
 
 	async function get_login_state(): Promise<{}> {
 		const data = await api.me_request();
 		if (data.me.id != null) {
 			setLogin({ login: true, user_id: data.me.id });
+		} else {
+			setLogin({ login: false, fetching: false });
 		}
 		return {};
 	}
@@ -24,7 +26,7 @@ function useUserState(): { user_state: UserState, set_login: Function, set_logou
 		setLogin({ login: true, user_id: user_id });
 	}
 	function set_logout(): void {
-		setLogin({ login: false });
+		setLogin({ login: false, fetching: false });
 	}
 	return { user_state, set_login, set_logout };
 }

@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { withRouter } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
 import { toast } from 'react-toastify';
 import useOnClickOutside from 'use-onclickoutside';
 
@@ -8,7 +10,7 @@ import * as api from './api';
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
 
-function Header(): JSX.Element {
+function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
 	const { user_state, set_login, set_logout } = UserState.useContainer();
@@ -79,6 +81,7 @@ function Header(): JSX.Element {
 					<div styleName="feature">🏯 我的城堡</div>
 					<div styleName="feature">🏆 榮耀／卷宗</div>
 					<div styleName="feature">🖅 寄發邀請信</div>
+					<div styleName="feature" onClick={ () => props.history.replace('/app/party') }>👥 政黨</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
@@ -114,7 +117,7 @@ function Header(): JSX.Element {
 		<div className="header" styleName="header">
 			<LoginModal />
 			<div styleName="leftSet">
-				<div styleName="carbonbond">
+				<div styleName="carbonbond" onClick={ () => props.history.replace('app') }>
 					<img src="/img/icon.png" alt="" />
 					碳鍵
 				</div>
@@ -129,5 +132,7 @@ function Header(): JSX.Element {
 		</div>
 	);
 }
+
+const Header = withRouter(_Header);
 
 export { Header };

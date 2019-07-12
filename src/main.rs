@@ -41,6 +41,7 @@ fn main() -> std::io::Result<()> {
             .route("/api", web::post().to(api::api))
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
+            .route("/app/{tail:.*}", web::get().to(index))
             .route("/", web::get().to(index))
             .default_service(Files::new("", "./frontend/static"))
     })

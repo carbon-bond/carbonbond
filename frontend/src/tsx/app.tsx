@@ -15,6 +15,7 @@ import '../css/layout.css?global';
 import { UserState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
+import { PartyPage } from './party_page';
 import { Header } from './header';
 import { LeftPanel } from './leftpanel';
 
@@ -24,25 +25,26 @@ toast.configure({ position: 'bottom-right' });
 function App(): JSX.Element {
 
 	function renderContent(): JSX.Element {
-		return <>
+		return <Router>
 			<Header></Header>
 			<div className="other">
-				<Router>
-					<Switch>
-						<Route exact path="/app" render={() => (
-							<>
-								<LeftPanel></LeftPanel>
-								<MainContent></MainContent>
-							</>
-						)} />
-						<Route path="/app/register/:invite_code" render={props =>
-							<RegisterPage {...props}/>
-						}/>
-						<Redirect to="/app"/>
-					</Switch>
-				</Router>
+				<Switch>
+					<Route exact path="/app" render={() => (
+						<>
+							<LeftPanel></LeftPanel>
+							<MainContent></MainContent>
+						</>
+					)} />
+					<Route path="/app/register/:invite_code" render={props =>
+						<RegisterPage {...props} />
+					} />
+					<Route path="/app/party" render={props =>
+						<PartyPage {...props} />
+					} />
+					<Redirect to="/app" />
+				</Switch>
 			</div>
-		</>;
+		</Router>;
 	}
 	return (
 		<div className="app">
