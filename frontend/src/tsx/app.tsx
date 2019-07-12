@@ -15,7 +15,7 @@ import '../css/layout.css?global';
 import { UserState, BottomPanelState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
-import { PartyPage } from './party_page';
+import { PartyCenter } from './party_center';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
@@ -40,8 +40,8 @@ function App(): JSX.Element {
 					<Route path="/app/register/:invite_code" render={props =>
 						<RegisterPage {...props} />
 					} />
-					<Route path="/app/party" render={props =>
-						<PartyPage {...props} />
+					<Route path="/app/party" render={() =>
+						<PartyCenter/>
 					} />
 					<Redirect to="/app" />
 				</Switch>

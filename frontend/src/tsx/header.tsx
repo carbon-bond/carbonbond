@@ -81,7 +81,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="feature">🏯 我的城堡</div>
 					<div styleName="feature">🏆 榮耀／卷宗</div>
 					<div styleName="feature">🖅 寄發邀請信</div>
-					<div styleName="feature" onClick={ () => props.history.replace('/app/party') }>👥 我的政黨</div>
+					<div styleName="feature" onClick={ () => props.history.push('/app/party') }>👥 我的政黨</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
@@ -117,7 +117,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		<div className="header" styleName="header">
 			<LoginModal />
 			<div styleName="leftSet">
-				<div styleName="carbonbond" onClick={ () => props.history.replace('app') }>
+				<div styleName="carbonbond" onClick={ () => props.history.replace('/app') }>
 					<img src="/img/icon.png" alt="" />
 					碳鍵
 				</div>

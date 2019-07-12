@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
+import { Redirect, Link } from 'react-router-dom';
 
-import { UserState } from './global_state';
-import { getGraphQLClient } from './api';
-import '../css/party.css';
+import { UserState } from '../global_state';
+import { getGraphQLClient } from '../api';
+import '../../css/party.css';
 
-type Props = RouteComponentProps<{}>;
 type Party = {
 	id: string,
 	partyName: string,
@@ -66,16 +65,10 @@ async function fetchPartyTree(): Promise<PartyTree> {
 	return tree;
 }
 
-export function PartyPage(props: Props): JSX.Element {
+export function MyPartyList(): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	let [fetching, setFetching] = React.useState(true);
 	let [party_tree, setPartyTree] = React.useState<PartyTree>({});
-
-	React.useEffect(() => {
-		if (!user_state.login && !user_state.fetching) {
-			props.history.replace('app');
-		}
-	}, [user_state]);
 
 	React.useEffect(() => {
 		fetchPartyTree().then(tree => {
@@ -84,13 +77,15 @@ export function PartyPage(props: Props): JSX.Element {
 		});
 	}, []);
 
-	if (fetching) {
+	if (!user_state.login && !user_state.fetching) {
+		return <Redirect to="/app"/>;
+	} if (fetching) {
 		return <div> 載入頁 </div>;
 	} else {
 		return <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
 			<div style={{ display: 'flex', flex: 1 }}/>
 			<div style={{ display: 'flex', flexDirection: 'column', width: 400 }}>
-				<div>👥 創建政黨</div>
+				<Link to='/app/party/new'><div>👥 創建政黨</div></Link>
 				{
 					Object.keys(party_tree).map(b_name => {
 						return <div key={b_name}>
