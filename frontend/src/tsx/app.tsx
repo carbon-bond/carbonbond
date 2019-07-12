@@ -17,7 +17,8 @@ import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartyPage } from './party_page';
 import { Header } from './header';
-import { LeftPanel } from './leftpanel';
+import { LeftPanel } from './left_panel';
+import { BottomPanel } from './bottom_panel';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -33,6 +34,7 @@ function App(): JSX.Element {
 						<>
 							<LeftPanel></LeftPanel>
 							<MainContent></MainContent>
+							<BottomPanel></BottomPanel>
 						</>
 					)} />
 					<Route path="/app/register/:invite_code" render={props =>

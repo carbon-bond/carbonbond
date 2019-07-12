@@ -1,0 +1,15 @@
+.chatbar {
+    display: flex;
+    flex-direction: column;
+    .chatUnit {
+        cursor: pointer;
+        height: 50px;
+        border: 1px #DDDDDD solid;
+        .unitName {
+            font-size: 20px;
+        }
+        .lastMessage {
+            font-size: 16px;
+        }
+    }
+}

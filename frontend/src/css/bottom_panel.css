@@ -1,0 +1,20 @@
+.bottomPanel {
+    position: fixed;
+    right: 20px;
+    bottom: 0px;
+    display: flex;
+    flex-direction: row;
+    .chatPanel {
+        margin-right: 8px;
+        border: 1px #DDDDDD solid;
+        .roomName {
+            border: 1px #DDDDDD solid;
+        }
+        .chatContent {
+            height: 280px;
+        }
+        .inputBar {
+
+        }
+    }
+}

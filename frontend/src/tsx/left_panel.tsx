@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { ChatBar } from './chatbar';
 import '../css/sidebar.css';
 
 enum Option {
@@ -18,7 +19,7 @@ function PanelMain(option: Option): JSX.Element {
 		case Option.Search:
 			return <div styleName="sidebar">搜尋</div>;
 		case Option.Chat:
-			return <div styleName="sidebar">即使訊息</div>;
+			return <div styleName="sidebar"><ChatBar /></div>;
 		case Option.Notify:
 			return <div styleName="sidebar">通知</div>;
 		case Option.DiscoverFriend:
