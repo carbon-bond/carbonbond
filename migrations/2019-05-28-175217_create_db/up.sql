@@ -1,6 +1,7 @@
 CREATE TABLE users (
   id VARCHAR(20) PRIMARY KEY,
   email VARCHAR(40) NOT NULL,
+  energy INT NOT NULL DEFAULT 0,
   invitation_credit INT NOT NULL DEFAULT 3,
   password_hashed BYTEA NOT NULL,
   salt BYTEA NOT NULL,
@@ -73,6 +74,8 @@ CREATE TABLE parties (
   id BIGSERIAL PRIMARY KEY,
   board_id BIGINT REFERENCES boards(id),
   party_name VARCHAR(20) NOT NULL,
+  energy INT NOT NULL DEFAULT 0,
+  chairman_id VARCHAR(20) REFERENCES users(id) NOT NULL,
   create_time TIMESTAMP NOT NULL DEFAULT Now()
 );
 

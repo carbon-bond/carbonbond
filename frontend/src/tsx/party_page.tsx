@@ -6,7 +6,14 @@ import { getGraphQLClient } from './api';
 import '../css/party.css';
 
 type Props = RouteComponentProps<{}>;
-type Party = { id: string, partyName: string, boardId?: string, ruling?: true };
+type Party = {
+	id: string,
+	partyName: string,
+	energy: number,
+	chairmanId: string,
+	boardId?: string,
+	ruling?: true
+};
 type Board = { id: string, boardName: string, rulingPartyId: string };
 type PartyTree = { [board_name: string]: Party[] };
 
@@ -17,7 +24,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 	const query1 = `
 			{
 				myPartyList {
-					id, partyName, boardId
+					id, partyName, boardId, energy, chairmanId
 				}
 			}
 		`;
@@ -56,7 +63,6 @@ async function fetchPartyTree(): Promise<PartyTree> {
 			tree['流浪政黨'].push(party);
 		}
 	}
-	console.log(tree);
 	return tree;
 }
 
@@ -83,7 +89,7 @@ export function PartyPage(props: Props): JSX.Element {
 	} else {
 		return <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
 			<div style={{ display: 'flex', flex: 1 }}/>
-			<div style={{ display: 'flex', flexDirection: 'column',width: 300 }}>
+			<div style={{ display: 'flex', flexDirection: 'column', width: 400 }}>
 				<div>👥 創建政黨</div>
 				{
 					Object.keys(party_tree).map(b_name => {
@@ -92,8 +98,11 @@ export function PartyPage(props: Props): JSX.Element {
 							{
 								party_tree[b_name].map(party => {
 									return <div key={party.id} style={{ display: 'flex', flexDirection: 'row' }}>
-										<div styleName='partyLebel'>{party.ruling ? '☆' : ''}{party.partyName}</div>
-										<div styleName='partyLebel'>鍵能</div>
+										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
+										<div styleName='partyLabel'>{party.partyName}</div>
+										<div styleName='partyLabel'>⚡{party.energy}</div>
+										<div styleName='partyLabel'>👑{party.chairmanId}</div>
+										<div styleName='partyLabel'>📊 10%</div>
 									</div>;
 								})
 							}

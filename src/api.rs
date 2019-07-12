@@ -41,6 +41,8 @@ struct Party {
     id: ID,
     party_name: String,
     board_id: Option<ID>,
+    chairman_id: String,
+    energy: i32,
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -79,13 +81,6 @@ impl Board {
     }
     fn ruling_party_id(&self) -> ID {
         self.ruling_party_id.clone()
-    }
-    fn ruling_party(&self) -> Party {
-        Party {
-            id: self.ruling_party_id.clone(),
-            party_name: "FIXME".to_owned(),
-            board_id: Some(self.id.clone()),
-        }
     }
     fn parties(&self) -> Vec<Party> {
         vec![] // TODO: 抓出政黨
@@ -210,16 +205,27 @@ impl Query {
             .collect())
     }
     fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
-        use db_schema::parties::dsl;
         let user_id = ctx
             .get_id()
             .ok_or(Error::LogicError("尚未登入", 401).to_field_err())?;
+
+        // TODO 用 join?
+        use db_schema::party_members;
+        let party_ids = party_members::table
+            .filter(party_members::dsl::user_id.eq(user_id))
+            .select(party_members::dsl::party_id)
+            .load::<i64>(&*ctx.get_pg_conn())
+            .or(Err(Error::InternalError))?;
+
+        use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
         if let Some(board_name) = board_name {
             let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
             query = query.filter(dsl::board_id.eq(board.id));
         }
+
         let party_vec = query
+            .filter(dsl::id.eq_any(party_ids))
             .load::<db_models::Party>(&*ctx.get_pg_conn())
             .or(Error::InternalError.to_field_result())?;
         Ok(party_vec
@@ -228,6 +234,8 @@ impl Query {
                 id: i64_to_id(p.id),
                 party_name: p.party_name,
                 board_id: p.board_id.map(|id| i64_to_id(id)),
+                chairman_id: p.chairman_id,
+                energy: p.energy,
             })
             .collect())
     }

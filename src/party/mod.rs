@@ -44,6 +44,7 @@ fn create_party_db(
     let new_party = models::NewParty {
         party_name: name,
         board_id: board_id,
+        chairman_id: user_id,
     };
     let party: models::Party = diesel::insert_into(schema::parties::table)
         .values(&new_party)
@@ -95,6 +96,6 @@ pub fn get_member_power(conn: &PgConnection, user_id: &str, party_id: i64) -> Re
         .filter(dsl::party_id.eq(party_id))
         .filter(dsl::user_id.eq(user_id))
         .first::<models::PartyMember>(conn)
-        .or(Err(Error::LogicError("找不到成員", 404)))?;
+        .or(Err(Error::LogicError("找不到政黨成員", 404)))?;
     Ok(membership.power)
 }

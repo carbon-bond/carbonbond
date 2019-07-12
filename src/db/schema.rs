@@ -66,6 +66,8 @@ table! {
         id -> Int8,
         board_id -> Nullable<Int8>,
         party_name -> Varchar,
+        energy -> Int4,
+        chairman_id -> Varchar,
         create_time -> Timestamp,
     }
 }
@@ -97,6 +99,7 @@ table! {
     users (id) {
         id -> Varchar,
         email -> Varchar,
+        energy -> Int4,
         invitation_credit -> Int4,
         password_hashed -> Bytea,
         salt -> Bytea,
@@ -110,6 +113,7 @@ joinable!(articles -> categories (category_id));
 joinable!(articles -> users (author_id));
 joinable!(categories -> boards (board_id));
 joinable!(parties -> boards (board_id));
+joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));

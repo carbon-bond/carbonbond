@@ -4,6 +4,7 @@ use super::schema::*;
 pub struct User {
     pub id: String,
     pub email: String,
+    pub energy: i32,
     pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,
     pub salt: Vec<u8>,
@@ -37,6 +38,8 @@ pub struct Party {
     pub id: i64,
     pub board_id: Option<i64>,
     pub party_name: String,
+    pub energy: i32,
+    pub chairman_id: String,
     pub create_time: std::time::SystemTime,
 }
 
@@ -45,6 +48,7 @@ pub struct Party {
 pub struct NewParty<'a> {
     pub board_id: Option<i64>,
     pub party_name: &'a str,
+    pub chairman_id: &'a str,
 }
 
 #[derive(Queryable)]
