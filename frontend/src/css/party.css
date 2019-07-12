@@ -1,0 +1,11 @@
+.partyLebel {
+    display: inline-flex;
+    flex: 1;
+    color: gray;
+    padding-left: 15px;
+}
+.boardName {
+    margin-bottom: 0;
+    margin-top: 20px;
+    color: #ddd;
+}

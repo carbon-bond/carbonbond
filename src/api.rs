@@ -76,6 +76,9 @@ impl Board {
     fn board_name(&self) -> &str {
         &self.board_name
     }
+    fn ruling_party_id(&self) -> juniper::ID {
+        self.ruling_party_id.clone()
+    }
     fn ruling_party(&self) -> Party {
         Party {
             id: self.ruling_party_id.clone(),
