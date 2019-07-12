@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css?global';
 import 'normalize.css?global';
 import '../css/layout.css?global';
 
-import { UserState } from './global_state';
+import { UserState, BottomPanelState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartyPage } from './party_page';
@@ -48,10 +48,13 @@ function App(): JSX.Element {
 			</div>
 		</Router>;
 	}
+
 	return (
 		<div className="app">
 			<UserState.Provider>
-				{renderContent()}
+				<BottomPanelState.Provider>
+					{renderContent()}
+				</BottomPanelState.Provider>
 			</UserState.Provider>
 		</div>
 	);
