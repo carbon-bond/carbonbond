@@ -31,7 +31,7 @@ pub fn create_article<C: Context>(
     category_name: &str,
     title: &str,
 ) -> Result<i64, Error> {
-    let author_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 403))?;
+    let author_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
     let board =
         get_board_by_name(ctx, &board_name).or(Err(Error::LogicError("無此看板", 404)))?;
     let category = get_category(ctx, category_name, board.id)?;

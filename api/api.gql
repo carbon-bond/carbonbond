@@ -84,12 +84,10 @@ type Mutation {
     ### 政黨
 
     ## 政黨本身的生命週期
-    # 創建流亡政黨。創建者即黨主席。回傳值爲政黨的 ID
-    createExiledParty(partyName: String!): ID
-    # 創建在野黨。創建者即黨主席。
-    createOutParty(partyName: String!, board: String!): ID
+    # 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
+    createParty(partyName: String!, boardName: String): ID
     # 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
-    tryRuling(id: ID, board: String!): Boolean
+    tryRuling(id: ID, boardName: String!): Boolean
     # 出走。開始流亡。（權限：黨主席）
     exile(partyName: String!): Boolean
 

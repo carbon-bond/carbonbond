@@ -6,42 +6,41 @@ use crate::custom_error::Error;
 use crate::Context;
 
 /// 回傳剛創的政黨 id
-pub fn create_party_with_board_name<C: Context>(
+pub fn create_party<C: Context>(
     ctx: &C,
     board_name: Option<&str>,
     name: &str,
 ) -> Result<i64, Error> {
-    let user_id = {
-        let id = ctx.get_id();
-        if id.is_none() {
-            return Err(Error::LogicError("尚未登入", 403));
+    // TODO: 鍵能之類的檢查
+    let user_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
+    ctx.use_pg_conn(|conn| {
+        if get_party_by_name(conn, name).is_ok() {
+            return Err(Error::LogicError("與其它政黨重名", 403));
         }
-        id.unwrap()
-    };
-    ctx.use_pg_conn(|conn| match board_name {
-        Some(b_name) => {
-            use crate::db::schema::boards::dsl::*;
-            let results = boards
-                .filter(board_name.eq(b_name))
-                .select(id)
-                .first::<i64>(conn);
-            match results {
-                Err(_) => Err(Error::LogicError("無此看板", 400)),
-                Ok(board_id) => create_party(conn, &user_id, Some(board_id), name),
+        match board_name {
+            Some(b_name) => {
+                use crate::db::schema::boards::dsl::*;
+                let results = boards
+                    .filter(board_name.eq(b_name))
+                    .select(id)
+                    .first::<i64>(conn);
+                match results {
+                    Err(_) => Err(Error::LogicError("無此看板", 404)),
+                    Ok(board_id) => create_party_db(conn, &user_id, Some(board_id), name),
+                }
             }
+            None => create_party_db(conn, &user_id, None, name),
         }
-        None => create_party(conn, &user_id, None, name),
     })
 }
 
 /// 回傳剛創的政黨 id
-fn create_party(
+fn create_party_db(
     conn: &PgConnection,
     user_id: &str,
     board_id: Option<i64>,
     name: &str,
 ) -> Result<i64, Error> {
-    // TODO: 撞名檢查，鍵能之類的檢查
     let new_party = models::NewParty {
         party_name: name,
         board_id: board_id,
@@ -75,4 +74,17 @@ fn add_party_member(
         .execute(conn)
         .expect("新增黨員失敗");
     Ok(())
+}
+
+fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Party, Error> {
+    use schema::parties::dsl;
+    let mut parties = dsl::parties
+        .filter(dsl::party_name.eq(name))
+        .load::<models::Party>(conn)
+        .or(Err(Error::InternalError))?;
+    if parties.len() == 1 {
+        Ok(parties.pop().unwrap())
+    } else {
+        Err(Error::LogicError("找不到政黨", 404))
+    }
 }

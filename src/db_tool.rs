@@ -91,13 +91,13 @@ fn add_user(args: &Vec<String>) -> Result<(), failure::Error> {
 
 fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
     if args.len() == 1 {
-        let party = &args[0];
-        let id = party::create_party_with_board_name(ctx, None, party)?;
+        let party_name = &args[0];
+        let id = party::create_party(ctx, None, party_name)?;
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else if args.len() == 2 {
-        let (party, board) = (&args[0], &args[1]);
-        let id = party::create_party_with_board_name(ctx, Some(board), party)?;
+        let (party_name, board) = (&args[0], &args[1]);
+        let id = party::create_party(ctx, Some(board), party_name)?;
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else {

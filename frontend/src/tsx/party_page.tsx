@@ -83,7 +83,7 @@ export function PartyPage(props: Props): JSX.Element {
 	} else {
 		return <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
 			<div style={{ display: 'flex', flex: 1 }}/>
-			<div style={{ display: 'flex', flexDirection: 'column', flex: 8, maxWidth: 300 }}>
+			<div style={{ display: 'flex', flexDirection: 'column',width: 300 }}>
 				<div>👥 創建政黨</div>
 				{
 					Object.keys(party_tree).map(b_name => {

@@ -1,4 +1,4 @@
-use juniper::{FieldResult};
+use juniper::{FieldResult, ID};
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse};
@@ -9,6 +9,7 @@ use diesel::prelude::*;
 use crate::user::email;
 use crate::user::signup;
 use crate::user;
+use crate::party;
 use crate::custom_error::Error;
 use crate::db::{models as db_models, schema as db_schema};
 use crate::forum;
@@ -18,10 +19,10 @@ use std::sync::{Arc, Mutex};
 use crate::{Ctx, Context};
 impl juniper::Context for Ctx {}
 
-fn i64_to_id(id: i64) -> juniper::ID {
-    juniper::ID::new(id.to_string())
+fn i64_to_id(id: i64) -> ID {
+    ID::new(id.to_string())
 }
-fn id_to_i64(id: &juniper::ID) -> i64 {
+fn id_to_i64(id: &ID) -> i64 {
     id.parse::<i64>().unwrap()
 }
 fn systime_to_i32(time: std::time::SystemTime) -> i32 {
@@ -37,16 +38,16 @@ struct Me {
 
 #[derive(juniper::GraphQLObject)]
 struct Party {
-    id: juniper::ID,
+    id: ID,
     party_name: String,
-    board_id: Option<juniper::ID>,
+    board_id: Option<ID>,
 }
 
 #[derive(juniper::GraphQLObject)]
 struct Article {
-    id: juniper::ID,
+    id: ID,
     title: String,
-    board_id: juniper::ID,
+    board_id: ID,
     author_id: String,
     category_name: String,
     energy: i32,
@@ -55,28 +56,28 @@ struct Article {
 
 #[derive(juniper::GraphQLObject)]
 struct Category {
-    id: juniper::ID,
-    board_id: juniper::ID,
+    id: ID,
+    board_id: ID,
     body: String,
     is_active: bool,
-    replacing: Option<juniper::ID>,
+    replacing: Option<ID>,
 }
 
 struct Board {
-    id: juniper::ID,
+    id: ID,
     board_name: String,
-    ruling_party_id: juniper::ID,
+    ruling_party_id: ID,
 }
 
 #[juniper::object(Context = Ctx)]
 impl Board {
-    fn id(&self) -> juniper::ID {
+    fn id(&self) -> ID {
         self.id.clone()
     }
     fn board_name(&self) -> &str {
         &self.board_name
     }
-    fn ruling_party_id(&self) -> juniper::ID {
+    fn ruling_party_id(&self) -> ID {
         self.ruling_party_id.clone()
     }
     fn ruling_party(&self) -> Party {
@@ -98,7 +99,7 @@ impl Board {
         results
             .into_iter()
             .map(|t| Category {
-                id: juniper::ID::new(t.id.to_string()),
+                id: ID::new(t.id.to_string()),
                 board_id: i64_to_id(t.board_id),
                 body: t.body,
                 is_active: t.is_active,
@@ -151,7 +152,7 @@ impl Query {
             ruling_party_id: i64_to_id(board.ruling_party_id),
         })
     }
-    fn board_list(ctx: &Ctx, ids: Option<Vec<juniper::ID>>) -> FieldResult<Vec<Board>> {
+    fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> FieldResult<Vec<Board>> {
         use db_schema::boards::dsl::*;
         let mut query = boards.into_boxed();
         if let Some(ids) = ids {
@@ -212,7 +213,7 @@ impl Query {
         use db_schema::parties::dsl;
         let user_id = ctx
             .get_id()
-            .ok_or(Error::LogicError("尚未登入", 403).to_field_err())?;
+            .ok_or(Error::LogicError("尚未登入", 401).to_field_err())?;
         let mut query = dsl::parties.into_boxed();
         if let Some(board_name) = board_name {
             let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
@@ -286,10 +287,15 @@ impl Mutation {
         board_name: String,
         category_name: String,
         title: String,
-    ) -> FieldResult<juniper::ID> {
+    ) -> FieldResult<ID> {
         // TODO: 還缺乏 edge 和 content
         let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title)
             .map_err(|e| e.to_field_err())?;
+        Ok(i64_to_id(id))
+    }
+    fn create_party(ctx: &Ctx, party_name: String, board_name: Option<String>) -> FieldResult<ID> {
+        let board_name = board_name.as_ref().map(|s| &**s);
+        let id = party::create_party(ctx, board_name, &party_name).map_err(|e| e.to_field_err())?;
         Ok(i64_to_id(id))
     }
 }
