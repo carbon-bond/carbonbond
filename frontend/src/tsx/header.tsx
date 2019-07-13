@@ -41,8 +41,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		return {};
 	}
 	function LoginModal(): JSX.Element {
-		let id = useInputValue('');
-		let password = useInputValue('');
+		let id = useInputValue('').input_props;
+		let password = useInputValue('').input_props;
 		let ref_all = React.useRef(null);
 		let ref_id = React.useRef<HTMLInputElement>(null);
 		useOnClickOutside(ref_all, () => setLogining(false));

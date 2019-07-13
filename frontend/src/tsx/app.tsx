@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css?global';
 import 'normalize.css?global';
 import '../css/layout.css?global';
 
-import { UserState, BottomPanelState } from './global_state';
+import { UserState, BottomPanelState, AllChatState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartyCenter } from './party_center';
@@ -53,7 +53,9 @@ function App(): JSX.Element {
 		<div className="app">
 			<UserState.Provider>
 				<BottomPanelState.Provider>
-					{renderContent()}
+					<AllChatState.Provider>
+						{renderContent()}
+					</AllChatState.Provider>
 				</BottomPanelState.Provider>
 			</UserState.Provider>
 		</div>

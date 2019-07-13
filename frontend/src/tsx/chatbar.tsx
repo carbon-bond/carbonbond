@@ -1,59 +1,25 @@
 import * as React from 'react';
 import '../css/chatbar.css';
-import { BottomPanelState } from './global_state';
+import { BottomPanelState, AllChatState, Chat } from './global_state';
 
-interface ChatUnitData {
-	name: string,
-	last_message: { who: string, content: string }
-}
-
-function ChatUnit(data: ChatUnitData): JSX.Element {
+function ChatUnit(chat: Chat): JSX.Element {
 	const { add_room } = BottomPanelState.useContainer();
-	return <div styleName="chatUnit" onClick={() => add_room(data.name)}>
-		<div styleName="unitName">{data.name}</div>
+	return <div styleName="chatUnit" onClick={() => add_room(chat.name)}>
+		<div styleName="unitName">{chat.name}</div>
 		<div styleName="lastMessage">
-			<span>{data.last_message.who}</span>
+			<span>{chat.dialogs.slice(-1)[0].who}</span>
 			:
-			<span>{data.last_message.content}</span>
+			<span>{chat.dialogs.slice(-1)[0].content}</span>
 		</div>
 	</div>;
 }
 
 function ChatBar(): JSX.Element {
-	const friends = [
-		{
-			name: '玻璃碳',
-			last_message: {
-				who: '玻璃碳',
-				content: '送出了一張貼圖',
-			}
-		},
-		{
-			name: '石墨',
-			last_message: {
-				who: '金剛',
-				content: '送出了一張貼圖'
-			}
-		},
-		{
-			name: '芙',
-			last_message: {
-				who: '芙',
-				content: '一直流鼻涕'
-			}
-		},
-		{
-			name: '六方',
-			last_message: {
-				who: '金剛',
-				content: '幫幫窩'
-			}
-		}
-	];
+	const { all_chat: chat } = AllChatState.useContainer();
 	return <div styleName="chatbar">
 		<input type="text" placeholder="🔍 尋找對話" />
 		{
-			friends.map((friend) => <ChatUnit key={friend.name} {...friend} />)
+			chat.two_people.map((r) => <ChatUnit key={r.name} {...r} />)
 		}
 	</div>;
 }

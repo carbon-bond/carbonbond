@@ -2,6 +2,7 @@ import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from './api';
+import { produce } from 'immer';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -63,5 +64,56 @@ function useBottomPanelState(): {
 	return { chatrooms, add_room, delete_room };
 }
 
+export type Dialog = {
+	who: string,
+	content: string,
+	date: Date
+};
+
+export type Chat = {
+	name: string,
+	dialogs: Dialog[]
+};
+
+type AllChat = {
+	party: Chat[],
+	group: Chat[],
+	two_people: Chat[]
+};
+
+function useAllChatState(): {
+	all_chat: AllChat
+	add_dialog: Function
+	} {
+
+	let [all_chat, set_all_chat] = useState<AllChat>({
+		party: [],
+		group: [],
+		// TODO: 刪掉假數據
+		two_people: [
+			{name: '玻璃碳', dialogs: [{ who: '金剛', content: '安安', date: new Date() }]},
+			{name: '石墨', dialogs: [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 6, 12) }]},
+			{name: '六方', dialogs: [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }]},
+			{name: '芙', dialogs: [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }]},
+		]
+	});
+
+	// 只作用於雙人
+	function add_dialog(name: string, dialog: Dialog): void {
+		let new_chat = produce(all_chat, draft => {
+			let chat = draft.two_people.find((d) => d.name == name);
+			if (chat != undefined) {
+				chat!.dialogs.push(dialog);
+			} else {
+				console.warn(`不存在雙人對話 ${name}`);
+			}
+		});
+		set_all_chat(new_chat);
+	}
+
+	return { all_chat: all_chat, add_dialog };
+}
+
 export const UserState = createContainer(useUserState);
 export const BottomPanelState = createContainer(useBottomPanelState);
+export const AllChatState = createContainer(useAllChatState);
