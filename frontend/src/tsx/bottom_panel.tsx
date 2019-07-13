@@ -2,7 +2,7 @@ import * as React from 'react';
 import '../css/bottom_panel.css';
 import { relative_date } from '../ts/date';
 import { BottomPanelState, AllChatState, Dialog } from './global_state';
-import { useInputValue } from './utils';
+import { useScrollBottom, useInputValue } from './utils';
 
 // 文章編輯器
 // function EditorPanel(): JSX.Element {
@@ -33,6 +33,7 @@ interface RoomData {
 function ChatRoomPanel(room: RoomData): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const {input_props, setValue} = useInputValue('');
+	const scroll_bottom_ref = useScrollBottom();
 	const inputElement = React.useRef<HTMLInputElement>(null);
 	React.useEffect(() => {
 		if (extended && inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
@@ -69,7 +70,7 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 					<div styleName="button" onClick={() => delete_room(room.name)}>✗</div>
 				</div>
 			</div>
-			<div styleName="chatContent">
+			<div ref={scroll_bottom_ref} styleName="chatContent">
 				{DialogBlocks(chat!.dialogs)}
 			</div>
 			<div styleName="inputBar">

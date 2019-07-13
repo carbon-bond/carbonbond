@@ -9,9 +9,9 @@ function relative_date(date: Date): string {
 	} else if (isYesterday(date)) {
 		return `昨天 ${format(date, 'a h:mm', {locale: zhTW})}`;
 	} else if (isThisYear(date)) {
-		return format(date, 'MM月dd日 a h:mm', {locale: zhTW});
+		return format(date, 'M月dd日 a h:mm', {locale: zhTW});
 	} else {
-		return format(date, 'yyyy年MM月dd日 a h:mm', {locale: zhTW});
+		return format(date, 'yyyy年M月dd日 a h:mm', {locale: zhTW});
 	}
 }
 
@@ -22,7 +22,7 @@ function rough_date(date: Date): string {
 	} else if (isYesterday(date)) {
 		return '昨天';
 	} else if (isThisYear(date)) {
-		return format(date, 'MM月dd日');
+		return format(date, 'M月dd日');
 	} else {
 		return format(date, 'yyyy年');
 	}

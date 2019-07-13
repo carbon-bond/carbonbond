@@ -20,6 +20,18 @@ function useInputValue(initialValue: string = ''): {
 	};
 }
 
+// 使被綁定的 div 能在更新時自動捲到底
+function useScrollBottom(): React.RefObject<HTMLDivElement> {
+	const ref = React.useRef<HTMLDivElement>(null);
+	React.useEffect(() => {
+		if (ref != null && ref.current != null) {
+			ref.current.scrollTop = ref.current.scrollHeight;
+		}
+	});
+	return ref;
+}
+
 export {
-	useInputValue
+	useInputValue,
+	useScrollBottom
 };
