@@ -1,6 +1,7 @@
 import * as React from 'react';
 import '../css/bottom_panel.css';
 import { relative_date } from '../ts/date';
+import { differenceInMinutes } from 'date-fns';
 import { BottomPanelState, AllChatState, Dialog } from './global_state';
 import { useScrollBottom, useInputValue } from './utils';
 
@@ -9,21 +10,65 @@ import { useScrollBottom, useInputValue } from './utils';
 // 	return <div></div>;
 // }
 
-function DialogBlocks(dialogs: Dialog[]): JSX.Element {
+type AggDialog = {
+	who: string,
+	date: Date,
+	contents: string[]
+};
+
+function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
+	if (dialogs.length == 0) {
+		return [];
+	}
+	let tmp = {
+		who: dialogs[0].who,
+		date: dialogs[0].date,
+		contents: [dialogs[0].content]
+	};
+	if (dialogs.length == 1) {
+		return [tmp];
+	}
+	const ret: AggDialog[] = [];
+	let cur_date = tmp.date;
+	for (let i = 1; i < dialogs.length; i++) {
+		// 如果作者相同、上下兩則訊息相距不到一分鐘，則在 UI 上合併
+		const dialog = dialogs[i];
+		if (tmp.who == dialog.who && differenceInMinutes(dialog.date, cur_date) < 1) {
+			tmp.contents.push(dialog.content);
+		} else {
+			ret.push(tmp);
+			tmp = {
+				who: dialog.who,
+				date: dialog.date,
+				contents: [dialog.content]
+			};
+		}
+		cur_date = dialog.date;
+	}
+	ret.push(tmp);
+	return ret;
+}
+
+const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
+	const agg_dialogs = aggregateDiaglogs(props.dialogs);
 	return <>
 	{
 		// XXX: key 要改成能表示時間順序的 id
-		dialogs.map(dialog => <div key={Number(dialog.date)} styleName="DialogBlock">
+		agg_dialogs.map(dialog => <div key={Number(dialog.date)} styleName="DialogBlock">
 			<div styleName="meta">
 				<span styleName="who">{dialog.who}</span>
 				<span styleName="date">{relative_date(dialog.date)}</span>
 			</div>
-			<div styleName="content">{dialog.content}</div>
+			{
+				dialog.contents.map((content, index) => {
+					return <div key={index} styleName="content">{content}</div>;
+				})
+			}
 		</div>)
 	}
 	</>
 	;
-}
+});
 
 interface RoomData {
 	name: string
@@ -71,7 +116,7 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 				</div>
 			</div>
 			<div ref={scroll_bottom_ref} styleName="chatContent">
-				{DialogBlocks(chat!.dialogs)}
+				<DialogBlocks dialogs={chat!.dialogs}/>
 			</div>
 			<div styleName="inputBar">
 				<div styleName="nonText">➕</div>
