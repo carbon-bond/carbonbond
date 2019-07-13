@@ -1,18 +1,14 @@
 import * as React from 'react';
+import { toast } from 'react-toastify';
 import { Redirect, Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
 import { getGraphQLClient } from '../api';
 import '../../css/party.css';
 
-type Party = {
-	id: string,
-	partyName: string,
-	energy: number,
-	chairmanId: string,
-	boardId?: string,
-	ruling?: true
-};
+import { Party } from './index';
+
 type Board = { id: string, boardName: string, rulingPartyId: string };
 type PartyTree = { [board_name: string]: Party[] };
 
@@ -65,7 +61,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 	return tree;
 }
 
-export function MyPartyList(): JSX.Element {
+export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	let [fetching, setFetching] = React.useState(true);
 	let [party_tree, setPartyTree] = React.useState<PartyTree>({});
@@ -78,34 +74,84 @@ export function MyPartyList(): JSX.Element {
 	}, []);
 
 	if (!user_state.login && !user_state.fetching) {
-		return <Redirect to="/app"/>;
+		return <Redirect to="/app" />;
 	} if (fetching) {
-		return <div> 載入頁 </div>;
+		return <div></div>;
 	} else {
-		return <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-			<div style={{ display: 'flex', flex: 1 }}/>
-			<div style={{ display: 'flex', flexDirection: 'column', width: 400 }}>
-				<Link to='/app/party/new'><div>👥 創建政黨</div></Link>
-				{
-					Object.keys(party_tree).map(b_name => {
-						return <div key={b_name}>
-							<div styleName='boardName'>{b_name}</div>
-							{
-								party_tree[b_name].map(party => {
-									return <div key={party.id} style={{ display: 'flex', flexDirection: 'row' }}>
+		return <div styleName='listBody'>
+			<CreatePartyBlock {...props} />
+			{
+				Object.keys(party_tree).map(b_name => {
+					return <div key={b_name}>
+						<div styleName='boardName'>{b_name}</div>
+						{
+							party_tree[b_name].map(party => {
+								return (
+									<Link
+										to={`/app/party/p/${party.partyName}`}
+										key={party.id}
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											textDecoration: 'none'
+										}}
+									>
 										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
 										<div styleName='partyLabel'>{party.partyName}</div>
 										<div styleName='partyLabel'>⚡{party.energy}</div>
 										<div styleName='partyLabel'>👑{party.chairmanId}</div>
 										<div styleName='partyLabel'>📊 10%</div>
-									</div>;
-								})
-							}
-						</div>;
-					})
-				}
-			</div>
-			<div style={{ display: 'flex', flex: 1 }}/>
+									</Link>
+								);
+							})
+						}
+					</div>;
+				})
+			}
 		</div>;
 	}
+}
+
+function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
+	let [expand, setExpand] = React.useState(false);
+	let [party_name, setPartyName] = React.useState('');
+	let [board_name, setBoardName] = React.useState('');
+	return <>
+		<div onClick={() => setExpand(!expand)} styleName='createParty'> 👥 創建政黨 </div>
+		<div style={{ display: expand ? 'block' : 'none' }}>
+			<input type='text'
+				value={party_name}
+				placeholder='政黨名稱'
+				styleName='createPartyInput'
+				onChange={evt => {
+					setPartyName(evt.target.value);
+					// TODO: 向後端詢問
+				}}
+			/>
+			<input type='text'
+				value={board_name}
+				placeholder='依附於看板（預設為流浪政黨）'
+				styleName='createPartyInput'
+				onChange={evt => {
+					setBoardName(evt.target.value);
+					// TODO: 向後端詢問
+				}}
+			/>
+			<br/>
+			<button onClick={() => {
+				let client = getGraphQLClient();
+				let b_name_query = board_name.length == 0 ? '' : ` boardName: "${board_name}"`;
+				const query = `
+					mutation {
+						createParty(partyName: "${party_name}" ${b_name_query})
+					}
+				`;
+				client.request(query).then(() => {
+					props.history.replace(`/app/party/p/${party_name}`);
+				}).catch(err => {
+					toast.error(err.message.split(':')[0]);
+				});
+			}}>確認</button>
+		</div>
+	</>;
 }

@@ -17,7 +17,7 @@ use diesel::pg::PgConnection;
 use custom_error::Error;
 
 pub trait Context {
-    fn use_pg_conn<T, F: FnMut(&PgConnection) -> T>(&self, callback: F) -> T;
+    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T;
     fn remember_id(&self, id: String) -> Result<(), Error>;
     fn forget_id(&self) -> Result<(), Error>;
     fn get_id(&self) -> Option<String>;
@@ -33,9 +33,9 @@ impl Ctx {
     }
 }
 impl Context for Ctx {
-    fn use_pg_conn<T, F>(&self, mut callback: F) -> T
+    fn use_pg_conn<T, F>(&self, callback: F) -> T
     where
-        F: FnMut(&PgConnection) -> T,
+        F: FnOnce(&PgConnection) -> T,
     {
         let conn = &*self.conn.lock().unwrap();
         callback(conn)

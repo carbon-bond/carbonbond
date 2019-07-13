@@ -36,13 +36,64 @@ struct Me {
     id: Option<String>,
 }
 
-#[derive(juniper::GraphQLObject)]
 struct Party {
     id: ID,
     party_name: String,
     board_id: Option<ID>,
     chairman_id: String,
     energy: i32,
+}
+#[juniper::object(Context = Ctx)]
+impl Party {
+    fn id(&self) -> ID {
+        self.id.clone()
+    }
+    fn party_name(&self) -> String {
+        self.party_name.clone()
+    }
+    fn board_id(&self) -> Option<ID> {
+        self.board_id.clone()
+    }
+    fn chairman_id(&self) -> String {
+        self.chairman_id.clone()
+    }
+    fn energy(&self) -> i32 {
+        self.energy
+    }
+    fn power(&self, ctx: &Ctx, user_id: Option<String>) -> i32 {
+        // TODO: 這裡有 N+1 問題
+        let user_id = {
+            if let Some(id) = user_id {
+                id
+            } else if let Some(id) = ctx.get_id() {
+                id
+            } else {
+                return -1;
+            }
+        };
+        let power = party::get_member_power(&*ctx.get_pg_conn(), &user_id, id_to_i64(&self.id));
+        if let Ok(power) = power {
+            power as i32
+        } else {
+            -1
+        }
+    }
+    fn board(&self, ctx: &Ctx) -> Option<Board> {
+        use db_schema::boards::dsl::*;
+        if let Some(board_id) = self.board_id.clone() {
+            let board = boards
+                .filter(id.eq(id_to_i64(&board_id)))
+                .first::<db_models::Board>(&*ctx.get_pg_conn())
+                .ok();
+            board.map(|b| Board {
+                id: i64_to_id(b.id),
+                board_name: b.board_name,
+                ruling_party_id: i64_to_id(b.ruling_party_id),
+            })
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -203,6 +254,17 @@ impl Query {
                 energy: 0, // TODO: 鍵能
             })
             .collect())
+    }
+    fn party(ctx: &Ctx, party_name: String) -> FieldResult<Party> {
+        let party = party::get_party_by_name(&*ctx.get_pg_conn(), &party_name)
+            .map_err(|e| e.to_field_err())?;
+        Ok(Party {
+            id: i64_to_id(party.id),
+            party_name: party.party_name,
+            board_id: party.board_id.map(|id| i64_to_id(id)),
+            chairman_id: party.chairman_id,
+            energy: party.energy,
+        })
     }
     fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
         let user_id = ctx

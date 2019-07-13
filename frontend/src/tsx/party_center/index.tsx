@@ -6,14 +6,26 @@ import {
 } from 'react-router-dom';
 
 import { MyPartyList } from './my_party_list';
+import { PartyDetail } from './party_detail';
+
+export type Party = {
+	id: string,
+	partyName: string,
+	energy: number,
+	chairmanId: string,
+	boardId: string | null,
+	ruling?: true,
+	power?: number,
+	board?: { boardName: string }
+};
 
 export function PartyCenter(): JSX.Element {
 	return <Switch>
-		<Route exact path='/app/party' render={() =>
-			<MyPartyList />
+		<Route exact path='/app/party' render={props =>
+			<MyPartyList {...props}/>
 		} />
-		<Route exact path='/app/party/new' render={() =>
-			<div>新政黨</div>
+		<Route path='/app/party/p/:party_name' render={props =>
+			<PartyDetail {...props}/>
 		} />
 		<Redirect to='/app/party'/>
 	</Switch>;
