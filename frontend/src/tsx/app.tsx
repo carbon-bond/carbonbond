@@ -29,22 +29,20 @@ function App(): JSX.Element {
 		return <Router>
 			<Header></Header>
 			<div className="other">
+				<LeftPanel></LeftPanel>
 				<Switch>
 					<Route exact path="/app" render={() => (
-						<>
-							<LeftPanel></LeftPanel>
-							<MainContent></MainContent>
-							<BottomPanel></BottomPanel>
-						</>
+						<MainContent></MainContent>
 					)} />
 					<Route path="/app/register/:invite_code" render={props =>
 						<RegisterPage {...props} />
 					} />
 					<Route path="/app/party" render={() =>
-						<PartyCenter/>
+						<PartyCenter />
 					} />
 					<Redirect to="/app" />
 				</Switch>
+				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;
 	}
