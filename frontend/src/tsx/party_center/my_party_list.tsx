@@ -7,7 +7,7 @@ import { UserState } from '../global_state';
 import { getGraphQLClient } from '../api';
 import '../../css/party.css';
 
-import { Party } from './index';
+import { Party, EXILED_PARTY_NAME } from './index';
 
 type Board = { id: string, boardName: string, rulingPartyId: string };
 type PartyTree = { [board_name: string]: Party[] };
@@ -29,7 +29,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 		if (party.boardId) {
 			b_name_id_table[party.boardId] = null;
 		} else {
-			tree['流浪政黨'] = [];
+			tree[EXILED_PARTY_NAME] = [];
 		}
 	}
 	let query2 = `
@@ -55,7 +55,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 				tree[`b/${board.boardName}`].push(party);
 			}
 		} else {
-			tree['流浪政黨'].push(party);
+			tree[EXILED_PARTY_NAME].push(party);
 		}
 	}
 	return tree;
@@ -82,13 +82,24 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 			<CreatePartyBlock {...props} />
 			{
 				Object.keys(party_tree).map(b_name => {
-					return <div key={b_name}>
-						<div styleName='boardName'>{b_name}</div>
+					return <div key={b_name} styleName='boardPartyBlock'>
+						{
+							(() => {
+								if (b_name == EXILED_PARTY_NAME) {
+									return <div styleName='boardName'>{b_name}</div>;
+								} else {
+									let href = `/app/${b_name}`;
+									return <Link to={href} styleName='boardName'>
+										<div styleName='boardName'>{b_name}</div>
+									</Link>;
+								}
+							})()
+						}
 						{
 							party_tree[b_name].map(party => {
 								return (
 									<Link
-										to={`/app/party/p/${party.partyName}`}
+										to={`/app/party/${party.partyName}`}
 										key={party.id}
 										styleName='partyColumn'
 									>
@@ -114,7 +125,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 	let [board_name, setBoardName] = React.useState('');
 	return <>
 		<div onClick={() => setExpand(!expand)} styleName='createParty'> 👥 創建政黨 </div>
-		<div style={{ display: expand ? 'block' : 'none' }}>
+		<div style={{ display: expand ? 'block' : 'none', textAlign: 'right' }}>
 			<input type='text'
 				value={party_name}
 				placeholder='政黨名稱'
@@ -126,14 +137,14 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			/>
 			<input type='text'
 				value={board_name}
-				placeholder='依附於看板（預設為流浪政黨）'
+				placeholder='依附於看板（預設為流亡政黨）'
 				styleName='createPartyInput'
 				onChange={evt => {
 					setBoardName(evt.target.value);
 					// TODO: 向後端詢問
 				}}
 			/>
-			<br/>
+			<br />
 			<button onClick={() => {
 				let client = getGraphQLClient();
 				let b_name_query = board_name.length == 0 ? '' : ` boardName: "${board_name}"`;
@@ -143,7 +154,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 					}
 				`;
 				client.request(query).then(() => {
-					props.history.push(`/app/party/p/${party_name}`);
+					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
 					toast.error(err.message.split(':')[0]);
 				});

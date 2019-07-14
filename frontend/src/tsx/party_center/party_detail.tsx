@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { getGraphQLClient } from '../api';
-import { Party } from './index';
+import { Party, EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 import { toast } from 'react-toastify';
+
+import '../../css/party.css';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
 
@@ -57,16 +59,20 @@ export function PartyDetail(props: Props): JSX.Element {
 	if (fetching) {
 		return <div></div>;
 	} else if (party) {
-		let b_name = (() => {
-			if (party.board) {
-				return `\b${party.board.boardName}`;
-			} else {
-				return '流浪政黨';
-			}
-		})();
 		return <div style={{ display: 'flex', flexDirection: 'column' }}>
-			<h1 style={{ display: 'inline-flex' }}>{party.partyName}</h1>
-			<h5 style={{ display: 'inline-flex' }}>{b_name}</h5>
+			<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end' }}>
+				<h1 style={{ marginRight: 20 }}>{party.partyName}</h1>
+				{(() => {
+					if (party.board) {
+						let href = `/app/b/${party.board.boardName}`;
+						return <Link to={href} styleName='boardName'>
+							<h3>- b/{party.board.boardName}</h3>
+						</Link>;
+					} else {
+						return <h3 styleName='boardName'>- {EXILED_PARTY_NAME}</h3>;
+					}
+				})()}
+			</div>
 			{
 				(() => {
 					if (!party.board && user_state.login && user_state.user_id == party.chairmanId) {

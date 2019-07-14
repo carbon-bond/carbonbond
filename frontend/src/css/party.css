@@ -8,10 +8,13 @@
     flex: 1;
     color: gray;
 }
-.boardName {
+.boardPartyBlock {
     margin-bottom: 0;
     margin-top: 20px;
+}
+.boardName {
     color: #ddd;
+    text-decoration: none;
 }
 .partyColumn {
     display: flex;
