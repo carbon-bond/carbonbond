@@ -18,6 +18,7 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result
         Err(Error::LogicError("與其它看板重名", 403))
     } else {
         ctx.use_pg_conn(|conn| {
+            println!("{}", party_name);
             let party = party::get_party_by_name(conn, party_name)?;
             if party.board_id.is_some() {
                 Err(Error::LogicError("並非流亡政黨", 403))

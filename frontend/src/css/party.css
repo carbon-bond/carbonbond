@@ -13,6 +13,14 @@
     margin-top: 20px;
     color: #ddd;
 }
+.partyColumn {
+    display: flex;
+    flex-direction: row;
+    text-decoration: none;
+}
+.partyColumn:hover {
+    background-color: #F4F4F4;
+}
 .listBody {
     display: flex;
     flex-direction: column;
@@ -27,5 +35,5 @@
     cursor: pointer;
 }
 .createPartyInput {
-    width: 100%
+    width: 100%;
 }

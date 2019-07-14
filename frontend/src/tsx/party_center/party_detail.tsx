@@ -4,8 +4,19 @@ import { Redirect } from 'react-router-dom';
 import { getGraphQLClient } from '../api';
 import { Party } from './index';
 import { UserState } from '../global_state';
+import { toast } from 'react-toastify';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
+
+function createBoard(party_name: string, board_name: string): Promise<void> {
+	let client = getGraphQLClient();
+	const mutation = `
+			mutation {
+				createBoard(partyName: "${party_name}", boardName: "${board_name}")
+			}
+		`;
+	return client.request(mutation);
+}
 
 async function fetchPartyDetail(name: string): Promise<Party> {
 	let client = getGraphQLClient();
@@ -33,8 +44,7 @@ export function PartyDetail(props: Props): JSX.Element {
 				setParty(p);
 				setFetching(false);
 			}).catch(e => {
-				// TODO: 錯誤處理
-				console.log(e);
+				toast.error(e.message.split(':')[0]);
 				setFetching(false);
 			});
 		} else {
@@ -60,7 +70,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			{
 				(() => {
 					if (!party.board && user_state.login && user_state.user_id == party.chairmanId) {
-						return <CreateBoardBlock/>;
+						return <CreateBoardBlock party_name={party.partyName} rp={props}/>;
 					} else {
 						return null;
 					}
@@ -72,13 +82,27 @@ export function PartyDetail(props: Props): JSX.Element {
 	}
 }
 
-function CreateBoardBlock(): JSX.Element {
+function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
+	let [board_name, setBoardName] = React.useState('');
 	return <>
 		<div onClick={() => setExpand(!expand)} style={{ cursor: 'pointer' }}>⚑創立看板</div>
 		<div style={{ display: expand ? 'block' : 'none' }}>
-			<input type='text' placeholder='看板名稱'/>
-			<button>確認</button>
+			<input type='text'
+				placeholder='看板名稱'
+				value={board_name}
+				onChange={evt => {
+					setBoardName(evt.target.value);
+				}}
+			/>
+			<button onClick={() => {
+				createBoard(props.party_name, board_name).then(() => {
+					// FIXME: 跳轉到新創立的看板
+					props.rp.history.push(`/app/b/${board_name}`);
+				}).catch(err => {
+					toast.error(err.message.split(':')[0]);
+				});
+			}}>確認</button>
 		</div>
 	</>;
 }

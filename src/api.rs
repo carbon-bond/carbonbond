@@ -368,6 +368,11 @@ impl Mutation {
         let id = party::create_party(ctx, board_name, &party_name).map_err(|e| e.to_field_err())?;
         Ok(i64_to_id(id))
     }
+    fn create_board(ctx: &Ctx, board_name: String, party_name: String) -> FieldResult<ID> {
+        let id =
+            forum::create_board(ctx, &party_name, &board_name).map_err(|e| e.to_field_err())?;
+        Ok(i64_to_id(id))
+    }
 }
 
 type Schema = juniper::RootNode<'static, Query, Mutation>;

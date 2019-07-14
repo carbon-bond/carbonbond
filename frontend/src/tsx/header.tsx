@@ -117,7 +117,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		<div className="header" styleName="header">
 			<LoginModal />
 			<div styleName="leftSet">
-				<div styleName="carbonbond" onClick={ () => props.history.replace('/app') }>
+				<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
 					<img src="/img/icon.png" alt="" />
 					碳鍵
 				</div>

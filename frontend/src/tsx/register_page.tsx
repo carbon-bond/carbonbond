@@ -50,7 +50,7 @@ export function RegisterPage(props: Props): JSX.Element {
 	React.useEffect(() => {
 		if (user_state.login) {
 			// 跳轉回首頁
-			props.history.replace('/app');
+			props.history.push('/app');
 		}
 	}, [user_state.login]);
 

@@ -30,7 +30,7 @@ struct DBToolCtx {
     id: Option<String>,
 }
 impl Context for DBToolCtx {
-    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, mut callback: F) -> T {
+    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
         callback(&self.conn)
     }
     fn remember_id(&self, id: String) -> Result<(), Error> {

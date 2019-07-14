@@ -90,11 +90,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 									<Link
 										to={`/app/party/p/${party.partyName}`}
 										key={party.id}
-										style={{
-											display: 'flex',
-											flexDirection: 'row',
-											textDecoration: 'none'
-										}}
+										styleName='partyColumn'
 									>
 										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
 										<div styleName='partyLabel'>{party.partyName}</div>
@@ -147,7 +143,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 					}
 				`;
 				client.request(query).then(() => {
-					props.history.replace(`/app/party/p/${party_name}`);
+					props.history.push(`/app/party/p/${party_name}`);
 				}).catch(err => {
 					toast.error(err.message.split(':')[0]);
 				});
