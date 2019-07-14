@@ -14,8 +14,8 @@ pub fn create_party<C: Context>(
     // TODO: 鍵能之類的檢查
     let user_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
     ctx.use_pg_conn(|conn| {
-        if get_party_by_name(conn, name).is_ok() {
-            return Err(Error::LogicError("與其它政黨重名", 403));
+        if let Some(err) = check_party_name_valid(conn, name) {
+            return Err(err);
         }
         match board_name {
             Some(b_name) => {
@@ -98,4 +98,18 @@ pub fn get_member_power(conn: &PgConnection, user_id: &str, party_id: i64) -> Re
         .first::<models::PartyMember>(conn)
         .or(Err(Error::LogicError("找不到政黨成員", 404)))?;
     Ok(membership.power)
+}
+
+pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Option<Error> {
+    if name.len() == 0 {
+        Some(Error::LogicError("黨名不可為空", 403))
+    } else if name.contains(" ") || name.contains("\n") {
+        Some(Error::LogicError("黨名帶有不合法字串", 403))
+    } else {
+        if get_party_by_name(conn, name).is_ok() {
+            Some(Error::LogicError("與其它政黨重名", 403))
+        } else {
+            None
+        }
+    }
 }

@@ -18,6 +18,12 @@ impl Error {
             _ => build_field_err("內部錯誤", 500),
         }
     }
+    pub fn get_msg(&self) -> &str {
+        match self {
+            Error::LogicError(msg, _) => msg,
+            _ => "內部錯誤",
+        }
+    }
 }
 
 fn build_field_err(msg: &str, code: i32) -> FieldError {

@@ -301,6 +301,13 @@ impl Query {
             })
             .collect())
     }
+    fn check_board_name_valid(ctx: &Ctx, name: String) -> Option<String> {
+        forum::check_board_name_valid(ctx, &name).map(|err| err.get_msg().to_owned())
+    }
+    fn check_party_name_valid(ctx: &Ctx, name: String) -> Option<String> {
+        party::check_party_name_valid(&*ctx.get_pg_conn(), &name)
+            .map(|err| err.get_msg().to_owned())
+    }
 }
 
 struct Mutation;
