@@ -6,25 +6,29 @@
         height: 46px;
         border: 1px #DDDDDD solid;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        justify-content: space-evenly;
+        /* align-items: center; */
         padding-left: 4px;
         padding-right: 4px;
-        .leftSet {
+        .upSet {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             .unitName {
                 font-size: 18px;
             }
-            .lastMessage {
-                margin-top: 1px;
-                font-size: 14px;
-                color: #5a5a5a;
-            }
-        }
-        .rightSet {
             .date {
                 font-size: 13px;
                 color: #666666;
+            }
+        }
+        .downSet {
+            .lastMessage {
+                overflow-y: hidden;
+                font-size: 13px;
+                height: 17px;
+                color: #5a5a5a;
             }
         }
     }
