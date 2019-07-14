@@ -3,13 +3,29 @@
     flex-direction: column;
     .chatUnit {
         cursor: pointer;
-        height: 50px;
+        height: 46px;
         border: 1px #DDDDDD solid;
-        .unitName {
-            font-size: 20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 4px;
+        padding-right: 4px;
+        .leftSet {
+            .unitName {
+                font-size: 18px;
+            }
+            .lastMessage {
+                margin-top: 1px;
+                font-size: 15px;
+                color: #5a5a5a;
+            }
         }
-        .lastMessage {
-            font-size: 16px;
+        .rightSet {
+            .date {
+                font-size: 13px;
+                color: #666666;
+            }
         }
     }
 }

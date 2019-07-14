@@ -29,5 +29,6 @@ function rough_date(date: Date): string {
 }
 
 export {
-	relative_date as rough_date
+	relative_date,
+	rough_date
 };

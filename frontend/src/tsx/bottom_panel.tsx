@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../css/bottom_panel.css';
-import { rough_date } from '../ts/date';
+import { relative_date } from '../ts/date';
 import { BottomPanelState, AllChatState, Dialog } from './global_state';
 import { useInputValue } from './utils';
 
@@ -16,7 +16,7 @@ function DialogBlocks(dialogs: Dialog[]): JSX.Element {
 		dialogs.map(dialog => <div key={Number(dialog.date)} styleName="DialogBlock">
 			<div styleName="meta">
 				<span styleName="who">{dialog.who}</span>
-				<span styleName="date">{rough_date(dialog.date)}</span>
+				<span styleName="date">{relative_date(dialog.date)}</span>
 			</div>
 			<div styleName="content">{dialog.content}</div>
 		</div>)
