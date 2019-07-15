@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { ChatBar } from './chatbar';
+import { BrowseBar } from './browse_bar';
 import '../css/sidebar.css';
 
 enum Option {
@@ -15,7 +16,7 @@ enum Option {
 function PanelMain(option: Option): JSX.Element {
 	switch (option) {
 		case Option.Browse:
-			return <div styleName="sidebar">瀏覽</div>;
+			return <div styleName="sidebar"><BrowseBar/></div>;
 		case Option.Search:
 			return <div styleName="sidebar">搜尋</div>;
 		case Option.Chat:

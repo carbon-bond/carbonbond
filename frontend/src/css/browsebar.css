@@ -1,0 +1,35 @@
+.shrinkableBlock {
+    overflow-Y: hidden;
+    transition:max-height .2s;
+}
+.shrinkableFlexBlock {
+    display: flex;
+    flex-direction: column;
+    transition: flex .2s;
+    min-height: 0;
+}
+.title {
+    background-color: rgb(180, 180, 180);
+    color: white;
+    padding: 2px;
+    cursor: pointer;
+    margin-bottom: 1px;
+}
+.boardBlock {
+    height: 40px;
+    text-decoration: none;
+    display: inline-block;
+    width: 100%;
+    color: gray;
+    .boardName {
+        display: inline-block;
+        margin-right: auto;
+    }
+    .boardHeat {
+        display: block;
+        float: right;
+    }
+}
+.boardBlock:hover {
+    background-color: #F4F4F4;
+}
