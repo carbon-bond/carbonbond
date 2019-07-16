@@ -70,15 +70,50 @@ export type Dialog = {
 	date: Date
 };
 
-export type Chat = {
-	name: string,
-	dialogs: Dialog[]
+export interface ChatData {
+	name: string;
+	newest_dialog(): Dialog
+	newest_channel_name(): string | null;
+};
+
+// TODO: 增加一個欄位表示最後閱讀的時間
+export class SimpleChatData implements ChatData {
+	name: string;
+	dialogs: Dialog[];
+	constructor(name: string, dialogs: Dialog[]) {
+		this.name = name;
+		this.dialogs = dialogs;
+	}
+	newest_dialog(): Dialog {
+		return this.dialogs.slice(-1)[0];
+	}
+	newest_channel_name(): null { return null; }
+};
+
+export class ChannelChatData implements ChatData {
+	name: string;
+	channels: SimpleChatData[];
+	constructor(name: string, channels: SimpleChatData[]) {
+		this.name = name;
+		this.channels = channels;
+	}
+	newest_channel(): SimpleChatData {
+		return this.channels.reduce((prev, cur) => {
+			return Number(prev.newest_dialog().date) > Number(cur.newest_dialog().date) ? prev : cur;
+		});
+	}
+	newest_dialog(): Dialog {
+		return this.newest_channel().newest_dialog();
+	}
+	newest_channel_name(): string {
+		return this.newest_channel().name;
+	}
 };
 
 type AllChat = {
-	party: Chat[],
-	group: Chat[],
-	two_people: Chat[]
+	party: ChannelChatData[],
+	group: SimpleChatData[],
+	two_people: SimpleChatData[]
 };
 
 function useAllChatState(): {
@@ -87,14 +122,33 @@ function useAllChatState(): {
 	} {
 
 	let [all_chat, set_all_chat] = useState<AllChat>({
-		party: [],
+		party: [
+			new ChannelChatData('無限城',
+				[
+					new SimpleChatData(
+						'VOLTS 四天王',
+						[
+							{ who: '冬木士度', content: '那時我認爲他是個怪人', date: new Date(2019, 6, 14) },
+							{ who: '風鳥院花月', content: '我也是', date: new Date(2019, 6, 15) }
+						]
+					),
+					new SimpleChatData(
+						'閃靈二人組',
+						[
+							{ who: '天野銀次', content: '肚子好餓', date: new Date(2018, 11, 4) },
+							{ who: '美堂蠻', content: '呿！', date: new Date(2019, 3, 27) }
+						]
+					)
+				],
+			)
+		],
 		group: [],
 		// TODO: 刪掉假數據
 		two_people: [
-			{name: '玻璃碳', dialogs: [{ who: '金剛', content: '安安', date: new Date() }]},
-			{name: '石墨', dialogs: [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 6, 12) }]},
-			{name: '六方', dialogs: [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }]},
-			{name: '芙', dialogs: [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }]},
+			new SimpleChatData('玻璃碳', [{ who: '金剛', content: '安安', date: new Date() }]),
+			new SimpleChatData('石墨', [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 6, 12) }]),
+			new SimpleChatData('六方', [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }]),
+			new SimpleChatData('芙', [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }]),
 		]
 	});
 

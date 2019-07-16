@@ -15,8 +15,14 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            .unitName {
-                font-size: 18px;
+            .title {
+                .name {
+                    font-size: 18px;
+                }
+                .channel {
+                    font-size: 14px;
+                    color: #882288;
+                }
             }
             .date {
                 font-size: 13px;
