@@ -9,6 +9,7 @@
     padding: 2px;
     cursor: pointer;
     margin-bottom: 1px;
+    text-align: center;
 }
 .boardBlock {
     height: 40px;

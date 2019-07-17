@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import Cookies from 'js-cookie';
 
 import '../css/browsebar.css';
 import { getGraphQLClient } from './api';
+import { UserState } from './global_state';
+import { STORAGE_NAME } from './constants';
 
 type Board = { boardName: string, title: string };
 
@@ -19,14 +20,16 @@ async function fetchHotBoards(): Promise<Board[]> {
 	return res.boardList;
 }
 
-// TODO: 應該用 context 記住熱門看板，以免次切換測邊欄都要向後端發 request
+// TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request
 
 export function BrowseBar(): JSX.Element {
+	let { user_state } = UserState.useContainer();
 	let default_expand = (() => {
-		let exp = Cookies.getJSON('browse-expand');
-		if (exp) {
+		try {
+			let exp = JSON.parse(localStorage[STORAGE_NAME.browsebar_expand]);
 			return exp as [boolean, boolean, boolean];
-		} else {
+		}
+		catch {
 			return [true, true, true];
 		}
 	})();
@@ -48,13 +51,17 @@ export function BrowseBar(): JSX.Element {
 		let new_expand = [...expand];
 		new_expand[index] = !new_expand[index];
 		setExpand(new_expand);
-		Cookies.set('browse-expand', JSON.stringify(new_expand));
+		localStorage[STORAGE_NAME.browsebar_expand] = JSON.stringify(new_expand);
 	}
 	function genGridTemplate(): string {
 		let g1 = expand[0] ? '25px 60px' : '25px 0px';
 		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
 		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
-		return `${g1} ${g2} ${g3}`;
+		if (user_state.login) {
+			return `${g1} ${g2} ${g3}`;
+		} else {
+			return `${g1} ${g2}`;
+		}
 	}
 
 	if (fetching) {
@@ -68,7 +75,7 @@ export function BrowseBar(): JSX.Element {
 			>
 				<div>
 					<div>我的首頁</div>
-					<div>熱門文章</div>
+					<div>全站熱門</div>
 					<div>所有看板</div>
 				</div>
 			</ShrinkableBlock>
@@ -81,12 +88,21 @@ export function BrowseBar(): JSX.Element {
 					hot_boards.map((board, i) => <BoardBlock key={i} board={board}/>)
 				}
 			</ShrinkableBlock>
-			<ShrinkableBlock
-				title='追蹤看板'
-				expand={expand[2]}
-				onClick={() => onTitleClick(2)}
-			>
-			</ShrinkableBlock>
+			{
+				(() => {
+					if (user_state.login) {
+						return <ShrinkableBlock
+							title='追蹤看板'
+							expand={expand[2]}
+							onClick={() => onTitleClick(2)}
+						>
+							{
+								hot_boards.map((board, i) => <BoardBlock key={i} board={board} />)
+							}
+						</ShrinkableBlock>;
+					}
+				})()
+			}
 		</div>;
 	}
 }
