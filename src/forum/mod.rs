@@ -28,8 +28,8 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result
                     403,
                 ))
             } else {
-                let power = party::get_member_power(conn, &user_id, party.id)?;
-                if power != 3 {
+                let position = party::get_member_position(conn, &user_id, party.id)?;
+                if position != 3 {
                     Err(Error::LogicError("並非黨主席".to_owned(), 403))
                 } else {
                     operation::create_board(conn, party.id, name)

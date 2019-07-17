@@ -60,7 +60,7 @@ impl Party {
     fn energy(&self) -> i32 {
         self.energy
     }
-    fn power(&self, ctx: &Ctx, user_id: Option<String>) -> i32 {
+    fn position(&self, ctx: &Ctx, user_id: Option<String>) -> i32 {
         // TODO: 這裡有 N+1 問題
         let user_id = {
             if let Some(id) = user_id {
@@ -71,9 +71,10 @@ impl Party {
                 return -1;
             }
         };
-        let power = party::get_member_power(&*ctx.get_pg_conn(), &user_id, id_to_i64(&self.id));
-        if let Ok(power) = power {
-            power as i32
+        let position =
+            party::get_member_position(&*ctx.get_pg_conn(), &user_id, id_to_i64(&self.id));
+        if let Ok(position) = position {
+            position as i32
         } else {
             -1
         }
@@ -98,15 +99,70 @@ impl Party {
     }
 }
 
-#[derive(juniper::GraphQLObject)]
 struct Article {
     id: ID,
     title: String,
     board_id: ID,
     author_id: String,
     category_name: String,
+    category_id: ID,
     energy: i32,
     create_time: i32,
+}
+#[juniper::object(Context = Ctx)]
+impl Article {
+    fn id(&self) -> ID {
+        self.id.clone()
+    }
+    fn title(&self) -> String {
+        self.title.clone()
+    }
+    fn board_id(&self) -> ID {
+        self.board_id.clone()
+    }
+    fn author_id(&self) -> String {
+        self.author_id.clone()
+    }
+    fn category_name(&self) -> String {
+        self.category_name.clone()
+    }
+    fn category_id(&self) -> ID {
+        self.category_id.clone()
+    }
+    fn category(&self, ctx: &Ctx) -> FieldResult<Category> {
+        use db_schema::categories::dsl::*;
+        let c = categories
+            .filter(id.eq(id_to_i64(&self.category_id)))
+            .first::<db_models::Category>(&*ctx.get_pg_conn())
+            .or(Error::InternalError.to_field_result())?;
+        Ok(Category {
+            id: i64_to_id(c.id),
+            board_id: i64_to_id(c.board_id),
+            body: c.body,
+            is_active: c.is_active,
+            replacing: c.replacing.map(|t| i64_to_id(t)),
+        })
+    }
+    fn energy(&self) -> i32 {
+        self.energy
+    }
+    fn create_time(&self) -> i32 {
+        self.create_time
+    }
+    fn board(&self, ctx: &Ctx) -> FieldResult<Board> {
+        use db_schema::boards::dsl::*;
+        let b = boards
+            .filter(id.eq(id_to_i64(&self.board_id)))
+            .first::<db_models::Board>(&*ctx.get_pg_conn())
+            .or(Error::InternalError.to_field_result())?;
+        Ok(Board {
+            id: i64_to_id(b.id),
+            detail: b.detail,
+            title: b.title,
+            board_name: b.board_name,
+            ruling_party_id: i64_to_id(b.ruling_party_id),
+        })
+    }
 }
 
 #[derive(juniper::GraphQLObject)]
@@ -159,10 +215,7 @@ impl Board {
                 board_id: i64_to_id(t.board_id),
                 body: t.body,
                 is_active: t.is_active,
-                replacing: match t.replacing {
-                    Some(t) => Some(i64_to_id(t)),
-                    None => None,
-                },
+                replacing: t.replacing.map(|t| i64_to_id(t)),
             })
             .collect()
     }
@@ -208,6 +261,23 @@ impl Query {
             title: board.title,
             detail: board.detail,
             ruling_party_id: i64_to_id(board.ruling_party_id),
+        })
+    }
+    fn article(ctx: &Ctx, id: ID) -> FieldResult<Article> {
+        use db_schema::articles::dsl;
+        let article = dsl::articles
+            .filter(dsl::id.eq(id_to_i64(&id)))
+            .first::<db_models::Article>(&*ctx.get_pg_conn())
+            .or(Error::LogicError("找不到文章".to_owned(), 404).to_field_result())?;
+        Ok(Article {
+            id: i64_to_id(article.id),
+            title: article.title,
+            board_id: i64_to_id(article.board_id),
+            author_id: article.author_id,
+            category_name: article.category_name,
+            category_id: i64_to_id(article.category_id),
+            create_time: systime_to_i32(article.create_time),
+            energy: 0,
         })
     }
     fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> FieldResult<Vec<Board>> {
@@ -263,6 +333,7 @@ impl Query {
                 title: a.title.clone(),
                 board_id: i64_to_id(a.board_id),
                 author_id: a.author_id.clone(),
+                category_id: i64_to_id(a.category_id),
                 category_name: a.category_name,
                 create_time: systime_to_i32(a.create_time),
                 energy: 0, // TODO: 鍵能

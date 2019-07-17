@@ -17,7 +17,7 @@ export type Party = {
 	chairmanId: string,
 	boardId: string | null,
 	ruling?: true,
-	power?: number,
+	position?: number,
 	board?: { boardName: string }
 };
 

@@ -131,7 +131,7 @@ pub struct NewArticle<'a> {
 pub struct PartyMember {
     pub id: i64,
     pub board_id: Option<i64>,
-    pub power: i16,
+    pub position: i16,
     pub dedication_ratio: i16,
     pub party_id: i64,
     pub create_time: std::time::SystemTime,
@@ -141,7 +141,7 @@ pub struct PartyMember {
 #[table_name = "party_members"]
 pub struct NewPartyMember<'a> {
     pub board_id: Option<i64>,
-    pub power: i16,
+    pub position: i16,
     pub dedication_ratio: i16,
     pub party_id: i64,
     pub user_id: &'a str,

@@ -15,6 +15,22 @@
     "version": 0
 },
 { 
+    "name": "答案",
+    "transfusable": false,
+    "is_question": false,
+    "show_in_list": true,
+    "rootable": false,
+    "threshold_to_post": {
+        "bond_energy": 0,
+        "identity": 0
+    },
+    "attached_to": ["問題"],
+    "structure": [
+        {"col_name": "內文", "col_type": "Text", "restriction": ""}
+    ],
+    "version": 0
+},
+{ 
     "name": "回覆",
     "transfusable": true,
     "is_question": false,
@@ -24,7 +40,7 @@
         "bond_energy": 0,
         "identity": 0
     },
-    "attached_to": ["問題", "回覆", "留言"],
+    "attached_to": ["問題", "回覆", "留言", "答案"],
     "structure": [
         {"col_name": "內文", "col_type": "Text", "restriction": ""}
     ],
@@ -40,7 +56,7 @@
         "bond_energy": 0,
         "identity": 0
     },
-    "attached_to": ["問題", "回覆", "留言"],
+    "attached_to": ["問題", "回覆", "留言", "答案"],
     "structure": [
         {"col_name": "內文", "col_type": "Text", "restriction": ""}
     ],

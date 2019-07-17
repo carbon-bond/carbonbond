@@ -37,14 +37,24 @@ export function EditorPanel(): JSX.Element | null {
 	}
 	function deleteEditor(): void {
 		// TODO: 跳視窗警告
-		setEditorPanelData(null);
+		let do_delete = true;
+		if (editor_panel_data
+			&& (editor_panel_data.title != '' || editor_panel_data.content != '')
+		) {
+			do_delete = confirm('確定要結束發文？');
+		}
+		if (do_delete) {
+			setEditorPanelData(null);
+		}
 	}
 	if (editor_panel_data) {
 		return <div styleName='singlePanel editorPanel'>
 			<div styleName='roomTitle title'>
 				<div styleName='leftSet'>發表文章</div>
-				<div styleName='middleSet' onClick={() => onTitleClick()}>
-					b/{editor_panel_data.board_name}
+				<div onClick={() => onTitleClick()} styleName='middleSet'>
+					<div style={{  width: '100%', textAlign: 'center' }}>
+						b/{editor_panel_data.board_name}
+					</div>
 				</div>
 				<div styleName='rightSet'>
 					<div styleName='button' onClick={() => deleteEditor()}>✗</div>
@@ -87,7 +97,15 @@ function EditorBody(props: { onPost: () => void, data: EditorPanelData }): JSX.E
 			styleName='oneLineInput'
 			placeholder='文章分類'
 		/>
-		<textarea styleName='articleContent' placeholder='文章內容' value={props.data.content}/>
+		<textarea
+			onChange={evt => {
+				let data = { ...props.data, content: evt.target.value };
+				setEditorPanelData(data);
+			}}
+			styleName='articleContent'
+			placeholder='文章內容'
+			value={props.data.content}
+		/>
 		<div>
 			<button onClick={() => {
 				createArticle(props.data).then(() => {

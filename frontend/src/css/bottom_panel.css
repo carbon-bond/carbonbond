@@ -91,14 +91,18 @@
     }
 
     .editorPanel {
+        background: #F1F1F1;
         width: 500px;
         .leftSet {
             font-size: 18px;
             margin-left: 4px;
         }
         .middleSet {
+            height: 100%;
             flex-grow: 1;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .rightSet {
             font-size: 22px;
@@ -120,6 +124,7 @@
             .articleContent {
                 display: block;
                 flex: 1;
+                resize: none;
             }
         }
     }

@@ -78,7 +78,7 @@ table! {
     party_members (id) {
         id -> Int8,
         board_id -> Nullable<Int8>,
-        power -> Int2,
+        position -> Int2,
         dedication_ratio -> Int2,
         party_id -> Int8,
         create_time -> Timestamp,

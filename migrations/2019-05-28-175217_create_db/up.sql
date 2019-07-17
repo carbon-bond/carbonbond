@@ -84,7 +84,7 @@ CREATE TABLE parties (
 CREATE TABLE party_members (
   id BIGSERIAL PRIMARY KEY,
   board_id BIGINT REFERENCES boards(id),
-  power SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
+  position SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
   dedication_ratio SMALLINT NOT NULL, -- 10~100的整數，表示該人奉獻鍵能的比率
   party_id BIGSERIAL REFERENCES parties(id) NOT NULL,
   create_time TIMESTAMP NOT NULL DEFAULT Now(),

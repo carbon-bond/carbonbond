@@ -57,10 +57,10 @@ fn add_party_member(
     conn: &PgConnection,
     user_id: &str,
     party_id: i64,
-    power: i16,
+    position: i16,
 ) -> Result<(), Error> {
     let new_member = models::NewPartyMember {
-        power,
+        position,
         user_id,
         party_id,
         dedication_ratio: 10,
@@ -86,7 +86,11 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Part
     }
 }
 
-pub fn get_member_power(conn: &PgConnection, user_id: &str, party_id: i64) -> Result<i16, Error> {
+pub fn get_member_position(
+    conn: &PgConnection,
+    user_id: &str,
+    party_id: i64,
+) -> Result<i16, Error> {
     use schema::party_members::dsl;
     let membership = dsl::party_members
         .filter(dsl::party_id.eq(party_id))
@@ -96,7 +100,7 @@ pub fn get_member_power(conn: &PgConnection, user_id: &str, party_id: i64) -> Re
             format!("找不到政黨成員: {}", user_id),
             404,
         )))?;
-    Ok(membership.power)
+    Ok(membership.position)
 }
 
 pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Option<Error> {

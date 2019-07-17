@@ -26,7 +26,7 @@ async function fetchPartyDetail(name: string): Promise<Party> {
 			{
 				party(partyName: "${name}") {
 					id, partyName, boardId,
-					energy, chairmanId, power,
+					energy, chairmanId, position,
 					board { boardName }
 				}
 			}
