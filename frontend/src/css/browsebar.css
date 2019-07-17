@@ -1,12 +1,7 @@
-.shrinkableBlock {
-    overflow-Y: hidden;
-    transition:max-height .2s;
-}
-.shrinkableFlexBlock {
-    display: flex;
-    flex-direction: column;
-    transition: flex .2s;
-    min-height: 0;
+.browseBar {
+    height: 100%;
+    display: inline-grid;
+    transition: .2s;
 }
 .title {
     background-color: rgb(180, 180, 180);

@@ -21,6 +21,7 @@ async function fetchHotBoards(): Promise<Board[]> {
 export function BrowseBar(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [hot_boards, setHotBoards] = React.useState<Board[]>([]);
+	let [expand, setExpand] = React.useState([true, true, true]);
 
 	React.useEffect(() => {
 		fetchHotBoards().then(boards => {
@@ -32,27 +33,39 @@ export function BrowseBar(): JSX.Element {
 		}));
 	}, []);
 
+	function onTitleClick(index: number): void {
+		let new_expand = [...expand];
+		new_expand[index] = !new_expand[index];
+		setExpand(new_expand);
+	}
+	function genGridTemplate(): string {
+		let g1 = expand[0] ? '25px 60px' : '25px 0px';
+		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
+		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
+		return `${g1} ${g2} ${g3}`;
+	}
+
 	if (fetching) {
-		return <div />;
+		return <div/>;
 	} else {
-		return <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-			<ShrinkableBlock title='特化瀏覽' expand={true}>
+		return <div styleName='browseBar' style={{ gridTemplateRows: genGridTemplate() }}>
+			<ShrinkableBlock title='特化瀏覽' expand={expand[0]} onClick={() => onTitleClick(0)}>
+				<div>
+					<div>我的首頁</div>
+					<div>熱門文章</div>
+					<div>所有看板</div>
+				</div>
+			</ShrinkableBlock>
+			<ShrinkableBlock title='熱門看板' expand={expand[1]} onClick={() => onTitleClick(1)}>
+				{
+					hot_boards.map(board => <BoardBlock board={board}/>)
+				}
+			</ShrinkableBlock>
+			<ShrinkableBlock title='我的最愛' expand={expand[2]} onClick={() => onTitleClick(2)}>
 				<div>我的首頁</div>
 				<div>熱門文章</div>
 				<div>所有看板</div>
 			</ShrinkableBlock>
-			<div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
-				<ShrinkableBlock title='熱門看板' expand={true} flex={true}>
-					{
-						hot_boards.map(board => <BoardBlock board={board} />)
-					}
-				</ShrinkableBlock>
-				<ShrinkableBlock title='我的最愛' expand={true} flex={true}>
-					<div>我的首頁</div>
-					<div>熱門文章</div>
-					<div>所有看板</div>
-				</ShrinkableBlock>
-			</div>
 		</div>;
 	}
 }
@@ -69,41 +82,20 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	</Link>;
 }
 
-function ShrinkableBlock(props: { children: React.ReactNode, title: string, expand: boolean, flex?: boolean }): JSX.Element {
-	let [expand, setExpand] = React.useState(props.expand);
+function ShrinkableBlock(props: {
+	children: React.ReactNode,
+	title: string,
+	expand: boolean,
+	onClick: () => void,
+}): JSX.Element {
 	return <>
-		<div styleName='title' onClick={() => setExpand(!expand)}>
-			{props.title}{expand ? ' ▼' : ' ▸'}
+		<div styleName='title' onClick={() => props.onClick()}>
+			{props.title}{props.expand ? ' ▼' : ' ▸'}
 		</div>
-		{
-			((() => {
-				if (props.flex) {
-					return (
-						<div styleName='shrinkableFlexBlock'
-							style={{
-								overflowY: expand ? 'scroll' : 'hidden',
-								flex: expand ? 1 : 0,
-								visibility: expand ? 'visible' : 'hidden',
-							}}
-						>
-							{props.children}
-						</div>
-					);
-				} else {
-					return (
-						<div styleName='shrinkableBlock'
-							style={{
-								overflowY: expand ? 'auto' : 'hidden',
-								maxHeight: expand ? '30%' : 0,
-								visibility: expand ? 'visible' : 'hidden'
-							}}
-						>
-							{props.children}
-						</div>
-					);
-				}
-			}))()
-		}
-
+		<div style={{
+			overflowY: props.expand ? 'auto' : 'hidden',
+		}}>
+			{props.children}
+		</div>
 	</>;
 }
