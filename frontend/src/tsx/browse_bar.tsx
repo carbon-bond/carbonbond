@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 import '../css/browsebar.css';
 import { getGraphQLClient } from './api';
@@ -18,10 +19,20 @@ async function fetchHotBoards(): Promise<Board[]> {
 	return res.boardList;
 }
 
+// TODO: 應該用 context 記住熱門看板，以免次切換測邊欄都要向後端發 request
+
 export function BrowseBar(): JSX.Element {
+	let default_expand = (() => {
+		let exp = Cookies.getJSON('browse-expand');
+		if (exp) {
+			return exp as [boolean, boolean, boolean];
+		} else {
+			return [true, true, true];
+		}
+	})();
 	let [fetching, setFetching] = React.useState(true);
 	let [hot_boards, setHotBoards] = React.useState<Board[]>([]);
-	let [expand, setExpand] = React.useState([true, true, true]);
+	let [expand, setExpand] = React.useState(default_expand);
 
 	React.useEffect(() => {
 		fetchHotBoards().then(boards => {
@@ -37,6 +48,7 @@ export function BrowseBar(): JSX.Element {
 		let new_expand = [...expand];
 		new_expand[index] = !new_expand[index];
 		setExpand(new_expand);
+		Cookies.set('browse-expand', JSON.stringify(new_expand));
 	}
 	function genGridTemplate(): string {
 		let g1 = expand[0] ? '25px 60px' : '25px 0px';
