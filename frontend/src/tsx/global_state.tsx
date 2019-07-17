@@ -99,7 +99,8 @@ function useEditorPanelState(): {
 					board_name: new_article_args.board_name,
 					category_name: new_article_args.category_name,
 					title: new_article_args.title || '',
-					edges: new_article_args.edges || []
+					edges: new_article_args.edges || [],
+					content: ''
 				});
 			}
 		} else if (!editor_panel_data) {

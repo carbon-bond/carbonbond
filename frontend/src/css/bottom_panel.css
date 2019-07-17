@@ -113,7 +113,7 @@
             height: 400px;
             display: flex;
             flex-direction: column;
-            .articleTitle {
+            .oneLineInput{
                 display: block;
                 height: 30px;
             }
