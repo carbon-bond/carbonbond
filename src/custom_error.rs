@@ -5,7 +5,7 @@ pub enum Error {
     #[fail(display = "內部錯誤")]
     InternalError, // 不可控制的內部錯誤，如資料庫意外崩潰
     #[fail(display = "邏輯錯誤：{}", 0)]
-    LogicError(&'static str, i32), // 可控制的錯誤，如權限問題
+    LogicError(String, i32), // 可控制的錯誤，如權限問題
 }
 
 impl Error {

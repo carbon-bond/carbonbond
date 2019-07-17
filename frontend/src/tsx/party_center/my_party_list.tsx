@@ -4,7 +4,7 @@ import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { getGraphQLClient } from '../api';
+import { getGraphQLClient, extractErrMsg } from '../api';
 import '../../css/party.css';
 
 import { Party, EXILED_PARTY_NAME } from './index';
@@ -156,7 +156,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 				client.request(query).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
-					toast.error(err.message.split(':')[0]);
+					toast.error(extractErrMsg(err));
 				});
 			}}>確認</button>
 		</div>

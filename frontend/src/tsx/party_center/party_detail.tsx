@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { getGraphQLClient } from '../api';
+import { getGraphQLClient, extractErrMsg } from '../api';
 import { Party, EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 import { toast } from 'react-toastify';
@@ -45,8 +45,8 @@ export function PartyDetail(props: Props): JSX.Element {
 			fetchPartyDetail(party_name).then(p => {
 				setParty(p);
 				setFetching(false);
-			}).catch(e => {
-				toast.error(e.message.split(':')[0]);
+			}).catch(err => {
+				toast.error(extractErrMsg(err));
 				setFetching(false);
 			});
 		} else {
@@ -106,7 +106,7 @@ function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element
 					// FIXME: 跳轉到新創立的看板
 					props.rp.history.push(`/app/b/${board_name}`);
 				}).catch(err => {
-					toast.error(err.message.split(':')[0]);
+					toast.error(extractErrMsg(err));
 				});
 			}}>確認</button>
 		</div>

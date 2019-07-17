@@ -9,5 +9,5 @@ pub fn find_user(conn: &PgConnection, id: &str) -> Result<User, Error> {
     schema::users::table
         .find(id)
         .first::<User>(conn)
-        .map_err(|_| Error::LogicError("找不到 ID", 401))
+        .map_err(|_| Error::LogicError(format!("找不到使用者: {}", id), 401))
 }

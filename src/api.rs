@@ -283,7 +283,7 @@ impl Query {
     fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
         let user_id = ctx
             .get_id()
-            .ok_or(Error::LogicError("尚未登入", 401).to_field_err())?;
+            .ok_or(Error::LogicError("尚未登入".to_owned(), 401).to_field_err())?;
 
         // TODO 用 join?
         use db_schema::party_members;
@@ -345,7 +345,7 @@ impl Mutation {
     }
     fn invite_signup(ctx: &Ctx, email: String) -> FieldResult<bool> {
         match ctx.session.get::<String>("id")? {
-            None => Error::LogicError("尚未登入", 401).to_field_result(),
+            None => Error::LogicError("尚未登入".to_owned(), 401).to_field_result(),
             Some(id) => {
                 // TODO: 寫宏來處理類似邏輯
                 let invite_code =

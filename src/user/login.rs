@@ -9,7 +9,7 @@ pub fn login(conn: &PgConnection, id: &str, password: &str) -> Result<(), Error>
     let user = schema::users::table
         .find(id)
         .first::<User>(conn)
-        .map_err(|_| Error::LogicError("找不到 ID", 401))?;
+        .map_err(|_| Error::LogicError(format!("找不到使用者: {}", id), 401))?;
 
     let equal = argon2::verify_raw(
         password.as_bytes(),
@@ -21,6 +21,6 @@ pub fn login(conn: &PgConnection, id: &str, password: &str) -> Result<(), Error>
 
     match equal {
         true => Ok(()),
-        false => Err(Error::LogicError("密碼錯誤", 401)),
+        false => Err(Error::LogicError("密碼錯誤".to_owned(), 401)),
     }
 }

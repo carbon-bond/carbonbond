@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
-import { getGraphQLClient } from './api';
+import { getGraphQLClient, extractErrMsg } from './api';
 import { toast } from 'react-toastify';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
@@ -73,7 +73,6 @@ function EditorBody(props: { onPost: () => void, data: EditorPanelData }): JSX.E
 			onChange={evt => {
 				let data = { ...props.data, title: evt.target.value };
 				setEditorPanelData(data);
-				console.log(data);
 			}}
 			value={props.data.title}
 			styleName='oneLineInput'
@@ -94,7 +93,7 @@ function EditorBody(props: { onPost: () => void, data: EditorPanelData }): JSX.E
 				createArticle(props.data).then(() => {
 					props.onPost();
 				}).catch(err => {
-					toast.error(err.message.split(':')[0]);
+					toast.error(extractErrMsg(err));
 				});
 			}}>送出文章</button>
 			<button>儲存草稿</button>

@@ -22,9 +22,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			set_login(id);
 			toast('登入成功');
 		} catch (err) {
-			// console.log(JSON.stringify(err.response));
-			toast(err.message.split(':')[0]);
-			// TODO: 應該想辦法做更精細的錯誤處理
+			toast.error(api.extractErrMsg(err));
 		}
 		return {};
 	}
@@ -35,8 +33,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			toast(err.message.split(':')[0]);
-			// TODO: 應該想辦法做更精細的錯誤處理
+			toast.error(api.extractErrMsg(err));
 		}
 		return {};
 	}

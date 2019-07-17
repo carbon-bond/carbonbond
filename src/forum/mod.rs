@@ -13,7 +13,9 @@ pub mod operation;
 /// 回傳剛創的板的 id
 pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result<i64, Error> {
     // TODO: 撞名檢查，權限檢查，等等
-    let user_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
+    let user_id = ctx
+        .get_id()
+        .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
     if let Some(err) = check_board_name_valid(ctx, name) {
         Err(err)
     } else {
@@ -21,11 +23,14 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result
             println!("{}", party_name);
             let party = party::get_party_by_name(conn, party_name)?;
             if party.board_id.is_some() {
-                Err(Error::LogicError("並非流亡政黨", 403))
+                Err(Error::LogicError(
+                    format!("{} 並非流亡政黨", party_name),
+                    403,
+                ))
             } else {
                 let power = party::get_member_power(conn, &user_id, party.id)?;
                 if power != 3 {
-                    Err(Error::LogicError("並非黨主席", 403))
+                    Err(Error::LogicError("並非黨主席".to_owned(), 403))
                 } else {
                     operation::create_board(conn, party.id, name)
                 }
@@ -50,19 +55,26 @@ pub fn create_article<C: Context>(
     category_name: &str,
     title: &str,
 ) -> Result<i64, Error> {
-    let author_id = ctx.get_id().ok_or(Error::LogicError("尚未登入", 401))?;
-    let board =
-        get_board_by_name(ctx, &board_name).or(Err(Error::LogicError("無此看板", 404)))?;
+    let author_id = ctx
+        .get_id()
+        .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
+    let board = get_board_by_name(ctx, &board_name)?;
     let category = get_category(ctx, category_name, board.id)?;
     let c_body = CategoryBody::from_string(&category.body);
     // TODO: 各項該做的檢查
     if !c_body.rootable && edges.len() == 0 {
-        return Err(Error::LogicError("該分類不可為根", 403));
+        return Err(Error::LogicError(
+            format!("分類不可為根: {}", category_name),
+            403,
+        ));
     }
     let mut node_ids = Vec::<i64>::with_capacity(edges.len());
     for &(id, transfuse) in edges {
         if !c_body.transfusable && transfuse != 0 {
-            return Err(Error::LogicError("該分類不可輸能", 403));
+            return Err(Error::LogicError(
+                format!("分類不可輸能: {}", category_name),
+                403,
+            ));
         }
         node_ids.push(id);
     }
@@ -73,11 +85,17 @@ pub fn create_article<C: Context>(
         if root_id.is_none() {
             root_id = Some(article.root_id);
         } else if root_id.unwrap() != article.root_id {
-            return Err(Error::LogicError("內部連結指向不同主題樹", 403));
+            return Err(Error::LogicError(
+                "內部連結指向不同主題樹".to_owned(),
+                403,
+            ));
         }
         if !c_body.can_attach_to(&article.category_name) {
             return Err(Error::LogicError(
-                "指定的兩個分類間不可建立關係",
+                format!(
+                    "分類 {} 與 {} 間不可建立關係",
+                    category_name, article.category_name
+                ),
                 403,
             ));
         }
@@ -113,7 +131,7 @@ pub fn get_articles_meta<C: Context>(
     if articles.len() == article_ids.len() {
         Ok(articles)
     } else {
-        Err(Error::LogicError("找不到文章資料", 404))
+        Err(Error::LogicError("找不到文章資料".to_owned(), 404))
     }
 }
 
@@ -123,7 +141,10 @@ pub fn get_board_by_name<C: Context>(ctx: &C, name: &str) -> Result<models::Boar
         boards
             .filter(board_name.eq(&name))
             .first::<models::Board>(conn)
-            .or(Err(Error::LogicError("找不到看板", 404)))
+            .or(Err(Error::LogicError(
+                format!("找不到看板: {}", name),
+                404,
+            )))
     })
 }
 
@@ -139,7 +160,7 @@ pub fn get_category<C: Context>(
             .filter(dsl::category_name.eq(category_name))
             .filter(dsl::board_id.eq(board_id))
             .first::<models::Category>(conn)
-            .map_err(|_| Error::LogicError("找不到分類", 404))
+            .map_err(|_| Error::LogicError(format!("找不到分類: {}", category_name), 404))
     })
 }
 
@@ -150,12 +171,15 @@ pub fn check_col_valid(_col_struct: &Vec<ColSchema>, _content: &Vec<String>) -> 
 
 pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Option<Error> {
     if name.len() == 0 {
-        Some(Error::LogicError("板名不可為空", 403))
+        Some(Error::LogicError("板名不可為空".to_owned(), 403))
     } else if name.contains(" ") || name.contains("\n") {
-        Some(Error::LogicError("板名帶有不合法字串", 403))
+        Some(Error::LogicError(
+            "板名帶有不合法字串".to_owned(),
+            403,
+        ))
     } else {
         if get_board_by_name(ctx, name).is_ok() {
-            Some(Error::LogicError("與其它看板重名", 403))
+            Some(Error::LogicError("與其它看板重名".to_owned(), 403))
         } else {
             None
         }

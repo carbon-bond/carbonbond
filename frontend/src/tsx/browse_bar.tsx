@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 import '../css/browsebar.css';
-import { getGraphQLClient } from './api';
+import { getGraphQLClient, extractErrMsg } from './api';
 import { UserState } from './global_state';
 import { STORAGE_NAME } from './constants';
 
@@ -42,7 +42,7 @@ export function BrowseBar(): JSX.Element {
 			setHotBoards(boards);
 			setFetching(false);
 		}).catch((err => {
-			toast.error(err.message.split(':')[0]);
+			toast.error(extractErrMsg(err));
 			setFetching(false);
 		}));
 	}, []);
