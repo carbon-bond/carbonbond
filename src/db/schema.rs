@@ -27,6 +27,8 @@ table! {
     boards (id) {
         id -> Int8,
         board_name -> Varchar,
+        title -> Varchar,
+        detail -> Varchar,
         ruling_party_id -> Int8,
         create_time -> Timestamp,
     }

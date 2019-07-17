@@ -19,6 +19,8 @@ CREATE TABLE invitations (
 CREATE TABLE boards (
   id BIGSERIAL PRIMARY KEY,
   board_name VARCHAR(32) NOT NULL,
+  title VARCHAR(50) NOT NULL,
+  detail VARCHAR(500) NOT NULL,
   ruling_party_id BIGSERIAL NOT NULL, -- 這行有沒有辦法 reference parties(id)?
   create_time TIMESTAMP NOT NULL DEFAULT Now(),
   UNIQUE(board_name)

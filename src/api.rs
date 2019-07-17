@@ -87,6 +87,8 @@ impl Party {
                 .ok();
             board.map(|b| Board {
                 id: i64_to_id(b.id),
+                detail: b.detail,
+                title: b.title,
                 board_name: b.board_name,
                 ruling_party_id: i64_to_id(b.ruling_party_id),
             })
@@ -120,6 +122,8 @@ struct Board {
     id: ID,
     board_name: String,
     ruling_party_id: ID,
+    title: String,
+    detail: String,
 }
 
 #[juniper::object(Context = Ctx)]
@@ -129,6 +133,12 @@ impl Board {
     }
     fn board_name(&self) -> &str {
         &self.board_name
+    }
+    fn title(&self) -> &str {
+        &self.title
+    }
+    fn detail(&self) -> &str {
+        &self.detail
     }
     fn ruling_party_id(&self) -> ID {
         self.ruling_party_id.clone()
@@ -195,6 +205,8 @@ impl Query {
         Ok(Board {
             id: i64_to_id(board.id),
             board_name: board.board_name,
+            title: board.title,
+            detail: board.detail,
             ruling_party_id: i64_to_id(board.ruling_party_id),
         })
     }
@@ -213,6 +225,8 @@ impl Query {
             .map(|b| Board {
                 id: i64_to_id(b.id),
                 board_name: b.board_name,
+                title: b.title,
+                detail: b.detail,
                 ruling_party_id: i64_to_id(b.ruling_party_id),
             })
             .collect())

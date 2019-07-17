@@ -55,6 +55,8 @@ pub struct NewParty<'a> {
 pub struct Board {
     pub id: i64,
     pub board_name: String,
+    pub title: String,
+    pub detail: String,
     pub ruling_party_id: i64,
     pub create_time: std::time::SystemTime,
 }
@@ -63,6 +65,8 @@ pub struct Board {
 #[table_name = "boards"]
 pub struct NewBoard<'a> {
     pub board_name: &'a str,
+    pub title: &'a str,
+    pub detail: &'a str,
     pub ruling_party_id: i64,
 }
 

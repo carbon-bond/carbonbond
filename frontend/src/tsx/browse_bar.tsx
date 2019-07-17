@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import '../css/browsebar.css';
 import { getGraphQLClient } from './api';
 
-type Board = { boardName: string, comment: string };
+type Board = { boardName: string, title: string };
 
 async function fetchHotBoards(): Promise<Board[]> {
 	let client = getGraphQLClient();
 	const mutation = `
 			{
-				boardList { boardName }
+				boardList { boardName, title }
 			}
 		`;
 	let res: { boardList: Board[] } = await  client.request(mutation);
@@ -49,22 +49,31 @@ export function BrowseBar(): JSX.Element {
 		return <div/>;
 	} else {
 		return <div styleName='browseBar' style={{ gridTemplateRows: genGridTemplate() }}>
-			<ShrinkableBlock title='特化瀏覽' expand={expand[0]} onClick={() => onTitleClick(0)}>
+			<ShrinkableBlock
+				title='特化瀏覽'
+				expand={expand[0]}
+				onClick={() => onTitleClick(0)}
+			>
 				<div>
 					<div>我的首頁</div>
 					<div>熱門文章</div>
 					<div>所有看板</div>
 				</div>
 			</ShrinkableBlock>
-			<ShrinkableBlock title='熱門看板' expand={expand[1]} onClick={() => onTitleClick(1)}>
+			<ShrinkableBlock
+				title='熱門看板'
+				expand={expand[1]}
+				onClick={() => onTitleClick(1)}
+			>
 				{
-					hot_boards.map(board => <BoardBlock board={board}/>)
+					hot_boards.map((board, i) => <BoardBlock key={i} board={board}/>)
 				}
 			</ShrinkableBlock>
-			<ShrinkableBlock title='我的最愛' expand={expand[2]} onClick={() => onTitleClick(2)}>
-				<div>我的首頁</div>
-				<div>熱門文章</div>
-				<div>所有看板</div>
+			<ShrinkableBlock
+				title='追蹤看板'
+				expand={expand[2]}
+				onClick={() => onTitleClick(2)}
+			>
 			</ShrinkableBlock>
 		</div>;
 	}
@@ -77,6 +86,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 			<div>
 				<div styleName='boardName'>{board.boardName}</div>
 				<div styleName='boardHeat'>🔥 0</div>
+				<div styleName='boardTitle'>{board.title}</div>
 			</div>
 		</div>
 	</Link>;

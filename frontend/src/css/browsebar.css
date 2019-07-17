@@ -1,6 +1,6 @@
 .browseBar {
     height: 100%;
-    display: inline-grid;
+    display: grid;
     transition: .2s;
 }
 .title {
@@ -23,6 +23,11 @@
     .boardHeat {
         display: block;
         float: right;
+    }
+    .boardTitle {
+        font-size: 12px;
+        margin-top: 3px;
+        margin-left: 10px;
     }
 }
 .boardBlock:hover {

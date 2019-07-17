@@ -15,6 +15,8 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     let new_board = models::NewBoard {
         board_name: name,
         ruling_party_id: party_id,
+        title: "TODO: 讓創板者自行填入",
+        detail: "",
     };
     // TODO: 撞名檢查
     let board: models::Board = diesel::insert_into(schema::boards::table)
