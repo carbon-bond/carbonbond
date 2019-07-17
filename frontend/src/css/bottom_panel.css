@@ -24,19 +24,23 @@
     display: flex;
     flex-direction: row;
     align-items: flex-end;
-    .chatPanel {
-        width: 300px;
+    .singlePanel {
         margin-right: 8px;
         border: 1px #DDDDDD solid;
+    }
+    .title {
+        background: cadetblue;
+        border: 1px #DDDDDD solid;
+        height: 30px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .chatPanel {
+        width: 300px;
         .roomTitle {
-            background: white;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px #DDDDDD solid;
-            height: 30px;
-            cursor: pointer;
             .leftSet {
                 font-size: 18px;
                 margin-left: 4px;
@@ -82,6 +86,40 @@
                 border-radius: 10px;
                 text-indent: 5px;
                 height: 28px;
+            }
+        }
+    }
+
+    .editorPanel {
+        width: 500px;
+        .leftSet {
+            font-size: 18px;
+            margin-left: 4px;
+        }
+        .middleSet {
+            flex-grow: 1;
+            text-align: center;
+        }
+        .rightSet {
+            font-size: 22px;
+            margin-right: 4px;
+            display: flex;
+            flex-direction: row;
+            .button {
+                margin-left: 4px;
+            }
+        }
+        .editorBody {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            .articleTitle {
+                display: block;
+                height: 30px;
+            }
+            .articleContent {
+                display: block;
+                flex: 1;
             }
         }
     }

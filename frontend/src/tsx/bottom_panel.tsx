@@ -4,11 +4,7 @@ import { relative_date } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { BottomPanelState, AllChatState, Dialog } from './global_state';
 import { useScrollBottom, useInputValue } from './utils';
-
-// 文章編輯器
-// function EditorPanel(): JSX.Element {
-// 	return <div></div>;
-// }
+import { EditorPanel } from './editor_panel';
 
 type AggDialog = {
 	who: string,
@@ -77,7 +73,7 @@ interface RoomData {
 // 聊天室
 function ChatRoomPanel(room: RoomData): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
-	const {input_props, setValue} = useInputValue('');
+	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
 	const inputElement = React.useRef<HTMLInputElement>(null);
 	React.useEffect(() => {
@@ -106,8 +102,8 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 			console.warn(`找不到聊天室 ${room.name}`);
 		}
 
-		return <div styleName="chatPanel">
-			<div styleName="roomTitle">
+		return <div styleName="chatPanel singlePanel">
+			<div styleName="roomTitle title">
 				<div styleName="leftSet">{room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(false)}></div>
 				<div styleName="rightSet">
@@ -125,8 +121,8 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 			</div>
 		</div>;
 	} else {
-		return <div styleName="chatPanel">
-			<div styleName="roomTitle">
+		return <div styleName="chatPanel singlePanel">
+			<div styleName="roomTitle title">
 				<div styleName="leftSet">{room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
 				<div styleName="rightSet">
@@ -141,6 +137,7 @@ function BottomPanel(): JSX.Element {
 	const { chatrooms } = BottomPanelState.useContainer();
 	return <div styleName="bottomPanel">
 		{chatrooms.map(room => <ChatRoomPanel key={room.name} {...room} />)}
+		<EditorPanel/>
 	</div>;
 }
 

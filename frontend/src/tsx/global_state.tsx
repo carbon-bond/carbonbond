@@ -40,7 +40,7 @@ type ChatRoom = {
 function useBottomPanelState(): {
 	chatrooms: ChatRoom[],
 	add_room: Function,
-	delete_room: Function
+	delete_room: Function,
 	} {
 	let [chatrooms, set_chatrooms] = useState<ChatRoom[]>([]);
 
@@ -63,6 +63,62 @@ function useBottomPanelState(): {
 
 	return { chatrooms, add_room, delete_room };
 }
+
+export type NewArticleArgs = {
+	board_name: string,
+	category_name?: string,
+	title?: string,
+	edges?: { article_id: string, transfuse: number }[]
+};
+export type EditorPanelData = {
+	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
+	board_name: string,
+	category_name?: string,
+	title: string,
+	edges: { article_id: string, transfuse: number }[],
+	content: string // TODO: 之後應該是 string[]
+};
+
+function useEditorPanelState(): {
+	open: boolean,
+	openEditorPanel: (new_article_args?: NewArticleArgs) => void,
+	closeEditorPanel: () => void,
+	editor_panel_data: EditorPanelData | null,
+	setEditorPanelData: (data: EditorPanelData | null) => void
+	} {
+	let [editor_panel_data, setEditorPanelData] = useState<EditorPanelData | null>(null);
+	let [open, setOpen] = useState(false);
+	function openEditorPanel(new_article_args?: NewArticleArgs): void {
+		if (new_article_args) {
+			// 開新文來編輯
+			if (editor_panel_data) {
+				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
+				return;
+			} else {
+				setEditorPanelData({
+					board_name: new_article_args.board_name,
+					category_name: new_article_args.category_name,
+					title: new_article_args.title || '',
+					edges: new_article_args.edges || []
+				});
+			}
+		} else if (!editor_panel_data) {
+			// TODO: 錯誤處理，沒有任何資訊卻想打開編輯視窗
+		}
+		setOpen(true);
+	}
+	function closeEditorPanel(): void {
+		setOpen(false);
+	}
+	return {
+		open,
+		openEditorPanel,
+		closeEditorPanel,
+		editor_panel_data,
+		setEditorPanelData
+	};
+}
+
 
 export type Dialog = {
 	who: string,
@@ -171,3 +227,4 @@ function useAllChatState(): {
 export const UserState = createContainer(useUserState);
 export const BottomPanelState = createContainer(useBottomPanelState);
 export const AllChatState = createContainer(useAllChatState);
+export const EditorPanelState = createContainer(useEditorPanelState);
