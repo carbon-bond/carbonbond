@@ -125,7 +125,7 @@ pub fn get_articles_meta<C: Context>(
         schema::articles::table
             .filter(id.eq_any(article_ids))
             .load::<models::Article>(conn)
-            .map_err(|_| Error::InternalError)
+            .or(Err(Error::InternalError))
     })?;
     if articles.len() == article_ids.len() {
         Ok(articles)
@@ -159,7 +159,10 @@ pub fn get_category<C: Context>(
             .filter(dsl::category_name.eq(category_name))
             .filter(dsl::board_id.eq(board_id))
             .first::<models::Category>(conn)
-            .map_err(|_| Error::LogicError(format!("找不到分類: {}", category_name), 404))
+            .or(Err(Error::LogicError(
+                format!("找不到分類: {}", category_name),
+                404,
+            )))
     })
 }
 
@@ -193,4 +196,12 @@ pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Result<(), Err
             Ok(())
         }
     }
+}
+
+pub fn get_article_content<C: Context>(
+    ctx: &C,
+    article_id: i64,
+    category_id: i64,
+) -> Result<Vec<String>, Error> {
+    ctx.use_pg_conn(|conn| operation::get_article_content(conn, article_id, category_id))
 }

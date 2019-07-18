@@ -163,6 +163,11 @@ impl Article {
             ruling_party_id: i64_to_id(b.ruling_party_id),
         })
     }
+    fn content(&self, ctx: &Ctx) -> FieldResult<Vec<String>> {
+        let id = id_to_i64(&self.id);
+        let c_id = id_to_i64(&self.category_id);
+        forum::get_article_content(ctx, id, c_id).map_err(|e| e.to_field_err())
+    }
 }
 
 #[derive(juniper::GraphQLObject)]

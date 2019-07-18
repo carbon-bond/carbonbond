@@ -9,7 +9,7 @@ use crate::db::{models, schema};
 use crate::custom_error::Error;
 
 use super::category_body;
-pub use category_body::{CategoryBody, ColSchema, StringOrI32};
+pub use category_body::{CategoryBody, ColSchema, StringOrI32, ColType, AtomType};
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i64, Error> {
@@ -81,14 +81,14 @@ pub fn create_article(
     let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)
         .get_result(conn)
-        .map_err(|_| Error::InternalError)?;
+        .or(Err(Error::InternalError))?;
 
     if root_id.is_none() {
         use schema::articles::{id, root_id};
         diesel::update(schema::articles::table.filter(id.eq(article.id)))
             .set(root_id.eq(article.id))
             .execute(conn)
-            .map_err(|_| Error::InternalError)?;
+            .or(Err(Error::InternalError))?;
     }
     let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_COLUMN];
     let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_COLUMN];
@@ -131,6 +131,33 @@ pub fn create_edges(
     Ok(())
 }
 
-pub fn check_col_valid(_col_struct: &Vec<ColSchema>, _content: &Vec<String>) -> bool {
-    unimplemented!()
+pub fn get_article_content(
+    conn: &PgConnection,
+    article_id: i64,
+    category_id: i64,
+) -> Result<Vec<String>, Error> {
+    use schema::categories::dsl as c_dsl;
+    let category = c_dsl::categories
+        .filter(c_dsl::id.eq(category_id))
+        .first::<models::Category>(conn)
+        .or(Err(Error::InternalError))?;
+    let c_body = CategoryBody::from_string(&category.body);
+    use schema::article_contents::dsl as ac_dsl;
+    let content = ac_dsl::article_contents
+        .filter(ac_dsl::article_id.eq(article_id))
+        .first::<models::ArticleContent>(conn)
+        .or(Err(Error::InternalError))?;
+    let res_vec: Vec<String> = c_body
+        .structure
+        .into_iter()
+        .enumerate()
+        .map(|(i, col_struct)| match col_struct.col_type {
+            ColType::Atom(AtomType::Int) => content.int_content[i].to_string(),
+            ColType::Atom(AtomType::Rating(_)) => content.int_content[i].to_string(),
+            ColType::Atom(AtomType::Text) => content.str_content[i].clone(),
+            ColType::Atom(AtomType::Line) => content.str_content[i].clone(),
+            ColType::Arr(_, _) => content.str_content[i].clone(),
+        })
+        .collect();
+    Ok(res_vec)
 }
