@@ -13,9 +13,7 @@ pub fn create_party<C: Context>(
     name: &str,
 ) -> Result<i64, Error> {
     // TODO: 鍵能之類的檢查
-    let user_id = ctx
-        .get_id()
-        .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
+    let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
     ctx.use_pg_conn(|conn| {
         check_party_name_valid(conn, name)?;
         match board_name {
@@ -43,7 +41,7 @@ fn create_party_db(
     let party: models::Party = diesel::insert_into(schema::parties::table)
         .values(&new_party)
         .get_result(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("新增政黨失敗")))?;
 
     // 把自己加進去當主席
     add_party_member(conn, user_id, party.id, 3)?;
@@ -67,7 +65,7 @@ fn add_party_member(
     diesel::insert_into(schema::party_members::table)
         .values(&new_member)
         .execute(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("新增政黨成員失敗")))?;
     Ok(())
 }
 
@@ -76,11 +74,11 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Result<models::Part
     let mut parties = dsl::parties
         .filter(dsl::party_name.eq(name))
         .load::<models::Party>(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("查找政黨失敗")))?;
     if parties.len() == 1 {
         Ok(parties.pop().unwrap())
     } else {
-        Err(Error::LogicError(format!("找不到政黨: {}", name), 404))
+        Err(Error::new_logic(&format!("找不到政黨: {}", name), 404))
     }
 }
 
@@ -94,8 +92,8 @@ pub fn get_member_position(
         .filter(dsl::party_id.eq(party_id))
         .filter(dsl::user_id.eq(user_id))
         .first::<models::PartyMember>(conn)
-        .or(Err(Error::LogicError(
-            format!("找不到政黨成員: {}", user_id),
+        .or(Err(Error::new_logic(
+            &format!("找不到政黨成員: {}", user_id),
             404,
         )))?;
     Ok(membership.position)
@@ -103,16 +101,13 @@ pub fn get_member_position(
 
 pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
-        Err(Error::LogicError("黨名不可為空".to_owned(), 403))
+        Err(Error::new_logic("黨名不可為空", 403))
     } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
     {
-        Err(Error::LogicError(
-            "黨名帶有不合法字串".to_owned(),
-            403,
-        ))
+        Err(Error::new_logic("黨名帶有不合法字串", 403))
     } else {
         if get_party_by_name(conn, name).is_ok() {
-            Err(Error::LogicError("與其它政黨重名".to_owned(), 403))
+            Err(Error::new_logic("與其它政黨重名", 403))
         } else {
             Ok(())
         }

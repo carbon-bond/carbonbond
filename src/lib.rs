@@ -44,14 +44,14 @@ impl Context for Ctx {
     }
     fn remember_id(&self, id: String) -> Result<(), Error> {
         if self.session.set::<String>("id", id.to_string()).is_err() {
-            Err(Error::InternalError)
+            Err(Error::new_internal("記憶 ID 失敗"))
         } else {
             Ok(())
         }
     }
     fn forget_id(&self) -> Result<(), Error> {
         if self.session.set::<String>("id", "".to_string()).is_err() {
-            Err(Error::InternalError)
+            Err(Error::new_internal("清除 ID 失敗"))
         } else {
             Ok(())
         }

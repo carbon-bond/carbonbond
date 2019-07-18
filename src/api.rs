@@ -134,7 +134,7 @@ impl Article {
         let c = categories
             .filter(id.eq(id_to_i64(&self.category_id)))
             .first::<db_models::Category>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_logic("找不到分類", 404).to_field_result())?;
         Ok(Category {
             id: i64_to_id(c.id),
             board_id: i64_to_id(c.board_id),
@@ -154,7 +154,7 @@ impl Article {
         let b = boards
             .filter(id.eq(id_to_i64(&self.board_id)))
             .first::<db_models::Board>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_logic("找不到看板", 404).to_field_result())?;
         Ok(Board {
             id: i64_to_id(b.id),
             detail: b.detail,
@@ -212,7 +212,7 @@ impl Board {
         let results = categories
             .filter(board_id.eq(id_to_i64(&self.id)))
             .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_internal("查找分類列表失敗").to_field_result())?;
         Ok(results
             .into_iter()
             .map(|t| Category {
@@ -235,7 +235,7 @@ impl Board {
             .filter(dsl::board_id.eq(id_to_i64(&self.id)))
             .count()
             .get_result::<i64>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_internal("查詢文章數失敗").to_field_result())?;
         Ok(count as i32)
     }
 }
@@ -273,7 +273,7 @@ impl Query {
         let article = dsl::articles
             .filter(dsl::id.eq(id_to_i64(&id)))
             .first::<db_models::Article>(&*ctx.get_pg_conn())
-            .or(Error::LogicError("找不到文章".to_owned(), 404).to_field_result())?;
+            .or(Error::new_logic("找不到文章", 404).to_field_result())?;
         Ok(Article {
             id: i64_to_id(article.id),
             title: article.title,
@@ -294,7 +294,7 @@ impl Query {
         }
         let board_vec = query
             .load::<db_models::Board>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_internal("查找看板列表失敗").to_field_result())?;
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
@@ -329,7 +329,7 @@ impl Query {
             .offset(offset as i64)
             .limit(page_size as i64)
             .load::<db_models::Article>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_internal("查找文章列表失敗").to_field_result())?;
 
         Ok(article_vec
             .into_iter()
@@ -359,7 +359,7 @@ impl Query {
     fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
         let user_id = ctx
             .get_id()
-            .ok_or(Error::LogicError("尚未登入".to_owned(), 401).to_field_err())?;
+            .ok_or(Error::new_logic("尚未登入", 401).to_field_err())?;
 
         // TODO 用 join?
         use db_schema::party_members;
@@ -367,7 +367,7 @@ impl Query {
             .filter(party_members::dsl::user_id.eq(user_id))
             .select(party_members::dsl::party_id)
             .load::<i64>(&*ctx.get_pg_conn())
-            .or(Err(Error::InternalError))?;
+            .or(Err(Error::new_internal("讀取政黨成員關係失敗")))?;
 
         use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
@@ -379,7 +379,7 @@ impl Query {
         let party_vec = query
             .filter(dsl::id.eq_any(party_ids))
             .load::<db_models::Party>(&*ctx.get_pg_conn())
-            .or(Error::InternalError.to_field_result())?;
+            .or(Error::new_internal("讀取政黨列表失敗").to_field_result())?;
         Ok(party_vec
             .into_iter()
             .map(|p| Party {
@@ -412,17 +412,20 @@ impl Query {
         let category =
             forum::get_category(ctx, &category_name, board.id).map_err(|e| e.to_field_err())?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
-        let a: Result<(), ()>;
-        Ok(content
-            .into_iter()
-            .enumerate()
-            .map(|(i, c)| {
-                c_body.structure[i]
-                    .parse_content(c)
-                    .err()
-                    .map(|e| e.get_msg().to_owned())
-            })
-            .collect())
+        if c_body.structure.len() != content.len() {
+            Error::new_logic("結構長度有誤", 403).to_field_result()
+        } else {
+            Ok(content
+                .into_iter()
+                .enumerate()
+                .map(|(i, c)| {
+                    c_body.structure[i]
+                        .parse_content(c)
+                        .err()
+                        .map(|e| e.get_msg().to_owned())
+                })
+                .collect())
+        }
     }
 }
 
@@ -447,7 +450,7 @@ impl Mutation {
     }
     fn invite_signup(ctx: &Ctx, email: String) -> FieldResult<bool> {
         match ctx.session.get::<String>("id")? {
-            None => Error::LogicError("尚未登入".to_owned(), 401).to_field_result(),
+            None => Error::new_logic("尚未登入", 401).to_field_result(),
             Some(id) => {
                 // TODO: 寫宏來處理類似邏輯
                 let invite_code =

@@ -27,7 +27,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     let board: models::Board = diesel::insert_into(schema::boards::table)
         .values(&new_board)
         .get_result(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("創建看板失敗")))?;
 
     create_category(conn, board.id, &default_categories)?;
 
@@ -35,7 +35,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     diesel::update(schema::parties::table.filter(schema::parties::dsl::id.eq(party_id)))
         .set(schema::parties::dsl::board_id.eq(board.id))
         .execute(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("修改政黨資料失敗")))?;
 
     Ok(board.id)
 }
@@ -56,7 +56,7 @@ pub fn create_category(
     let c: models::Category = diesel::insert_into(schema::categories::table)
         .values(&new_categories)
         .get_result(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("新增分類失敗")))?;
     Ok(c.id)
 }
 
@@ -82,14 +82,14 @@ pub fn create_article(
     let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)
         .get_result(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("新增文章失敗")))?;
 
     if root_id.is_none() {
         use schema::articles::{id, root_id};
         diesel::update(schema::articles::table.filter(id.eq(article.id)))
             .set(root_id.eq(article.id))
             .execute(conn)
-            .or(Err(Error::InternalError))?;
+            .or(Err(Error::new_internal("修改文章根節點失敗")))?;
     }
     let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_COLUMN];
     let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_COLUMN];
@@ -107,7 +107,7 @@ pub fn create_article(
     diesel::insert_into(schema::article_contents::table)
         .values(&new_content)
         .execute(conn)
-        .or(Err(Error::InternalError))?;
+        .map_err(|e| Error::new_internal(&format!("{}", e)))?;
     Ok(article.id)
 }
 
@@ -128,7 +128,7 @@ pub fn create_edges(
     diesel::insert_into(schema::edges::table)
         .values(&new_edges)
         .execute(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_internal("新增連結失敗")))?;
     Ok(())
 }
 
@@ -141,13 +141,19 @@ pub fn get_article_content(
     let category = c_dsl::categories
         .filter(c_dsl::id.eq(category_id))
         .first::<models::Category>(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_logic(
+            &format!("找不到分類: id={}", category_id),
+            404,
+        )))?;
     let c_body = CategoryBody::from_string(&category.body)?;
     use schema::article_contents::dsl as ac_dsl;
     let content = ac_dsl::article_contents
         .filter(ac_dsl::article_id.eq(article_id))
         .first::<models::ArticleContent>(conn)
-        .or(Err(Error::InternalError))?;
+        .or(Err(Error::new_logic(
+            &format!("找不到內文: article_id={}", article_id),
+            404,
+        )))?;
     let res_vec: Vec<String> = c_body
         .structure
         .into_iter()

@@ -122,10 +122,7 @@ impl ColSchema {
         match self.col_type {
             ColType::Atom(AtomType::Line) => {
                 if content.contains('\n') {
-                    Err(CE::LogicError(
-                        "一行內容帶有換行符".to_owned(),
-                        403,
-                    ))
+                    Err(CE::new_logic("一行內容帶有換行符", 403))
                 } else {
                     Ok(StringOrI32::Str(content))
                 }
@@ -138,8 +135,8 @@ impl ColSchema {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
-                    Err(CE::LogicError(
-                        format!("整數型解析失敗: {}", content),
+                    Err(CE::new_logic(
+                        &format!("整數型解析失敗: {}", content),
                         403,
                     ))
                 }
@@ -150,14 +147,14 @@ impl ColSchema {
                     if r <= max && r >= 1 {
                         Ok(StringOrI32::I32(r as i32))
                     } else {
-                        Err(CE::LogicError(
-                            format!("評分型範圍錯誤: {} 不屬於 1~{}", r, max),
+                        Err(CE::new_logic(
+                            &format!("評分型範圍錯誤: {} 不屬於 1~{}", r, max),
                             403,
                         ))
                     }
                 } else {
-                    Err(CE::LogicError(
-                        format!("評分型解析失敗: {}", content),
+                    Err(CE::new_logic(
+                        &format!("評分型解析失敗: {}", content),
                         403,
                     ))
                 }
@@ -183,11 +180,11 @@ impl CategoryBody {
         serde_json::to_string(self).unwrap()
     }
     pub fn from_string(s: &str) -> Result<CategoryBody, CE> {
-        let t = serde_json::from_str::<Self>(s)
-            .or(Err(CE::LogicError("解析分類失敗".to_owned(), 403)))?;
+        let t =
+            serde_json::from_str::<Self>(s).or(Err(CE::new_logic("解析分類失敗", 403)))?;
         if t.structure.len() > MAX_ARTICLE_COLUMN {
-            Err(CE::LogicError(
-                format!("文章結構過長: {}", t.name),
+            Err(CE::new_logic(
+                &format!("文章結構過長: {}", t.name),
                 403,
             ))
         } else {
