@@ -127,6 +127,22 @@ pub struct NewArticle<'a> {
     pub show_in_list: bool,
 }
 
+#[derive(Queryable, Debug)]
+pub struct ArticleContent {
+    pub id: i64,
+    pub article_id: i64,
+    pub str_content: Vec<String>,
+    pub int_content: Vec<i32>,
+}
+
+#[derive(Insertable)]
+#[table_name = "article_contents"]
+pub struct NewArticleContent {
+    pub article_id: i64,
+    pub str_content: Vec<String>,
+    pub int_content: Vec<i32>,
+}
+
 #[derive(Queryable)]
 pub struct PartyMember {
     pub id: i64,

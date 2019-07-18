@@ -6,7 +6,7 @@ use crate::Context;
 use crate::party;
 
 mod category_body;
-pub use category_body::{ColSchema, CategoryBody};
+pub use category_body::{ColSchema, CategoryBody, StringOrI32};
 
 pub mod operation;
 
@@ -97,7 +97,7 @@ pub fn create_article<C: Context>(
             ));
         }
     }
-    check_col_valid(&c_body.structure, content)?;
+    let content = parse_content(&c_body.structure, content)?;
     ctx.use_pg_conn(|conn| {
         let id = operation::create_article(
             conn,
@@ -107,6 +107,7 @@ pub fn create_article<C: Context>(
             category.id,
             &c_body,
             title,
+            content,
         )?;
         // TODO 創造文章內容
         operation::create_edges(conn, id, edges)?;
@@ -162,15 +163,19 @@ pub fn get_category<C: Context>(
     })
 }
 
-pub fn check_col_valid(col_struct: &Vec<ColSchema>, content: Vec<String>) -> Result<(), Error> {
+pub fn parse_content(
+    col_struct: &Vec<ColSchema>,
+    content: Vec<String>,
+) -> Result<Vec<StringOrI32>, Error> {
     if content.len() != col_struct.len() {
-        Err(Error::LogicError("結構長度有誤".to_owned(), 403))?;
+        Err(Error::LogicError("結構長度有誤".to_owned(), 403))
     } else {
+        let mut res: Vec<StringOrI32> = vec![];
         for (i, c) in content.into_iter().enumerate() {
-            col_struct[i].parse_content(c)?;
+            res.push(col_struct[i].parse_content(c)?);
         }
+        Ok(res)
     }
-    Ok(())
 }
 
 pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Result<(), Error> {

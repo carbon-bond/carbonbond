@@ -48,21 +48,11 @@ CREATE TABLE articles (
   create_time TIMESTAMP NOT NULL DEFAULT Now()
 );
 
-CREATE TABLE text_cols (
+CREATE TABLE article_contents (
   id BIGSERIAL PRIMARY KEY,
   article_id BIGSERIAL REFERENCES articles(id) NOT NULL,
-  c1 TEXT,
-  c2 TEXT,
-  c3 TEXT,
-  c4 TEXT
-);
-CREATE TABLE array_cols (
-  id BIGSERIAL PRIMARY KEY,
-  article_id BIGSERIAL REFERENCES articles(id) NOT NULL,
-  c1 TEXT[1024],
-  c2 TEXT[1024],
-  c3 TEXT[1024],
-  c4 TEXT[1024]
+  str_content TEXT[15] NOT NULL,
+  int_content INT[15] NOT NULL
 );
 
 CREATE TABLE edges (

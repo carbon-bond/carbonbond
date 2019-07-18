@@ -1,11 +1,9 @@
 table! {
-    array_cols (id) {
+    article_contents (id) {
         id -> Int8,
         article_id -> Int8,
-        c1 -> Nullable<Array<Text>>,
-        c2 -> Nullable<Array<Text>>,
-        c3 -> Nullable<Array<Text>>,
-        c4 -> Nullable<Array<Text>>,
+        str_content -> Array<Text>,
+        int_content -> Array<Int4>,
     }
 }
 
@@ -87,17 +85,6 @@ table! {
 }
 
 table! {
-    text_cols (id) {
-        id -> Int8,
-        article_id -> Int8,
-        c1 -> Nullable<Text>,
-        c2 -> Nullable<Text>,
-        c3 -> Nullable<Text>,
-        c4 -> Nullable<Text>,
-    }
-}
-
-table! {
     users (id) {
         id -> Varchar,
         email -> Varchar,
@@ -109,7 +96,7 @@ table! {
     }
 }
 
-joinable!(array_cols -> articles (article_id));
+joinable!(article_contents -> articles (article_id));
 joinable!(articles -> boards (board_id));
 joinable!(articles -> categories (category_id));
 joinable!(articles -> users (author_id));
@@ -119,10 +106,9 @@ joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
-joinable!(text_cols -> articles (article_id));
 
 allow_tables_to_appear_in_same_query!(
-    array_cols,
+    article_contents,
     articles,
     boards,
     categories,
@@ -130,6 +116,5 @@ allow_tables_to_appear_in_same_query!(
     invitations,
     parties,
     party_members,
-    text_cols,
     users,
 );

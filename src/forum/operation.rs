@@ -4,11 +4,12 @@ extern crate serde_json;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
+use crate::MAX_ARTICLE_COLUMN;
 use crate::db::{models, schema};
 use crate::custom_error::Error;
 
 use super::category_body;
-pub use category_body::{CategoryBody, ColSchema};
+pub use category_body::{CategoryBody, ColSchema, StringOrI32};
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i64, Error> {
@@ -66,6 +67,7 @@ pub fn create_article(
     category_id: i64,
     category: &CategoryBody,
     title: &str,
+    content: Vec<StringOrI32>,
 ) -> Result<i64, Error> {
     let new_article = models::NewArticle {
         board_id,
@@ -88,7 +90,23 @@ pub fn create_article(
             .execute(conn)
             .map_err(|_| Error::InternalError)?;
     }
-
+    let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_COLUMN];
+    let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_COLUMN];
+    for (i, c) in content.into_iter().enumerate() {
+        match c {
+            StringOrI32::I32(t) => int_content[i] = t,
+            StringOrI32::Str(t) => str_content[i] = t,
+        }
+    }
+    let new_content = models::NewArticleContent {
+        article_id: article.id,
+        str_content: str_content,
+        int_content: int_content,
+    };
+    diesel::insert_into(schema::article_contents::table)
+        .values(&new_content)
+        .execute(conn)
+        .or(Err(Error::InternalError))?;
     Ok(article.id)
 }
 
