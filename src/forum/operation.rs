@@ -27,7 +27,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
     let board: models::Board = diesel::insert_into(schema::boards::table)
         .values(&new_board)
         .get_result(conn)
-        .expect("新增看板失敗");
+        .or(Err(Error::InternalError))?;
 
     create_category(conn, board.id, &default_categories)?;
 
@@ -44,7 +44,7 @@ pub fn create_category(
     conn: &PgConnection,
     board_id: i64,
     categories: &Vec<CategoryBody>,
-) -> Result<(), Error> {
+) -> Result<i64, Error> {
     let new_categories: Vec<models::NewCategory> = categories
         .into_iter()
         .map(|t| models::NewCategory {
@@ -53,11 +53,11 @@ pub fn create_category(
             category_name: &t.name,
         })
         .collect();
-    diesel::insert_into(schema::categories::table)
+    let c: models::Category = diesel::insert_into(schema::categories::table)
         .values(&new_categories)
-        .execute(conn)
-        .expect("新增文章分類失敗");
-    Ok(())
+        .get_result(conn)
+        .or(Err(Error::InternalError))?;
+    Ok(c.id)
 }
 
 pub fn create_article(
@@ -128,7 +128,7 @@ pub fn create_edges(
     diesel::insert_into(schema::edges::table)
         .values(&new_edges)
         .execute(conn)
-        .expect("新增連結失敗");
+        .or(Err(Error::InternalError))?;
     Ok(())
 }
 
@@ -142,7 +142,7 @@ pub fn get_article_content(
         .filter(c_dsl::id.eq(category_id))
         .first::<models::Category>(conn)
         .or(Err(Error::InternalError))?;
-    let c_body = CategoryBody::from_string(&category.body);
+    let c_body = CategoryBody::from_string(&category.body)?;
     use schema::article_contents::dsl as ac_dsl;
     let content = ac_dsl::article_contents
         .filter(ac_dsl::article_id.eq(article_id))

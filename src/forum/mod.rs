@@ -39,7 +39,7 @@ pub fn create_category<C: Context>(
     ctx: C,
     board_id: i64,
     category: &Vec<CategoryBody>,
-) -> Result<(), Error> {
+) -> Result<i64, Error> {
     // TODO: 權限檢查，等等
     ctx.use_pg_conn(|conn| operation::create_category(conn, board_id, category))
 }
@@ -57,7 +57,7 @@ pub fn create_article<C: Context>(
         .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
     let board = get_board_by_name(ctx, &board_name)?;
     let category = get_category(ctx, category_name, board.id)?;
-    let c_body = CategoryBody::from_string(&category.body);
+    let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
     if !c_body.rootable && edges.len() == 0 {
         return Err(Error::LogicError(

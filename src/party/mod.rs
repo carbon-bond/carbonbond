@@ -43,7 +43,7 @@ fn create_party_db(
     let party: models::Party = diesel::insert_into(schema::parties::table)
         .values(&new_party)
         .get_result(conn)
-        .expect("新增政黨失敗");
+        .or(Err(Error::InternalError))?;
 
     // 把自己加進去當主席
     add_party_member(conn, user_id, party.id, 3)?;
@@ -67,7 +67,7 @@ fn add_party_member(
     diesel::insert_into(schema::party_members::table)
         .values(&new_member)
         .execute(conn)
-        .expect("新增黨員失敗");
+        .or(Err(Error::InternalError))?;
     Ok(())
 }
 

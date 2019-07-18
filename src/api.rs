@@ -207,13 +207,13 @@ impl Board {
     fn parties(&self) -> Vec<Party> {
         vec![] // TODO: 抓出政黨
     }
-    fn categories(&self, ctx: &Ctx) -> Vec<Category> {
+    fn categories(&self, ctx: &Ctx) -> FieldResult<Vec<Category>> {
         use db_schema::categories::dsl::*;
         let results = categories
-            .filter(board_id.eq(id_to_i64(&self.id))) // TODO: 拋出錯誤
+            .filter(board_id.eq(id_to_i64(&self.id)))
             .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .expect("取分類失敗");
-        results
+            .or(Error::InternalError.to_field_result())?;
+        Ok(results
             .into_iter()
             .map(|t| Category {
                 id: ID::new(t.id.to_string()),
@@ -222,7 +222,7 @@ impl Board {
                 is_active: t.is_active,
                 replacing: t.replacing.map(|t| i64_to_id(t)),
             })
-            .collect()
+            .collect())
     }
     fn article_count(&self, ctx: &Ctx, show_hidden: Option<bool>) -> FieldResult<i32> {
         use db_schema::articles::dsl;
@@ -411,7 +411,7 @@ impl Query {
         let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
         let category =
             forum::get_category(ctx, &category_name, board.id).map_err(|e| e.to_field_err())?;
-        let c_body = forum::CategoryBody::from_string(&category.body);
+        let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         let a: Result<(), ()>;
         Ok(content
             .into_iter()

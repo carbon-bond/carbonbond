@@ -25,10 +25,14 @@ pub fn create_invitation(
 
     match sender {
         Some(id) => {
-            let user = schema::users::table
-                .find(id)
-                .first::<User>(conn)
-                .expect("搜尋 id 失敗");
+            let user =
+                schema::users::table
+                    .find(id)
+                    .first::<User>(conn)
+                    .or(Err(Error::LogicError(
+                        format!("查無使用者: {}", id),
+                        403,
+                    )))?;
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);
@@ -36,11 +40,11 @@ pub fn create_invitation(
                 diesel::update(target)
                     .set(invitation_credit.eq(invitation_credit - 1))
                     .execute(conn)
-                    .expect("減少邀請點數失敗");
+                    .or(Err(Error::InternalError))?;
                 diesel::insert_into(schema::invitations::table)
                     .values(&new_invitation)
                     .execute(conn)
-                    .expect("新增邀請失敗");
+                    .or(Err(Error::InternalError))?;
                 Ok(invite_code)
             } else {
                 Err(Error::LogicError("邀請點數不足".to_owned(), 403))
@@ -50,7 +54,7 @@ pub fn create_invitation(
             diesel::insert_into(schema::invitations::table)
                 .values(&new_invitation)
                 .execute(conn)
-                .expect("新增邀請失敗");
+                .or(Err(Error::InternalError))?;
             Ok(invite_code)
         }
     }
@@ -66,7 +70,7 @@ pub fn create_user_by_invitation(
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
-        .expect("搜尋邀請碼失敗");
+        .or(Err(Error::LogicError("查無邀請碼".to_owned(), 404)))?;
 
     let salt = rand::thread_rng().gen::<[u8; 16]>();
 
@@ -81,14 +85,18 @@ pub fn create_user_by_invitation(
     diesel::insert_into(schema::users::table)
         .values(&new_user)
         .get_result::<User>(conn)
-        .expect("新增使用者失敗");
-
+        .or(Err(Error::InternalError))?;
     Ok(())
 }
 
 // NOTE: 伺服器尚未用到該函式，是 db-tool 在用
 // TODO: 錯誤處理
-pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> User {
+pub fn create_user(
+    conn: &PgConnection,
+    email: &str,
+    id: &str,
+    password: &str,
+) -> Result<User, Error> {
     let salt = rand::thread_rng().gen::<[u8; 16]>();
 
     let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
@@ -102,5 +110,5 @@ pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -
     diesel::insert_into(schema::users::table)
         .values(&new_user)
         .get_result(conn)
-        .expect("新增使用者失敗")
+        .or(Err(Error::InternalError))
 }

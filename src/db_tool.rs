@@ -85,7 +85,7 @@ fn add_user(args: &Vec<String>) -> Result<(), failure::Error> {
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    signup::create_user(&db::connect_db(), email, id, password);
+    signup::create_user(&db::connect_db(), email, id, password)?;
     Ok(())
 }
 

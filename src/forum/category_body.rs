@@ -4,6 +4,8 @@ use serde::de::{Visitor, Error};
 extern crate regex;
 use regex::Regex;
 
+use crate::MAX_ARTICLE_COLUMN;
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Threshold {
     bond_energy: i32,
@@ -180,8 +182,17 @@ impl CategoryBody {
     pub fn to_string(&self) -> String {
         serde_json::to_string(self).unwrap()
     }
-    pub fn from_string(s: &str) -> CategoryBody {
-        serde_json::from_str(s).expect("解析分類失敗")
+    pub fn from_string(s: &str) -> Result<CategoryBody, CE> {
+        let t = serde_json::from_str::<Self>(s)
+            .or(Err(CE::LogicError("解析分類失敗".to_owned(), 403)))?;
+        if t.structure.len() > MAX_ARTICLE_COLUMN {
+            Err(CE::LogicError(
+                format!("文章結構過長: {}", t.name),
+                403,
+            ))
+        } else {
+            Ok(t)
+        }
     }
     pub fn can_attach_to(&self, category_name: &str) -> bool {
         for name in self.attached_to.iter() {
