@@ -11,12 +11,12 @@ type Board = { boardName: string, title: string };
 
 async function fetchHotBoards(): Promise<Board[]> {
 	let client = getGraphQLClient();
-	const mutation = `
+	const query = `
 			{
 				boardList { boardName, title }
 			}
 		`;
-	let res: { boardList: Board[] } = await  client.request(mutation);
+	let res: { boardList: Board[] } = await  client.request(query);
 	return res.boardList;
 }
 

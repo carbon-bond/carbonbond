@@ -13,25 +13,27 @@ type Props = RouteComponentProps<{ party_name?: string }>;
 function createBoard(party_name: string, board_name: string): Promise<void> {
 	let client = getGraphQLClient();
 	const mutation = `
-			mutation {
-				createBoard(partyName: "${party_name}", boardName: "${board_name}")
+			mutation CreateBoard($party_name: String!, $board_name: String!) {
+				createBoard(partyName: $party_name, boardName: $board_name)
 			}
 		`;
-	return client.request(mutation);
+	return client.request(mutation, {
+		party_name, board_name
+	});
 }
 
 async function fetchPartyDetail(name: string): Promise<Party> {
 	let client = getGraphQLClient();
 	const query = `
-			{
-				party(partyName: "${name}") {
+			query PartyDetail($name: String!) {
+				party(partyName: $name) {
 					id, partyName, boardId,
 					energy, chairmanId, position,
 					board { boardName }
 				}
 			}
 		`;
-	let res: { party: Party } = await client.request(query);
+	let res: { party: Party } = await client.request(query, { name });
 	return res.party;
 }
 

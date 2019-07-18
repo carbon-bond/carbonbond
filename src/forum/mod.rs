@@ -184,7 +184,8 @@ pub fn parse_content(
 pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
         Err(Error::LogicError("板名不可為空".to_owned(), 403))
-    } else if name.contains(" ") || name.contains("\n") {
+    } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
+    {
         Err(Error::LogicError(
             "板名帶有不合法字串".to_owned(),
             403,

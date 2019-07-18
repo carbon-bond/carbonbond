@@ -33,13 +33,15 @@ async function fetchPartyTree(): Promise<PartyTree> {
 		}
 	}
 	let query2 = `
-		{
-			boardList(ids: [${Object.keys(b_name_id_table)}]) {
+		query BoardList($ids: [ID!]!) {
+			boardList(ids: $ids) {
 				boardName, id, rulingPartyId
 			}
 		}
 	`;
-	let res2: { boardList: Board[] } = await client.request(query2);
+	let res2: { boardList: Board[] } = await client.request(query2, {
+		ids: Object.keys(b_name_id_table)
+	});
 	let board_list = res2.boardList;
 	for (let board of board_list) {
 		b_name_id_table[board.id] = board;
@@ -147,13 +149,15 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			<br />
 			<button onClick={() => {
 				let client = getGraphQLClient();
-				let b_name_query = board_name.length == 0 ? '' : ` boardName: "${board_name}"`;
 				const query = `
-					mutation {
-						createParty(partyName: "${party_name}" ${b_name_query})
+					mutation CreateParty($party_name: String!, $board_name: String) {
+						createParty(partyName: $party_name, boardName: $board_name)
 					}
 				`;
-				client.request(query).then(() => {
+				client.request(query, {
+					party_name,
+					board_name: board_name.length == 0 ? undefined : board_name
+				}).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
 					toast.error(extractErrMsg(err));

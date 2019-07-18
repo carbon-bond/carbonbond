@@ -61,4 +61,23 @@
         {"col_name": "內文", "col_type": "Text", "restriction": ""}
     ],
     "version": 0
+},
+{ 
+    "name": "測試",
+    "transfusable": true,
+    "is_question": false,
+    "show_in_list": true,
+    "rootable": true,
+    "threshold_to_post": {
+        "bond_energy": 0,
+        "identity": 0
+    },
+    "attached_to": [],
+    "structure": [
+        {"col_name": "內文1", "col_type": "Text", "restriction": ""},
+        {"col_name": "內文2", "col_type": "Line", "restriction": ""},
+        {"col_name": "內文3", "col_type": "Int", "restriction": ""},
+        {"col_name": "內文4", "col_type": "Rating<4>", "restriction": ""}
+    ],
+    "version": 0
 }]

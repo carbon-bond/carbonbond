@@ -401,6 +401,29 @@ impl Query {
             .err()
             .map(|err| err.get_msg().to_owned())
     }
+    fn check_article_content_valid(
+        ctx: &Ctx,
+        content: Vec<String>,
+        board_name: String,
+        category_name: String,
+    ) -> FieldResult<Vec<Option<String>>> {
+        // TODO: 想辦法快取住分類
+        let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
+        let category =
+            forum::get_category(ctx, &category_name, board.id).map_err(|e| e.to_field_err())?;
+        let c_body = forum::CategoryBody::from_string(&category.body);
+        let a: Result<(), ()>;
+        Ok(content
+            .into_iter()
+            .enumerate()
+            .map(|(i, c)| {
+                c_body.structure[i]
+                    .parse_content(c)
+                    .err()
+                    .map(|e| e.get_msg().to_owned())
+            })
+            .collect())
+    }
 }
 
 struct Mutation;

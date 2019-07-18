@@ -25,11 +25,13 @@ function me_request(): Promise<Me> {
 function login_request(id: string, password: string): Promise<LoginResponse> {
 	const graphQLClient = getGraphQLClient();
 	const query = `
-			mutation {
-				login(id: "${id}", password: "${password}")
+			mutation Login($id: String!, $password: String!) {
+				login(id: $id, password: $password)
 			}
 		`;
-	return graphQLClient.request(query);
+	return graphQLClient.request(query, {
+		id, password
+	});
 }
 
 export type LogoutResponse = {

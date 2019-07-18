@@ -114,7 +114,7 @@
             }
         }
         .editorBody {
-            height: 400px;
+            height: 550px;
             max-height: 70vh;
             display: flex;
             flex-direction: column;

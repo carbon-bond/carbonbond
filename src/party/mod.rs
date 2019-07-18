@@ -104,7 +104,8 @@ pub fn get_member_position(
 pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
         Err(Error::LogicError("黨名不可為空".to_owned(), 403))
-    } else if name.contains(" ") || name.contains("\n") {
+    } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
+    {
         Err(Error::LogicError(
             "黨名帶有不合法字串".to_owned(),
             403,

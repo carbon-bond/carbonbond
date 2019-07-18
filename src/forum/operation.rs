@@ -19,15 +19,16 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Result<i6
         title: "TODO: 讓創板者自行填入",
         detail: "",
     };
-    // TODO: 撞名檢查
+
+    let txt = fs::read_to_string("config/default_category.json").expect("讀取默認分類失敗");
+    let default_categories: Vec<CategoryBody> =
+        serde_json::from_str(&txt).expect("解析默認分類失敗");
+
     let board: models::Board = diesel::insert_into(schema::boards::table)
         .values(&new_board)
         .get_result(conn)
         .expect("新增看板失敗");
 
-    let txt = fs::read_to_string("config/default_category.json").expect("讀取默認分類失敗");
-    let default_categories: Vec<CategoryBody> =
-        serde_json::from_str(&txt).expect("解析默認分類失敗");
     create_category(conn, board.id, &default_categories)?;
 
     // 將執政黨加入該板

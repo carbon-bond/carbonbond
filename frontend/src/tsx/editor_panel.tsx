@@ -10,16 +10,21 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 		if (typeof data.category_name == 'string') {
 			let client = getGraphQLClient();
 			const mutation = `
-				mutation {
+				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!) {
 					createArticle(
-						boardName: "${data.board_name}",
-						categoryName: "${data.category_name}",
-						title: "${data.title}",
-						content: ["${data.content}"]
+						boardName: $board_name,
+						categoryName: $category_name,
+						title: $title,
+						content: $content
 					)
 				}
 			`;
-			let res: { createArticle: number } = await client.request(mutation);
+			let res: { createArticle: number } = await client.request(mutation, {
+				board_name: data.board_name,
+				category_name: data.category_name,
+				title: data.title,
+				content: [data.content]
+			});
 			return res.createArticle;
 		}
 		throw new Error('尚未指定分類');
