@@ -17,9 +17,7 @@ pub fn create_party<C: Context>(
         .get_id()
         .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
     ctx.use_pg_conn(|conn| {
-        if let Some(err) = check_party_name_valid(conn, name) {
-            return Err(err);
-        }
+        check_party_name_valid(conn, name)?;
         match board_name {
             Some(b_name) => {
                 let board = forum::get_board_by_name(ctx, b_name)?;
@@ -103,19 +101,19 @@ pub fn get_member_position(
     Ok(membership.position)
 }
 
-pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Option<Error> {
+pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
-        Some(Error::LogicError("黨名不可為空".to_owned(), 403))
+        Err(Error::LogicError("黨名不可為空".to_owned(), 403))
     } else if name.contains(" ") || name.contains("\n") {
-        Some(Error::LogicError(
+        Err(Error::LogicError(
             "黨名帶有不合法字串".to_owned(),
             403,
         ))
     } else {
         if get_party_by_name(conn, name).is_ok() {
-            Some(Error::LogicError("與其它政黨重名".to_owned(), 403))
+            Err(Error::LogicError("與其它政黨重名".to_owned(), 403))
         } else {
-            None
+            Ok(())
         }
     }
 }

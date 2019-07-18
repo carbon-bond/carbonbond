@@ -7,19 +7,19 @@ use regex::Regex;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Threshold {
     bond_energy: i32,
-    identity: usize, // 0平民, 1黨員, 2黨代表, 3黨主席
+    identity: i16, // 0平民, 1黨員, 2黨代表, 3黨主席
 }
 
 #[derive(Debug)]
 pub enum AtomType {
-    Str,
+    Line,
     Text,
     Int,
-    Rating(usize),
+    Rating(u16),
 }
 fn str_to_atom_type<E: Error>(s: &str) -> Result<AtomType, E> {
-    if s == "Str" {
-        Ok(AtomType::Str)
+    if s == "Line" {
+        Ok(AtomType::Line)
     } else if s == "Text" {
         Ok(AtomType::Text)
     } else if s == "Int" {
@@ -28,20 +28,20 @@ fn str_to_atom_type<E: Error>(s: &str) -> Result<AtomType, E> {
         let re_rating = Regex::new(r"^Rating<(\d+)>$").unwrap();
         match re_rating.captures_iter(s).last() {
             Some(cap) => {
-                let max_res = cap[1].parse::<usize>();
-                if max_res.is_err() {
+                if let Ok(max_res) = cap[1].parse::<u16>() {
+                    // TODO: rating 是否有上限?
+                    return Ok(AtomType::Rating(max_res));
+                } else {
                     return Err(E::custom(format!("解析 Rating 失敗: {}", s)));
                 }
-                return Ok(AtomType::Rating(max_res.unwrap()));
             }
-            None => (),
+            None => Err(E::custom(format!("解析原子類型失敗: {}", s))),
         }
-        Err(E::custom(format!("解析原子類型失敗: {}", s)))
     }
 }
 fn atom_type_to_str(t: &AtomType) -> String {
     match t {
-        AtomType::Str => "Str".to_owned(),
+        AtomType::Line => "Line".to_owned(),
         AtomType::Text => "Text".to_owned(),
         AtomType::Int => "Int".to_owned(),
         AtomType::Rating(max) => format!("Rating<{}>", max),
@@ -66,11 +66,10 @@ impl<'de> Visitor<'de> for ColTypeVisitor {
         match re_arr.captures_iter(value).last() {
             Some(cap_vec) => {
                 let atom = str_to_atom_type(&cap_vec[1])?;
-                let size_res = cap_vec[2].parse::<usize>();
-                if size_res.is_err() {
-                    Err(E::custom(format!("解析陣列長度失敗: {}", value)))
+                if let Ok(size_res) = cap_vec[2].parse::<usize>() {
+                    Ok(ColType::Arr(atom, size_res))
                 } else {
-                    Ok(ColType::Arr(atom, size_res.unwrap()))
+                    Err(E::custom(format!("解析陣列長度失敗: {}", value)))
                 }
             }
             None => {
@@ -109,6 +108,63 @@ pub struct ColSchema {
     pub col_type: ColType,
     pub restriction: String,
 }
+
+pub enum StringOrI32 {
+    Str(String),
+    I32(i32),
+}
+
+use crate::custom_error::Error as CE;
+impl ColSchema {
+    pub fn parse_content(&self, content: String) -> Result<StringOrI32, CE> {
+        match self.col_type {
+            ColType::Atom(AtomType::Line) => {
+                if content.contains('\n') {
+                    Err(CE::LogicError(
+                        "一行內容帶有換行符".to_owned(),
+                        403,
+                    ))
+                } else {
+                    Ok(StringOrI32::Str(content))
+                }
+            }
+            ColType::Atom(AtomType::Text) => {
+                Ok(StringOrI32::Str(content))
+                // TODO: 檢查正則表達式
+            }
+            ColType::Atom(AtomType::Int) => {
+                if let Ok(t) = content.parse::<i32>() {
+                    Ok(StringOrI32::I32(t))
+                } else {
+                    Err(CE::LogicError(
+                        format!("整數型解析失敗: {}", content),
+                        403,
+                    ))
+                }
+            }
+            ColType::Atom(AtomType::Rating(max)) => {
+                if let Ok(r) = content.parse::<u16>() {
+                    // 1 ~ max 之中的某個正整數
+                    if r <= max && r >= 1 {
+                        Ok(StringOrI32::I32(r as i32))
+                    } else {
+                        Err(CE::LogicError(
+                            format!("評分型範圍錯誤: {} 不屬於 1~{}", r, max),
+                            403,
+                        ))
+                    }
+                } else {
+                    Err(CE::LogicError(
+                        format!("評分型解析失敗: {}", content),
+                        403,
+                    ))
+                }
+            }
+            ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CategoryBody {
     pub name: String,

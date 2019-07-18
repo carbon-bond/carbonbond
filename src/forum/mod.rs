@@ -16,27 +16,23 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result
     let user_id = ctx
         .get_id()
         .ok_or(Error::LogicError("尚未登入".to_owned(), 401))?;
-    if let Some(err) = check_board_name_valid(ctx, name) {
-        Err(err)
-    } else {
-        ctx.use_pg_conn(|conn| {
-            println!("{}", party_name);
-            let party = party::get_party_by_name(conn, party_name)?;
-            if party.board_id.is_some() {
-                Err(Error::LogicError(
-                    format!("{} 並非流亡政黨", party_name),
-                    403,
-                ))
+    check_board_name_valid(ctx, name)?;
+    ctx.use_pg_conn(|conn| {
+        let party = party::get_party_by_name(conn, party_name)?;
+        if party.board_id.is_some() {
+            Err(Error::LogicError(
+                format!("{} 並非流亡政黨", party_name),
+                403,
+            ))
+        } else {
+            let position = party::get_member_position(conn, &user_id, party.id)?;
+            if position != 3 {
+                Err(Error::LogicError("並非黨主席".to_owned(), 403))
             } else {
-                let position = party::get_member_position(conn, &user_id, party.id)?;
-                if position != 3 {
-                    Err(Error::LogicError("並非黨主席".to_owned(), 403))
-                } else {
-                    operation::create_board(conn, party.id, name)
-                }
+                operation::create_board(conn, party.id, name)
             }
-        })
-    }
+        }
+    })
 }
 
 pub fn create_category<C: Context>(
@@ -54,6 +50,7 @@ pub fn create_article<C: Context>(
     edges: &Vec<(i64, i16)>,
     category_name: &str,
     title: &str,
+    content: Vec<String>,
 ) -> Result<i64, Error> {
     let author_id = ctx
         .get_id()
@@ -100,6 +97,7 @@ pub fn create_article<C: Context>(
             ));
         }
     }
+    check_col_valid(&c_body.structure, content)?;
     ctx.use_pg_conn(|conn| {
         let id = operation::create_article(
             conn,
@@ -164,24 +162,30 @@ pub fn get_category<C: Context>(
     })
 }
 
-pub fn check_col_valid(_col_struct: &Vec<ColSchema>, _content: &Vec<String>) -> bool {
-    // TODO
-    true
+pub fn check_col_valid(col_struct: &Vec<ColSchema>, content: Vec<String>) -> Result<(), Error> {
+    if content.len() != col_struct.len() {
+        Err(Error::LogicError("結構長度有誤".to_owned(), 403))?;
+    } else {
+        for (i, c) in content.into_iter().enumerate() {
+            col_struct[i].parse_content(c)?;
+        }
+    }
+    Ok(())
 }
 
-pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Option<Error> {
+pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
-        Some(Error::LogicError("板名不可為空".to_owned(), 403))
+        Err(Error::LogicError("板名不可為空".to_owned(), 403))
     } else if name.contains(" ") || name.contains("\n") {
-        Some(Error::LogicError(
+        Err(Error::LogicError(
             "板名帶有不合法字串".to_owned(),
             403,
         ))
     } else {
         if get_board_by_name(ctx, name).is_ok() {
-            Some(Error::LogicError("與其它看板重名".to_owned(), 403))
+            Err(Error::LogicError("與其它看板重名".to_owned(), 403))
         } else {
-            None
+            Ok(())
         }
     }
 }

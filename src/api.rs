@@ -387,10 +387,13 @@ impl Query {
             .collect())
     }
     fn check_board_name_valid(ctx: &Ctx, name: String) -> Option<String> {
-        forum::check_board_name_valid(ctx, &name).map(|err| err.get_msg().to_owned())
+        forum::check_board_name_valid(ctx, &name)
+            .err()
+            .map(|err| err.get_msg().to_owned())
     }
     fn check_party_name_valid(ctx: &Ctx, name: String) -> Option<String> {
         party::check_party_name_valid(&*ctx.get_pg_conn(), &name)
+            .err()
             .map(|err| err.get_msg().to_owned())
     }
 }
@@ -449,9 +452,10 @@ impl Mutation {
         board_name: String,
         category_name: String,
         title: String,
+        content: Vec<String>,
     ) -> FieldResult<ID> {
         // TODO: 還缺乏 edge 和 content
-        let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title)
+        let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title, content)
             .map_err(|e| e.to_field_err())?;
         Ok(i64_to_id(id))
     }

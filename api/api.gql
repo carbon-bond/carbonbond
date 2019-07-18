@@ -117,5 +117,5 @@ type Mutation {
     ### 板
     # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
     createBoard(name: String!): Boolean
-    createArticle(boardName: String!, categoryName: String!, title: String!): ID!
+    createArticle(boardName: String!, categoryName: String!, title: String!, content: String!): ID!
 }

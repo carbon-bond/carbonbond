@@ -46,8 +46,16 @@ function logout_request(): Promise<LogoutResponse> {
 	return graphQLClient.request(query);
 }
 
-export function extractErrMsg(err: { response: { errors: { message: string }[] } }): string {
-	return err.response.errors[0].message;
+export function extractErrMsg(err: { response: { errors: { message: string }[] } } | Error): string {
+	try {
+		if ('response' in err) {
+			return err.response.errors[0].message;
+		} else {
+			return err.message;
+		}
+	} catch (_e) {
+		return JSON.stringify(err);
+	}
 }
 
 export {

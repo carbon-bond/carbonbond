@@ -115,6 +115,7 @@
         }
         .editorBody {
             height: 400px;
+            max-height: 70vh;
             display: flex;
             flex-direction: column;
             .oneLineInput{

@@ -14,7 +14,8 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 					createArticle(
 						boardName: "${data.board_name}",
 						categoryName: "${data.category_name}",
-						title: "${data.title}"
+						title: "${data.title}",
+						content: ["${data.content}"]
 					)
 				}
 			`;
