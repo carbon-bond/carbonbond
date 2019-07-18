@@ -3,7 +3,33 @@ import { RouteComponentProps } from 'react-router';
 import { EditorPanelState, UserState } from '../global_state';
 import { fetchCategories } from '../forum_util';
 
+import { getGraphQLClient } from '../api';
+
 type Props = RouteComponentProps<{ board_name: string }>;
+
+type Article = {
+	id: String,
+	title: String,
+	categoryName: String,
+	author_id: String,
+};
+
+type ArticleList = {
+	articleList: Article[]
+};
+
+function fetchArticles(board_name: string, page_size: number, offset: number): Promise<ArticleList> {
+	const graphQLClient = getGraphQLClient();
+	const query = `query {
+		articleList(boardName: "${board_name}", pageSize: ${page_size}, offset: ${offset}) {
+			id
+			title
+			categoryName
+			author_id
+		}
+	}`;
+	return graphQLClient.request(query);
+}
 
 export function BoardPage(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -22,6 +48,13 @@ export function BoardPage(props: Props): JSX.Element {
 			});
 		}
 	}
+
+	const [_articles, setArticles] = React.useState<Article[]>([]);
+	React.useEffect(() => {
+		fetchArticles(props.match.params.board_name, 10, 0).then(articles => {
+			setArticles(articles.articleList);
+		});
+	}, []);
 
 	return <div>
 		<h1>{board_name}</h1>
