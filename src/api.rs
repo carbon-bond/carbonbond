@@ -259,7 +259,8 @@ impl Query {
         }
     }
     fn board(ctx: &Ctx, name: String) -> FieldResult<Board> {
-        let board = forum::get_board_by_name(ctx, &name).map_err(|e| e.to_field_err())?;
+        let board =
+            forum::get_board_by_name(&*ctx.get_pg_conn(), &name).map_err(|e| e.to_field_err())?;
         Ok(Board {
             id: i64_to_id(board.id),
             board_name: board.board_name,
@@ -313,9 +314,10 @@ impl Query {
         page_size: i32,
         show_hidden: Option<bool>,
     ) -> FieldResult<Vec<Article>> {
+        let conn = &*ctx.get_pg_conn();
         use db_schema::articles::dsl;
         let show_hidden = show_hidden.unwrap_or(false);
-        let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
+        let board = forum::get_board_by_name(conn, &board_name).map_err(|e| e.to_field_err())?;
 
         let mut query = dsl::articles
             .filter(dsl::board_id.eq(board.id))
@@ -328,7 +330,7 @@ impl Query {
             .order(dsl::create_time.asc())
             .offset(offset as i64)
             .limit(page_size as i64)
-            .load::<db_models::Article>(&*ctx.get_pg_conn())
+            .load::<db_models::Article>(conn)
             .or(Error::new_internal("查找文章列表失敗").to_field_result())?;
 
         Ok(article_vec
@@ -363,16 +365,18 @@ impl Query {
 
         // TODO 用 join?
         use db_schema::party_members;
+        let conn = &*ctx.get_pg_conn();
         let party_ids = party_members::table
             .filter(party_members::dsl::user_id.eq(user_id))
             .select(party_members::dsl::party_id)
-            .load::<i64>(&*ctx.get_pg_conn())
+            .load::<i64>(conn)
             .or(Err(Error::new_internal("讀取政黨成員關係失敗")))?;
 
         use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
         if let Some(board_name) = board_name {
-            let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
+            let board =
+                forum::get_board_by_name(conn, &board_name).map_err(|e| e.to_field_err())?;
             query = query.filter(dsl::board_id.eq(board.id));
         }
 
@@ -392,7 +396,7 @@ impl Query {
             .collect())
     }
     fn check_board_name_valid(ctx: &Ctx, name: String) -> Option<String> {
-        forum::check_board_name_valid(ctx, &name)
+        forum::check_board_name_valid(&*ctx.get_pg_conn(), &name)
             .err()
             .map(|err| err.get_msg().to_owned())
     }
@@ -408,9 +412,10 @@ impl Query {
         category_name: String,
     ) -> FieldResult<Vec<Option<String>>> {
         // TODO: 想辦法快取住分類
-        let board = forum::get_board_by_name(ctx, &board_name).map_err(|e| e.to_field_err())?;
-        let category =
-            forum::get_category(ctx, &category_name, board.id).map_err(|e| e.to_field_err())?;
+        let board = forum::get_board_by_name(&*ctx.get_pg_conn(), &board_name)
+            .map_err(|e| e.to_field_err())?;
+        let category = forum::get_category(&*ctx.get_pg_conn(), &category_name, board.id)
+            .map_err(|e| e.to_field_err())?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         if c_body.structure.len() != content.len() {
             Error::new_logic("結構長度有誤", 403).to_field_result()

@@ -18,10 +18,14 @@
     width: 100%;
     color: gray;
     .boardName {
+        margin-top: 2px;
+        margin-left: 2%;
         display: inline-block;
         margin-right: auto;
     }
     .boardHeat {
+        margin-top: 2px;
+        margin-right: 2%;
         display: block;
         float: right;
     }

@@ -14,8 +14,8 @@ pub mod operation;
 pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Result<i64, Error> {
     // TODO: 撞名檢查，權限檢查，等等
     let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
-    check_board_name_valid(ctx, name)?;
     ctx.use_pg_conn(|conn| {
+        check_board_name_valid(conn, name)?;
         let party = party::get_party_by_name(conn, party_name)?;
         if party.board_id.is_some() {
             Err(Error::new_logic(
@@ -51,8 +51,11 @@ pub fn create_article<C: Context>(
     content: Vec<String>,
 ) -> Result<i64, Error> {
     let author_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
-    let board = get_board_by_name(ctx, &board_name)?;
-    let category = get_category(ctx, category_name, board.id)?;
+    let (board, category) = ctx.use_pg_conn(|conn| {
+        let b = get_board_by_name(conn, &board_name)?;
+        let c = get_category(conn, category_name, b.id)?;
+        Ok((b, c))
+    })?;
     let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
     if !c_body.rootable && edges.len() == 0 {
@@ -127,36 +130,32 @@ pub fn get_articles_meta<C: Context>(
     }
 }
 
-pub fn get_board_by_name<C: Context>(ctx: &C, name: &str) -> Result<models::Board, Error> {
+pub fn get_board_by_name(conn: &PgConnection, name: &str) -> Result<models::Board, Error> {
     use schema::boards::dsl::*;
-    ctx.use_pg_conn(|conn| {
-        boards
-            .filter(board_name.eq(&name))
-            .first::<models::Board>(conn)
-            .or(Err(Error::new_logic(
-                &format!("找不到看板: {}", name),
-                404,
-            )))
-    })
+    boards
+        .filter(board_name.eq(&name))
+        .first::<models::Board>(conn)
+        .or(Err(Error::new_logic(
+            &format!("找不到看板: {}", name),
+            404,
+        )))
 }
 
-pub fn get_category<C: Context>(
-    ctx: &C,
+pub fn get_category(
+    conn: &PgConnection,
     category_name: &str,
     board_id: i64,
 ) -> Result<models::Category, Error> {
     use schema::categories::dsl;
-    ctx.use_pg_conn(|conn| {
-        dsl::categories
-            .filter(dsl::is_active.eq(true))
-            .filter(dsl::category_name.eq(category_name))
-            .filter(dsl::board_id.eq(board_id))
-            .first::<models::Category>(conn)
-            .or(Err(Error::new_logic(
-                &format!("找不到分類: {}", category_name),
-                404,
-            )))
-    })
+    dsl::categories
+        .filter(dsl::is_active.eq(true))
+        .filter(dsl::category_name.eq(category_name))
+        .filter(dsl::board_id.eq(board_id))
+        .first::<models::Category>(conn)
+        .or(Err(Error::new_logic(
+            &format!("找不到分類: {}", category_name),
+            404,
+        )))
 }
 
 pub fn parse_content(
@@ -174,14 +173,14 @@ pub fn parse_content(
     }
 }
 
-pub fn check_board_name_valid<C: Context>(ctx: &C, name: &str) -> Result<(), Error> {
+pub fn check_board_name_valid(conn: &PgConnection, name: &str) -> Result<(), Error> {
     if name.len() == 0 {
         Err(Error::new_logic("板名不可為空", 403))
     } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
     {
         Err(Error::new_logic("板名帶有不合法字串", 403))
     } else {
-        if get_board_by_name(ctx, name).is_ok() {
+        if get_board_by_name(conn, name).is_ok() {
             Err(Error::new_logic("與其它看板重名", 403))
         } else {
             Ok(())

@@ -14,12 +14,11 @@ pub fn create_party<C: Context>(
 ) -> Result<i64, Error> {
     // TODO: 鍵能之類的檢查
     let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
-    //let board_id = forum::get_board_by_name(ctx, board_name).map(|b| b.id)?;
-    let board_id = match board_name {
-        Some(name) => Some(forum::get_board_by_name(ctx, name)?.id),
-        None => None,
-    };
     ctx.use_pg_conn(|conn| {
+        let board_id = match board_name {
+            Some(name) => Some(forum::get_board_by_name(conn, name)?.id),
+            None => None,
+        };
         check_party_name_valid(conn, name)?;
         create_party_db(conn, &user_id, board_id, name)
     })

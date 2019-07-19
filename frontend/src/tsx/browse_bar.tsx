@@ -128,7 +128,7 @@ function ShrinkableBlock(props: {
 }): JSX.Element {
 	return <>
 		<div styleName='title' onClick={() => props.onClick()}>
-			{props.title}{props.expand ? ' ▼' : ' ▸'}
+			{props.expand ? ' ▼' : ' ▸'}{props.title}
 		</div>
 		<div style={{
 			overflowY: props.expand ? 'auto' : 'hidden',
