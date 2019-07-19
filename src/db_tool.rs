@@ -1,5 +1,6 @@
 use std::io::{stdin, stdout};
 use std::io::Write;
+use std::fs;
 
 use diesel::PgConnection;
 
@@ -13,6 +14,9 @@ use carbonbond::custom_error::Error;
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
 
+run 子命令：
+    run [指令集檔案位置]
+        執行檔案中的命令，預設為 config/test_data.txt
 add 子命令：
     add user <信箱地址> <使用者名稱> <密碼>
     add party <政黨名> [看板名]
@@ -23,15 +27,16 @@ as 子命令：
         db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
 invite 子命令：
     invite <信箱地址>
+reset
+    清除資料庫並重建
 ";
 
 struct DBToolCtx {
-    conn: PgConnection,
     id: Option<String>,
 }
 impl Context for DBToolCtx {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
-        callback(&self.conn)
+        callback(&db::connect_db())
     }
     fn remember_id(&self, id: String) -> Result<(), Error> {
         let _s = self as *const Self as *mut Self;
@@ -48,12 +53,7 @@ impl Context for DBToolCtx {
     }
 }
 
-fn match_subcommand(ctx: &DBToolCtx) -> Result<(String, Vec<String>), failure::Error> {
-    match ctx.get_id() {
-        Some(id) => print!("{} > ", id),
-        _ => print!("> "),
-    }
-    stdout().flush()?;
+fn match_subcommand() -> Result<(String, Vec<String>), failure::Error> {
     let mut buff = String::new();
     loop {
         stdin().read_line(&mut buff)?;
@@ -122,19 +122,77 @@ fn invite(args: &Vec<String>) -> Result<(), failure::Error> {
 }
 fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
     let id = args[0].clone();
-    find_user(&ctx.conn, &id)?;
+    ctx.use_pg_conn(|conn| find_user(conn, &id))?;
     ctx.remember_id(id).unwrap();
     Ok(())
 }
 
+fn reset_database() -> Result<(), failure::Error> {
+    println!("危險操作！請輸入 carbonbond 以繼續");
+    print!("> ");
+    stdout().flush()?;
+
+    let mut buff = String::new();
+    stdin().read_line(&mut buff)?;
+    if &buff != "carbonbond\n" {
+        println!("操作取消");
+        return Ok(());
+    }
+
+    let out = std::process::Command::new("diesel")
+        .arg("database")
+        .arg("reset")
+        .output()?
+        .stdout;
+    println!("{}", String::from_utf8_lossy(&out));
+    Ok(())
+}
+
+fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+    let file_path = if args.len() == 0 {
+        "config/test_data.txt"
+    } else {
+        &args[0]
+    };
+    let txt = fs::read_to_string(file_path).expect("讀取檔案失敗");
+    for cmd in txt.split("\n").into_iter() {
+        match ctx.get_id() {
+            Some(id) => print!("{} > ", id),
+            _ => print!("> "),
+        }
+        println!("{}", cmd);
+        stdout().flush()?;
+        let vec_cmd: Vec<String> = cmd.split(" ").map(|s| s.to_owned()).collect();
+        if let Err(e) = dispatch_command(ctx, &vec_cmd[0], &vec_cmd[1..].to_vec()) {
+            println!("{:?}", e);
+        }
+    }
+    Ok(())
+}
+
 fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
-    let (subcommand, args) = match_subcommand(ctx)?;
-    match subcommand.as_ref() {
+    match ctx.get_id() {
+        Some(id) => print!("{} > ", id),
+        _ => print!("> "),
+    }
+    stdout().flush()?;
+    let (subcommand, args) = match_subcommand()?;
+    dispatch_command(ctx, &subcommand, &args)
+}
+
+fn dispatch_command(
+    ctx: &mut DBToolCtx,
+    subcommand: &str,
+    args: &Vec<String>,
+) -> Result<(), failure::Error> {
+    match subcommand {
         "help" => println!("{}", HELP_MSG),
         "h" => println!("{}", HELP_MSG),
+        "run" => run_batch_command(ctx, &args)?,
         "add" => add_something(ctx, &args)?,
         "as" => as_user(ctx, &args)?,
         "invite" => invite(&args)?,
+        "reset" => reset_database()?,
         other => println!("無 {} 指令", other),
     }
     Ok(())
@@ -142,10 +200,7 @@ fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
 
 fn main() {
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx {
-        conn: db::connect_db(),
-        id: None,
-    };
+    let mut ctx = DBToolCtx { id: None };
     loop {
         match exec_command(&mut ctx) {
             Err(error) => {

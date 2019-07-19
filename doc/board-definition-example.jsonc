@@ -7,7 +7,7 @@
         "rootable": true,
         "threshold": {
             "bond_energy": 50,
-            "identity": 0 // 0平民, 1黨員, 2黨代表, 3黨主席
+            "position": 0 // 0平民, 1黨員, 2黨代表, 3黨主席
         },
         "attached_to_to_post": [],
         "structure": [
@@ -26,7 +26,7 @@
         "rootable": false,
         "threshold_to_post": {
             "bond_energy": 0,
-            "identity": 0
+            "position": 0
         },
         "attached_to": ["電影簡介"],
         "structure": [

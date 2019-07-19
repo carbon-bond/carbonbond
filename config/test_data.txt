@@ -1,0 +1,5 @@
+reset
+add user a@carbonbond.com a 1
+as a
+add party 國際盜懶集團
+add board 國際盜懶集團 烤懶專板

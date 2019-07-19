@@ -2,7 +2,7 @@ use juniper::{FieldError, FieldResult, Value, DefaultScalarValue};
 
 #[derive(Debug, Fail)]
 pub enum Error {
-    #[fail(display = "內部錯誤")]
+    #[fail(display = "內部錯誤: {}", 0)]
     InternalError(String), // 不可控制的內部錯誤，如資料庫意外崩潰
     #[fail(display = "邏輯錯誤：{}", 0)]
     LogicError(String, i32), // 可控制的錯誤，如權限問題

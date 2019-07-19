@@ -9,7 +9,7 @@ use crate::MAX_ARTICLE_COLUMN;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Threshold {
     bond_energy: i32,
-    identity: i16, // 0平民, 1黨員, 2黨代表, 3黨主席
+    position: i16, // 0平民, 1黨員, 2黨代表, 3黨主席
 }
 
 #[derive(Debug)]

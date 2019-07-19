@@ -65,7 +65,7 @@ pub fn create_user_by_invitation(
     code: &str,
     id: &str,
     password: &str,
-) -> Result<(), Error> {
+) -> Result<User, Error> {
     // TODO: 錯誤處理
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
@@ -75,21 +75,7 @@ pub fn create_user_by_invitation(
             404,
         )))?;
 
-    let salt = rand::thread_rng().gen::<[u8; 16]>();
-
-    let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
-
-    let new_user = NewUser {
-        id,
-        email: &invitation.email,
-        password_hashed: hash.to_vec(),
-        salt: salt.to_vec(),
-    };
-    diesel::insert_into(schema::users::table)
-        .values(&new_user)
-        .get_result::<User>(conn)
-        .or(Err(Error::new_internal("新增用戶失敗")))?;
-    Ok(())
+    create_user(conn, &invitation.email, id, password)
 }
 
 // NOTE: 伺服器尚未用到該函式，是 db-tool 在用
