@@ -45,7 +45,7 @@ function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
 	return ret;
 }
 
-const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
+const DialogBlocks = (props: {dialogs: Dialog[]}): JSX.Element => {
 	const agg_dialogs = aggregateDiaglogs(props.dialogs);
 	return <>
 	{
@@ -64,14 +64,14 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	}
 	</>
 	;
-});
+};
 
 interface RoomData {
 	name: string
 }
 
 // 聊天室
-function ChatRoomPanel(room: RoomData): JSX.Element {
+function ChatRoomPanel(props: {room: RoomData}): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
@@ -88,7 +88,7 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
-				add_dialog(room.name, {
+				add_dialog(props.room.name, {
 					who: '金剛', // TODO: 換成 me
 					content: input_props.value,
 					date: new Date(),
@@ -97,25 +97,24 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 			}
 		}
 
-		const chat = all_chat.two_people.find(c => c.name == room.name);
+		const chat = all_chat.two_people.find(c => c.name == props.room.name);
 		if (chat == undefined) {
-			console.warn(`找不到聊天室 ${room.name}`);
+			console.warn(`找不到聊天室 ${props.room.name}`);
 		}
 
 		return <div styleName="chatPanel singlePanel">
 			<div styleName="roomTitle title">
-				<div styleName="leftSet">{room.name}</div>
+				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(false)}></div>
 				<div styleName="rightSet">
 					<div styleName="button">⚙</div>
-					<div styleName="button" onClick={() => delete_room(room.name)}>✗</div>
+					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
 				</div>
 			</div>
 			<div ref={scroll_bottom_ref} styleName="chatContent">
 				<DialogBlocks dialogs={chat!.dialogs}/>
 			</div>
 			<div styleName="inputBar">
-				<div styleName="nonText">➕</div>
 				<div styleName="nonText">😎</div>
 				<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
 			</div>
@@ -123,10 +122,10 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 	} else {
 		return <div styleName="chatPanel singlePanel">
 			<div styleName="roomTitle title">
-				<div styleName="leftSet">{room.name}</div>
+				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
 				<div styleName="rightSet">
-					<div styleName="button" onClick={() => delete_room(room.name)}>✗</div>
+					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
 				</div>
 			</div>
 		</div>;
@@ -136,7 +135,7 @@ function ChatRoomPanel(room: RoomData): JSX.Element {
 function BottomPanel(): JSX.Element {
 	const { chatrooms } = BottomPanelState.useContainer();
 	return <div styleName="bottomPanel">
-		{chatrooms.map(room => <ChatRoomPanel key={room.name} {...room} />)}
+		{chatrooms.map(room => <ChatRoomPanel key={room.name} room={room} />)}
 		<EditorPanel/>
 	</div>;
 }

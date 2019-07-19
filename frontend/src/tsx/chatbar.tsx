@@ -1,38 +1,56 @@
 import * as React from 'react';
 import '../css/chatbar.css';
-import { BottomPanelState, AllChatState, ChatData } from './global_state';
+import { BottomPanelState, AllChatState, ChatData, SimpleChatData, ChannelChatData } from './global_state';
 import { rough_date } from '../ts/date';
 
-// TODO: 文字太長以致超出 ChatUnit 大小時，要有自動附加刪節號底提示讀者
+// TODO: 文字太長以致超出 ChatUnit 大小時，要自動附加刪節號提示讀者
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { add_room } = BottomPanelState.useContainer();
 	const dialog = props.chat.newest_dialog();
+	const is_unread = props.chat.is_unread();
 
-	function Title(): JSX.Element {
-		const channel = props.chat.newest_channel_name();
-		if (channel == null) {
-			return <span styleName="name">{props.chat.name}</span>;
-		} else {
-			return <>
-				<span styleName="name">{props.chat.name}</span>
-				<span styleName="channel">#{channel}</span>
-			</>;
-		}
-	}
-
-	return <div styleName="chatUnit" onClick={() => add_room(props.chat.name)}>
-		<div styleName="upSet">
-			<div styleName="title">
-				<Title />
-			</div>
-			<div styleName="date">{rough_date(dialog.date)}</div>
-		</div>
-		<div styleName="downSet">
-			<div styleName="lastMessage">
+	function UnreadInfo(): JSX.Element {
+		if (props.chat instanceof SimpleChatData) {
+			return <div styleName="lastMessage">
 				<span>{dialog.who}</span>
 				：
 				<span>{dialog.content}</span>
+			</div>;
+		} else if (props.chat instanceof ChannelChatData) {
+			let channels = props.chat.unread_channels();
+			return <div styleName="unreadChannels">
+				{
+					channels.length == 0 ?
+						<span styleName="allRead">所有頻道訊息皆已讀取</span> :
+						channels.map(c => {
+							return <span key={c} styleName="channel">#{c}</span>;
+						})
+				}
+			</div>;
+		} else {
+			console.error(`未知的 ChatData 介面：${typeof props.chat}`);
+			return <></>;
+		}
+	}
+	function Date(): JSX.Element {
+		const date = rough_date(dialog.date);
+		if (is_unread) {
+			return <div styleName="date"><span styleName="circle">⬤</span> {date}</div>;
+		} else {
+			return <div styleName="date">{date}</div>;
+		}
+	}
+
+	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={() => add_room(props.chat.name)}>
+		<div styleName="upSet">
+			<div styleName="title">
+				<span styleName="name">{props.chat.name}</span>
 			</div>
+			<Date />
+			{/* <div styleName="date">{rough_date(dialog.date)}</div> */}
+		</div>
+		<div styleName="downSet">
+			<UnreadInfo />
 		</div>
 	</div>;
 }

@@ -27,6 +27,9 @@
             .date {
                 font-size: 13px;
                 color: #666666;
+                .circle {
+                    color: #00F100;
+                }
             }
         }
         .downSet {
@@ -36,6 +39,24 @@
                 height: 17px;
                 color: #5a5a5a;
             }
+            .unreadChannels {
+                .allRead {
+                    font-size: 13px;
+                    color: #5a5a5a;
+                }
+                .channel {
+                    font-weight: normal;
+                    margin-right: 1px;
+                    padding-left: 3px;
+                    padding-right: 3px;
+                    font-size: 13px;
+                    border-radius: 9px;
+                    background-color: #DD99DD;
+                }
+            }
         }
+    }
+    .bold {
+        font-weight: bold;
     }
 }

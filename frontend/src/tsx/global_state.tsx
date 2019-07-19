@@ -130,21 +130,25 @@ export type Dialog = {
 export interface ChatData {
 	name: string;
 	newest_dialog(): Dialog
-	newest_channel_name(): string | null;
+	is_unread(): boolean
 };
 
 // TODO: 增加一個欄位表示最後閱讀的時間
 export class SimpleChatData implements ChatData {
 	name: string;
 	dialogs: Dialog[];
-	constructor(name: string, dialogs: Dialog[]) {
+	last_read: Date;
+	constructor(name: string, dialogs: Dialog[], last_read: Date) {
 		this.name = name;
 		this.dialogs = dialogs;
+		this.last_read = last_read;
 	}
 	newest_dialog(): Dialog {
 		return this.dialogs.slice(-1)[0];
 	}
-	newest_channel_name(): null { return null; }
+	is_unread(): boolean {
+		return this.last_read < this.newest_dialog().date;
+	}
 };
 
 export class ChannelChatData implements ChatData {
@@ -162,8 +166,11 @@ export class ChannelChatData implements ChatData {
 	newest_dialog(): Dialog {
 		return this.newest_channel().newest_dialog();
 	}
-	newest_channel_name(): string {
-		return this.newest_channel().name;
+	unread_channels(): string[] {
+		return this.channels.filter(c => c.is_unread()).map(c => c.name);
+	}
+	is_unread(): boolean {
+		return this.unread_channels().length > 0;
 	}
 };
 
@@ -187,14 +194,16 @@ function useAllChatState(): {
 						[
 							{ who: '冬木士度', content: '那時我認爲他是個怪人', date: new Date(2019, 6, 14) },
 							{ who: '風鳥院花月', content: '我也是', date: new Date(2019, 6, 15) }
-						]
+						],
+						new Date(2019, 7, 13)
 					),
 					new SimpleChatData(
 						'閃靈二人組',
 						[
 							{ who: '天野銀次', content: '肚子好餓', date: new Date(2018, 11, 4) },
 							{ who: '美堂蠻', content: '呿！', date: new Date(2019, 3, 27) }
-						]
+						],
+						new Date(2018, 6, 13)
 					)
 				],
 			)
@@ -202,10 +211,10 @@ function useAllChatState(): {
 		group: [],
 		// TODO: 刪掉假數據
 		two_people: [
-			new SimpleChatData('玻璃碳', [{ who: '金剛', content: '安安', date: new Date() }]),
-			new SimpleChatData('石墨', [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 6, 12) }]),
-			new SimpleChatData('六方', [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }]),
-			new SimpleChatData('芙', [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }]),
+			new SimpleChatData('玻璃碳', [{ who: '金剛', content: '安安', date: new Date() }], new Date(2019, 3, 3)),
+			new SimpleChatData('石墨', [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 5, 12) }], new Date(2019, 3, 3)),
+			new SimpleChatData('六方', [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }], new Date(2019, 3, 3)),
+			new SimpleChatData('芙', [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }], new Date(2019, 6, 3)),
 		]
 	});
 
@@ -222,7 +231,7 @@ function useAllChatState(): {
 		set_all_chat(new_chat);
 	}
 
-	return { all_chat: all_chat, add_dialog };
+	return { all_chat, add_dialog };
 }
 
 export const UserState = createContainer(useUserState);
