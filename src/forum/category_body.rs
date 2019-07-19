@@ -1,8 +1,7 @@
-extern crate serde_json;
 use serde::{Serialize, Deserialize, Deserializer, Serializer};
 use serde::de::{Visitor, Error};
-extern crate regex;
 use regex::Regex;
+use failure::Fallible;
 
 use crate::MAX_ARTICLE_COLUMN;
 
@@ -116,13 +115,13 @@ pub enum StringOrI32 {
     I32(i32),
 }
 
-use crate::custom_error::Error as CE;
+use crate::custom_error::LogicalError;
 impl ColSchema {
-    pub fn parse_content(&self, content: String) -> Result<StringOrI32, CE> {
+    pub fn parse_content(&self, content: String) -> Fallible<StringOrI32> {
         match self.col_type {
             ColType::Atom(AtomType::Line) => {
                 if content.contains('\n') {
-                    Err(CE::new_logic("一行內容帶有換行符", 403))
+                    Err(LogicalError::new("一行內容帶有換行符", 403).into())
                 } else {
                     Ok(StringOrI32::Str(content))
                 }
@@ -135,10 +134,7 @@ impl ColSchema {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
-                    Err(CE::new_logic(
-                        &format!("整數型解析失敗: {}", content),
-                        403,
-                    ))
+                    Err(LogicalError::new(&format!("整數型解析失敗: {}", content), 403).into())
                 }
             }
             ColType::Atom(AtomType::Rating(max)) => {
@@ -147,16 +143,14 @@ impl ColSchema {
                     if r <= max && r >= 1 {
                         Ok(StringOrI32::I32(r as i32))
                     } else {
-                        Err(CE::new_logic(
+                        Err(LogicalError::new(
                             &format!("評分型範圍錯誤: {} 不屬於 1~{}", r, max),
                             403,
-                        ))
+                        )
+                        .into())
                     }
                 } else {
-                    Err(CE::new_logic(
-                        &format!("評分型解析失敗: {}", content),
-                        403,
-                    ))
+                    Err(LogicalError::new(&format!("評分型解析失敗: {}", content), 403).into())
                 }
             }
             ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
@@ -179,14 +173,10 @@ impl CategoryBody {
     pub fn to_string(&self) -> String {
         serde_json::to_string(self).unwrap()
     }
-    pub fn from_string(s: &str) -> Result<CategoryBody, CE> {
-        let t =
-            serde_json::from_str::<Self>(s).or(Err(CE::new_logic("解析分類失敗", 403)))?;
+    pub fn from_string(s: &str) -> Fallible<CategoryBody> {
+        let t = serde_json::from_str::<Self>(s).or(Err(LogicalError::new("解析分類失敗", 403)))?;
         if t.structure.len() > MAX_ARTICLE_COLUMN {
-            Err(CE::new_logic(
-                &format!("文章結構過長: {}", t.name),
-                403,
-            ))
+            Err(LogicalError::new(&format!("文章結構過長: {}", t.name), 403).into())
         } else {
             Ok(t)
         }

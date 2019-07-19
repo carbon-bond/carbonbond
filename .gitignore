@@ -6,6 +6,8 @@
 *.swo
 *.swp
 .vscode/
+*~
+.*~
 
 # config
 .env

@@ -1,8 +1,9 @@
 use std::env;
 use std::process::Command;
-use crate::custom_error::Error;
+use failure::Fallible;
+use crate::custom_error::InternalError;
 
-fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Result<String, Error> {
+fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallible<String> {
     dotenv::dotenv().ok();
     let mailgun_api_key = env::var("MAILGUN_API_KEY").expect("未設置 mailgun api key");
     // TODO: text 能否拿掉？
@@ -20,7 +21,7 @@ fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Result<
         .arg("-c")
         .arg(cmd)
         .output()
-        .map_err(|e| Error::new_internal(&format!("寄信失敗: {}", e)))?;
+        .map_err(|e| InternalError::new(&format!("寄信失敗: {}", e)))?;
 
     let msg: String = output.stdout.iter().map(|ch| *ch as char).collect();
     return Ok(msg);
@@ -30,7 +31,7 @@ pub fn send_invite_email(
     sender_id: Option<&str>,
     invite_code: &str,
     recv_email: &str,
-) -> Result<(), Error> {
+) -> Fallible<()> {
     let inviter_id = {
         if let Some(id) = &sender_id {
             &id

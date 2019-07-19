@@ -1,16 +1,18 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use rand::Rng;
+use failure::Fallible;
+
 use crate::db::models::{NewUser, User, NewInvitation, Invitation};
 use crate::db::schema;
-use crate::custom_error::Error;
+use crate::custom_error::{LogicalError, InternalError};
 
 // 回傳邀請碼
 pub fn create_invitation(
     conn: &PgConnection,
     sender: Option<&str>,
     email: &str,
-) -> Result<String, Error> {
+) -> Fallible<String> {
     use rand::distributions::Alphanumeric;
 
     let invite_code: String = rand::thread_rng()
@@ -25,14 +27,10 @@ pub fn create_invitation(
 
     match sender {
         Some(id) => {
-            let user =
-                schema::users::table
-                    .find(id)
-                    .first::<User>(conn)
-                    .or(Err(Error::new_logic(
-                        &format!("查無使用者: {}", id),
-                        403,
-                    )))?;
+            let user = schema::users::table
+                .find(id)
+                .first::<User>(conn)
+                .or(Err(LogicalError::new(&format!("查無使用者: {}", id), 403)))?;
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);
@@ -40,21 +38,21 @@ pub fn create_invitation(
                 diesel::update(target)
                     .set(invitation_credit.eq(invitation_credit - 1))
                     .execute(conn)
-                    .or(Err(Error::new_internal("修改邀請點失敗")))?;
+                    .or(Err(InternalError::new("修改邀請點失敗")))?;
                 diesel::insert_into(schema::invitations::table)
                     .values(&new_invitation)
                     .execute(conn)
-                    .or(Err(Error::new_internal("新增邀請失敗")))?;
+                    .or(Err(InternalError::new("新增邀請失敗")))?;
                 Ok(invite_code)
             } else {
-                Err(Error::new_logic("邀請點數不足", 403))
+                Err(LogicalError::new("邀請點數不足", 403).into())
             }
         }
         None => {
             diesel::insert_into(schema::invitations::table)
                 .values(&new_invitation)
                 .execute(conn)
-                .or(Err(Error::new_internal("新增邀請失敗")))?;
+                .or(Err(InternalError::new("新增邀請失敗")))?;
             Ok(invite_code)
         }
     }
@@ -65,12 +63,12 @@ pub fn create_user_by_invitation(
     code: &str,
     id: &str,
     password: &str,
-) -> Result<User, Error> {
+) -> Fallible<User> {
     // TODO: 錯誤處理
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
-        .or(Err(Error::new_logic(
+        .or(Err(LogicalError::new(
             &format!("查無邀請碼: {}", code),
             404,
         )))?;
@@ -80,12 +78,7 @@ pub fn create_user_by_invitation(
 
 // NOTE: 伺服器尚未用到該函式，是 db-tool 在用
 // TODO: 錯誤處理
-pub fn create_user(
-    conn: &PgConnection,
-    email: &str,
-    id: &str,
-    password: &str,
-) -> Result<User, Error> {
+pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> Fallible<User> {
     let salt = rand::thread_rng().gen::<[u8; 16]>();
 
     let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
@@ -99,5 +92,5 @@ pub fn create_user(
     diesel::insert_into(schema::users::table)
         .values(&new_user)
         .get_result(conn)
-        .or(Err(Error::new_internal("新增用戶失敗")))
+        .or(Err(InternalError::new("新增用戶失敗").into()))
 }
