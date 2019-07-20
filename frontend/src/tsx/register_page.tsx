@@ -52,7 +52,7 @@ export function RegisterPage(props: Props): JSX.Element {
 			// 跳轉回首頁
 			props.history.push('/app');
 		}
-	}, [user_state.login]);
+	}, [user_state.login, props.history]);
 
 	if (fetching) {
 		return <div> 載入頁 </div>;

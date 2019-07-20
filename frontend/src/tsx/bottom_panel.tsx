@@ -45,7 +45,7 @@ function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
 	return ret;
 }
 
-const DialogBlocks = (props: {dialogs: Dialog[]}): JSX.Element => {
+const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	const agg_dialogs = aggregateDiaglogs(props.dialogs);
 	return <>
 	{
@@ -64,7 +64,7 @@ const DialogBlocks = (props: {dialogs: Dialog[]}): JSX.Element => {
 	}
 	</>
 	;
-};
+});
 
 interface RoomData {
 	name: string
@@ -72,6 +72,8 @@ interface RoomData {
 
 // 聊天室
 function ChatRoomPanel(props: {room: RoomData}): JSX.Element {
+	const { delete_room } = BottomPanelState.useContainer();
+	const { all_chat, add_dialog, update_last_read } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
@@ -81,17 +83,16 @@ function ChatRoomPanel(props: {room: RoomData}): JSX.Element {
 			inputElement.current.focus();
 		}
 	}, [extended]);
-	const { delete_room } = BottomPanelState.useContainer();
-	const { all_chat, add_dialog } = AllChatState.useContainer();
 
 	if (extended) {
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
+				const now = new Date();
 				add_dialog(props.room.name, {
 					who: '金剛', // TODO: 換成 me
 					content: input_props.value,
-					date: new Date(),
+					date: now,
 				});
 				setValue('');
 			}

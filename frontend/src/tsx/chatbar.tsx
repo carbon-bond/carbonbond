@@ -6,6 +6,7 @@ import { rough_date } from '../ts/date';
 // TODO: 文字太長以致超出 ChatUnit 大小時，要自動附加刪節號提示讀者
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { add_room } = BottomPanelState.useContainer();
+	const { update_last_read } = AllChatState.useContainer();
 	const dialog = props.chat.newest_dialog();
 	const is_unread = props.chat.is_unread();
 
@@ -32,7 +33,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			return <></>;
 		}
 	}
-	function Date(): JSX.Element {
+	function LastDate(): JSX.Element {
 		const date = rough_date(dialog.date);
 		if (is_unread) {
 			return <div styleName="date"><span styleName="circle">⬤</span> {date}</div>;
@@ -41,12 +42,17 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 
-	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={() => add_room(props.chat.name)}>
+	function on_click(): void {
+		add_room(props.chat.name);
+		update_last_read(props.chat.name, new Date());
+	}
+
+	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={on_click}>
 		<div styleName="upSet">
 			<div styleName="title">
 				<span styleName="name">{props.chat.name}</span>
 			</div>
-			<Date />
+			<LastDate />
 			{/* <div styleName="date">{rough_date(dialog.date)}</div> */}
 		</div>
 		<div styleName="downSet">

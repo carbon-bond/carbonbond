@@ -2,7 +2,7 @@ import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from './api';
-import { produce } from 'immer';
+import { produce, immerable } from 'immer';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -151,6 +151,10 @@ export class SimpleChatData implements ChatData {
 	}
 };
 
+// 爲了讓 immer 作用於 class ，但又繞不過 ts 的型別檢查
+// @ts-ignore
+SimpleChatData[immerable] = true;
+
 export class ChannelChatData implements ChatData {
 	name: string;
 	channels: SimpleChatData[];
@@ -174,6 +178,9 @@ export class ChannelChatData implements ChatData {
 	}
 };
 
+// @ts-ignore
+ChannelChatData[immerable] = true;
+
 type AllChat = {
 	party: ChannelChatData[],
 	group: SimpleChatData[],
@@ -183,6 +190,7 @@ type AllChat = {
 function useAllChatState(): {
 	all_chat: AllChat
 	add_dialog: Function
+	update_last_read: Function
 	} {
 
 	let [all_chat, set_all_chat] = useState<AllChat>({
@@ -224,6 +232,7 @@ function useAllChatState(): {
 			let chat = draft.two_people.find((d) => d.name == name);
 			if (chat != undefined) {
 				chat!.dialogs.push(dialog);
+				chat!.last_read = dialog.date;
 			} else {
 				console.warn(`不存在雙人對話 ${name}`);
 			}
@@ -231,7 +240,20 @@ function useAllChatState(): {
 		set_all_chat(new_chat);
 	}
 
-	return { all_chat, add_dialog };
+	// 只作用於雙人
+	function update_last_read(name: string, date: Date): void {
+		let new_chat = produce(all_chat, draft => {
+			let chat = draft.two_people.find((d) => d.name == name);
+			if (chat != undefined) {
+				chat!.last_read = date;
+			} else {
+				console.warn(`不存在雙人對話 ${name}`);
+			}
+		});
+		set_all_chat(new_chat);
+	}
+
+	return { all_chat, add_dialog, update_last_read };
 }
 
 export const UserState = createContainer(useUserState);
