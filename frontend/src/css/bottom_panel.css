@@ -48,6 +48,9 @@
             .middleSet {
                 flex-grow: 1;
                 height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             .rightSet {
                 font-size: 22px;
@@ -59,7 +62,7 @@
                 }
             }
         }
-        .chatContent {
+        .dialogs {
             padding: 4px;
             background: white;
             border: 1px #DDDDDD solid;

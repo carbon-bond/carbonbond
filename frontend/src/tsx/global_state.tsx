@@ -32,17 +32,31 @@ function useUserState(): { user_state: UserStateType, set_login: Function, set_l
 	return { user_state, set_login, set_logout };
 }
 
-type ChatRoom = {
+export type SimpleRoomData = {
 	// XXX: 之後要改爲 id ，因爲可能會撞名
-	name: string,
+	name: string
 };
 
+export type ChannelRoomData = {
+	// XXX: 之後要改爲 id ，因爲可能會撞名
+	name: string,
+	channel: string
+};
+
+
+export type RoomData = SimpleRoomData | ChannelRoomData;
+
+export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
+	return (x as ChannelRoomData).channel !== undefined;
+}
+
 function useBottomPanelState(): {
-	chatrooms: ChatRoom[],
+	chatrooms: RoomData[],
 	add_room: Function,
+	add_room_with_channel: Function,
 	delete_room: Function,
 	} {
-	let [chatrooms, set_chatrooms] = useState<ChatRoom[]>([]);
+	let [chatrooms, set_chatrooms] = useState<RoomData[]>([]);
 
 	function add_room(name: string): void {
 		// TODO: 調整聊天室添加順序
@@ -51,8 +65,19 @@ function useBottomPanelState(): {
 			chatrooms = chatrooms.filter(room => room.name != name);
 			chatrooms = [{name}, ...chatrooms];
 		} else {
-			// NOTE: 是否該引入 immutable.js ?
 			chatrooms = [{name}, ...chatrooms];
+		}
+		set_chatrooms(chatrooms);
+	}
+
+	function add_room_with_channel(name: string, channel: string): void {
+		// TODO: 調整聊天室添加順序
+		if (chatrooms.find(room => room.name == name) != undefined) {
+			// 若聊天室已經存在，將其排列到第一位
+			chatrooms = chatrooms.filter(room => room.name != name);
+			chatrooms = [{name, channel}, ...chatrooms];
+		} else {
+			chatrooms = [{name, channel}, ...chatrooms];
 		}
 		set_chatrooms(chatrooms);
 	}
@@ -61,7 +86,7 @@ function useBottomPanelState(): {
 		set_chatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms, add_room, delete_room };
+	return { chatrooms, add_room, add_room_with_channel, delete_room };
 }
 
 export type NewArticleArgs = {
@@ -183,14 +208,15 @@ ChannelChatData[immerable] = true;
 
 type AllChat = {
 	party: ChannelChatData[],
-	group: SimpleChatData[],
 	two_people: SimpleChatData[]
 };
 
 function useAllChatState(): {
 	all_chat: AllChat
 	add_dialog: Function
+	add_channel_dialog: Function
 	update_last_read: Function
+	update_last_read_channel: Function
 	} {
 
 	let [all_chat, set_all_chat] = useState<AllChat>({
@@ -206,6 +232,15 @@ function useAllChatState(): {
 						new Date(2019, 7, 13)
 					),
 					new SimpleChatData(
+						'主頻道',
+						[
+							{ who: '美堂蠻', content: '午餐要吃什麼？', date: new Date(2019, 1, 14) },
+							{ who: '馬克貝斯', content: '沒意見', date: new Date(2019, 1, 15) },
+							{ who: '天子峰', content: '都可', date: new Date(2019, 1, 16) }
+						],
+						new Date(2018, 7, 13)
+					),
+					new SimpleChatData(
 						'閃靈二人組',
 						[
 							{ who: '天野銀次', content: '肚子好餓', date: new Date(2018, 11, 4) },
@@ -216,7 +251,6 @@ function useAllChatState(): {
 				],
 			)
 		],
-		group: [],
 		// TODO: 刪掉假數據
 		two_people: [
 			new SimpleChatData('玻璃碳', [{ who: '金剛', content: '安安', date: new Date() }], new Date(2019, 3, 3)),
@@ -234,8 +268,27 @@ function useAllChatState(): {
 				chat!.dialogs.push(dialog);
 				chat!.last_read = dialog.date;
 			} else {
-				console.warn(`不存在雙人對話 ${name}`);
+				console.error(`不存在雙人對話 ${name}`);
 			}
+		});
+		set_all_chat(new_chat);
+	}
+
+	// 只作用於雙人
+	function add_channel_dialog(name: string, channel_name: string, dialog: Dialog): void {
+		let new_chat = produce(all_chat, draft => {
+			const chat = draft.party.find((d) => d.name == name);
+			if (chat == undefined) {
+				console.error(`不存在政黨 ${name}`);
+				return;
+			}
+			const channel = chat.channels.find(c => c.name == channel_name);
+			if (channel == undefined) {
+				console.error(`不存在頻道 ${channel_name}`);
+				return;
+			}
+			channel.dialogs.push(dialog);
+			channel.last_read = dialog.date;
 		});
 		set_all_chat(new_chat);
 	}
@@ -244,16 +297,39 @@ function useAllChatState(): {
 	function update_last_read(name: string, date: Date): void {
 		let new_chat = produce(all_chat, draft => {
 			let chat = draft.two_people.find((d) => d.name == name);
-			if (chat != undefined) {
-				chat!.last_read = date;
-			} else {
-				console.warn(`不存在雙人對話 ${name}`);
+			if (chat == undefined) {
+				console.error(`不存在雙人對話 ${name}`);
+				return;
 			}
+			chat!.last_read = date;
 		});
 		set_all_chat(new_chat);
 	}
 
-	return { all_chat, add_dialog, update_last_read };
+	function update_last_read_channel(name: string, channel_name: string, date: Date): void {
+		let new_chat = produce(all_chat, draft => {
+			const chat = draft.party.find((d) => d.name == name);
+			if (chat == undefined) {
+				console.error(`不存在政黨 ${name}`);
+				return;
+			}
+			const channel = chat.channels.find(c => c.name == channel_name);
+			if (channel == undefined) {
+				console.error(`不存在頻道 ${channel_name}`);
+				return;
+			}
+			channel.last_read = date;
+		});
+		set_all_chat(new_chat);
+	}
+
+	return {
+		all_chat,
+		add_dialog,
+		add_channel_dialog,
+		update_last_read,
+		update_last_read_channel
+	};
 }
 
 export const UserState = createContainer(useUserState);
