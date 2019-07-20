@@ -3,13 +3,13 @@ use std::io::Write;
 use std::fs;
 
 use diesel::PgConnection;
+use failure::Fallible;
 
 use carbonbond::Context;
 use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
-use carbonbond::custom_error::Error;
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -40,14 +40,14 @@ impl Context for DBToolCtx {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
         callback(&db::connect_db())
     }
-    fn remember_id(&self, id: String) -> Result<(), Error> {
+    fn remember_id(&self, id: String) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;
         unsafe {
             (*_s).id = Some(id);
         }
         Ok(())
     }
-    fn forget_id(&self) -> Result<(), Error> {
+    fn forget_id(&self) -> Fallible<()> {
         unimplemented!();
     }
     fn get_id(&self) -> Option<String> {
@@ -55,7 +55,7 @@ impl Context for DBToolCtx {
     }
 }
 
-fn match_subcommand() -> Result<(String, Vec<String>), failure::Error> {
+fn match_subcommand() -> Fallible<(String, Vec<String>)> {
     let mut buff = String::new();
     loop {
         stdin().read_line(&mut buff)?;
@@ -67,7 +67,7 @@ fn match_subcommand() -> Result<(String, Vec<String>), failure::Error> {
     }
 }
 
-fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() < 2 {
         return Err(failure::format_err!("add 參數數量錯誤"));
     }
@@ -81,7 +81,7 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Err
     }
 }
 
-fn add_user(args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_user(args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
         return Err(failure::format_err!("add user 參數數量錯誤"));
     }
@@ -91,7 +91,7 @@ fn add_user(args: &Vec<String>) -> Result<(), failure::Error> {
     Ok(())
 }
 
-fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() == 1 {
         let party_name = &args[0];
         let id = party::create_party(ctx, None, party_name)?;
@@ -107,7 +107,7 @@ fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> 
     }
 }
 
-fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 2 {
         return Err(failure::format_err!("add board 參數數量錯誤"));
     }
@@ -122,19 +122,19 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> 
     Ok(())
 }
 
-fn invite(args: &Vec<String>) -> Result<(), failure::Error> {
+fn invite(args: &Vec<String>) -> Fallible<()> {
     let invite_code = signup::create_invitation(&db::connect_db(), None, &args[0])?;
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
-fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let id = args[0].clone();
     ctx.use_pg_conn(|conn| find_user(conn, &id))?;
     ctx.remember_id(id).unwrap();
     Ok(())
 }
 
-fn reset_database() -> Result<(), failure::Error> {
+fn reset_database() -> Fallible<()> {
     println!("危險操作！請輸入 carbonbond 以繼續");
     print!("> ");
     stdout().flush()?;
@@ -155,7 +155,7 @@ fn reset_database() -> Result<(), failure::Error> {
     Ok(())
 }
 
-fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), failure::Error> {
+fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let file_path = if args.len() == 0 {
         "config/test_data.txt"
     } else {
@@ -177,7 +177,7 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Result<(), fail
     Ok(())
 }
 
-fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
+fn exec_command(ctx: &mut DBToolCtx) -> Fallible<()> {
     match ctx.get_id() {
         Some(id) => print!("{} > ", id),
         _ => print!("> "),
@@ -187,11 +187,7 @@ fn exec_command(ctx: &mut DBToolCtx) -> Result<(), failure::Error> {
     dispatch_command(ctx, &subcommand, &args)
 }
 
-fn dispatch_command(
-    ctx: &mut DBToolCtx,
-    subcommand: &str,
-    args: &Vec<String>,
-) -> Result<(), failure::Error> {
+fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -> Fallible<()> {
     match subcommand {
         "help" => println!("{}", HELP_MSG),
         "h" => println!("{}", HELP_MSG),

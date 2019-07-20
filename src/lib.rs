@@ -12,16 +12,18 @@ extern crate diesel;
 extern crate serde_json;
 #[macro_use]
 extern crate failure;
+extern crate regex;
 
-use actix_session::{Session};
 use std::sync::{Arc, Mutex, MutexGuard};
+use actix_session::{Session};
 use diesel::pg::PgConnection;
-use custom_error::Error;
+use failure::Fallible;
+use crate::custom_error::InternalError;
 
 pub trait Context {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T;
-    fn remember_id(&self, id: String) -> Result<(), Error>;
-    fn forget_id(&self) -> Result<(), Error>;
+    fn remember_id(&self, id: String) -> Fallible<()>;
+    fn forget_id(&self) -> Fallible<()>;
     fn get_id(&self) -> Option<String>;
 }
 
@@ -42,16 +44,16 @@ impl Context for Ctx {
         let conn = &*self.conn.lock().unwrap();
         callback(conn)
     }
-    fn remember_id(&self, id: String) -> Result<(), Error> {
+    fn remember_id(&self, id: String) -> Fallible<()> {
         if self.session.set::<String>("id", id.to_string()).is_err() {
-            Err(Error::new_internal("記憶 ID 失敗"))
+            Err(InternalError::new("記憶 ID 失敗").into())
         } else {
             Ok(())
         }
     }
-    fn forget_id(&self) -> Result<(), Error> {
+    fn forget_id(&self) -> Fallible<()> {
         if self.session.set::<String>("id", "".to_string()).is_err() {
-            Err(Error::new_internal("清除 ID 失敗"))
+            Err(InternalError::new("清除 ID 失敗").into())
         } else {
             Ok(())
         }

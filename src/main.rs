@@ -5,6 +5,7 @@ extern crate env_logger;
 extern crate juniper;
 
 use std::sync::{Arc, Mutex};
+use failure::Fallible;
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::middleware::Logger;
@@ -17,7 +18,7 @@ fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> Fallible<()> {
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
     let sys = actix_rt::System::new("carbon-bond-runtime");
@@ -48,5 +49,5 @@ fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:8080")?
     .start();
 
-    sys.run()
+    sys.run().map_err(|err| err.into())
 }
