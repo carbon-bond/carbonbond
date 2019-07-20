@@ -5,6 +5,7 @@ use crate::custom_error::InternalError;
 
 fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallible<String> {
     dotenv::dotenv().ok();
+    // TODO 使用設定檔載入 MAILGUN_API_KEY
     let mailgun_api_key = env::var("MAILGUN_API_KEY").expect("未設置 mailgun api key");
     // TODO: text 能否拿掉？
     let cmd = format!(

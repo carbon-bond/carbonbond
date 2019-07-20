@@ -4,6 +4,8 @@ use std::fs;
 
 use diesel::PgConnection;
 use failure::Fallible;
+#[macro_use]
+extern crate clap;
 
 use carbonbond::Context;
 use carbonbond::user::{email, signup, find_user};
@@ -35,10 +37,11 @@ reset
 
 struct DBToolCtx {
     id: Option<String>,
+    database_url: String,
 }
 impl Context for DBToolCtx {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
-        callback(&db::connect_db())
+        callback(&db::connect_db(&self.database_url))
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;
@@ -74,20 +77,20 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let something = args[0].clone();
     let sub_args = args[1..].to_vec();
     match something.as_ref() {
-        "user" => add_user(&sub_args),
+        "user" => add_user(ctx, &sub_args),
         "party" => add_party(ctx, &sub_args),
         "board" => add_board(ctx, &sub_args),
         other => Err(failure::format_err!("無法 add {}", other)),
     }
 }
 
-fn add_user(args: &Vec<String>) -> Fallible<()> {
+fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
         return Err(failure::format_err!("add user 參數數量錯誤"));
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    signup::create_user(&db::connect_db(), email, id, password)?;
+    signup::create_user(&db::connect_db(&ctx.database_url), email, id, password)?;
     Ok(())
 }
 
@@ -122,8 +125,9 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     Ok(())
 }
 
-fn invite(args: &Vec<String>) -> Fallible<()> {
-    let invite_code = signup::create_invitation(&db::connect_db(), None, &args[0])?;
+fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
+    let invite_code =
+        signup::create_invitation(&db::connect_db(&ctx.database_url), None, &args[0])?;
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
@@ -194,7 +198,7 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
         "run" => run_batch_command(ctx, &args)?,
         "add" => add_something(ctx, &args)?,
         "as" => as_user(ctx, &args)?,
-        "invite" => invite(&args)?,
+        "invite" => invite(ctx, &args)?,
         "reset" => reset_database()?,
         other => println!("無 {} 指令", other),
     }
@@ -202,8 +206,19 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
 }
 
 fn main() {
+    // 解析程式參數
+    let database_url = {
+        let args_config = load_yaml!("db_tool_args.yaml");
+        let arg_matches = clap::App::from_yaml(args_config).get_matches();
+        let database_url = arg_matches.value_of("DATABASE_URL").unwrap();
+        database_url.to_owned()
+    };
+
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx { id: None };
+    let mut ctx = DBToolCtx {
+        id: None,
+        database_url: database_url,
+    };
     loop {
         match exec_command(&mut ctx) {
             Err(error) => {
