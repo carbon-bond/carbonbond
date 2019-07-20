@@ -9,6 +9,7 @@ default-run = "server"
 [dependencies]
 diesel = { version = "~1", features = ["postgres"] }
 actix-web = "~1"
+log = "~0"
 env_logger = "~0"
 dotenv = "~0"
 rand = "~0"
@@ -21,6 +22,8 @@ actix-rt = "~0"
 actix-session = "~0"
 regex = "~1"
 failure = "~0"
+clap = {version = "~2", features = ["yaml"]}
+toml = "~0"
 
 [[bin]]
 name = "server"

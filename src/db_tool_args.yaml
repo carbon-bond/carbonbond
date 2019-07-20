@@ -1,0 +1,9 @@
+name: db-tool
+version: "0.1"
+author: "金剛 <yc1043@gmail.com>, 石墨 <why8ther@gmail.com>"
+about: 資料庫工具
+args:
+  - DATABASE_URL:
+      help: 資料庫位置
+      required: true
+      index: 1

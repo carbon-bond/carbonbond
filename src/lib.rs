@@ -4,6 +4,7 @@ pub mod user;
 pub mod forum;
 pub mod db;
 pub mod party;
+pub mod config;
 
 pub const MAX_ARTICLE_COLUMN: usize = 15;
 

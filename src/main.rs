@@ -1,9 +1,15 @@
 extern crate actix_web;
 extern crate actix_files;
 extern crate actix_rt;
+#[macro_use]
+extern crate log;
 extern crate env_logger;
 extern crate juniper;
+#[macro_use]
+extern crate clap;
+extern crate toml;
 
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use failure::Fallible;
 use actix_files::Files;
@@ -12,20 +18,36 @@ use actix_web::middleware::Logger;
 use actix_web::{HttpServer, web, App, HttpRequest, Result as ActixResult};
 use actix_session::{CookieSession};
 
-use carbonbond::{api, db};
+use carbonbond::{api, db, config};
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
 }
 
 fn main() -> Fallible<()> {
+    // 初始化紀錄器
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
+
+    // 載入設定
+    let config = {
+        let args_config = load_yaml!("args.yaml");
+        let arg_matches = clap::App::from_yaml(args_config).get_matches();
+        let config_file = match arg_matches.value_of("config_file") {
+            Some(path) => PathBuf::from(path),
+            None => PathBuf::from("config/carbonbond.toml"),
+        };
+        config::load_config(config_file)?
+    };
+    let address = format!("{}:{}", config.server.address, config.server.port);
+    info!("伺服器位置：{}", address);
+    info!("資料庫位置：{}", &config.database.url);
+
     let sys = actix_rt::System::new("carbon-bond-runtime");
 
     // TODO: 建造一個資料庫連接池，以避免只有單條連線，導致性能瓶頸
     // 現有的 r2d2 對 postgres 的支援不完美
-    let conn = Arc::new(Mutex::new(db::connect_db()));
+    let conn = Arc::new(Mutex::new(db::connect_db(&config.database.url)));
 
     HttpServer::new(move || {
         let log_format = "
@@ -46,7 +68,7 @@ fn main() -> Fallible<()> {
             .route("/", web::get().to(index))
             .default_service(Files::new("", "./frontend/static"))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(&address)?
     .start();
 
     sys.run().map_err(|err| err.into())

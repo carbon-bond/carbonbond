@@ -1,0 +1,6 @@
+[server]
+address = "localhost"
+port = 8080
+
+[database]
+url = "postgres://postgres@localhost:5432/carbonbon"
