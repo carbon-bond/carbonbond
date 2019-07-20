@@ -126,7 +126,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			</div>
 		</div>;
 	} else {
-		return <div styleName="chatPanel singlePanel">
+		return <div styleName="chatPanel singlePanel roomWidth">
 			<div styleName="roomTitle title">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
@@ -186,16 +186,23 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div ref={scroll_bottom_ref} styleName="dialogs">
-				<DialogBlocks dialogs={channel!.dialogs}/>
-			</div>
-			<div styleName="inputBar">
-				<div styleName="nonText">😎</div>
-				<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
+			<div styleName="panelContent">
+				<div styleName="channels">
+					頻道列表
+				</div>
+				<div styleName="chatContent">
+					<div ref={scroll_bottom_ref} styleName="dialogs">
+						<DialogBlocks dialogs={channel!.dialogs} />
+					</div>
+					<div styleName="inputBar">
+						<div styleName="nonText">😎</div>
+						<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
+					</div>
+				</div>
 			</div>
 		</div>;
 	} else {
-		return <div styleName="chatPanel singlePanel">
+		return <div styleName="chatPanel singlePanel roomWidth">
 			<div styleName="roomTitle title">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}>#{props.room.channel}</div>

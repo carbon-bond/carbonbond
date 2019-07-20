@@ -1,3 +1,40 @@
+:root {
+    --room-width: 300px;
+}
+.roomWidth {
+    width: var(--room-width);
+}
+
+.dialogs {
+    width: var(--room-width);
+    height: 320px;
+    padding: 4px;
+    background: white;
+    border: 1px #DDDDDD solid;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+}
+.inputBar {
+    background: #F1F1F1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 34px;
+    padding-right: 4px;
+    .nonText {
+        cursor: pointer;
+        font-size: 22px;
+        margin-left: 4px;
+    }
+    input {
+        flex-grow: 1;
+        margin-left: 4px;
+        border-radius: 10px;
+        text-indent: 5px;
+        height: 28px;
+    }
+}
 /* 在 chatContent 之中 */
 .DialogBlock {
     .meta {
@@ -39,7 +76,6 @@
         justify-content: space-between;
     }
     .chatPanel {
-        width: 300px;
         .roomTitle {
             .leftSet {
                 font-size: 18px;
@@ -62,33 +98,13 @@
                 }
             }
         }
-        .dialogs {
-            padding: 4px;
-            background: white;
-            border: 1px #DDDDDD solid;
-            height: 320px;
-            display: flex;
-            flex-direction: column;
-            overflow: scroll;
-        }
-        .inputBar {
-            background: #F1F1F1;
+        .panelContent {
             display: flex;
             flex-direction: row;
-            align-items: center;
-            height: 34px;
-            padding-right: 4px;
-            .nonText {
-                cursor: pointer;
-                font-size: 22px;
-                margin-left: 4px;
+            .channels {
+                width: 150px;
             }
-            input {
-                flex-grow: 1;
-                margin-left: 4px;
-                border-radius: 10px;
-                text-indent: 5px;
-                height: 28px;
+            .chatContent {
             }
         }
     }
