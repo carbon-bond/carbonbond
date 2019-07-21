@@ -41,6 +41,7 @@
             }
             .unreadChannels {
                 .allRead {
+                    font-style: italic;
                     font-size: 13px;
                     color: #5a5a5a;
                 }

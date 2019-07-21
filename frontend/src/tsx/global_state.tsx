@@ -54,6 +54,7 @@ function useBottomPanelState(): {
 	chatrooms: RoomData[],
 	add_room: Function,
 	add_room_with_channel: Function,
+	change_channel: Function,
 	delete_room: Function,
 	} {
 	let [chatrooms, set_chatrooms] = useState<RoomData[]>([]);
@@ -82,11 +83,24 @@ function useBottomPanelState(): {
 		set_chatrooms(chatrooms);
 	}
 
+	function change_channel(name: string, channel: string): void {
+		if (chatrooms.find(room => room.name == name) != undefined) {
+			// 若聊天室已經存在，將其排列到第一位
+			const new_rooms = produce(chatrooms, draft => {
+				const chatroom = draft.find(room => room.name == name);
+				(chatroom as ChannelRoomData).channel = channel;
+			});
+			set_chatrooms(new_rooms);
+		} else {
+			console.error(`聊天室 ${name} 不存在，無法切換頻道`);
+		}
+	}
+
 	function delete_room(name: string): void {
 		set_chatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms, add_room, add_room_with_channel, delete_room };
+	return { chatrooms, add_room, add_room_with_channel, change_channel, delete_room };
 }
 
 export type NewArticleArgs = {

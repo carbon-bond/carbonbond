@@ -140,7 +140,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	console.log(`組件 ${props.room.name}#${JSON.stringify(props.room.channel)}`);
-	const { delete_room } = BottomPanelState.useContainer();
+	const { delete_room, change_channel } = BottomPanelState.useContainer();
 	const { all_chat, add_channel_dialog, update_last_read_channel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
@@ -177,6 +177,21 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			}
 		}
 
+		function ChannelList(): JSX.Element {
+			return <div styleName="channelList">
+				{
+					chat!.channels.map(c => {
+						const is_current = c.name == channel!.name;
+						const channel_style = `channel${is_current ? ' selected' : ''}`;
+						return <div styleName={channel_style} onClick={() => { change_channel(chat!.name, c.name); }}>
+							<span styleName="channelSymbol"># </span>
+							{c.name}
+						</div>;
+					})
+				}
+			</div>;
+		}
+
 		return <div styleName="chatPanel singlePanel">
 			<div styleName="roomTitle title">
 				<div styleName="leftSet">{props.room.name}</div>
@@ -188,7 +203,11 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			</div>
 			<div styleName="panelContent">
 				<div styleName="channels">
-					頻道列表
+					<div styleName="channelControl">
+						<div styleName="leftSet">頻道列表</div>
+						<div styleName="rightSet">➕</div>
+					</div>
+					<ChannelList />
 				</div>
 				<div styleName="chatContent">
 					<div ref={scroll_bottom_ref} styleName="dialogs">
