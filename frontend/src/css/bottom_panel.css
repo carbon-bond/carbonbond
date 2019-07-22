@@ -167,14 +167,20 @@
             max-height: 70vh;
             display: flex;
             flex-direction: column;
+            .articleContent {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+            }
             .oneLineInput{
                 display: block;
                 height: 30px;
             }
-            .articleContent {
+            .TextInput {
                 display: block;
-                flex: 1;
+                width: 100%;
                 resize: none;
+                flex: 1;
             }
             .categorySelector {
                 height: 30px;

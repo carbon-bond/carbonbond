@@ -118,7 +118,7 @@ export type EditorPanelData = {
 	cur_category: Category,
 	title: string,
 	edges: { article_id: string, transfuse: number }[],
-	content: string // TODO: 之後應該是 string[]
+	content: string[]
 };
 
 function useEditorPanelState(): {
@@ -145,7 +145,7 @@ function useEditorPanelState(): {
 					categories: new_article_args.categories,
 					title: new_article_args.title || '',
 					edges: new_article_args.edges || [],
-					content: ''
+					content: Array(cur_category.structure.length).fill('')
 				});
 			}
 		} else if (!editor_panel_data) {

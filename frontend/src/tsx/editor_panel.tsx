@@ -45,10 +45,17 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 	function deleteEditor(): void {
 		// TODO: 跳視窗警告
 		let do_delete = true;
-		if (editor_panel_data
-			&& (editor_panel_data.title != '' || editor_panel_data.content != '')
-		) {
-			do_delete = confirm('確定要結束發文？');
+		if (editor_panel_data ) {
+			if (editor_panel_data.title != '') {
+				do_delete = confirm('確定要結束發文？');
+			} else {
+				for (let c of editor_panel_data.content) {
+					if (c != '') {
+						do_delete = confirm('確定要結束發文？');
+						break;
+					}
+				}
+			}
 		}
 		if (do_delete) {
 			setEditorPanelData(null);
@@ -121,9 +128,53 @@ function CategorySelector(): JSX.Element {
 	}
 }
 
+type InputEvent<T> = React.ChangeEvent<T>;
+function InputsForStructure(): JSX.Element | null {
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	function onChange<T extends HTMLInputElement | HTMLTextAreaElement>(
+		evt: InputEvent<T>,
+		index: number
+	): void {
+		if (editor_panel_data) {
+			let data = { ...editor_panel_data };
+			data.content[index] = evt.target.value;
+			setEditorPanelData(data);
+		}
+	}
+	if (editor_panel_data) {
+		return <>
+			{
+				editor_panel_data.cur_category.structure.map((col, i) => {
+					if (col.col_type == 'Text') {
+						return <textarea key={i}
+							onChange={evt => onChange(evt, i)}
+							value={editor_panel_data.content[i]}
+							styleName='TextInput'
+							placeholder={col.col_name}
+						/>;
+					} else if (col.col_type == 'Line'
+						|| col.col_type == 'Int'
+						|| col.col_type.startsWith('Rating')
+					) {
+						return <input key={i}
+							onChange={evt => onChange(evt, i)}
+							value={editor_panel_data.content[i]}
+							styleName='oneLineInput'
+							placeholder={col.col_name}
+						/>;
+					} else {
+						return null;
+					}
+				})
+			}
+		</>;
+	} else {
+		return null;
+	}
+}
+
 function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-
 	if (editor_panel_data) {
 		return <div styleName='editorBody'>
 			<CategorySelector />
@@ -136,15 +187,9 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 				styleName='oneLineInput'
 				placeholder='文章標題'
 			/>
-			<textarea
-				onChange={evt => {
-					let data = { ...editor_panel_data, content: evt.target.value };
-					setEditorPanelData(data);
-				}}
-				styleName='articleContent'
-				placeholder='文章內容'
-				value={editor_panel_data.content}
-			/>
+			<div styleName='articleContent'>
+				<InputsForStructure />
+			</div>
 			<div>
 				<button onClick={() => {
 					createArticle(editor_panel_data).then(id => {
