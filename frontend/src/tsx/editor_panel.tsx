@@ -25,7 +25,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,
-			content: [data.content]
+			content: data.content
 		});
 		return res.createArticle;
 	}

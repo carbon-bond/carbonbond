@@ -178,6 +178,7 @@
             }
             .TextInput {
                 display: block;
+                overflow-y: auto;
                 width: 100%;
                 resize: none;
                 flex: 1;

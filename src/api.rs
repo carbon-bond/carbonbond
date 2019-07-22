@@ -377,7 +377,7 @@ impl Query {
 
         let party_vec = query
             .filter(dsl::id.eq_any(party_ids))
-            .load::<db_models::Party>(&*ctx.get_pg_conn())
+            .load::<db_models::Party>(conn)
             .map_err(|_| InternalError::new("讀取政黨列表失敗"))?;
         Ok(party_vec
             .into_iter()
