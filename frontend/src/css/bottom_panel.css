@@ -167,21 +167,27 @@
             max-height: 70vh;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
             .articleContent {
                 display: flex;
                 flex-direction: column;
                 flex: 1;
             }
             .oneLineInput{
+                width: 100%;
                 display: block;
-                height: 30px;
+                min-height: 30px;
             }
-            .TextInput {
+            .textInput {
                 display: block;
                 overflow-y: auto;
                 width: 100%;
                 resize: none;
                 flex: 1;
+                min-height: 70%;
+            }
+            .colLabel {
+                margin-top: 5px;
             }
             .categorySelector {
                 height: 30px;

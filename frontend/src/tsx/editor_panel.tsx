@@ -131,40 +131,53 @@ function CategorySelector(): JSX.Element {
 type InputEvent<T> = React.ChangeEvent<T>;
 function InputsForStructure(): JSX.Element | null {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-	function onChange<T extends HTMLInputElement | HTMLTextAreaElement>(
-		evt: InputEvent<T>,
-		index: number
-	): void {
-		if (editor_panel_data) {
-			let data = { ...editor_panel_data };
-			data.content[index] = evt.target.value;
-			setEditorPanelData(data);
-		}
-	}
 	if (editor_panel_data) {
+		let data = editor_panel_data;
+		function onChange<T extends HTMLInputElement | HTMLTextAreaElement>(
+			evt: InputEvent<T>,
+			index: number
+		): void {
+			if (editor_panel_data) {
+				let ep_data = { ...data };
+				ep_data.content[index] = evt.target.value;
+				setEditorPanelData(ep_data);
+			}
+		}
+		let single = data.cur_category.structure.length == 1;
 		return <>
 			{
-				editor_panel_data.cur_category.structure.map((col, i) => {
-					if (col.col_type == 'Text') {
-						return <textarea key={i}
-							onChange={evt => onChange(evt, i)}
-							value={editor_panel_data.content[i]}
-							styleName='TextInput'
-							placeholder={col.col_name}
-						/>;
-					} else if (col.col_type == 'Line'
-						|| col.col_type == 'Int'
-						|| col.col_type.startsWith('Rating')
-					) {
-						return <input key={i}
-							onChange={evt => onChange(evt, i)}
-							value={editor_panel_data.content[i]}
-							styleName='oneLineInput'
-							placeholder={col.col_name}
-						/>;
-					} else {
-						return null;
-					}
+				data.cur_category.structure.map((col, i) => {
+					return <>
+						{
+							single ? null : <p styleName='colLabel'>
+								{col.col_name} ({col.col_type})
+							</p>
+						}
+						{
+							(() => {
+								if (col.col_type == 'Text') {
+									return <textarea key={i}
+										onChange={evt => onChange(evt, i)}
+										value={data.content[i]}
+										styleName='textInput'
+										placeholder={single ? col.col_name : ''}
+									/>;
+								} else if (col.col_type == 'Line'
+									|| col.col_type == 'Int'
+									|| col.col_type.startsWith('Rating')
+								) {
+									return <input key={i}
+										onChange={evt => onChange(evt, i)}
+										value={data.content[i]}
+										styleName='oneLineInput'
+										placeholder={single ? col.col_name : ''}
+									/>;
+								} else {
+									return null;
+								}
+							})()
+						}
+					</>;
 				})
 			}
 		</>;
@@ -176,29 +189,42 @@ function InputsForStructure(): JSX.Element | null {
 function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
+		let data = editor_panel_data;
+		let single = data.cur_category.structure.length == 1;
+		let body_style = single ? {} : {
+			width: '96%',
+			marginLeft: '2%',
+			marginRight: '2%',
+		};
 		return <div styleName='editorBody'>
-			<CategorySelector />
-			<input
-				onChange={evt => {
-					let data = { ...editor_panel_data, title: evt.target.value };
-					setEditorPanelData(data);
-				}}
-				value={editor_panel_data.title}
-				styleName='oneLineInput'
-				placeholder='文章標題'
-			/>
-			<div styleName='articleContent'>
-				<InputsForStructure />
-			</div>
-			<div>
-				<button onClick={() => {
-					createArticle(editor_panel_data).then(id => {
-						props.onPost(id);
-					}).catch(err => {
-						toast.error(extractErrMsg(err));
-					});
-				}}>送出文章</button>
-				<button>儲存草稿</button>
+			<div style={{ ...body_style, display: 'flex', flexDirection: 'column', height: '100%' }}>
+				<CategorySelector />
+				{single ? null : <p styleName='colLabel'>文章標題</p>}
+				<input
+					onChange={evt => {
+						setEditorPanelData({
+							...data,
+							title: evt.target.value
+						});
+					}}
+					value={data.title}
+					styleName='oneLineInput'
+					placeholder={single ? '文章標題' : ''}
+				/>
+
+				<div styleName='articleContent'>
+					<InputsForStructure />
+					<div>
+						<button onClick={() => {
+							createArticle(data).then(id => {
+								props.onPost(id);
+							}).catch(err => {
+								toast.error(extractErrMsg(err));
+							});
+						}}>送出文章</button>
+						<button>儲存草稿</button>
+					</div>
+				</div>
 			</div>
 		</div>;
 	} else {
