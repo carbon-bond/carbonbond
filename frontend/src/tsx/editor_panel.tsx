@@ -4,12 +4,12 @@ import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
 import { getGraphQLClient, extractErrMsg } from './api';
 import { toast } from 'react-toastify';
+import { Category } from './forum_util';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
-		if (typeof data.category_name == 'string') {
-			let client = getGraphQLClient();
-			const mutation = `
+		let client = getGraphQLClient();
+		const mutation = `
 				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!) {
 					createArticle(
 						boardName: $board_name,
@@ -19,21 +19,20 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 					)
 				}
 			`;
-			let res: { createArticle: number } = await client.request(mutation, {
-				board_name: data.board_name,
-				category_name: data.category_name,
-				title: data.title,
-				content: [data.content]
-			});
-			return res.createArticle;
-		}
-		throw new Error('尚未指定分類');
+		let res: { createArticle: number } = await client.request(mutation, {
+			board_name: data.board_name,
+			category_name: data.cur_category.name,
+			title: data.title,
+			content: [data.content]
+		});
+		return res.createArticle;
 	}
 	throw new Error('尚未開始發文');
 }
 
 export function EditorPanel(): JSX.Element | null {
-	const { open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
+	const { open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
+		= EditorPanelState.useContainer();
 	function onTitleClick(): void {
 		if (open) {
 			closeEditorPanel();
@@ -58,7 +57,7 @@ export function EditorPanel(): JSX.Element | null {
 			<div styleName='roomTitle title'>
 				<div styleName='leftSet'>發表文章</div>
 				<div onClick={() => onTitleClick()} styleName='middleSet'>
-					<div style={{  width: '100%', textAlign: 'center' }}>
+					<div style={{ width: '100%', textAlign: 'center' }}>
 						b/{editor_panel_data.board_name}
 					</div>
 				</div>
@@ -69,7 +68,7 @@ export function EditorPanel(): JSX.Element | null {
 			{
 				(() => {
 					if (open) {
-						return <EditorBody data={editor_panel_data} onPost={() => setEditorPanelData(null)}/>;
+						return <EditorBody onPost={() => setEditorPanelData(null)} />;
 					}
 				})()
 			}
@@ -82,45 +81,74 @@ export function EditorPanel(): JSX.Element | null {
 	}
 }
 
-function EditorBody(props: { onPost: () => void, data: EditorPanelData }): JSX.Element {
-	const { setEditorPanelData } = EditorPanelState.useContainer();
-	return <div styleName='editorBody'>
-		<input
-			onChange={evt => {
-				let data = { ...props.data, title: evt.target.value };
-				setEditorPanelData(data);
-			}}
-			value={props.data.title}
-			styleName='oneLineInput'
-			placeholder='文章標題'
-		/>
-		<input
-			onChange={evt => {
-				let data = { ...props.data, category_name: evt.target.value };
-				setEditorPanelData(data);
-			}}
-			value={props.data.category_name || ''}
-			styleName='oneLineInput'
-			placeholder='文章分類'
-		/>
-		<textarea
-			onChange={evt => {
-				let data = { ...props.data, content: evt.target.value };
-				setEditorPanelData(data);
-			}}
-			styleName='articleContent'
-			placeholder='文章內容'
-			value={props.data.content}
-		/>
-		<div>
-			<button onClick={() => {
-				createArticle(props.data).then(() => {
-					props.onPost();
-				}).catch(err => {
-					toast.error(extractErrMsg(err));
-				});
-			}}>送出文章</button>
-			<button>儲存草稿</button>
-		</div>
-	</div>;
+function CategorySelector(): JSX.Element {
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	function onTagClicked(category: Category): void {
+		if (editor_panel_data) {
+			setEditorPanelData({ ...editor_panel_data, cur_category: category });
+		}
+	}
+	if (editor_panel_data) {
+		return <div styleName='categorySelector'>
+			{
+				editor_panel_data.categories.map((c, i) => {
+					if (c.name == editor_panel_data.cur_category.name) {
+						return <div styleName='selected categoryTag' key={i}>
+							<div styleName='tagTxt'>
+								{c.name}
+							</div>
+						</div>;
+					} else {
+						return <div styleName='categoryTag' key={i} onClick={() => onTagClicked(c)}>
+							<div styleName='tagTxt'>
+								{c.name}
+							</div>
+						</div>;
+					}
+				})
+			}
+		</div>;
+	} else {
+		throw new Error('尚未開始發文');
+	}
+}
+
+function EditorBody(props: { onPost: () => void }): JSX.Element {
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+
+	if (editor_panel_data) {
+		return <div styleName='editorBody'>
+			<CategorySelector />
+			<input
+				onChange={evt => {
+					let data = { ...editor_panel_data, title: evt.target.value };
+					setEditorPanelData(data);
+				}}
+				value={editor_panel_data.title}
+				styleName='oneLineInput'
+				placeholder='文章標題'
+			/>
+			<textarea
+				onChange={evt => {
+					let data = { ...editor_panel_data, content: evt.target.value };
+					setEditorPanelData(data);
+				}}
+				styleName='articleContent'
+				placeholder='文章內容'
+				value={editor_panel_data.content}
+			/>
+			<div>
+				<button onClick={() => {
+					createArticle(editor_panel_data).then(() => {
+						props.onPost();
+					}).catch(err => {
+						toast.error(extractErrMsg(err));
+					});
+				}}>送出文章</button>
+				<button>儲存草稿</button>
+			</div>
+		</div>;
+	} else {
+		throw new Error('沒有文章資料卻試圖編輯');
+	}
 }

@@ -176,6 +176,30 @@
                 flex: 1;
                 resize: none;
             }
+            .categorySelector {
+                height: 30px;
+                display: flex;
+                .categoryTag {
+                    flex: 1;
+                    cursor: pointer;
+                    background-color: white;
+                    display: inline-block;
+                    border-right-style: solid;
+                    border-right-width: 1px;
+                    border-right-color: gray;
+                    height: 100%;
+                    display: inline-flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    .tagTxt {
+                        text-align: center;
+                    }
+                }
+                .selected {
+                    background-color: gray;
+                    cursor: auto;
+                }
+            }
         }
     }
 }

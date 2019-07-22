@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { EditorPanelState, UserState } from '../global_state';
+import { fetchCategories } from '../forum_util';
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
@@ -13,8 +14,11 @@ export function BoardPage(props: Props): JSX.Element {
 		if (editor_panel_data) {
 			alert('正在編輯其它文章');
 		} else {
-			openEditorPanel({
-				board_name
+			fetchCategories(board_name, []).then(categories => {
+				openEditorPanel({
+					board_name,
+					categories
+				});
 			});
 		}
 	}

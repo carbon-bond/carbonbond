@@ -27,10 +27,14 @@ pub fn create_invitation(
 
     match sender {
         Some(id) => {
-            let user = schema::users::table
-                .find(id)
-                .first::<User>(conn)
-                .or(Err(LogicalError::new(&format!("查無使用者: {}", id), 403)))?;
+            let user =
+                schema::users::table
+                    .find(id)
+                    .first::<User>(conn)
+                    .or(Err(LogicalError::new(
+                        &format!("查無使用者: {}", id),
+                        403,
+                    )))?;
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);

@@ -57,12 +57,16 @@ pub fn create_article<C: Context>(
     let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
     if !c_body.rootable && edges.len() == 0 {
-        return Err(LogicalError::new(&format!("分類不可為根: {}", category_name), 403).into());
+        return Err(
+            LogicalError::new(&format!("分類不可為根: {}", category_name), 403).into(),
+        );
     }
     let mut node_ids = Vec::<i64>::with_capacity(edges.len());
     for &(id, transfuse) in edges {
         if !c_body.transfusable && transfuse != 0 {
-            return Err(LogicalError::new(&format!("分類不可輸能: {}", category_name), 403).into());
+            return Err(
+                LogicalError::new(&format!("分類不可輸能: {}", category_name), 403).into(),
+            );
         }
         node_ids.push(id);
     }

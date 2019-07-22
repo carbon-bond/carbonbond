@@ -3,6 +3,7 @@ const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from './api';
 import { produce, immerable } from 'immer';
+import { Category } from './forum_util';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -105,14 +106,16 @@ function useBottomPanelState(): {
 
 export type NewArticleArgs = {
 	board_name: string,
-	category_name?: string,
+	categories: Category[],
+	cur_category?: Category,
 	title?: string,
 	edges?: { article_id: string, transfuse: number }[]
 };
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
 	board_name: string,
-	category_name?: string,
+	categories: Category[],
+	cur_category: Category,
 	title: string,
 	edges: { article_id: string, transfuse: number }[],
 	content: string // TODO: 之後應該是 string[]
@@ -134,9 +137,12 @@ function useEditorPanelState(): {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
+				let cur_category = new_article_args.cur_category
+					|| new_article_args.categories[0];
 				setEditorPanelData({
+					cur_category,
 					board_name: new_article_args.board_name,
-					category_name: new_article_args.category_name,
+					categories: new_article_args.categories,
 					title: new_article_args.title || '',
 					edges: new_article_args.edges || [],
 					content: ''
