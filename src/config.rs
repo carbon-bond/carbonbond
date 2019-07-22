@@ -68,9 +68,7 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
 
 impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
     fn from(orig: RawDatabaseConfig) -> Fallible<DatabaseConfig> {
-        Ok(DatabaseConfig {
-            url: orig.url,
-        })
+        Ok(DatabaseConfig { url: orig.url })
     }
 }
 
