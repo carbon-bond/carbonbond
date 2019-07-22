@@ -13,13 +13,13 @@ import { UserState } from './global_state';
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
-	const { user_state, set_login, set_logout } = UserState.useContainer();
+	const { user_state, setLogin, setLogout } = UserState.useContainer();
 
 	async function login_request(id: string, password: string): Promise<{}> {
 		try {
 			await api.login_request(id, password);
 			setLogining(false);
-			set_login(id);
+			setLogin(id);
 			toast('登入成功');
 		} catch (err) {
 			toast.error(api.extractErrMsg(err));
@@ -29,7 +29,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	async function logout_request(): Promise<{}> {
 		try {
 			await api.logout_request();
-			set_logout();
+			setLogout();
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {

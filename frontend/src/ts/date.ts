@@ -3,7 +3,7 @@ import { isYesterday, isToday, format, isThisYear } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 
 // 根據時間的久遠程度來決定輸出
-function relative_date(date: Date): string {
+function relativeDate(date: Date): string {
 	if (isToday(date)) {
 		return format(date, 'a h:mm', {locale: zhTW});
 	} else if (isYesterday(date)) {
@@ -16,7 +16,7 @@ function relative_date(date: Date): string {
 }
 
 // 根據時間越久遠，顯示越簡略
-function rough_date(date: Date): string {
+function roughDate(date: Date): string {
 	if (isToday(date)) {
 		return format(date, 'a h:mm', {locale: zhTW});
 	} else if (isYesterday(date)) {
@@ -29,6 +29,6 @@ function rough_date(date: Date): string {
 }
 
 export {
-	relative_date,
-	rough_date
+	relativeDate,
+	roughDate
 };

@@ -6,30 +6,30 @@ import { produce, immerable } from 'immer';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
-function useUserState(): { user_state: UserStateType, set_login: Function, set_logout: Function } {
-	let [user_state, setLogin] = useState<UserStateType>({ login: false, fetching: true });
+function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function } {
+	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
-	async function get_login_state(): Promise<{}> {
+	async function getLoginState(): Promise<{}> {
 		const data = await api.me_request();
 		if (data.me.id != null) {
-			setLogin({ login: true, user_id: data.me.id });
+			setUserState({ login: true, user_id: data.me.id });
 		} else {
-			setLogin({ login: false, fetching: false });
+			setUserState({ login: false, fetching: false });
 		}
 		return {};
 	}
 
 	React.useEffect(() => {
-		get_login_state();
+		getLoginState();
 	}, []);
 
-	function set_login(user_id: string): void {
-		setLogin({ login: true, user_id: user_id });
+	function setLogin(user_id: string): void {
+		setUserState({ login: true, user_id: user_id });
 	}
-	function set_logout(): void {
-		setLogin({ login: false, fetching: false });
+	function setLogout(): void {
+		setUserState({ login: false, fetching: false });
 	}
-	return { user_state, set_login, set_logout };
+	return { user_state, setLogin, setLogout };
 }
 
 export type SimpleRoomData = {
@@ -52,14 +52,14 @@ export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
 
 function useBottomPanelState(): {
 	chatrooms: RoomData[],
-	add_room: Function,
-	add_room_with_channel: Function,
-	change_channel: Function,
-	delete_room: Function,
+	addRoom: Function,
+	addRoomWithChannel: Function,
+	changeChannel: Function,
+	deleteRoom: Function,
 	} {
-	let [chatrooms, set_chatrooms] = useState<RoomData[]>([]);
+	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
 
-	function add_room(name: string): void {
+	function addRoom(name: string): void {
 		// TODO: 調整聊天室添加順序
 		if (chatrooms.find(room => room.name == name) != undefined) {
 			// 若聊天室已經存在，將其排列到第一位
@@ -68,10 +68,10 @@ function useBottomPanelState(): {
 		} else {
 			chatrooms = [{name}, ...chatrooms];
 		}
-		set_chatrooms(chatrooms);
+		setChatrooms(chatrooms);
 	}
 
-	function add_room_with_channel(name: string, channel: string): void {
+	function addRoomWithChannel(name: string, channel: string): void {
 		// TODO: 調整聊天室添加順序
 		if (chatrooms.find(room => room.name == name) != undefined) {
 			// 若聊天室已經存在，將其排列到第一位
@@ -80,27 +80,27 @@ function useBottomPanelState(): {
 		} else {
 			chatrooms = [{name, channel}, ...chatrooms];
 		}
-		set_chatrooms(chatrooms);
+		setChatrooms(chatrooms);
 	}
 
-	function change_channel(name: string, channel: string): void {
+	function changeChannel(name: string, channel: string): void {
 		if (chatrooms.find(room => room.name == name) != undefined) {
 			// 若聊天室已經存在，將其排列到第一位
 			const new_rooms = produce(chatrooms, draft => {
 				const chatroom = draft.find(room => room.name == name);
 				(chatroom as ChannelRoomData).channel = channel;
 			});
-			set_chatrooms(new_rooms);
+			setChatrooms(new_rooms);
 		} else {
 			console.error(`聊天室 ${name} 不存在，無法切換頻道`);
 		}
 	}
 
-	function delete_room(name: string): void {
-		set_chatrooms(chatrooms.filter(room => room.name != name));
+	function deleteRoom(name: string): void {
+		setChatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms, add_room, add_room_with_channel, change_channel, delete_room };
+	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
 export type NewArticleArgs = {
@@ -168,8 +168,8 @@ export type Dialog = {
 
 export interface ChatData {
 	name: string;
-	newest_dialog(): Dialog
-	is_unread(): boolean
+	newestDialog(): Dialog
+	isUnread(): boolean
 };
 
 // TODO: 增加一個欄位表示最後閱讀的時間
@@ -182,11 +182,11 @@ export class SimpleChatData implements ChatData {
 		this.dialogs = dialogs;
 		this.last_read = last_read;
 	}
-	newest_dialog(): Dialog {
+	newestDialog(): Dialog {
 		return this.dialogs.slice(-1)[0];
 	}
-	is_unread(): boolean {
-		return this.last_read < this.newest_dialog().date;
+	isUnread(): boolean {
+		return this.last_read < this.newestDialog().date;
 	}
 };
 
@@ -201,19 +201,19 @@ export class ChannelChatData implements ChatData {
 		this.name = name;
 		this.channels = channels;
 	}
-	newest_channel(): SimpleChatData {
+	newestChannel(): SimpleChatData {
 		return this.channels.reduce((prev, cur) => {
-			return Number(prev.newest_dialog().date) > Number(cur.newest_dialog().date) ? prev : cur;
+			return Number(prev.newestDialog().date) > Number(cur.newestDialog().date) ? prev : cur;
 		});
 	}
-	newest_dialog(): Dialog {
-		return this.newest_channel().newest_dialog();
+	newestDialog(): Dialog {
+		return this.newestChannel().newestDialog();
 	}
-	unread_channels(): string[] {
-		return this.channels.filter(c => c.is_unread()).map(c => c.name);
+	unreadChannels(): string[] {
+		return this.channels.filter(c => c.isUnread()).map(c => c.name);
 	}
-	is_unread(): boolean {
-		return this.unread_channels().length > 0;
+	isUnread(): boolean {
+		return this.unreadChannels().length > 0;
 	}
 };
 
@@ -227,13 +227,13 @@ type AllChat = {
 
 function useAllChatState(): {
 	all_chat: AllChat
-	add_dialog: Function
-	add_channel_dialog: Function
-	update_last_read: Function
-	update_last_read_channel: Function
+	addDialog: Function
+	addChannelDialog: Function
+	updateLastRead: Function
+	updateLastReadChannel: Function
 	} {
 
-	let [all_chat, set_all_chat] = useState<AllChat>({
+	let [all_chat, setAllChat] = useState<AllChat>({
 		party: [
 			new ChannelChatData('無限城',
 				[
@@ -275,7 +275,7 @@ function useAllChatState(): {
 	});
 
 	// 只作用於雙人
-	function add_dialog(name: string, dialog: Dialog): void {
+	function addDialog(name: string, dialog: Dialog): void {
 		let new_chat = produce(all_chat, draft => {
 			let chat = draft.two_people.find((d) => d.name == name);
 			if (chat != undefined) {
@@ -285,11 +285,11 @@ function useAllChatState(): {
 				console.error(`不存在雙人對話 ${name}`);
 			}
 		});
-		set_all_chat(new_chat);
+		setAllChat(new_chat);
 	}
 
 	// 只作用於雙人
-	function add_channel_dialog(name: string, channel_name: string, dialog: Dialog): void {
+	function addChannelDialog(name: string, channel_name: string, dialog: Dialog): void {
 		let new_chat = produce(all_chat, draft => {
 			const chat = draft.party.find((d) => d.name == name);
 			if (chat == undefined) {
@@ -304,11 +304,11 @@ function useAllChatState(): {
 			channel.dialogs.push(dialog);
 			channel.last_read = dialog.date;
 		});
-		set_all_chat(new_chat);
+		setAllChat(new_chat);
 	}
 
 	// 只作用於雙人
-	function update_last_read(name: string, date: Date): void {
+	function updateLastRead(name: string, date: Date): void {
 		let new_chat = produce(all_chat, draft => {
 			let chat = draft.two_people.find((d) => d.name == name);
 			if (chat == undefined) {
@@ -317,10 +317,10 @@ function useAllChatState(): {
 			}
 			chat!.last_read = date;
 		});
-		set_all_chat(new_chat);
+		setAllChat(new_chat);
 	}
 
-	function update_last_read_channel(name: string, channel_name: string, date: Date): void {
+	function updateLastReadChannel(name: string, channel_name: string, date: Date): void {
 		let new_chat = produce(all_chat, draft => {
 			const chat = draft.party.find((d) => d.name == name);
 			if (chat == undefined) {
@@ -334,15 +334,15 @@ function useAllChatState(): {
 			}
 			channel.last_read = date;
 		});
-		set_all_chat(new_chat);
+		setAllChat(new_chat);
 	}
 
 	return {
 		all_chat,
-		add_dialog,
-		add_channel_dialog,
-		update_last_read,
-		update_last_read_channel
+		addDialog,
+		addChannelDialog,
+		updateLastRead,
+		updateLastReadChannel
 	};
 }
 

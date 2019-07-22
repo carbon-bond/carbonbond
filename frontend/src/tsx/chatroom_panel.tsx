@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../css/bottom_panel.css';
-import { relative_date } from '../ts/date';
+import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { useScrollBottom, useInputValue } from './utils';
 import {
@@ -60,7 +60,7 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 		agg_dialogs.map(dialog => <div key={Number(dialog.date)} styleName="DialogBlock">
 			<div styleName="meta">
 				<span styleName="who">{dialog.who}</span>
-				<span styleName="date">{relative_date(dialog.date)}</span>
+				<span styleName="date">{relativeDate(dialog.date)}</span>
 			</div>
 			{
 				dialog.contents.map((content, index) => {
@@ -75,8 +75,8 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
-	const { delete_room } = BottomPanelState.useContainer();
-	const { all_chat, add_dialog, update_last_read } = AllChatState.useContainer();
+	const { deleteRoom } = BottomPanelState.useContainer();
+	const { all_chat, addDialog: add_dialog, updateLastRead: update_last_read } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
@@ -89,7 +89,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const chat = all_chat.two_people.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
 	React.useEffect(() => {
-		if (extended && chat!.is_unread()) {
+		if (extended && chat!.isUnread()) {
 			update_last_read(props.room.name, new Date());
 		}
 	}, [extended, chat, update_last_read, props.room.name]);
@@ -114,7 +114,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				<div styleName="middleSet" onClick={() => setExtended(false)}></div>
 				<div styleName="rightSet">
 					<div styleName="button">⚙</div>
-					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
+					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 			<div ref={scroll_bottom_ref} styleName="dialogs">
@@ -131,7 +131,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
 				<div styleName="rightSet">
-					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
+					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 		</div>;
@@ -140,8 +140,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	console.log(`組件 ${props.room.name}#${JSON.stringify(props.room.channel)}`);
-	const { delete_room, change_channel } = BottomPanelState.useContainer();
-	const { all_chat, add_channel_dialog, update_last_read_channel } = AllChatState.useContainer();
+	const { deleteRoom, changeChannel } = BottomPanelState.useContainer();
+	const { all_chat, addChannelDialog, updateLastReadChannel: updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
@@ -158,17 +158,17 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	if (channel == undefined) { console.error(`找不到頻道 ${props.room.channel}`); }
 
 	React.useEffect(() => {
-		if (extended && channel!.is_unread()) {
-			update_last_read_channel(props.room.name, props.room.channel, new Date());
+		if (extended && channel!.isUnread()) {
+			updateLastReadChannel(props.room.name, props.room.channel, new Date());
 		}
-	}, [extended, channel, update_last_read_channel, props.room.name, props.room.channel]);
+	}, [extended, channel, updateLastReadChannel, props.room.name, props.room.channel]);
 
 	if (extended) {
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				add_channel_dialog(props.room.name, props.room.channel, {
+				addChannelDialog(props.room.name, props.room.channel, {
 					who: '金剛', // TODO: 換成 me
 					content: input_props.value,
 					date: now,
@@ -183,7 +183,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					chat!.channels.map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `channel${is_current ? ' selected' : ''}`;
-						return <div styleName={channel_style} onClick={() => { change_channel(chat!.name, c.name); }}>
+						return <div styleName={channel_style} onClick={() => { changeChannel(chat!.name, c.name); }}>
 							<span styleName="channelSymbol"># </span>
 							{c.name}
 						</div>;
@@ -198,7 +198,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				<div styleName="middleSet" onClick={() => setExtended(false)}>#{props.room.channel}</div>
 				<div styleName="rightSet">
 					<div styleName="button">⚙</div>
-					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
+					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 			<div styleName="panelContent">
@@ -226,7 +226,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}>#{props.room.channel}</div>
 				<div styleName="rightSet">
-					<div styleName="button" onClick={() => delete_room(props.room.name)}>✗</div>
+					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 		</div>;

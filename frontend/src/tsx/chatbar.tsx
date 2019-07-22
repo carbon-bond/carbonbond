@@ -1,13 +1,13 @@
 import * as React from 'react';
 import '../css/chatbar.css';
 import { BottomPanelState, AllChatState, ChatData, SimpleChatData, ChannelChatData } from './global_state';
-import { rough_date } from '../ts/date';
+import { roughDate } from '../ts/date';
 
 // TODO: 文字太長以致超出 ChatUnit 大小時，要自動附加刪節號提示讀者
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
-	const { add_room, add_room_with_channel } = BottomPanelState.useContainer();
-	const dialog = props.chat.newest_dialog();
-	const is_unread = props.chat.is_unread();
+	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();
+	const dialog = props.chat.newestDialog();
+	const is_unread = props.chat.isUnread();
 
 	function UnreadInfo(): JSX.Element {
 		if (props.chat instanceof SimpleChatData) {
@@ -17,7 +17,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 				<span>{dialog.content}</span>
 			</div>;
 		} else if (props.chat instanceof ChannelChatData) {
-			let channels = props.chat.unread_channels();
+			let channels = props.chat.unreadChannels();
 			return <div styleName="unreadChannels">
 				{
 					channels.length == 0 ?
@@ -33,7 +33,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 	function LastDate(): JSX.Element {
-		const date = rough_date(dialog.date);
+		const date = roughDate(dialog.date);
 		if (is_unread) {
 			return <div styleName="date"><span styleName="circle">⬤</span> {date}</div>;
 		} else {
@@ -41,19 +41,19 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 
-	function on_click(): void {
+	function onClick(): void {
 		if (props.chat instanceof SimpleChatData) {
-			add_room(props.chat.name);
+			addRoom(props.chat.name);
 		} else if (props.chat instanceof ChannelChatData) {
-			if (props.chat.unread_channels().length == 0) {
-				add_room_with_channel(props.chat.name, props.chat.channels[0].name);
+			if (props.chat.unreadChannels().length == 0) {
+				addRoomWithChannel(props.chat.name, props.chat.channels[0].name);
 			} else {
-				add_room_with_channel(props.chat.name, props.chat.unread_channels()[0]);
+				addRoomWithChannel(props.chat.name, props.chat.unreadChannels()[0]);
 			}
 		}
 	}
 
-	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={on_click}>
+	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={onClick}>
 		<div styleName="upSet">
 			<div styleName="title">
 				<span styleName="name">{props.chat.name}</span>
@@ -68,7 +68,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 
 // NOTE: 在每次更新數據時都維護排序，就無需在組件渲染時才排序
 const date_cmp = (x: ChatData, y: ChatData): number => {
-	return Number(y.newest_dialog().date) - Number(x.newest_dialog().date);
+	return Number(y.newestDialog().date) - Number(x.newestDialog().date);
 };
 
 function ChatBar(): JSX.Element {
