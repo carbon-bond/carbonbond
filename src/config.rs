@@ -3,6 +3,9 @@ use std::path::{Path, PathBuf};
 use std::fs::File;
 use serde::{Serialize, Deserialize};
 use failure::Fallible;
+use state::LocalStorage;
+
+pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
@@ -32,7 +35,7 @@ pub struct Config {
 pub struct ServerConfig {
     pub address: String,
     pub port: u64,
-    pub mailgun_api_key: Vec<u8>,
+    pub mailgun_api_key: String,
 }
 
 #[derive(Debug)]
@@ -52,9 +55,9 @@ impl From<RawConfig> for Fallible<Config> {
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
         let mailgun_api_key = {
-            let mut buf = vec![];
+            let mut buf = String::new();
             let mut file = File::open(orig.mailgun_key_file)?;
-            file.read_to_end(&mut buf)?;
+            file.read_to_string(&mut buf)?;
             buf
         };
 
@@ -84,5 +87,14 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Fallible<Config> {
 
     let raw_config: RawConfig = toml::from_str(&content)?;
     let config = Fallible::<Config>::from(raw_config)?;
+
     Ok(config)
+}
+
+pub fn initialize_config<P: 'static + AsRef<Path>>(path: P) {
+    let path_owned = path.as_ref().to_owned();
+    assert!(
+        CONFIG.set(move || load_config(&path_owned).unwrap()),
+        "initialize_config() is called twice",
+    );
 }

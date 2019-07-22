@@ -30,24 +30,24 @@ fn main() -> Fallible<()> {
     env_logger::init();
 
     // 載入設定
-    let config = {
-        let args_config = load_yaml!("args.yaml");
-        let arg_matches = clap::App::from_yaml(args_config).get_matches();
-        let config_file = match arg_matches.value_of("config_file") {
-            Some(path) => PathBuf::from(path),
-            None => PathBuf::from("config/carbonbond.toml"),
-        };
-        config::load_config(config_file)?
+    let args_config = load_yaml!("args.yaml");
+    let arg_matches = clap::App::from_yaml(args_config).get_matches();
+    let config_file = match arg_matches.value_of("config_file") {
+        Some(path) => PathBuf::from(path),
+        None => PathBuf::from("config/carbonbond.toml"),
     };
-    let address = format!("{}:{}", config.server.address, config.server.port);
+    config::initialize_config(config_file);
+    let conf = config::CONFIG.get();
+
+    let address = format!("{}:{}", &conf.server.address, &conf.server.port);
     info!("伺服器位置：{}", address);
-    info!("資料庫位置：{}", &config.database.url);
+    info!("資料庫位置：{}", &conf.database.url);
 
     let sys = actix_rt::System::new("carbon-bond-runtime");
 
     // TODO: 建造一個資料庫連接池，以避免只有單條連線，導致性能瓶頸
     // 現有的 r2d2 對 postgres 的支援不完美
-    let conn = Arc::new(Mutex::new(db::connect_db(&config.database.url)));
+    let conn = Arc::new(Mutex::new(db::connect_db(&conf.database.url)));
 
     HttpServer::new(move || {
         let log_format = "

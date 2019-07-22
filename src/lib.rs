@@ -14,6 +14,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate failure;
 extern crate regex;
+extern crate state;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 use actix_session::{Session};

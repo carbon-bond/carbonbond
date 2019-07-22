@@ -1,13 +1,11 @@
-use std::env;
 use std::process::Command;
 use failure::Fallible;
 use crate::custom_error::InternalError;
+use crate::config::CONFIG;
 
 fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallible<String> {
-    dotenv::dotenv().ok();
-    // TODO 使用設定檔載入 MAILGUN_API_KEY
-    let mailgun_api_key = env::var("MAILGUN_API_KEY").expect("未設置 mailgun api key");
-    // TODO: text 能否拿掉？
+    let config = CONFIG.get();
+    let mailgun_api_key: &str = &config.server.mailgun_api_key;
     let cmd = format!(
         "curl -s --user 'api:{}' \
          https://api.mailgun.net/v3/mail.carbon-bond.com/messages \
