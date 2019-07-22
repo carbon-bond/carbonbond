@@ -24,6 +24,7 @@ regex = "~1"
 failure = "~0"
 clap = {version = "~2", features = ["yaml"]}
 toml = "~0"
+state = "~0"
 
 [[bin]]
 name = "server"

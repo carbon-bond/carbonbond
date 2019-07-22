@@ -1,6 +1,7 @@
 use std::io::{stdin, stdout};
 use std::io::Write;
 use std::fs;
+use std::path::PathBuf;
 
 use diesel::PgConnection;
 use failure::Fallible;
@@ -12,6 +13,7 @@ use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
+use carbonbond::config;
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -205,19 +207,22 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
     Ok(())
 }
 
-fn main() {
-    // 解析程式參數
-    let database_url = {
+fn main() -> Fallible<()> {
+    // 載入設定
+    let config = {
         let args_config = load_yaml!("db_tool_args.yaml");
         let arg_matches = clap::App::from_yaml(args_config).get_matches();
-        let database_url = arg_matches.value_of("DATABASE_URL").unwrap();
-        database_url.to_owned()
+        let config_file = match arg_matches.value_of("config_file") {
+            Some(path) => PathBuf::from(path),
+            None => PathBuf::from("config/carbonbond.toml"),
+        };
+        config::load_config(config_file)?
     };
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
     let mut ctx = DBToolCtx {
         id: None,
-        database_url: database_url,
+        database_url: config.database.url,
     };
     loop {
         match exec_command(&mut ctx) {
