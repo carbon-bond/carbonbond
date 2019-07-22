@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { withRouter } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
 
 import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
@@ -30,7 +32,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 	throw new Error('尚未開始發文');
 }
 
-export function EditorPanel(): JSX.Element | null {
+function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 	const { open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
 		= EditorPanelState.useContainer();
 	function onTitleClick(): void {
@@ -52,6 +54,12 @@ export function EditorPanel(): JSX.Element | null {
 			setEditorPanelData(null);
 		}
 	}
+	function onPost(a_id: number): void {
+		if (editor_panel_data) {
+			props.history.push(`/app/b/${editor_panel_data.board_name}/a/${a_id}`);
+			setEditorPanelData(null);
+		}
+	}
 	if (editor_panel_data) {
 		return <div styleName='singlePanel editorPanel'>
 			<div styleName='roomTitle title'>
@@ -68,7 +76,7 @@ export function EditorPanel(): JSX.Element | null {
 			{
 				(() => {
 					if (open) {
-						return <EditorBody onPost={() => setEditorPanelData(null)} />;
+						return <EditorBody onPost={id => onPost(id)} />;
 					}
 				})()
 			}
@@ -113,7 +121,7 @@ function CategorySelector(): JSX.Element {
 	}
 }
 
-function EditorBody(props: { onPost: () => void }): JSX.Element {
+function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	if (editor_panel_data) {
@@ -139,8 +147,8 @@ function EditorBody(props: { onPost: () => void }): JSX.Element {
 			/>
 			<div>
 				<button onClick={() => {
-					createArticle(editor_panel_data).then(() => {
-						props.onPost();
+					createArticle(editor_panel_data).then(id => {
+						props.onPost(id);
 					}).catch(err => {
 						toast.error(extractErrMsg(err));
 					});
@@ -152,3 +160,6 @@ function EditorBody(props: { onPost: () => void }): JSX.Element {
 		throw new Error('沒有文章資料卻試圖編輯');
 	}
 }
+
+const EditorPanel = withRouter(_EditorPanel);
+export { EditorPanel };
