@@ -4,4 +4,4 @@ port = 8080
 mailgun_key_file= "config/MAILGUN_KEY"
 
 [database]
-url = "postgres://postgres@localhost:5432/carbonbond"
+url = "postgres://postgres:mypassword@localhost:5432/carbonbond"

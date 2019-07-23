@@ -11,12 +11,13 @@ function useInputValue(initialValue: string = ''): {
 		setValue: React.Dispatch<React.SetStateAction<string>>,
 	} {
 	const [value, setValue] = React.useState<string>(initialValue);
+
 	return {
 		input_props: {
 			value: value,
 			onChange: (event: InputEvent) => setValue(event.target.value)
 		},
-		setValue: setValue,
+		setValue,
 	};
 }
 

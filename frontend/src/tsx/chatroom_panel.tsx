@@ -3,6 +3,7 @@ import '../css/bottom_panel.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { useScrollBottom, useInputValue } from './utils';
+import useOnClickOutside from 'use-onclickoutside';
 import {
 	BottomPanelState,
 	AllChatState,
@@ -12,6 +13,9 @@ import {
 	ChannelRoomData,
 	isChannelRoomData
 } from './global_state';
+import 'emoji-mart/css/emoji-mart.css?global';
+import * as EmojiMart from 'emoji-mart';
+
 
 type AggDialog = {
 	who: string,
@@ -73,6 +77,77 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	;
 });
 
+type InputEvent = React.ChangeEvent<HTMLInputElement>;
+
+type InputBarProp = {
+	input_props: {
+		onChange: (e: InputEvent) => void,
+		value: string
+	},
+	setValue: React.Dispatch<React.SetStateAction<string>>,
+	onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+};
+
+type Emoji = {
+	native: string
+};
+
+// TODO: 支援多頻道視窗、動態加載 emoji 選擇器
+function InputBar(props: InputBarProp): JSX.Element {
+	const inputElement = React.useRef<HTMLInputElement>(null);
+	const [extendEmoji, setExtendEmoji] = React.useState(false);
+	const ref = React.useRef(null);
+	useOnClickOutside(ref, () => setExtendEmoji(false));
+
+	function onSelect(emoji: EmojiMart.EmojiData): void {
+		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+			inputElement.current.focus();
+			const value = props.input_props.value;
+			const start = inputElement.current.selectionStart;
+			const end = inputElement.current.selectionEnd;
+			if (start == null || end == null) {
+				const new_value = value + (emoji as Emoji).native;
+				props.setValue(new_value);
+			} else {
+				const left = value.slice(0, start);
+				const right = value.slice(end);
+				const new_value = left + (emoji as Emoji).native + right;
+				props.setValue(new_value);
+			}
+		}
+	}
+
+	function onKeyDownWrap(e: React.KeyboardEvent<HTMLInputElement>): void {
+		props.onKeyDown(e);
+		setExtendEmoji(false);
+	}
+
+	return <div styleName="inputBar">
+		<div styleName="nonText">
+			<div onClick={() => setExtendEmoji(!extendEmoji)}>😎</div>
+			{
+				extendEmoji ?
+					<div ref={ref}>
+						<EmojiMart.Picker
+							native={true}
+							showPreview={false}
+							showSkinTones={false}
+							onSelect={onSelect}
+							style={{ position: 'absolute', bottom: '40px', right: '100px' }} />
+					</div> :
+					<></>
+			}
+		</div>
+		<input {...props.input_props}
+			ref={inputElement}
+			onKeyDown={onKeyDownWrap}
+			type="text"
+			placeholder="輸入訊息..."
+			autoFocus
+		/>
+	</div>;
+}
+
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
@@ -80,12 +155,6 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
-	const inputElement = React.useRef<HTMLInputElement>(null);
-	React.useEffect(() => {
-		if (extended && inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
-			inputElement.current.focus();
-		}
-	}, [extended]);
 	const chat = all_chat.two_people.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
 	React.useEffect(() => {
@@ -120,10 +189,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			<div ref={scroll_bottom_ref} styleName="dialogs">
 				<DialogBlocks dialogs={chat!.dialogs}/>
 			</div>
-			<div styleName="inputBar">
-				<div styleName="nonText">😎</div>
-				<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
-			</div>
+			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
 	} else {
 		return <div styleName="chatPanel singlePanel roomWidth">

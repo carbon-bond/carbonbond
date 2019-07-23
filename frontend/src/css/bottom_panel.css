@@ -22,6 +22,7 @@
     align-items: center;
     height: 34px;
     padding-right: 4px;
+    position: relative;
     .nonText {
         cursor: pointer;
         font-size: 22px;
@@ -49,7 +50,7 @@
     }
     .content {
         margin-top: 4px;
-        font-size: 14px;
+        font-size: 15px;
     }
     margin-bottom: 6px;
 }
