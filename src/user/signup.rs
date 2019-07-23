@@ -1,11 +1,10 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use rand::Rng;
-use failure::Fallible;
 
 use crate::db::models::{NewUser, User, NewInvitation, Invitation};
 use crate::db::schema;
-use crate::custom_error::{LogicalError, InternalError};
+use crate::custom_error::{Error, Fallible};
 
 // 回傳邀請碼
 pub fn create_invitation(
@@ -30,7 +29,7 @@ pub fn create_invitation(
             let user = schema::users::table
                 .find(id)
                 .first::<User>(conn)
-                .or(Err(LogicalError::new(&format!("查無使用者: {}", id), 403)))?;
+                .or(Err(Error::new_logic(format!("查無使用者: {}", id), 403)))?;
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);
@@ -38,21 +37,21 @@ pub fn create_invitation(
                 diesel::update(target)
                     .set(invitation_credit.eq(invitation_credit - 1))
                     .execute(conn)
-                    .or(Err(InternalError::new("修改邀請點失敗")))?;
+                    .or(Err(Error::new_internal("修改邀請點失敗")))?;
                 diesel::insert_into(schema::invitations::table)
                     .values(&new_invitation)
                     .execute(conn)
-                    .or(Err(InternalError::new("新增邀請失敗")))?;
+                    .or(Err(Error::new_internal("新增邀請失敗")))?;
                 Ok(invite_code)
             } else {
-                Err(LogicalError::new("邀請點數不足", 403).into())
+                Err(Error::new_logic("邀請點數不足", 403))
             }
         }
         None => {
             diesel::insert_into(schema::invitations::table)
                 .values(&new_invitation)
                 .execute(conn)
-                .or(Err(InternalError::new("新增邀請失敗")))?;
+                .or(Err(Error::new_internal("新增邀請失敗")))?;
             Ok(invite_code)
         }
     }
@@ -68,10 +67,7 @@ pub fn create_user_by_invitation(
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
-        .or(Err(LogicalError::new(
-            &format!("查無邀請碼: {}", code),
-            404,
-        )))?;
+        .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
 
     create_user(conn, &invitation.email, id, password)
 }
@@ -92,5 +88,5 @@ pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -
     diesel::insert_into(schema::users::table)
         .values(&new_user)
         .get_result(conn)
-        .or(Err(InternalError::new("新增用戶失敗").into()))
+        .or(Err(Error::new_internal("新增用戶失敗")))
 }

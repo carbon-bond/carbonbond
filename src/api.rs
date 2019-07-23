@@ -1,4 +1,4 @@
-use juniper::{FieldResult, ID};
+use juniper::ID;
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use actix_web::{HttpRequest, HttpResponse};
@@ -10,7 +10,7 @@ use crate::user::email;
 use crate::user::signup;
 use crate::user;
 use crate::party;
-use crate::custom_error::{LogicalError, InternalError};
+use crate::custom_error::{Error, Fallible};
 use crate::db::{models as db_models, schema as db_schema};
 use crate::forum;
 
@@ -129,12 +129,12 @@ impl Article {
     fn category_id(&self) -> ID {
         self.category_id.clone()
     }
-    fn category(&self, ctx: &Ctx) -> FieldResult<Category> {
+    fn category(&self, ctx: &Ctx) -> Fallible<Category> {
         use db_schema::categories::dsl::*;
         let c = categories
             .filter(id.eq(id_to_i64(&self.category_id)))
             .first::<db_models::Category>(&*ctx.get_pg_conn())
-            .map_err(|_| LogicalError::new("找不到分類", 404))?;
+            .map_err(|_| Error::new_logic("找不到分類", 404))?;
         Ok(Category {
             id: i64_to_id(c.id),
             board_id: i64_to_id(c.board_id),
@@ -149,12 +149,12 @@ impl Article {
     fn create_time(&self) -> i32 {
         self.create_time
     }
-    fn board(&self, ctx: &Ctx) -> FieldResult<Board> {
+    fn board(&self, ctx: &Ctx) -> Fallible<Board> {
         use db_schema::boards::dsl::*;
         let b = boards
             .filter(id.eq(id_to_i64(&self.board_id)))
             .first::<db_models::Board>(&*ctx.get_pg_conn())
-            .map_err(|_| LogicalError::new("找不到看板", 404))?;
+            .map_err(|_| Error::new_logic("找不到看板", 404))?;
         Ok(Board {
             id: i64_to_id(b.id),
             detail: b.detail,
@@ -163,10 +163,10 @@ impl Article {
             ruling_party_id: i64_to_id(b.ruling_party_id),
         })
     }
-    fn content(&self, ctx: &Ctx) -> FieldResult<Vec<String>> {
+    fn content(&self, ctx: &Ctx) -> Fallible<Vec<String>> {
         let id = id_to_i64(&self.id);
         let c_id = id_to_i64(&self.category_id);
-        forum::get_article_content(ctx, id, c_id).map_err(|err| err.into())
+        forum::get_article_content(ctx, id, c_id).map_err(|err| err)
     }
 }
 
@@ -207,12 +207,12 @@ impl Board {
     fn parties(&self) -> Vec<Party> {
         vec![] // TODO: 抓出政黨
     }
-    fn categories(&self, ctx: &Ctx) -> FieldResult<Vec<Category>> {
+    fn categories(&self, ctx: &Ctx) -> Fallible<Vec<Category>> {
         use db_schema::categories::dsl::*;
         let results = categories
             .filter(board_id.eq(id_to_i64(&self.id)))
             .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .map_err(|_| InternalError::new("查找分類列表失敗"))?;
+            .map_err(|_| Error::new_internal("查找分類列表失敗"))?;
         Ok(results
             .into_iter()
             .map(|t| Category {
@@ -224,7 +224,7 @@ impl Board {
             })
             .collect())
     }
-    fn article_count(&self, ctx: &Ctx, show_hidden: Option<bool>) -> FieldResult<i32> {
+    fn article_count(&self, ctx: &Ctx, show_hidden: Option<bool>) -> Fallible<i32> {
         use db_schema::articles::dsl;
         let show_hidden = show_hidden.unwrap_or(false);
         let mut query = dsl::articles.into_boxed();
@@ -235,7 +235,7 @@ impl Board {
             .filter(dsl::board_id.eq(id_to_i64(&self.id)))
             .count()
             .get_result::<i64>(&*ctx.get_pg_conn())
-            .map_err(|_| InternalError::new("查詢文章數失敗"))?;
+            .map_err(|_| Error::new_internal("查詢文章數失敗"))?;
         Ok(count as i32)
     }
 }
@@ -246,8 +246,8 @@ struct Query;
     Context = Ctx,
 )]
 impl Query {
-    fn me(ctx: &Ctx) -> FieldResult<Me> {
-        match ctx.session.get::<String>("id")? {
+    fn me(ctx: &Ctx) -> Fallible<Me> {
+        match ctx.get_id() {
             None => Ok(Me { id: None }),
             Some(id) => {
                 if id == "".to_string() {
@@ -258,7 +258,7 @@ impl Query {
             }
         }
     }
-    fn board(ctx: &Ctx, name: String) -> FieldResult<Board> {
+    fn board(ctx: &Ctx, name: String) -> Fallible<Board> {
         let board = forum::get_board_by_name(&*ctx.get_pg_conn(), &name)?;
         Ok(Board {
             id: i64_to_id(board.id),
@@ -268,12 +268,12 @@ impl Query {
             ruling_party_id: i64_to_id(board.ruling_party_id),
         })
     }
-    fn article(ctx: &Ctx, id: ID) -> FieldResult<Article> {
+    fn article(ctx: &Ctx, id: ID) -> Fallible<Article> {
         use db_schema::articles::dsl;
         let article = dsl::articles
             .filter(dsl::id.eq(id_to_i64(&id)))
             .first::<db_models::Article>(&*ctx.get_pg_conn())
-            .map_err(|_| LogicalError::new("找不到文章", 404))?;
+            .map_err(|_| Error::new_logic("找不到文章", 404))?;
         Ok(Article {
             id: i64_to_id(article.id),
             title: article.title,
@@ -285,7 +285,7 @@ impl Query {
             energy: 0,
         })
     }
-    fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> FieldResult<Vec<Board>> {
+    fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> Fallible<Vec<Board>> {
         use db_schema::boards::dsl::*;
         let mut query = boards.into_boxed();
         if let Some(ids) = ids {
@@ -294,7 +294,7 @@ impl Query {
         }
         let board_vec = query
             .load::<db_models::Board>(&*ctx.get_pg_conn())
-            .map_err(|_| InternalError::new("查找看板列表失敗"))?;
+            .map_err(|_| Error::new_internal("查找看板列表失敗"))?;
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
@@ -312,7 +312,7 @@ impl Query {
         offset: i32,
         page_size: i32,
         show_hidden: Option<bool>,
-    ) -> FieldResult<Vec<Article>> {
+    ) -> Fallible<Vec<Article>> {
         let conn = &*ctx.get_pg_conn();
         use db_schema::articles::dsl;
         let show_hidden = show_hidden.unwrap_or(false);
@@ -330,7 +330,7 @@ impl Query {
             .offset(offset as i64)
             .limit(page_size as i64)
             .load::<db_models::Article>(conn)
-            .map_err(|_| InternalError::new("查找文章列表失敗"))?;
+            .map_err(|_| Error::new_internal("查找文章列表失敗"))?;
 
         Ok(article_vec
             .into_iter()
@@ -346,7 +346,7 @@ impl Query {
             })
             .collect())
     }
-    fn party(ctx: &Ctx, party_name: String) -> FieldResult<Party> {
+    fn party(ctx: &Ctx, party_name: String) -> Fallible<Party> {
         let party = party::get_party_by_name(&*ctx.get_pg_conn(), &party_name)?;
         Ok(Party {
             id: i64_to_id(party.id),
@@ -356,9 +356,8 @@ impl Query {
             energy: party.energy,
         })
     }
-    fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> FieldResult<Vec<Party>> {
-        let user_id = ctx.get_id().ok_or(LogicalError::new("尚未登入", 401))?;
-
+    fn my_party_list(ctx: &Ctx, board_name: Option<String>) -> Fallible<Vec<Party>> {
+        let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
         // TODO 用 join?
         use db_schema::party_members;
         let conn = &*ctx.get_pg_conn();
@@ -366,7 +365,7 @@ impl Query {
             .filter(party_members::dsl::user_id.eq(user_id))
             .select(party_members::dsl::party_id)
             .load::<i64>(conn)
-            .map_err(|_| InternalError::new("讀取政黨成員關係失敗"))?;
+            .map_err(|_| Error::new_internal("讀取政黨成員關係失敗"))?;
 
         use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
@@ -378,7 +377,7 @@ impl Query {
         let party_vec = query
             .filter(dsl::id.eq_any(party_ids))
             .load::<db_models::Party>(conn)
-            .map_err(|_| InternalError::new("讀取政黨列表失敗"))?;
+            .map_err(|_| Error::new_internal("讀取政黨列表失敗"))?;
         Ok(party_vec
             .into_iter()
             .map(|p| Party {
@@ -408,13 +407,13 @@ impl Query {
         content: Vec<String>,
         board_name: String,
         category_name: String,
-    ) -> FieldResult<Vec<Option<String>>> {
+    ) -> Fallible<Vec<Option<String>>> {
         // TODO: 想辦法快取住分類
         let board = forum::get_board_by_name(&*ctx.get_pg_conn(), &board_name)?;
         let category = forum::get_category(&*ctx.get_pg_conn(), &category_name, board.id)?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         if c_body.structure.len() != content.len() {
-            Err(LogicalError::new("結構長度有誤", 403).into())
+            Err(Error::new_logic("結構長度有誤", 403))
         } else {
             Ok(content
                 .into_iter()
@@ -436,28 +435,28 @@ struct Mutation;
     Context = Ctx,
 )]
 impl Mutation {
-    fn login(ctx: &Ctx, id: String, password: String) -> FieldResult<bool> {
+    fn login(ctx: &Ctx, id: String, password: String) -> Fallible<bool> {
         match user::login(&ctx.get_pg_conn(), &id, &password) {
-            Err(error) => Err(error.into()),
+            Err(error) => Err(error),
             Ok(()) => {
                 ctx.remember_id(id)?;
                 Ok(true)
             }
         }
     }
-    fn logout(ctx: &Ctx) -> FieldResult<bool> {
+    fn logout(ctx: &Ctx) -> Fallible<bool> {
         ctx.forget_id()?;
         Ok(true)
     }
-    fn invite_signup(ctx: &Ctx, email: String) -> FieldResult<bool> {
-        match ctx.session.get::<String>("id")? {
-            None => Err(LogicalError::new("尚未登入", 401).into()),
+    fn invite_signup(ctx: &Ctx, email: String) -> Fallible<bool> {
+        match ctx.get_id() {
+            None => Err(Error::new_logic("尚未登入", 401)),
             Some(id) => {
                 // TODO: 寫宏來處理類似邏輯
                 let invite_code = signup::create_invitation(&ctx.get_pg_conn(), Some(&id), &email)?;
                 email::send_invite_email(Some(&id), &invite_code, &email)
                     .map(|_| true)
-                    .map_err(|err| err.into())
+                    .map_err(|err| err)
             }
         }
     }
@@ -466,10 +465,10 @@ impl Mutation {
         code: String,
         id: String,
         password: String,
-    ) -> FieldResult<bool> {
+    ) -> Fallible<bool> {
         signup::create_user_by_invitation(&ctx.get_pg_conn(), &code, &id, &password)
             .map(|_| true)
-            .map_err(|err| err.into())
+            .map_err(|err| err)
     }
     fn create_article(
         ctx: &Ctx,
@@ -477,17 +476,17 @@ impl Mutation {
         category_name: String,
         title: String,
         content: Vec<String>,
-    ) -> FieldResult<ID> {
+    ) -> Fallible<ID> {
         // TODO: 還缺乏 edge 和 content
         let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title, content)?;
         Ok(i64_to_id(id))
     }
-    fn create_party(ctx: &Ctx, party_name: String, board_name: Option<String>) -> FieldResult<ID> {
+    fn create_party(ctx: &Ctx, party_name: String, board_name: Option<String>) -> Fallible<ID> {
         let board_name = board_name.as_ref().map(|s| &**s);
         let id = party::create_party(ctx, board_name, &party_name)?;
         Ok(i64_to_id(id))
     }
-    fn create_board(ctx: &Ctx, board_name: String, party_name: String) -> FieldResult<ID> {
+    fn create_board(ctx: &Ctx, board_name: String, party_name: String) -> Fallible<ID> {
         let id = forum::create_board(ctx, &party_name, &board_name)?;
         Ok(i64_to_id(id))
     }

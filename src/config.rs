@@ -2,8 +2,9 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::fs::File;
 use serde::{Serialize, Deserialize};
-use failure::Fallible;
 use state::LocalStorage;
+
+use crate::custom_error::{Error, Fallible};
 
 pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
@@ -85,7 +86,8 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Fallible<Config> {
         content
     };
 
-    let raw_config: RawConfig = toml::from_str(&content)?;
+    let raw_config: RawConfig =
+        toml::from_str(&content).or(Err(Error::new_internal("解析設定檔失敗")))?;
     let config = Fallible::<Config>::from(raw_config)?;
 
     Ok(config)

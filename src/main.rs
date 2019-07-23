@@ -11,14 +11,13 @@ extern crate toml;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use failure::Fallible;
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::middleware::Logger;
 use actix_web::{HttpServer, web, App, HttpRequest, Result as ActixResult};
 use actix_session::{CookieSession};
 
-use carbonbond::{api, db, config};
+use carbonbond::{api, db, config, custom_error::Fallible};
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
