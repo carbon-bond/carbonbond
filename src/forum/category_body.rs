@@ -134,10 +134,7 @@ impl ColSchema {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
-                    Err(
-                        LogicalError::new(&format!("整數型解析失敗: {}", content), 403)
-                            .into(),
-                    )
+                    Err(LogicalError::new(&format!("整數型解析失敗: {}", content), 403).into())
                 }
             }
             ColType::Atom(AtomType::Rating(max)) => {
@@ -153,10 +150,7 @@ impl ColSchema {
                         .into())
                     }
                 } else {
-                    Err(
-                        LogicalError::new(&format!("評分型解析失敗: {}", content), 403)
-                            .into(),
-                    )
+                    Err(LogicalError::new(&format!("評分型解析失敗: {}", content), 403).into())
                 }
             }
             ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
@@ -180,8 +174,7 @@ impl CategoryBody {
         serde_json::to_string(self).unwrap()
     }
     pub fn from_string(s: &str) -> Fallible<CategoryBody> {
-        let t = serde_json::from_str::<Self>(s)
-            .or(Err(LogicalError::new("解析分類失敗", 403)))?;
+        let t = serde_json::from_str::<Self>(s).or(Err(LogicalError::new("解析分類失敗", 403)))?;
         if t.structure.len() > MAX_ARTICLE_COLUMN {
             Err(LogicalError::new(&format!("文章結構過長: {}", t.name), 403).into())
         } else {

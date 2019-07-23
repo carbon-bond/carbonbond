@@ -197,7 +197,7 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 			marginRight: '2%',
 		};
 		return <div styleName='editorBody'>
-			<div style={{ ...body_style, display: 'flex', flexDirection: 'column', height: '100%' }}>
+			<div style={{ ...body_style }} styleName='editorInnerBody'>
 				<CategorySelector />
 				{single ? null : <p styleName='colLabel'>文章標題</p>}
 				<input
