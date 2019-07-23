@@ -122,19 +122,24 @@ function InputBar(props: InputBarProp): JSX.Element {
 		setExtendEmoji(false);
 	}
 
+	function onClick(): void {
+		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+			inputElement.current.focus();
+		}
+		setExtendEmoji(!extendEmoji);
+	}
+
 	return <div styleName="inputBar">
-		<div styleName="nonText">
-			<div onClick={() => setExtendEmoji(!extendEmoji)}>😎</div>
+		<div styleName="nonText" ref={ref}>
+			<div onClick={onClick}>😎</div>
 			{
 				extendEmoji ?
-					<div ref={ref}>
-						<EmojiMart.Picker
-							native={true}
-							showPreview={false}
-							showSkinTones={false}
-							onSelect={onSelect}
-							style={{ position: 'absolute', bottom: '40px', right: '100px' }} />
-					</div> :
+					<EmojiMart.Picker
+						native={true}
+						showPreview={false}
+						showSkinTones={false}
+						onSelect={onSelect}
+						style={{ position: 'absolute', bottom: '40px', right: '100px' }} /> :
 					<></>
 			}
 		</div>
