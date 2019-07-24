@@ -1,5 +1,6 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use diesel::result::Error as DBError;
 use rand::Rng;
 
 use crate::db::models::{NewUser, User, NewInvitation, Invitation};
@@ -29,7 +30,11 @@ pub fn create_invitation(
             let user = schema::users::table
                 .find(id)
                 .first::<User>(conn)
-                .or(Err(Error::new_logic(format!("查無使用者: {}", id), 403)))?;
+                .map_err(|e| match e {
+                    DBError::NotFound => Error::new_logic(format!("查無使用者: {}", id), 404),
+                    _ => Error::new_internal("查找使用者失敗", e),
+                })?;
+
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);
@@ -37,11 +42,11 @@ pub fn create_invitation(
                 diesel::update(target)
                     .set(invitation_credit.eq(invitation_credit - 1))
                     .execute(conn)
-                    .or(Err(Error::new_internal("修改邀請點失敗")))?;
+                    .map_err(|e| Error::new_internal("修改邀請點失敗", e))?;
                 diesel::insert_into(schema::invitations::table)
                     .values(&new_invitation)
                     .execute(conn)
-                    .or(Err(Error::new_internal("新增邀請失敗")))?;
+                    .map_err(|e| Error::new_internal("新增邀請點失敗", e))?;
                 Ok(invite_code)
             } else {
                 Err(Error::new_logic("邀請點數不足", 403))
@@ -51,7 +56,7 @@ pub fn create_invitation(
             diesel::insert_into(schema::invitations::table)
                 .values(&new_invitation)
                 .execute(conn)
-                .or(Err(Error::new_internal("新增邀請失敗")))?;
+                .map_err(|e| Error::new_internal("新增邀請失敗", e))?;
             Ok(invite_code)
         }
     }
@@ -88,5 +93,5 @@ pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -
     diesel::insert_into(schema::users::table)
         .values(&new_user)
         .get_result(conn)
-        .or(Err(Error::new_internal("新增用戶失敗")))
+        .map_err(|e| Error::new_internal("新增用戶失敗", e))
 }

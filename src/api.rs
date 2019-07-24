@@ -212,7 +212,7 @@ impl Board {
         let results = categories
             .filter(board_id.eq(id_to_i64(&self.id)))
             .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .map_err(|_| Error::new_internal("查找分類列表失敗"))?;
+            .map_err(|e| Error::new_internal("查找分類列表失敗", e))?;
         Ok(results
             .into_iter()
             .map(|t| Category {
@@ -235,7 +235,7 @@ impl Board {
             .filter(dsl::board_id.eq(id_to_i64(&self.id)))
             .count()
             .get_result::<i64>(&*ctx.get_pg_conn())
-            .map_err(|_| Error::new_internal("查詢文章數失敗"))?;
+            .map_err(|e| Error::new_internal("查詢文章數失敗", e))?;
         Ok(count as i32)
     }
 }
@@ -294,7 +294,7 @@ impl Query {
         }
         let board_vec = query
             .load::<db_models::Board>(&*ctx.get_pg_conn())
-            .map_err(|_| Error::new_internal("查找看板列表失敗"))?;
+            .map_err(|e| Error::new_internal("查找看板列表失敗", e))?;
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
@@ -330,7 +330,7 @@ impl Query {
             .offset(offset as i64)
             .limit(page_size as i64)
             .load::<db_models::Article>(conn)
-            .map_err(|_| Error::new_internal("查找文章列表失敗"))?;
+            .map_err(|e| Error::new_internal("查找文章列表失敗", e))?;
 
         Ok(article_vec
             .into_iter()
@@ -365,7 +365,7 @@ impl Query {
             .filter(party_members::dsl::user_id.eq(user_id))
             .select(party_members::dsl::party_id)
             .load::<i64>(conn)
-            .map_err(|_| Error::new_internal("讀取政黨成員關係失敗"))?;
+            .map_err(|e| Error::new_internal("讀取政黨成員關係失敗", e))?;
 
         use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
@@ -377,7 +377,7 @@ impl Query {
         let party_vec = query
             .filter(dsl::id.eq_any(party_ids))
             .load::<db_models::Party>(conn)
-            .map_err(|_| Error::new_internal("讀取政黨列表失敗"))?;
+            .map_err(|e| Error::new_internal("讀取政黨列表失敗", e))?;
         Ok(party_vec
             .into_iter()
             .map(|p| Party {

@@ -12,6 +12,8 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 extern crate diesel;
 #[macro_use]
 extern crate failure;
+#[macro_use]
+extern crate derive_more;
 
 extern crate serde_json;
 extern crate regex;
@@ -47,18 +49,14 @@ impl Context for Ctx {
         callback(conn)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
-        if self.session.set::<String>("id", id.to_string()).is_err() {
-            Err(Error::new_internal("記憶 ID 失敗"))
-        } else {
-            Ok(())
-        }
+        self.session
+            .set::<String>("id", id)
+            .map_err(|_| Error::internal_without_source("記憶 ID 失敗"))
     }
     fn forget_id(&self) -> Fallible<()> {
-        if self.session.set::<String>("id", "".to_string()).is_err() {
-            Err(Error::new_internal("清除 ID 失敗").into())
-        } else {
-            Ok(())
-        }
+        self.session
+            .set::<String>("id", "".to_owned())
+            .map_err(|_| Error::internal_without_source("清除 ID 失敗"))
     }
     fn get_id(&self) -> Option<String> {
         let id = match self.session.get::<String>("id") {

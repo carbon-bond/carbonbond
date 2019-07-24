@@ -19,7 +19,7 @@ fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallibl
         .arg("-c")
         .arg(cmd)
         .output()
-        .map_err(|e| Error::new_internal(&format!("寄信失敗: {}", e)))?;
+        .map_err(|e| Error::new_internal("寄信失敗", e))?;
 
     let msg: String = output.stdout.iter().map(|ch| *ch as char).collect();
     return Ok(msg);

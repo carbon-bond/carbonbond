@@ -1,10 +1,13 @@
 use std::io;
+use std::error::Error as StdError;
 
 use juniper::{FieldError, Value, DefaultScalarValue, IntoFieldError};
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Display)]
 pub enum ErrorKey {
+    #[display(fmt = "INTERNAL")]
     Internal,
+    #[display(fmt = "AUTH")]
     Auth,
 }
 
@@ -14,12 +17,15 @@ fn build_field_err(msg: String, key: i32) -> FieldError {
     FieldError::new(msg, Value::Scalar(DefaultScalarValue::Int(key)))
 }
 
-#[derive(Debug, Fail, Clone)]
+#[derive(Debug, Display, Fail)]
 pub enum Error {
-    #[fail(display = "邏輯錯誤：{}，錯誤類型：{:?}", msg, key)]
+    #[display(fmt = "邏輯錯誤：{}，錯誤種類：{}", msg, key)]
     LogicError { msg: String, key: i32 },
-    #[fail(display = "邏輯錯誤：{}", msg)]
-    InternalError { msg: String },
+    #[display(fmt = "內部錯誤：{}，原始錯誤：{:?}", msg, source)]
+    InternalError {
+        msg: String,
+        source: Option<Box<dyn StdError + Sync + Send + 'static>>,
+    },
 }
 
 impl Error {
@@ -29,9 +35,23 @@ impl Error {
             key,
         }
     }
-    pub fn new_internal<S: AsRef<str>>(msg: S) -> Error {
+    pub fn new_internal<S, E>(msg: S, err: E) -> Error
+    where
+        S: AsRef<str>,
+        E: StdError + Sync + Send + 'static,
+    {
         Error::InternalError {
             msg: msg.as_ref().to_owned(),
+            source: Some(Box::new(err)),
+        }
+    }
+    pub fn internal_without_source<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        Error::InternalError {
+            msg: msg.as_ref().to_owned(),
+            source: None,
         }
     }
 }
@@ -40,13 +60,14 @@ impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
             Error::LogicError { msg, key } => build_field_err(msg, key),
-            Error::InternalError { msg } => build_field_err(msg, 500),
+            Error::InternalError { .. } => build_field_err("內部錯誤".to_owned(), 500),
         }
     }
 }
+
 impl From<io::Error> for Error {
     fn from(og: io::Error) -> Error {
-        Self::new_internal(format!("{:?}", og))
+        Error::new_internal("IO 錯誤", og)
     }
 }
 

@@ -1,5 +1,6 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use diesel::result::Error as DBError;
 
 use crate::forum;
 use crate::db::{models, schema};
@@ -35,7 +36,7 @@ fn create_party_db(
     let party: models::Party = diesel::insert_into(schema::parties::table)
         .values(&new_party)
         .get_result(conn)
-        .or(Err(Error::new_internal("新增政黨失敗")))?;
+        .map_err(|e| Error::new_internal("新增政黨失敗", e))?;
 
     // 把自己加進去當主席
     add_party_member(conn, user_id, party.id, 3)?;
@@ -59,21 +60,19 @@ fn add_party_member(
     diesel::insert_into(schema::party_members::table)
         .values(&new_member)
         .execute(conn)
-        .or(Err(Error::new_internal("新增政黨成員失敗")))?;
+        .map_err(|e| Error::new_internal("新增政黨成員失敗", e))?;
     Ok(())
 }
 
 pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Party> {
     use schema::parties::dsl;
-    let mut parties = dsl::parties
+    dsl::parties
         .filter(dsl::party_name.eq(name))
-        .load::<models::Party>(conn)
-        .or(Err(Error::new_internal("查找政黨失敗")))?;
-    if parties.len() == 1 {
-        Ok(parties.pop().unwrap())
-    } else {
-        Err(Error::new_logic(format!("找不到政黨: {}", name), 404).into())
-    }
+        .first::<models::Party>(conn)
+        .map_err(|e| match e {
+            DBError::NotFound => Error::new_logic(format!("找不到政黨: {}", name), 404),
+            _ => Error::new_internal("查找政黨失敗", e),
+        })
 }
 
 pub fn get_member_position(conn: &PgConnection, user_id: &str, party_id: i64) -> Fallible<i16> {

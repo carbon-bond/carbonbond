@@ -23,6 +23,7 @@ regex = "~1"
 clap = {version = "~2", features = ["yaml"]}
 toml = "~0"
 state = { version = "~0", features = ["const_fn", "tls"] }
+derive_more = "~0"
 failure = "~0"
 
 [[bin]]
