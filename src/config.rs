@@ -4,7 +4,7 @@ use std::fs::File;
 use serde::{Serialize, Deserialize};
 use state::LocalStorage;
 
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::Fallible;
 
 pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 

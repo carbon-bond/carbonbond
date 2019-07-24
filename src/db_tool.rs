@@ -7,16 +7,13 @@ use diesel::PgConnection;
 #[macro_use]
 extern crate clap;
 
-use failure::Error;
-type ToolResult<T> = Result<T, Error>;
-
 use carbonbond::Context;
 use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
 use carbonbond::config;
-use carbonbond::custom_error::Fallible;
+use carbonbond::custom_error::{Error, Fallible};
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -63,7 +60,7 @@ impl Context for DBToolCtx {
     }
 }
 
-fn match_subcommand() -> ToolResult<(String, Vec<String>)> {
+fn match_subcommand() -> Fallible<(String, Vec<String>)> {
     let mut buff = String::new();
     loop {
         stdin().read_line(&mut buff)?;
@@ -75,9 +72,9 @@ fn match_subcommand() -> ToolResult<(String, Vec<String>)> {
     }
 }
 
-fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() < 2 {
-        return Err(failure::format_err!("add 參數數量錯誤"));
+        return Err(Error::new_logic("add 參數數量錯誤", 403));
     }
     let something = args[0].clone();
     let sub_args = args[1..].to_vec();
@@ -85,13 +82,13 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
         "user" => add_user(ctx, &sub_args),
         "party" => add_party(ctx, &sub_args),
         "board" => add_board(ctx, &sub_args),
-        other => Err(failure::format_err!("無法 add {}", other)),
+        other => Err(Error::new_logic(format!("無法 add {}", other), 403)),
     }
 }
 
-fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
-        return Err(failure::format_err!("add user 參數數量錯誤"));
+        return Err(Error::new_logic("add user 參數數量錯誤", 403));
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
@@ -99,7 +96,7 @@ fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
     Ok(())
 }
 
-fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() == 1 {
         let party_name = &args[0];
         let id = party::create_party(ctx, None, party_name)?;
@@ -111,13 +108,13 @@ fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else {
-        Err(failure::format_err!("add party 參數數量錯誤"))
+        Err(Error::new_logic("add party 參數數量錯誤", 403))
     }
 }
 
-fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 2 {
-        return Err(failure::format_err!("add board 參數數量錯誤"));
+        return Err(Error::new_logic("add board 參數數量錯誤", 403));
     }
     let (party_name, board_name) = (&args[0], &args[1]);
     let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(conn, party_name));
@@ -130,20 +127,20 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
     Ok(())
 }
 
-fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let invite_code =
         signup::create_invitation(&db::connect_db(&ctx.database_url), None, &args[0])?;
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
-fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let id = args[0].clone();
     ctx.use_pg_conn(|conn| find_user(conn, &id))?;
     ctx.remember_id(id).unwrap();
     Ok(())
 }
 
-fn reset_database() -> ToolResult<()> {
+fn reset_database() -> Fallible<()> {
     println!("危險操作！請輸入 carbonbond 以繼續");
     print!("> ");
     stdout().flush()?;
@@ -164,7 +161,7 @@ fn reset_database() -> ToolResult<()> {
     Ok(())
 }
 
-fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> ToolResult<()> {
+fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let file_path = if args.len() == 0 {
         "config/test_data.txt"
     } else {
@@ -186,7 +183,7 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> ToolResult<()> 
     Ok(())
 }
 
-fn exec_command(ctx: &mut DBToolCtx) -> ToolResult<()> {
+fn exec_command(ctx: &mut DBToolCtx) -> Fallible<()> {
     match ctx.get_id() {
         Some(id) => print!("{} > ", id),
         _ => print!("> "),
@@ -196,7 +193,7 @@ fn exec_command(ctx: &mut DBToolCtx) -> ToolResult<()> {
     dispatch_command(ctx, &subcommand, &args)
 }
 
-fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -> ToolResult<()> {
+fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -> Fallible<()> {
     match subcommand {
         "help" => println!("{}", HELP_MSG),
         "h" => println!("{}", HELP_MSG),
@@ -210,7 +207,7 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
     Ok(())
 }
 
-fn main() -> ToolResult<()> {
+fn main() -> Fallible<()> {
     // 載入設定
     let config = {
         let args_config = load_yaml!("db_tool_args.yaml");

@@ -11,8 +11,6 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 #[macro_use]
 extern crate diesel;
 #[macro_use]
-extern crate failure;
-#[macro_use]
 extern crate derive_more;
 
 extern crate serde_json;

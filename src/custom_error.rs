@@ -16,7 +16,7 @@ fn build_field_err(msg: String, key: i32) -> FieldError {
     FieldError::new(msg, Value::Scalar(DefaultScalarValue::Int(key)))
 }
 
-#[derive(Debug, Display, Fail)]
+#[derive(Debug, Display)]
 pub enum Error {
     #[display(fmt = "邏輯錯誤：{}，錯誤種類：{}", msg, key)]
     LogicError { msg: String, key: i32 },
