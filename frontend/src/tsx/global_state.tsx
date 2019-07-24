@@ -1,9 +1,9 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import * as api from './api';
+import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category } from './forum_util';
+import { Category } from '../ts/forum_util';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 

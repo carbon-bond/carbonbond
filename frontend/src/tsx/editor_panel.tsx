@@ -4,9 +4,9 @@ import { RouteComponentProps } from 'react-router';
 
 import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
-import { getGraphQLClient, extractErrMsg } from './api';
+import { getGraphQLClient, extractErrMsg } from '../ts/api';
 import { toast } from 'react-toastify';
-import { Category } from './forum_util';
+import { Category } from '../ts/forum_util';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {

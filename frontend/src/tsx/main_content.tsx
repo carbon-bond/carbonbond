@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { getGraphQLClient } from './api';
+import { getGraphQLClient } from '../ts/api';
 
 type Board = {
 	id: string,

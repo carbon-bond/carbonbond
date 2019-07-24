@@ -6,7 +6,7 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import * as api from './api';
+import * as api from '../ts/api';
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
 

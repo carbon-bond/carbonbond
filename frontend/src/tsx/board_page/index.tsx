@@ -2,10 +2,10 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { EditorPanelState, UserState } from '../global_state';
-import { fetchCategories } from '../forum_util';
+import { fetchCategories } from '../../ts/forum_util';
 
 import '../../css/board_page.css';
-import { getGraphQLClient } from '../api';
+import { getGraphQLClient } from '../../ts/api';
 
 const PAGE_SIZE: number = 10;
 
