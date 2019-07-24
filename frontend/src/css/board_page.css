@@ -1,0 +1,17 @@
+ul {
+    width: 100%;
+}
+.article-title:first-child {
+    border-top: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+}
+.article-title {
+    padding: 30px 15px;
+    border-bottom: 1px solid lightgray;
+}
+
+.board-content {
+    overflow-y: scroll;
+    max-height: 500px;
+    width: 90%;
+}

@@ -1,9 +1,13 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
 import { EditorPanelState, UserState } from '../global_state';
 import { fetchCategories } from '../forum_util';
 
+import '../../css/board_page.css';
 import { getGraphQLClient } from '../api';
+
+const PAGE_SIZE: number = 10;
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
@@ -18,6 +22,8 @@ type ArticleList = {
 	articleList: Article[]
 };
 
+// TODO: Show fetching animation before data
+
 function fetchArticles(board_name: string, page_size: number, offset: number): Promise<ArticleList> {
 	const graphQLClient = getGraphQLClient();
 	const query = `query {
@@ -25,7 +31,6 @@ function fetchArticles(board_name: string, page_size: number, offset: number): P
 			id
 			title
 			categoryName
-			author_id
 		}
 	}`;
 	return graphQLClient.request(query);
@@ -50,13 +55,32 @@ export function BoardPage(props: Props): JSX.Element {
 	}
 
 	const [_articles, setArticles] = React.useState<Article[]>([]);
+
+	function appendArticles (newArticles: Article[]): void {
+		setArticles([..._articles, ...newArticles]);
+	}
+
 	React.useEffect(() => {
-		fetchArticles(props.match.params.board_name, 10, 0).then(articles => {
+		fetchArticles(props.match.params.board_name, PAGE_SIZE, 0).then(articles => {
+			console.log(articles);
 			setArticles(articles.articleList);
 		});
 	}, []);
 
-	return <div>
+	const handleScoll = (e: React.SyntheticEvent): void => {
+		if (e.currentTarget.scrollHeight - e.currentTarget.scrollTop === e.currentTarget.clientHeight) {
+			console.log('Touch End');
+			const length: number = _articles.length;
+			fetchArticles(props.match.params.board_name, PAGE_SIZE, length).then(articles => {
+				if (articles.articleList.length > 0) {
+					console.log(articles);
+					appendArticles(articles.articleList);
+				}
+			});
+		}
+	};
+
+	return <div styleName="board-content" onScroll={handleScoll}>
 		<h1>{board_name}</h1>
 		{
 			(() => {
@@ -65,5 +89,17 @@ export function BoardPage(props: Props): JSX.Element {
 				}
 			})()
 		}
+
+		<ul>
+			{
+				_articles.map((article, idx) => (
+					<Link to="#" key={idx}>
+						<li styleName="article-title">
+							<p>{article.id} - {article.title}</p>
+						</li>
+					</Link>
+				))
+			}
+		</ul>
 	</div>;
 }
