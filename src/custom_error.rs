@@ -10,17 +10,18 @@ pub enum ErrorKey {
     Auth,
 }
 
-fn build_field_err(msg: String, key: i32) -> FieldError {
+fn build_field_err(msg: &str, key: i32) -> FieldError {
     // let key = format!("{:?}", key);
     // FieldError::new(msg, Value::Scalar(DefaultScalarValue::String(key)))
     FieldError::new(msg, Value::Scalar(DefaultScalarValue::Int(key)))
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug)]
 pub enum Error {
-    #[display(fmt = "邏輯錯誤：{}，錯誤種類：{}", msg, key)]
-    LogicError { msg: String, key: i32 },
-    #[display(fmt = "內部錯誤：{:?}，原始錯誤為：{:?}", msg, source)]
+    LogicError {
+        msg: String,
+        key: i32,
+    },
     InternalError {
         msg: Option<String>,
         source: Option<Box<dyn StdError + Sync + Send + 'static>>,
@@ -34,7 +35,7 @@ impl Error {
             key,
         }
     }
-    /// 若需要在 source 錯誤上打上更清楚的訊息可使用本函式
+    /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
     where
         S: AsRef<str>,
@@ -45,7 +46,7 @@ impl Error {
             source: Some(Box::new(source)),
         }
     }
-    /// source 錯誤無法被正確封裝才應使用本函式
+    /// 原始錯誤無法被正確封裝才應使用本函式
     pub fn new_internal_without_source<S: AsRef<str>>(msg: S) -> Error {
         Error::InternalError {
             msg: Some(msg.as_ref().to_owned()),
@@ -54,11 +55,30 @@ impl Error {
     }
 }
 
+use std::fmt;
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::LogicError { msg, key } => write!(f, "邏輯錯誤：{}，錯誤種類：{}", msg, key),
+            Error::InternalError { msg, source } => {
+                write!(f, "內部錯誤")?;
+                if let Some(msg) = msg {
+                    write!(f, "：{}", msg)?;
+                }
+                if let Some(source) = source {
+                    write!(f, "，原始錯誤為：{:?}", source)?;
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::LogicError { msg, key } => build_field_err(msg, key),
-            _ => build_field_err("內部錯誤".to_owned(), 500),
+            Error::LogicError { msg, key } => build_field_err(&msg, key),
+            _ => build_field_err("內部錯誤", 500),
         }
     }
 }
