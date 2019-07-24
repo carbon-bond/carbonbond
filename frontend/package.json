@@ -28,6 +28,7 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.4.5",
+		"@babel/plugin-syntax-dynamic-import": "^7.2.0",
 		"@babel/preset-react": "^7.0.0",
 		"@babel/preset-typescript": "^7.3.3",
 		"@types/graphql": "^14.2.0",

@@ -27,6 +27,18 @@
         cursor: pointer;
         font-size: 22px;
         margin-left: 4px;
+        .emojiPicker {
+            position: absolute;
+            bottom: 40px;
+            transform: translateX(-50%);
+        }
+        .loading {
+            position: absolute;
+            bottom: 40px;
+            background: white;
+            border: 1px #888888 solid;
+            transform: translateX(-50%);
+        }
     }
     input {
         flex-grow: 1;

@@ -17,6 +17,10 @@ import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css?global';
 import * as EmojiMart from 'emoji-mart';
 
+const Picker = React.lazy(() => {
+	return import(/* webpackChunkName: "emoji-mart" */ 'emoji-mart')
+		.then(({ Picker }) => ({ default: Picker }));
+});
 
 type AggDialog = {
 	who: string,
@@ -111,7 +115,7 @@ type Emoji = {
 	native: string
 };
 
-// TODO: 支援多頻道視窗、動態加載 emoji 選擇器
+// TODO: 支援多頻道視窗
 // FIXME: 插入一個表情符號後，游標會跳到結尾
 function InputBar(props: InputBarProp): JSX.Element {
 	const inputElement = React.useRef<HTMLInputElement>(null);
@@ -154,12 +158,15 @@ function InputBar(props: InputBarProp): JSX.Element {
 			<div onClick={onClick}>😎</div>
 			{
 				extendEmoji ?
-					<EmojiMart.Picker
-						native={true}
-						showPreview={false}
-						showSkinTones={false}
-						onSelect={onSelect}
-						style={{ position: 'absolute', bottom: '40px', right: '100px' }} /> :
+					<React.Suspense fallback={<div styleName="loading">載入中...</div>}>
+						<div styleName="emojiPicker">
+							<Picker
+								native={true}
+								showPreview={false}
+								showSkinTones={false}
+								onSelect={onSelect} />
+						</div>
+					</React.Suspense> :
 					<></>
 			}
 		</div>

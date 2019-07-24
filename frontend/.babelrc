@@ -1,3 +1,5 @@
 {
-	// 在 webpack.config.js 指定
+	"plugins": [
+		"@babel/plugin-syntax-dynamic-import",
+	],
 }
