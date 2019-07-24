@@ -13,6 +13,7 @@ import {
 	ChannelRoomData,
 	isChannelRoomData
 } from './global_state';
+import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css?global';
 import * as EmojiMart from 'emoji-mart';
 
@@ -56,6 +57,24 @@ function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
 	return ret;
 }
 
+function DialogShow(props: { content: string }): JSX.Element {
+	if (isEmojis(props.content)) {
+		return <div styleName="emojis">{props.content}</div>;
+	} else if (isImageLink(props.content)) {
+		// 注意：如果是 ImageLink ，那必定是 Link ，所以本分支要先判斷
+		return <div>
+			<div styleName="normal"><a href={props.content} target="_blank">{props.content}</a></div>
+			<div styleName="image"><img src={props.content} /></div>
+		</div>;
+	} else if (isLink(props.content)) {
+		return <div styleName="normal">
+			<a href={props.content} target="_blank">{props.content}</a>
+		</div>;
+	} else {
+		return <div styleName="normal">{props.content}</div>;
+	}
+}
+
 const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	const agg_dialogs = aggregateDiaglogs(props.dialogs);
 	return <>
@@ -68,7 +87,7 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 			</div>
 			{
 				dialog.contents.map((content, index) => {
-					return <div key={index} styleName="content">{content}</div>;
+					return <DialogShow content={content} key={index} />;
 				})
 			}
 		</div>)
@@ -93,6 +112,7 @@ type Emoji = {
 };
 
 // TODO: 支援多頻道視窗、動態加載 emoji 選擇器
+// FIXME: 插入一個表情符號後，游標會跳到結尾
 function InputBar(props: InputBarProp): JSX.Element {
 	const inputElement = React.useRef<HTMLInputElement>(null);
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
