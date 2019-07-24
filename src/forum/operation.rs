@@ -26,16 +26,14 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Fallible<
 
     let board: models::Board = diesel::insert_into(schema::boards::table)
         .values(&new_board)
-        .get_result(conn)
-        .map_err(|e| Error::new_internal("創建看板失敗", e))?;
+        .get_result(conn)?;
 
     create_category(conn, board.id, &default_categories)?;
 
     // 將執政黨加入該板
     diesel::update(schema::parties::table.filter(schema::parties::dsl::id.eq(party_id)))
         .set(schema::parties::dsl::board_id.eq(board.id))
-        .execute(conn)
-        .map_err(|e| Error::new_internal("修改政黨資料失敗", e))?;
+        .execute(conn)?;
 
     Ok(board.id)
 }
@@ -55,8 +53,7 @@ pub fn create_category(
         .collect();
     let c: models::Category = diesel::insert_into(schema::categories::table)
         .values(&new_categories)
-        .get_result(conn)
-        .map_err(|e| Error::new_internal("新增分類失敗", e))?;
+        .get_result(conn)?;
     Ok(c.id)
 }
 
@@ -81,15 +78,13 @@ pub fn create_article(
     };
     let article: models::Article = diesel::insert_into(schema::articles::table)
         .values(&new_article)
-        .get_result(conn)
-        .map_err(|e| Error::new_internal("新增文章失敗", e))?;
+        .get_result(conn)?;
 
     if root_id.is_none() {
         use schema::articles::{id, root_id};
         diesel::update(schema::articles::table.filter(id.eq(article.id)))
             .set(root_id.eq(article.id))
-            .execute(conn)
-            .map_err(|e| Error::new_internal("修改文章根節點失敗", e))?;
+            .execute(conn)?;
     }
     let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_COLUMN];
     let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_COLUMN];
@@ -106,8 +101,7 @@ pub fn create_article(
     };
     diesel::insert_into(schema::article_contents::table)
         .values(&new_content)
-        .execute(conn)
-        .map_err(|e| Error::new_internal("新增文章內容失敗", e))?;
+        .execute(conn)?;
     Ok(article.id)
 }
 
@@ -123,8 +117,7 @@ pub fn create_edges(conn: &PgConnection, article_id: i64, edges: &Vec<(i64, i16)
     // TODO 輸能相關的資料庫操作
     diesel::insert_into(schema::edges::table)
         .values(&new_edges)
-        .execute(conn)
-        .map_err(|e| Error::new_internal("新增連結失敗", e))?;
+        .execute(conn)?;
     Ok(())
 }
 

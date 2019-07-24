@@ -51,12 +51,12 @@ impl Context for Ctx {
     fn remember_id(&self, id: String) -> Fallible<()> {
         self.session
             .set::<String>("id", id)
-            .map_err(|_| Error::internal_without_source("記憶 ID 失敗"))
+            .map_err(|_| Error::new_internal_without_source("記憶 ID 失敗"))
     }
     fn forget_id(&self) -> Fallible<()> {
         self.session
             .set::<String>("id", "".to_owned())
-            .map_err(|_| Error::internal_without_source("清除 ID 失敗"))
+            .map_err(|_| Error::new_internal_without_source("清除 ID 失敗"))
     }
     fn get_id(&self) -> Option<String> {
         let id = match self.session.get::<String>("id") {

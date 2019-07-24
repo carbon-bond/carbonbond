@@ -35,8 +35,7 @@ fn create_party_db(
     };
     let party: models::Party = diesel::insert_into(schema::parties::table)
         .values(&new_party)
-        .get_result(conn)
-        .map_err(|e| Error::new_internal("新增政黨失敗", e))?;
+        .get_result(conn)?;
 
     // 把自己加進去當主席
     add_party_member(conn, user_id, party.id, 3)?;
@@ -59,8 +58,7 @@ fn add_party_member(
     };
     diesel::insert_into(schema::party_members::table)
         .values(&new_member)
-        .execute(conn)
-        .map_err(|e| Error::new_internal("新增政黨成員失敗", e))?;
+        .execute(conn)?;
     Ok(())
 }
 
@@ -71,7 +69,7 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Pa
         .first::<models::Party>(conn)
         .map_err(|e| match e {
             DBError::NotFound => Error::new_logic(format!("找不到政黨: {}", name), 404),
-            _ => Error::new_internal("查找政黨失敗", e),
+            _ => e.into(),
         })
 }
 

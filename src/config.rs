@@ -86,8 +86,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Fallible<Config> {
         content
     };
 
-    let raw_config: RawConfig =
-        toml::from_str(&content).map_err(|e| Error::new_internal("解析設定檔失敗", e))?;
+    let raw_config: RawConfig = toml::from_str(&content)?;
     let config = Fallible::<Config>::from(raw_config)?;
 
     Ok(config)

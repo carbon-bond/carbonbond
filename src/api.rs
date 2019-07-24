@@ -211,8 +211,7 @@ impl Board {
         use db_schema::categories::dsl::*;
         let results = categories
             .filter(board_id.eq(id_to_i64(&self.id)))
-            .load::<db_models::Category>(&*ctx.get_pg_conn())
-            .map_err(|e| Error::new_internal("查找分類列表失敗", e))?;
+            .load::<db_models::Category>(&*ctx.get_pg_conn())?;
         Ok(results
             .into_iter()
             .map(|t| Category {
@@ -234,8 +233,7 @@ impl Board {
         let count = query
             .filter(dsl::board_id.eq(id_to_i64(&self.id)))
             .count()
-            .get_result::<i64>(&*ctx.get_pg_conn())
-            .map_err(|e| Error::new_internal("查詢文章數失敗", e))?;
+            .get_result::<i64>(&*ctx.get_pg_conn())?;
         Ok(count as i32)
     }
 }
@@ -292,9 +290,7 @@ impl Query {
             let ids: Vec<i64> = ids.iter().map(|t| id_to_i64(t)).collect();
             query = query.filter(id.eq_any(ids));
         }
-        let board_vec = query
-            .load::<db_models::Board>(&*ctx.get_pg_conn())
-            .map_err(|e| Error::new_internal("查找看板列表失敗", e))?;
+        let board_vec = query.load::<db_models::Board>(&*ctx.get_pg_conn())?;
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
@@ -329,8 +325,7 @@ impl Query {
             .order(dsl::create_time.asc())
             .offset(offset as i64)
             .limit(page_size as i64)
-            .load::<db_models::Article>(conn)
-            .map_err(|e| Error::new_internal("查找文章列表失敗", e))?;
+            .load::<db_models::Article>(conn)?;
 
         Ok(article_vec
             .into_iter()
@@ -364,8 +359,7 @@ impl Query {
         let party_ids = party_members::table
             .filter(party_members::dsl::user_id.eq(user_id))
             .select(party_members::dsl::party_id)
-            .load::<i64>(conn)
-            .map_err(|e| Error::new_internal("讀取政黨成員關係失敗", e))?;
+            .load::<i64>(conn)?;
 
         use db_schema::parties::dsl;
         let mut query = dsl::parties.into_boxed();
@@ -376,8 +370,7 @@ impl Query {
 
         let party_vec = query
             .filter(dsl::id.eq_any(party_ids))
-            .load::<db_models::Party>(conn)
-            .map_err(|e| Error::new_internal("讀取政黨列表失敗", e))?;
+            .load::<db_models::Party>(conn)?;
         Ok(party_vec
             .into_iter()
             .map(|p| Party {

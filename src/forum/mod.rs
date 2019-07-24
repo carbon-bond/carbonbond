@@ -113,7 +113,6 @@ pub fn get_articles_meta<C: Context>(
         schema::articles::table
             .filter(id.eq_any(article_ids))
             .load::<models::Article>(conn)
-            .map_err(|e| Error::new_internal("查找文章列表失敗", e))
     })?;
     if articles.len() == article_ids.len() {
         Ok(articles)
