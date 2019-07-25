@@ -1,4 +1,5 @@
 reset
 add user a@carbonbond.com a 1
 as a
-add board 國際盜懶集團 烤懶專板
+add board 共產國際 我們的板
+add party 流浪的人

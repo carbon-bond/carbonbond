@@ -13,7 +13,6 @@
 }
 .boardBlock {
     height: 40px;
-    text-decoration: none;
     display: inline-block;
     width: 100%;
     color: gray;

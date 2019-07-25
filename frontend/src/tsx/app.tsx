@@ -15,8 +15,8 @@ import '../css/layout.css?global';
 import { UserState, BottomPanelState, AllChatState, EditorPanelState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
-import { PartyCenter } from './party_center';
-import { BoardPage } from './board_page';
+import { PartySwitch } from './party_switch';
+import { BoardSwitch } from './board_switch';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
@@ -39,10 +39,10 @@ function App(): JSX.Element {
 						<RegisterPage {...props} />
 					} />
 					<Route path="/app/party" render={() =>
-						<PartyCenter />
+						<PartySwitch />
 					} />
-					<Route path="/app/b/:board_name" render={props =>
-						<BoardPage {...props} />
+					<Route path="/app/b/:board_name" render={() =>
+						<BoardSwitch />
 					} />
 					<Redirect to="/app" />
 				</Switch>

@@ -7,7 +7,7 @@
 
 ## 建置
 - 設定檔
-    + 預設使用 config/carbonbond.dev.toml，請將系統特定資訊寫於此份檔案
+    + 預設使用 config/carbonbond.[MODE].toml，其中 `MODE` 為環境變數，可能的選項為 `release`、`dev` 及 `test`
     + 若前述檔案不存在，則使用 config/carbonbond.toml
     + 私密訊息，如 API KEY 等等，請放置於 config/secret 資料夾，並於設定檔中指定欲使用哪一個私密檔案 
     + 更詳盡的說明請參閱 config/carbonbond.toml

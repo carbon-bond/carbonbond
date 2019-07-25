@@ -1,4 +1,4 @@
-# 若本地環境與此設定檔有出入，請勿直接修改本檔案，應另創建一份 carbonbond.local.toml 設定檔
+# 若本地環境與此設定檔有出入，請勿直接修改本檔案，應另創建一份 carbonbond.dev.toml 設定檔
 
 [server]
 address = "localhost"

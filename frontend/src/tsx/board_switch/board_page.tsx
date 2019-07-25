@@ -65,7 +65,7 @@ export function BoardPage(props: Props): JSX.Element {
 			console.log(articles);
 			setArticles(articles.articleList);
 		});
-	}, []);
+	}, [props.match.params.board_name]);
 
 	const handleScoll = (e: React.SyntheticEvent): void => {
 		if (e.currentTarget.scrollHeight - e.currentTarget.scrollTop === e.currentTarget.clientHeight) {
@@ -93,7 +93,7 @@ export function BoardPage(props: Props): JSX.Element {
 		<ul>
 			{
 				_articles.map((article, idx) => (
-					<Link to="#" key={idx}>
+					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
 						<li styleName="article-title">
 							<p>{article.id} - {article.title}</p>
 						</li>

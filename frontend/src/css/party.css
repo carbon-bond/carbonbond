@@ -14,12 +14,10 @@
 }
 .boardName {
     color: #ddd;
-    text-decoration: none;
 }
 .partyColumn {
     display: flex;
     flex-direction: row;
-    text-decoration: none;
 }
 .partyColumn:hover {
     background-color: #F4F4F4;
