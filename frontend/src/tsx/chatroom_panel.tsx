@@ -116,7 +116,6 @@ type Emoji = {
 };
 
 // TODO: 支援多頻道視窗
-// FIXME: 插入一個表情符號後，游標會跳到結尾
 function InputBar(props: InputBarProp): JSX.Element {
 	const inputElement = React.useRef<HTMLInputElement>(null);
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
@@ -135,7 +134,12 @@ function InputBar(props: InputBarProp): JSX.Element {
 			} else {
 				const left = value.slice(0, start);
 				const right = value.slice(end);
-				const new_value = left + (emoji as Emoji).native + right;
+				let em = (emoji as Emoji).native;
+				const new_value = left + em + right;
+				window.requestAnimationFrame(() => {
+					inputElement.current!.selectionStart = start + em.length;
+					inputElement.current!.selectionEnd = start + em.length;
+				});
 				props.setValue(new_value);
 			}
 		}
