@@ -25,7 +25,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,
-			content: data.content
+			content: data.content.slice(0, data.cur_category.structure.length)
 		});
 		return res.createArticle;
 	}
@@ -109,26 +109,15 @@ function CategorySelector(): JSX.Element {
 			}
 		}
 		return <DropDown
-			btn_style={{
-				width: 100,
-				height: '100%',
-				backgroundColor: 'white',
-				borderStyle: 'solid',
-				borderRadius: 2,
-				borderColor: 'gray',
-				borderWidth: 1,
-				zIndex: 1
+			style={{
+				width: 150,
+				height: '95%',
+				top: '2%',
+				zIndex: 1,
+				fontSize: 14
 			}}
-			background_style={{
-				backgroundColor: 'white',
-				borderStyle: 'solid',
-				borderColor: 'gray',
-				borderWidth: 1,
-				maxHeight: '60vh',
-				boxShadow: '2px 2px #ddd'
-			}}
+			background_style={{ maxHeight: '60vh' }}
 			hover_color='#eee'
-			option_style={{ height: 30 }}
 			value={data.cur_category.name}
 			onChange={s => onChange(s)}
 			options={data.categories.map(c => c.name)} />;

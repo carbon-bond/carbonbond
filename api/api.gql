@@ -70,6 +70,7 @@ type Query {
     articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
     
     articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
+    article(id: ID): Article
 }
 
 type Mutation {

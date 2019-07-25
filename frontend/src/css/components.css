@@ -1,0 +1,38 @@
+.dropDown {
+    position: relative;
+    cursor: pointer;
+    background-color: white;
+    border-style: solid;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: gray;
+    .Btn {
+	    height: 100%;
+	    width: 100%;
+	    display: flex;
+	    align-items: center;
+	    flex-direction: row;
+    }
+    .Background {
+		position: absolute;
+		left: -0.5px;
+		width: 100%;
+		overflow-y: auto;
+		box-shadow: 2px 3px 1px #ddd;
+		background-color: white;
+		border-style: solid;
+		border-color: gray;
+		border-width: 1;
+		transition: .2s;
+    }
+    .Option {
+		height: 30px;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+    }
+    .Option:hover {
+        background-color: var(--hover-color);
+    }
+}

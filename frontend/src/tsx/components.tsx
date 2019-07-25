@@ -2,10 +2,10 @@
 import * as React from 'react';
 import useOnClickOutside from 'use-onclickoutside';
 
-import '../css/bottom_panel.css';
+import '../css/components.css';
 
 export function DropDown(props: {
-	btn_style?: React.CSSProperties,
+	style?: React.CSSProperties,
 	selected_style?: React.CSSProperties,
 	option_style?: React.CSSProperties,
 	background_style?: React.CSSProperties,
@@ -15,69 +15,39 @@ export function DropDown(props: {
 	onChange: (s: string) => void
 }): JSX.Element {
 	let [open, setOpen] = React.useState(false);
-	let default_hovering: boolean[] = Array(props.options.length - 1).fill(false);
-	let [hovering, setHovering] = React.useState(default_hovering);
-
-	function changeHovering(idx: number, is_in: boolean): void {
-		let h = [...hovering];
-		h[idx] = is_in;
-		setHovering(h);
-	}
 	let hover_color = props.hover_color || 'inherit';
 
 	let ref = React.useRef(null);
 	useOnClickOutside(ref, () => setOpen(false));
 
-	return <div ref={ref} style={{
-		...props.btn_style,
-		position: 'relative',
-		cursor: 'pointer'
-	}}>
-		<div style={{
-			height: '100%',
-			width: '100%',
-			display: 'flex',
-			alignItems: 'center',
-			flexDirection: 'row'
-		}} onClick={() => {
+	return <div ref={ref} style={props.style} styleName='dropDown'>
+		<div styleName='Btn' onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
-				setHovering(default_hovering);
 			}
 		}}>
 			<p style={{ flex: 3 }} />
-			<p> {props.value} </p>
-			<p style={{ flex: 3, textAlign: 'right' }}>{ open ? '' : '▾' }</p>
+			<p style={{ flex: 9, textAlign: 'center' }}> {props.value} </p>
+			<p style={{ flex: 2, textAlign: 'right', transition: '.2s', opacity: open ? 0 : 1 }}>▾</p>
 			<p style={{ flex: 1 }} />
 		</div>
-		<div style={{
+		<div styleName='Background' style={{
 			...props.background_style,
-			position: 'absolute',
-			top: open ? '100%' : '0%',
+			top: open ? '95%' : '0%',
 			opacity: open ? 1 : 0,
 			visibility: open ? 'visible' : 'hidden',
-			left: '-1%',
-			width: '100%',
-			overflowY: 'auto',
-			transition: '.15s'
 		}}>
 			{props.options.map((txt, i) => {
 				if (txt != props.value) {
 					return <div key={i} style={{
 						...props.option_style,
-						width: '100%',
-						display: 'flex',
-						justifyContent: 'center',
-						alignItems: 'center',
-						backgroundColor: hovering[i] ? hover_color : 'inherit',
+						...{ '--hover-color': hover_color } as React.CSSProperties
 					}} onClick={() => {
 						props.onChange(txt);
 						setOpen(false);
-					}} onMouseOver={() => {
-						changeHovering(i, true);
-					}} onMouseOut={() => {
-						changeHovering(i, false);
-					}}>
+					}}
+					title='test-title'
+					styleName='Option'>
 						<p>{txt}</p>
 					</div>;
 				}
