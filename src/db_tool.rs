@@ -212,11 +212,14 @@ fn main() -> Fallible<()> {
     let config = {
         let args_config = load_yaml!("db_tool_args.yaml");
         let arg_matches = clap::App::from_yaml(args_config).get_matches();
-        let config_file = match arg_matches.value_of("config_file") {
-            Some(path) => PathBuf::from(path),
-            None => PathBuf::from("config/carbonbond.toml"),
+        let config_files = match arg_matches.value_of("config_file") {
+            Some(path) => vec![PathBuf::from(path)],
+            None => vec![
+                PathBuf::from("config/carbonbond.local.toml"),
+                PathBuf::from("config/carbonbond.toml"),
+            ],
         };
-        config::load_config(config_file)?
+        config::load_config(&config_files)?
     };
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");

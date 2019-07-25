@@ -75,26 +75,38 @@ impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
     }
 }
 
-pub fn load_config<P: AsRef<Path>>(path: P) -> Fallible<Config> {
-    // 載入設定檔
-    let content = {
-        let pathr = path.as_ref();
-        let mut file = File::open(pathr)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        content
-    };
+fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
+    if paths.len() == 0 {
+        return Err(failure::format_err!("未指定設定檔"));
+    }
+    for p in paths.iter() {
+        if let Ok(mut f) = File::open(p.as_ref()) {
+            let mut content = String::new();
+            if f.read_to_string(&mut content).is_ok() {
+                return Ok(content);
+            }
+        }
+    }
+    Err(failure::format_err!("設定檔讀取失敗"))
+}
 
+/// 載入設定檔，回傳一個設定檔物件
+/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn load_config<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<Config> {
+    // 載入設定檔
+    let content = load_content_with_prior(paths)?;
     let raw_config: RawConfig = toml::from_str(&content)?;
     let config = Fallible::<Config>::from(raw_config)?;
 
     Ok(config)
 }
 
-pub fn initialize_config<P: 'static + AsRef<Path>>(path: P) {
-    let path_owned = path.as_ref().to_owned();
+/// 載入設定檔，將設定檔物件儲存於全域狀態
+/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn initialize_config<P: 'static + AsRef<Path>>(paths: &Vec<P>) {
+    let paths_owned: Vec<PathBuf> = paths.iter().map(|p| p.as_ref().to_owned()).collect();
     assert!(
-        CONFIG.set(move || load_config(&path_owned).unwrap()),
+        CONFIG.set(move || load_config(&paths_owned).unwrap()),
         "initialize_config() is called twice",
     );
 }
