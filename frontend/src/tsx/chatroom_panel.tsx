@@ -115,7 +115,6 @@ type Emoji = {
 	native: string
 };
 
-// TODO: 支援多頻道視窗
 function InputBar(props: InputBarProp): JSX.Element {
 	const inputElement = React.useRef<HTMLInputElement>(null);
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
@@ -241,18 +240,11 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 }
 
 function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
-	console.log(`組件 ${props.room.name}#${JSON.stringify(props.room.channel)}`);
 	const { deleteRoom, changeChannel } = BottomPanelState.useContainer();
 	const { all_chat, addChannelDialog, updateLastReadChannel: updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
-	const inputElement = React.useRef<HTMLInputElement>(null);
-	React.useEffect(() => {
-		if (extended && inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
-			inputElement.current.focus();
-		}
-	}, [extended]);
 
 	const chat = all_chat.party.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
@@ -315,10 +307,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<div ref={scroll_bottom_ref} styleName="dialogs">
 						<DialogBlocks dialogs={channel!.dialogs} />
 					</div>
-					<div styleName="inputBar">
-						<div styleName="nonText">😎</div>
-						<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
-					</div>
+					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>
 			</div>
 		</div>;
