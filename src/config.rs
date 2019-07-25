@@ -54,13 +54,7 @@ impl From<RawConfig> for Fallible<Config> {
 
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mailgun_api_key = {
-            let mut buf = String::new();
-            let mut file = File::open(orig.mailgun_key_file)?;
-            file.read_to_string(&mut buf)?;
-            buf
-        };
-
+        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)?;
         Ok(ServerConfig {
             address: orig.address,
             port: orig.port,
@@ -75,16 +69,24 @@ impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
     }
 }
 
+fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
+    let path = path.as_ref();
+    fn inner(path: &Path) -> Fallible<String> {
+        let mut file = File::open(path)?;
+        let mut content = String::new();
+        file.read_to_string(&mut content)?;
+        Ok(content)
+    }
+    inner(path).map_err(|err| format_err!("讀取設定檔 {:?} 時發生錯誤，原始錯誤為 {}", path, err))
+}
+
 fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
     if paths.len() == 0 {
         return Err(failure::format_err!("未指定設定檔"));
     }
     for p in paths.iter() {
-        if let Ok(mut f) = File::open(p.as_ref()) {
-            let mut content = String::new();
-            if f.read_to_string(&mut content).is_ok() {
-                return Ok(content);
-            }
+        if let Ok(content) = load_file_content(p) {
+            return Ok(content);
         }
     }
     Err(failure::format_err!("設定檔讀取失敗"))
