@@ -41,7 +41,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		let id = useInputValue('').input_props;
 		let password = useInputValue('').input_props;
 		let ref_all = React.useRef(null);
-		let ref_id = React.useRef<HTMLInputElement>(null);
 		useOnClickOutside(ref_all, () => setLogining(false));
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
@@ -52,16 +51,10 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			}
 		}
 
-		React.useEffect(() => {
-			if (ref_id && ref_id.current) { // 判斷式只是爲了 TS 的型別檢查
-				ref_id.current.focus();
-			}
-		}, []);
-
 		if (logining) {
 			return <div ref={ref_all} styleName="loginModal">
 				<div styleName="escape" onClick={ () => setLogining(false) }>✗</div>
-				<input ref={ref_id} type="text" placeholder="😎 使用者名稱" {...id} onKeyDown={onKeyDown} />
+				<input type="text" placeholder="😎 使用者名稱" autoFocus {...id} onKeyDown={onKeyDown} />
 				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
 				<button onClick={ () => login_request(id.value, password.value) }>登入</button>
 			</div>;
