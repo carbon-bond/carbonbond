@@ -120,13 +120,14 @@ function CategorySelector(): JSX.Element {
 				zIndex: 1
 			}}
 			background_style={{
-				backgroundColor: '#eee',
+				backgroundColor: 'white',
 				borderStyle: 'solid',
 				borderColor: 'gray',
 				borderWidth: 1,
-				maxHeight: '60vh'
+				maxHeight: '60vh',
+				boxShadow: '2px 2px #ddd'
 			}}
-			hover_color='#ddd'
+			hover_color='#eee'
 			option_style={{ height: 30 }}
 			value={data.cur_category.name}
 			onChange={s => onChange(s)}

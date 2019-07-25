@@ -15,7 +15,7 @@ export function DropDown(props: {
 	onChange: (s: string) => void
 }): JSX.Element {
 	let [open, setOpen] = React.useState(false);
-	let default_hovering: boolean[] = Array(props.options.length-1).fill(false);
+	let default_hovering: boolean[] = Array(props.options.length - 1).fill(false);
 	let [hovering, setHovering] = React.useState(default_hovering);
 
 	function changeHovering(idx: number, is_in: boolean): void {
@@ -37,51 +37,51 @@ export function DropDown(props: {
 			height: '100%',
 			width: '100%',
 			display: 'flex',
-			justifyContent: 'center',
 			alignItems: 'center',
+			flexDirection: 'row'
 		}} onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
 				setHovering(default_hovering);
 			}
 		}}>
+			<p style={{ flex: 3 }} />
 			<p> {props.value} </p>
+			<p style={{ flex: 3, textAlign: 'right' }}>{ open ? '' : '▾' }</p>
+			<p style={{ flex: 1 }} />
 		</div>
-		{
-			(() => {
-				if (open) {
-					return <div style={{
-						...props.background_style,
-						position: 'absolute',
-						top: '100%',
-						left: '-1%',
+		<div style={{
+			...props.background_style,
+			position: 'absolute',
+			top: open ? '100%' : '0%',
+			opacity: open ? 1 : 0,
+			visibility: open ? 'visible' : 'hidden',
+			left: '-1%',
+			width: '100%',
+			overflowY: 'auto',
+			transition: '.15s'
+		}}>
+			{props.options.map((txt, i) => {
+				if (txt != props.value) {
+					return <div key={i} style={{
+						...props.option_style,
 						width: '100%',
-						overflowY: 'auto',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						backgroundColor: hovering[i] ? hover_color : 'inherit',
+					}} onClick={() => {
+						props.onChange(txt);
+						setOpen(false);
+					}} onMouseOver={() => {
+						changeHovering(i, true);
+					}} onMouseOut={() => {
+						changeHovering(i, false);
 					}}>
-						{props.options.map((txt, i) => {
-							if (txt != props.value) {
-								return <div key={i} style={{
-									...props.option_style,
-									width: '100%',
-									display: 'flex',
-									justifyContent: 'center',
-									alignItems: 'center',
-									backgroundColor: hovering[i] ? hover_color : 'inherit'
-								}} onClick={() => {
-									props.onChange(txt);
-									setOpen(false);
-								}} onMouseOver={() => {
-									changeHovering(i, true);
-								}} onMouseOut={() => {
-									changeHovering(i, false);
-								}}>
-									<p>{txt}</p>
-								</div>;
-							}
-						})}
+						<p>{txt}</p>
 					</div>;
 				}
-			})()
-		}
+			})}
+		</div>
 	</div>;
 }
