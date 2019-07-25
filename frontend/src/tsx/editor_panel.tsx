@@ -6,7 +6,7 @@ import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
 import { getGraphQLClient, extractErrMsg } from '../ts/api';
 import { toast } from 'react-toastify';
-import { Category } from '../ts/forum_util';
+import { DropDown } from './components';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
@@ -97,32 +97,40 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 }
 
 function CategorySelector(): JSX.Element {
-	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-	function onTagClicked(category: Category): void {
-		if (editor_panel_data) {
-			setEditorPanelData({ ...editor_panel_data, cur_category: category });
-		}
-	}
+	const { editor_panel_data, setEditorPanelData } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
-		return <div styleName='categorySelector'>
-			{
-				editor_panel_data.categories.map((c, i) => {
-					if (c.name == editor_panel_data.cur_category.name) {
-						return <div styleName='selected categoryTag' key={i}>
-							<div styleName='tagTxt'>
-								{c.name}
-							</div>
-						</div>;
-					} else {
-						return <div styleName='categoryTag' key={i} onClick={() => onTagClicked(c)}>
-							<div styleName='tagTxt'>
-								{c.name}
-							</div>
-						</div>;
-					}
-				})
+		let data = editor_panel_data;
+		function onChange(name: string): void {
+			for (let c of data.categories) {
+				if (c.name == name) {
+					setEditorPanelData({...data, cur_category: c });
+					return;
+				}
 			}
-		</div>;
+		}
+		return <DropDown
+			btn_style={{
+				width: 100,
+				height: '100%',
+				backgroundColor: 'white',
+				borderStyle: 'solid',
+				borderRadius: 2,
+				borderColor: 'gray',
+				borderWidth: 1,
+				zIndex: 1
+			}}
+			background_style={{
+				backgroundColor: '#eee',
+				borderStyle: 'solid',
+				borderColor: 'gray',
+				borderWidth: 1,
+			}}
+			option_max_height={400}
+			hover_color='#ddd'
+			option_style={{ height: 30 }}
+			value={data.cur_category.name}
+			onChange={s => onChange(s)}
+			options={data.categories.map(c => c.name)} />;
 	} else {
 		throw new Error('尚未開始發文');
 	}
@@ -172,8 +180,6 @@ function InputsForStructure(): JSX.Element | null {
 										styleName='oneLineInput'
 										placeholder={single ? col.col_name : ''}
 									/>;
-								} else {
-									return null;
 								}
 							})()
 						}
@@ -198,20 +204,20 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 		};
 		return <div styleName='editorBody'>
 			<div style={{ ...body_style }} styleName='editorInnerBody'>
-				<CategorySelector />
-				{single ? null : <p styleName='colLabel'>文章標題</p>}
-				<input
-					onChange={evt => {
-						setEditorPanelData({
-							...data,
-							title: evt.target.value
-						});
-					}}
-					value={data.title}
-					styleName='oneLineInput'
-					placeholder={single ? '文章標題' : ''}
-				/>
-
+				<div styleName='articleMeta'>
+					<CategorySelector />
+					<input className='articleTitle'
+						onChange={evt => {
+							setEditorPanelData({
+								...data,
+								title: evt.target.value
+							});
+						}}
+						value={data.title}
+						styleName='oneLineInput'
+						placeholder='文章標題'
+					/>
+				</div>
 				<div styleName='articleContent'>
 					<InputsForStructure />
 					<div>

@@ -32,7 +32,6 @@
 		"@babel/preset-react": "^7.0.0",
 		"@babel/preset-typescript": "^7.3.3",
 		"@types/graphql": "^14.2.0",
-		"@types/js-cookie": "^2.2.2",
 		"@types/react": "^16.8.18",
 		"@types/react-css-modules": "^4.6.2",
 		"@types/react-dom": "^16.8.4",

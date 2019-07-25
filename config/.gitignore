@@ -1,6 +1,9 @@
 *
+!secret/
+secret/*
+!secret/*.example
+
 !.gitignore
 !carbonbond.toml
 !default_category.json
 !test_data.txt
-!secret
