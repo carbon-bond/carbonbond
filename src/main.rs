@@ -32,14 +32,10 @@ fn main() -> Fallible<()> {
     // 載入設定
     let args_config = load_yaml!("args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
-    let config_files = match arg_matches.value_of("config_file") {
-        Some(path) => vec![PathBuf::from(path)],
-        None => vec![
-            PathBuf::from("config/carbonbond.local.toml"),
-            PathBuf::from("config/carbonbond.toml"),
-        ],
-    };
-    config::initialize_config(&config_files);
+    let config_file = arg_matches
+        .value_of("config_file")
+        .map(|p| PathBuf::from(p));
+    config::initialize_config(&config_file);
     let conf = config::CONFIG.get();
 
     let address = format!("{}:{}", &conf.server.address, &conf.server.port);

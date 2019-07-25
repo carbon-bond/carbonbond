@@ -5,6 +5,22 @@ use serde::{Serialize, Deserialize};
 use failure::Fallible;
 use state::LocalStorage;
 
+#[derive(Debug)]
+pub enum Mode {
+    Release,
+    Dev,
+    Test,
+}
+
+pub fn get_mode() -> Mode {
+    match std::env::var("MODE").as_ref().map(|s| &**s) {
+        Ok("release") => Mode::Release,
+        Ok("dev") => Mode::Dev,
+        Ok("test") => Mode::Test,
+        _ => Mode::Dev,
+    }
+}
+
 pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,6 +43,7 @@ pub struct RawDatabaseConfig {
 
 #[derive(Debug)]
 pub struct Config {
+    pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
 }
@@ -41,15 +58,6 @@ pub struct ServerConfig {
 #[derive(Debug)]
 pub struct DatabaseConfig {
     pub url: String,
-}
-
-impl From<RawConfig> for Fallible<Config> {
-    fn from(orig: RawConfig) -> Fallible<Config> {
-        Ok(Config {
-            server: Fallible::<ServerConfig>::from(orig.server)?,
-            database: Fallible::<DatabaseConfig>::from(orig.database)?,
-        })
-    }
 }
 
 impl From<RawServerConfig> for Fallible<ServerConfig> {
@@ -94,21 +102,39 @@ fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
 
 /// 載入設定檔，回傳一個設定檔物件
 /// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn load_config<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<Config> {
+pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
     // 載入設定檔
-    let content = load_content_with_prior(paths)?;
+    let mode = get_mode();
+    let content = if let Some(path) = path {
+        load_content_with_prior(&vec![path])?
+    } else {
+        let local_file = match get_mode() {
+            Mode::Release => "config/carbonbond.release.toml",
+            Mode::Dev => "config/carbonbond.dev.toml",
+            Mode::Test => "config/carbonbond.test.toml",
+        };
+        load_content_with_prior(&vec![
+            PathBuf::from(local_file),
+            PathBuf::from("config/carbonbond.toml"),
+        ])?
+    };
+
     let raw_config: RawConfig = toml::from_str(&content)?;
-    let config = Fallible::<Config>::from(raw_config)?;
+    let config = Config {
+        mode,
+        server: Fallible::<ServerConfig>::from(raw_config.server)?,
+        database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
+    };
 
     Ok(config)
 }
 
 /// 載入設定檔，將設定檔物件儲存於全域狀態
 /// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn initialize_config<P: 'static + AsRef<Path>>(paths: &Vec<P>) {
-    let paths_owned: Vec<PathBuf> = paths.iter().map(|p| p.as_ref().to_owned()).collect();
+pub fn initialize_config<P: 'static + AsRef<Path>>(path: &Option<P>) {
+    let path_owned: Option<PathBuf> = path.as_ref().map(|p| p.as_ref().to_owned());
     assert!(
-        CONFIG.set(move || load_config(&paths_owned).unwrap()),
+        CONFIG.set(move || load_config(&path_owned).unwrap()),
         "initialize_config() is called twice",
     );
 }
