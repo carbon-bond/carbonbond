@@ -1,4 +1,5 @@
 .menubar {
+    background-color: var(--bar-color);
     width: 56px;
     border-right-width: 1px;
     border-right-color: #DDDDDD;
@@ -28,6 +29,7 @@
     }
 }
 .sidebar {
+    background-color: var(--left-main-color);
     width: 300px;
     border-right-width: 1px;
     border-right-color: #DDDDDD;

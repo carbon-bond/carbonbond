@@ -126,7 +126,7 @@ function useEditorPanelState(): {
 	openEditorPanel: (new_article_args?: NewArticleArgs) => void,
 	closeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
-	setEditorPanelData: (data: EditorPanelData | null) => void
+	setEditorPanelData: React.Dispatch<React.SetStateAction<EditorPanelData|null>>
 	} {
 	let [editor_panel_data, setEditorPanelData] = useState<EditorPanelData | null>(null);
 	let [open, setOpen] = useState(false);

@@ -103,7 +103,7 @@ function CategorySelector(): JSX.Element {
 		function onChange(name: string): void {
 			for (let c of data.categories) {
 				if (c.name == name) {
-					setEditorPanelData({...data, cur_category: c });
+					setEditorPanelData({ ...data, cur_category: c });
 					return;
 				}
 			}
@@ -116,6 +116,7 @@ function CategorySelector(): JSX.Element {
 				zIndex: 1,
 				fontSize: 14
 			}}
+			className='test'
 			background_style={{ maxHeight: '60vh' }}
 			hover_color='#eee'
 			value={data.cur_category.name}

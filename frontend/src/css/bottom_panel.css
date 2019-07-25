@@ -225,6 +225,9 @@
                 min-height: 30px;
                 display: flex;
                 flex-direction: row;
+                .test {
+                    background-color: blue;
+                }
                 .articleTitle {
                     height: 100%;
                     flex: 1;

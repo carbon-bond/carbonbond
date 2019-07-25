@@ -9,13 +9,20 @@ import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
 
 export function BoardSwitch(): JSX.Element {
-	return <Switch>
-		<Route exact path='/app/b/:board_name' render={props =>
-			<BoardPage {...props}/>
-		} />
-		<Route exact path='/app/b/:board_name/a/:article_id' render={props =>
-			<ArticlePage {...props}/>
-		} />
-		<Redirect to='/app'/>
-	</Switch>;
+	return <>
+		<div className='mainContent'>
+			<Switch>
+				<Route exact path='/app/b/:board_name' render={props =>
+					<BoardPage {...props} />
+				} />
+				<Route exact path='/app/b/:board_name/a/:article_id' render={props =>
+					<ArticlePage {...props} />
+				} />
+				<Redirect to='/app' />
+			</Switch>
+		</div>
+		<div className='rightSideBar'>
+			右邊欄
+		</div>
+	</>;
 }

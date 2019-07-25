@@ -36,16 +36,21 @@ function MainContent(): JSX.Element {
 	}, []);
 
 	return (
-		<div>
-			<h1>金剛、石墨，參見！</h1>
-			{
-				board_list.map(board => (
-					<Link key={board.id} to={`/app/b/${board.boardName}`}>
-						<p>{board.boardName}</p>
-					</Link>
-				))
-			}
-		</div>
+		<>
+			<div className='mainContent'>
+				<h1>金剛、石墨，參見！</h1>
+				{
+					board_list.map(board => (
+						<Link key={board.id} to={`/app/b/${board.boardName}`}>
+							<p>{board.boardName}</p>
+						</Link>
+					))
+				}
+			</div>
+			<div className='rightSideBar'>
+				右邊欄
+			</div>
+		</>
 	);
 }
 

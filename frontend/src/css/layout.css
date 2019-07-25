@@ -12,5 +12,24 @@
         grid-row-end: 3;
         display: flex;
         flex-direction: row;
+        .forumBody {
+            overflow-Y: auto;
+            height: 100%;
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(20px, 100vw) minmax(500px, 700px)
+                minmax(20px, 50px) 250px minmax(20px, 100vw);
+            .mainContent {
+                grid-column: 2/3;
+                margin-top: 20px;
+                background-color: var(--main-color);
+                padding: 20px;
+            }
+            .rightSideBar {
+                grid-column: 4/5;
+                margin-top: 20px;
+                background-color: var(--main-color);
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import '../css/components.css';
 export function DropDown(props: {
 	style?: React.CSSProperties,
 	selected_style?: React.CSSProperties,
+	className?: string,
 	option_style?: React.CSSProperties,
 	background_style?: React.CSSProperties,
 	hover_color?: string,
@@ -20,7 +21,7 @@ export function DropDown(props: {
 	let ref = React.useRef(null);
 	useOnClickOutside(ref, () => setOpen(false));
 
-	return <div ref={ref} style={props.style} styleName='dropDown'>
+	return <div ref={ref} style={props.style} styleName='dropDown' className={props.className}>
 		<div styleName='Btn' onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
