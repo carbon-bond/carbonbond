@@ -9,7 +9,6 @@ export function DropDown(props: {
 	selected_style?: React.CSSProperties,
 	option_style?: React.CSSProperties,
 	background_style?: React.CSSProperties,
-	option_max_height?: number,
 	hover_color?: string,
 	value: string,
 	options: string[],
@@ -29,7 +28,7 @@ export function DropDown(props: {
 	let ref = React.useRef(null);
 	useOnClickOutside(ref, () => setOpen(false));
 
-	return <div style={{
+	return <div ref={ref} style={{
 		...props.btn_style,
 		position: 'relative',
 		cursor: 'pointer'
@@ -41,8 +40,10 @@ export function DropDown(props: {
 			justifyContent: 'center',
 			alignItems: 'center',
 		}} onClick={() => {
-			setOpen(!open);
-			setHovering(default_hovering);
+			if (props.options.length > 1) {
+				setOpen(!open);
+				setHovering(default_hovering);
+			}
 		}}>
 			<p> {props.value} </p>
 		</div>
@@ -56,11 +57,10 @@ export function DropDown(props: {
 						left: '-1%',
 						width: '100%',
 						overflowY: 'auto',
-						maxHeight: props.option_max_height
 					}}>
 						{props.options.map((txt, i) => {
 							if (txt != props.value) {
-								return <div key={i} ref={ref} style={{
+								return <div key={i} style={{
 									...props.option_style,
 									width: '100%',
 									display: 'flex',
@@ -70,9 +70,9 @@ export function DropDown(props: {
 								}} onClick={() => {
 									props.onChange(txt);
 									setOpen(false);
-								}} onMouseEnter={() => {
+								}} onMouseOver={() => {
 									changeHovering(i, true);
-								}} onMouseLeave={() => {
+								}} onMouseOut={() => {
 									changeHovering(i, false);
 								}}>
 									<p>{txt}</p>

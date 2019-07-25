@@ -124,8 +124,8 @@ function CategorySelector(): JSX.Element {
 				borderStyle: 'solid',
 				borderColor: 'gray',
 				borderWidth: 1,
+				maxHeight: '60vh'
 			}}
-			option_max_height={400}
 			hover_color='#ddd'
 			option_style={{ height: 30 }}
 			value={data.cur_category.name}
