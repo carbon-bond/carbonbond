@@ -64,6 +64,9 @@
         word-break: break-all;
         margin-top: 4px;
         font-size: 15px;
+        a:hover {
+            text-decoration: underline;
+        }
     }
     .emojis {
         font-size: 35px;

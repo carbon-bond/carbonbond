@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css?global';
 import 'normalize.css?global';
 import '../css/layout.css?global';
+import '../css/global.css?global';
 
 import { UserState, BottomPanelState, AllChatState, EditorPanelState } from './global_state';
 import { MainContent } from './main_content';
