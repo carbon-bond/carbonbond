@@ -17,3 +17,7 @@ export function isLink(s: string): boolean {
 export function isImageLink(s: string): boolean {
 	return isLink(s) && (s.match(/\.(jpeg|jpg|gif|png)$/) != null);
 }
+
+export function isInteger(s: string): boolean {
+	return /^-?\d+$/.test(s);
+}

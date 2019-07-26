@@ -363,7 +363,7 @@ function useScrollState(): {
 			let listener = (): void => {
 				if (ref.current && emitter.current) {
 					let body = emitter.current;
-					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 10) {
+					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
 						handler();
 					}
 				} else if (emitter.current) {

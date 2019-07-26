@@ -29,10 +29,10 @@ export function BoardSwitch(): JSX.Element {
 }
 
 export type ArticleMeta = {
-	id: String,
-	title: String,
-	categoryName: String,
-	authorId: String,
+	id: string,
+	title: string,
+	categoryName: string,
+	authorId: string,
 	energy: number,
 	createTime: number
 };

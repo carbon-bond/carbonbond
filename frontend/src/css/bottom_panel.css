@@ -205,10 +205,13 @@
                 flex-direction: column;
                 flex: 1;
             }
-            .oneLineInput{
+            .oneLineInput {
                 width: 100%;
                 display: block;
                 min-height: 30px;
+            }
+            .inValid {
+                box-shadow: 0px 0px 3px 0px red;
             }
             .textInput {
                 display: block;

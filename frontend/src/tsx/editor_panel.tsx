@@ -7,6 +7,8 @@ import { EditorPanelState, EditorPanelData } from './global_state';
 import { getGraphQLClient, extractErrMsg } from '../ts/api';
 import { toast } from 'react-toastify';
 import { DropDown } from './components';
+import { Category } from '../ts/forum_util';
+import { isInteger } from '../ts/regex_util';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
@@ -127,55 +129,77 @@ function CategorySelector(): JSX.Element {
 	}
 }
 
-type InputEvent<T> = React.ChangeEvent<T>;
+function SingleColInput(props: {
+	col: Category['structure'][0]
+	value: string,
+	onChange: (s: string) => void,
+	single?: boolean
+}): JSX.Element {
+	let { col, value, onChange, single } = props;
+	function isValid(): boolean {
+		if (col.col_type == 'Int') {
+			return isInteger(value);
+		} else if (col.col_type.startsWith('Rating')) {
+			throw '尚未實作對 Rating 的檢查';
+		} else {
+			return true;
+		}
+	}
+	return <>
+		{
+			single ? null : <p styleName='colLabel'>
+				{col.col_name} ({col.col_type})
+			</p>
+		}
+		{
+			(() => {
+				if (col.col_type == 'Text') {
+					return <textarea
+						onChange={evt => onChange(evt.target.value)}
+						value={value}
+						styleName='textInput'
+						placeholder={single ? col.col_name : ''}
+					/>;
+				} else if (col.col_type == 'Line'
+					|| col.col_type == 'Int'
+					|| col.col_type.startsWith('Rating')
+				) {
+					return <input
+						onChange={evt => onChange(evt.target.value)}
+						value={value}
+						placeholder={single ? col.col_name : ''}
+						styleName={
+							[
+								'oneLineInput',
+								isValid() ? '' : 'inValid'
+							].join(' ')
+						}
+					/>;
+				}
+			})()
+		}
+	</>;
+
+}
+
 function InputsForStructure(): JSX.Element | null {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
 		let data = editor_panel_data;
-		function onChange<T extends HTMLInputElement | HTMLTextAreaElement>(
-			evt: InputEvent<T>,
-			index: number
-		): void {
+		function onChange(s: string, index: number): void {
 			if (editor_panel_data) {
 				let ep_data = { ...data };
-				ep_data.content[index] = evt.target.value;
+				ep_data.content[index] = s;
 				setEditorPanelData(ep_data);
 			}
 		}
 		let single = data.cur_category.structure.length == 1;
 		return <>
 			{
-				data.cur_category.structure.map((col, i) => {
-					return <>
-						{
-							single ? null : <p styleName='colLabel'>
-								{col.col_name} ({col.col_type})
-							</p>
-						}
-						{
-							(() => {
-								if (col.col_type == 'Text') {
-									return <textarea key={i}
-										onChange={evt => onChange(evt, i)}
-										value={data.content[i]}
-										styleName='textInput'
-										placeholder={single ? col.col_name : ''}
-									/>;
-								} else if (col.col_type == 'Line'
-									|| col.col_type == 'Int'
-									|| col.col_type.startsWith('Rating')
-								) {
-									return <input key={i}
-										onChange={evt => onChange(evt, i)}
-										value={data.content[i]}
-										styleName='oneLineInput'
-										placeholder={single ? col.col_name : ''}
-									/>;
-								}
-							})()
-						}
-					</>;
-				})
+				data.cur_category.structure.map((col, i) => (
+					<SingleColInput key={i} single={single} col={col}
+						value={data.content[i]} onChange={s => onChange(s, i)} />
+				))
 			}
 		</>;
 	} else {

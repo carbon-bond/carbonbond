@@ -54,6 +54,7 @@ export function ArticlePage(props: Props): JSX.Element {
 	} else if (article) {
 		return <div ref={ref} styleName='articlePage'>
 			<ArticleMetaBlock article={article}/>
+			<hr/>
 			<div>
 				{
 					article.content.map((txt, i) => {
