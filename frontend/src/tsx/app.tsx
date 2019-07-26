@@ -13,7 +13,7 @@ import 'normalize.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
-import { UserState, BottomPanelState, AllChatState, EditorPanelState } from './global_state';
+import { UserState, BottomPanelState, AllChatState, EditorPanelState, ScrollState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartySwitch } from './party_switch';
@@ -27,12 +27,15 @@ toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
 
-	function renderContent(): JSX.Element {
+	function Content(): JSX.Element {
+		let { setEmitter } = ScrollState.useContainer();
+		let ref = React.useRef(null);
+		setEmitter(ref);
 		return <Router>
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<div className='mainBody'>
+				<div className='mainBody' ref={ref}>
 					<Switch>
 						<Route path="/app/register/:invite_code" render={props =>
 							<RegisterPage {...props} />
@@ -66,7 +69,9 @@ function App(): JSX.Element {
 				<BottomPanelState.Provider>
 					<AllChatState.Provider>
 						<EditorPanelState.Provider>
-							{renderContent()}
+							<ScrollState.Provider>
+								<Content/>
+							</ScrollState.Provider>
 						</EditorPanelState.Provider>
 					</AllChatState.Provider>
 				</BottomPanelState.Provider>

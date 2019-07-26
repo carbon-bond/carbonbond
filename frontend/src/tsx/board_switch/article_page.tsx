@@ -4,6 +4,7 @@ import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { Category } from '../../ts/forum_util';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
+import { ScrollState } from '../global_state';
 
 type Props = RouteComponentProps<{ article_id?: string }>;
 
@@ -52,10 +53,16 @@ export function ArticlePage(props: Props): JSX.Element {
 		}
 	}, [article_id]);
 
+	let { useScrollToBottom } = ScrollState.useContainer();
+	let ref = React.useRef(null);
+	useScrollToBottom(ref, () => {
+		console.log('成功!!');
+	});
+
 	if (fetching) {
 		return <div/>;
 	} else if (article) {
-		return <div styleName='articlePage'>
+		return <div ref={ref} styleName='articlePage'>
 			<h3>{article.category.name}</h3>
 			<h3>{article.title}</h3>
 			<h3>{article.authorId}</h3>

@@ -1,4 +1,8 @@
 .articlePage {
     background-color: var(--main-color);
     padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    height: 1000px;
 }

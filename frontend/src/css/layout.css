@@ -25,11 +25,9 @@
                     minmax(20px, 50px) 250px minmax(20px, 100vw);
                 .content {
                     grid-column: 2/3;
-                    margin-top: 20px;
                 }
                 .rightSideBar {
                     grid-column: 4/5;
-                    margin-top: 20px;
                 }
             }
         }
