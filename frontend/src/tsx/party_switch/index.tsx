@@ -21,7 +21,7 @@ export type Party = {
 	board?: { boardName: string }
 };
 
-export function PartyCenter(): JSX.Element {
+export function PartySwitch(): JSX.Element {
 	return <Switch>
 		<Route exact path='/app/party' render={props =>
 			<MyPartyList {...props}/>

@@ -1,4 +1,5 @@
 .header {
+    background-color: var(--bar-color);
     border-bottom-width: 1px;
     border-bottom-color: #DDDDDD;
     border-bottom-style: solid;

@@ -1,5 +1,25 @@
 [
     {
+        "name": "公告",
+        "transfusable": false,
+        "is_question": true,
+        "show_in_list": true,
+        "rootable": true,
+        "threshold_to_post": {
+            "bond_energy": 0,
+            "position": 0
+        },
+        "attached_to": [],
+        "structure": [
+            {
+                "col_name": "內文",
+                "col_type": "Text",
+                "restriction": ""
+            }
+        ],
+        "version": 0
+    },
+    {
         "name": "問題",
         "transfusable": false,
         "is_question": true,

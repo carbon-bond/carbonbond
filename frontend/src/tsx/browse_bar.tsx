@@ -3,9 +3,9 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 import '../css/browsebar.css';
-import { getGraphQLClient, extractErrMsg } from './api';
+import { getGraphQLClient, extractErrMsg } from '../ts/api';
 import { UserState } from './global_state';
-import { STORAGE_NAME } from './constants';
+import { STORAGE_NAME } from '../ts/constants';
 
 type Board = { boardName: string, title: string };
 

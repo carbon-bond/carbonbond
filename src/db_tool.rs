@@ -12,8 +12,8 @@ use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
-use carbonbond::config;
 use carbonbond::custom_error::{Error, Fallible};
+use carbonbond::config::{Config, load_config, Mode};
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -39,11 +39,11 @@ reset
 
 struct DBToolCtx {
     id: Option<String>,
-    database_url: String,
+    config: Config,
 }
 impl Context for DBToolCtx {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
-        callback(&db::connect_db(&self.database_url))
+        callback(&db::connect_db(&self.config.database.url))
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;
@@ -74,7 +74,7 @@ fn match_subcommand() -> Fallible<(String, Vec<String>)> {
 
 fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() < 2 {
-        return Err(Error::new_logic("add 參數數量錯誤", 403));
+        return Err(Error::new_op("add 參數數量錯誤"));
     }
     let something = args[0].clone();
     let sub_args = args[1..].to_vec();
@@ -82,17 +82,17 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         "user" => add_user(ctx, &sub_args),
         "party" => add_party(ctx, &sub_args),
         "board" => add_board(ctx, &sub_args),
-        other => Err(Error::new_logic(format!("無法 add {}", other), 403)),
+        other => Err(Error::new_op(format!("無法 add {}", other))),
     }
 }
 
 fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
-        return Err(Error::new_logic("add user 參數數量錯誤", 403));
+        return Err(Error::new_op("add user 參數數量錯誤"));
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    signup::create_user(&db::connect_db(&ctx.database_url), email, id, password)?;
+    ctx.use_pg_conn(|conn| signup::create_user(conn, email, id, password))?;
     Ok(())
 }
 
@@ -108,13 +108,13 @@ fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else {
-        Err(Error::new_logic("add party 參數數量錯誤", 403))
+        Err(Error::new_op("add party 參數數量錯誤"))
     }
 }
 
 fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 2 {
-        return Err(Error::new_logic("add board 參數數量錯誤", 403));
+        return Err(Error::new_op("add board 參數數量錯誤"));
     }
     let (party_name, board_name) = (&args[0], &args[1]);
     let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(conn, party_name));
@@ -128,8 +128,7 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let invite_code =
-        signup::create_invitation(&db::connect_db(&ctx.database_url), None, &args[0])?;
+    let invite_code = ctx.use_pg_conn(|conn| signup::create_invitation(conn, None, &args[0]))?;
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
@@ -140,21 +139,25 @@ fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     Ok(())
 }
 
-fn reset_database() -> Fallible<()> {
-    println!("危險操作！請輸入 carbonbond 以繼續");
-    print!("> ");
-    stdout().flush()?;
+fn reset_database(ctx: &DBToolCtx) -> Fallible<()> {
+    if let Mode::Release = ctx.config.mode {
+        println!("危險操作！請輸入 carbonbond 以繼續");
+        print!("> ");
+        stdout().flush()?;
 
-    let mut buff = String::new();
-    stdin().read_line(&mut buff)?;
-    if &buff != "carbonbond\n" {
-        println!("操作取消");
-        return Ok(());
+        let mut buff = String::new();
+        stdin().read_line(&mut buff)?;
+        if &buff != "carbonbond\n" {
+            println!("操作取消");
+            return Ok(());
+        }
     }
 
     let out = std::process::Command::new("diesel")
         .arg("database")
         .arg("reset")
+        .arg("--database-url")
+        .arg(&ctx.config.database.url)
         .output()?
         .stdout;
     println!("{}", String::from_utf8_lossy(&out));
@@ -201,7 +204,7 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
         "add" => add_something(ctx, &args)?,
         "as" => as_user(ctx, &args)?,
         "invite" => invite(ctx, &args)?,
-        "reset" => reset_database()?,
+        "reset" => reset_database(ctx)?,
         other => println!("無 {} 指令", other),
     }
     Ok(())
@@ -212,18 +215,14 @@ fn main() -> Fallible<()> {
     let config = {
         let args_config = load_yaml!("db_tool_args.yaml");
         let arg_matches = clap::App::from_yaml(args_config).get_matches();
-        let config_file = match arg_matches.value_of("config_file") {
-            Some(path) => PathBuf::from(path),
-            None => PathBuf::from("config/carbonbond.toml"),
-        };
-        config::load_config(config_file)?
+        let config_file = arg_matches
+            .value_of("config_file")
+            .map(|p| PathBuf::from(p));
+        load_config(&config_file)?
     };
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx {
-        id: None,
-        database_url: config.database.url,
-    };
+    let mut ctx = DBToolCtx { id: None, config };
     loop {
         match exec_command(&mut ctx) {
             Err(error) => {

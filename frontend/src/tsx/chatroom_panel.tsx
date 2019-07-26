@@ -3,6 +3,7 @@ import '../css/bottom_panel.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { useScrollBottom, useInputValue } from './utils';
+import useOnClickOutside from 'use-onclickoutside';
 import {
 	BottomPanelState,
 	AllChatState,
@@ -12,6 +13,14 @@ import {
 	ChannelRoomData,
 	isChannelRoomData
 } from './global_state';
+import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
+import 'emoji-mart/css/emoji-mart.css?global';
+import * as EmojiMart from 'emoji-mart';
+
+const Picker = React.lazy(() => {
+	return import(/* webpackChunkName: "emoji-mart" */ 'emoji-mart')
+		.then(({ Picker }) => ({ default: Picker }));
+});
 
 type AggDialog = {
 	who: string,
@@ -52,6 +61,24 @@ function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
 	return ret;
 }
 
+function DialogShow(props: { content: string }): JSX.Element {
+	if (isEmojis(props.content)) {
+		return <div styleName="emojis">{props.content}</div>;
+	} else if (isImageLink(props.content)) {
+		// 注意：如果是 ImageLink ，那必定是 Link ，所以本分支要先判斷
+		return <div>
+			<div styleName="normal"><a href={props.content} target="_blank">{props.content}</a></div>
+			<div styleName="image"><img src={props.content} /></div>
+		</div>;
+	} else if (isLink(props.content)) {
+		return <div styleName="normal">
+			<a href={props.content} target="_blank">{props.content}</a>
+		</div>;
+	} else {
+		return <div styleName="normal">{props.content}</div>;
+	}
+}
+
 const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	const agg_dialogs = aggregateDiaglogs(props.dialogs);
 	return <>
@@ -64,7 +91,7 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 			</div>
 			{
 				dialog.contents.map((content, index) => {
-					return <div key={index} styleName="content">{content}</div>;
+					return <DialogShow content={content} key={index} />;
 				})
 			}
 		</div>)
@@ -73,6 +100,89 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	;
 });
 
+type InputEvent = React.ChangeEvent<HTMLInputElement>;
+
+type InputBarProp = {
+	input_props: {
+		onChange: (e: InputEvent) => void,
+		value: string
+	},
+	setValue: React.Dispatch<React.SetStateAction<string>>,
+	onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+};
+
+type Emoji = {
+	native: string
+};
+
+function InputBar(props: InputBarProp): JSX.Element {
+	const inputElement = React.useRef<HTMLInputElement>(null);
+	const [extendEmoji, setExtendEmoji] = React.useState(false);
+	const ref = React.useRef(null);
+	useOnClickOutside(ref, () => setExtendEmoji(false));
+
+	function onSelect(emoji: EmojiMart.EmojiData): void {
+		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+			inputElement.current.focus();
+			const value = props.input_props.value;
+			const start = inputElement.current.selectionStart;
+			const end = inputElement.current.selectionEnd;
+			if (start == null || end == null) {
+				const new_value = value + (emoji as Emoji).native;
+				props.setValue(new_value);
+			} else {
+				const left = value.slice(0, start);
+				const right = value.slice(end);
+				let em = (emoji as Emoji).native;
+				const new_value = left + em + right;
+				window.requestAnimationFrame(() => {
+					inputElement.current!.selectionStart = start + em.length;
+					inputElement.current!.selectionEnd = start + em.length;
+				});
+				props.setValue(new_value);
+			}
+		}
+	}
+
+	function onKeyDownWrap(e: React.KeyboardEvent<HTMLInputElement>): void {
+		props.onKeyDown(e);
+		setExtendEmoji(false);
+	}
+
+	function onClick(): void {
+		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+			inputElement.current.focus();
+		}
+		setExtendEmoji(!extendEmoji);
+	}
+
+	return <div styleName="inputBar">
+		<div styleName="nonText" ref={ref}>
+			<div onClick={onClick}>😎</div>
+			{
+				extendEmoji ?
+					<React.Suspense fallback={<div styleName="loading">載入中...</div>}>
+						<div styleName="emojiPicker">
+							<Picker
+								native={true}
+								showPreview={false}
+								showSkinTones={false}
+								onSelect={onSelect} />
+						</div>
+					</React.Suspense> :
+					<></>
+			}
+		</div>
+		<input {...props.input_props}
+			ref={inputElement}
+			onKeyDown={onKeyDownWrap}
+			type="text"
+			placeholder="輸入訊息..."
+			autoFocus
+		/>
+	</div>;
+}
+
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
@@ -80,12 +190,6 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
-	const inputElement = React.useRef<HTMLInputElement>(null);
-	React.useEffect(() => {
-		if (extended && inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
-			inputElement.current.focus();
-		}
-	}, [extended]);
 	const chat = all_chat.two_people.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
 	React.useEffect(() => {
@@ -120,10 +224,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			<div ref={scroll_bottom_ref} styleName="dialogs">
 				<DialogBlocks dialogs={chat!.dialogs}/>
 			</div>
-			<div styleName="inputBar">
-				<div styleName="nonText">😎</div>
-				<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
-			</div>
+			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
 	} else {
 		return <div styleName="chatPanel singlePanel roomWidth">
@@ -139,18 +240,11 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 }
 
 function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
-	console.log(`組件 ${props.room.name}#${JSON.stringify(props.room.channel)}`);
 	const { deleteRoom, changeChannel } = BottomPanelState.useContainer();
 	const { all_chat, addChannelDialog, updateLastReadChannel: updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
-	const inputElement = React.useRef<HTMLInputElement>(null);
-	React.useEffect(() => {
-		if (extended && inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
-			inputElement.current.focus();
-		}
-	}, [extended]);
 
 	const chat = all_chat.party.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
@@ -213,10 +307,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<div ref={scroll_bottom_ref} styleName="dialogs">
 						<DialogBlocks dialogs={channel!.dialogs} />
 					</div>
-					<div styleName="inputBar">
-						<div styleName="nonText">😎</div>
-						<input ref={inputElement} {...input_props} onKeyDown={onKeyDown} type="text" placeholder="輸入訊息..." />
-					</div>
+					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>
 			</div>
 		</div>;

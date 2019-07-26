@@ -28,7 +28,24 @@ function roughDate(date: Date): string {
 	}
 }
 
+/**
+ * @param time 以毫秒計的 UTC 時間
+ */
+function formatCreateDate(time: number): string {
+	let d = new Date(time * 1000);
+	if (isToday(d)) {
+		return `今天 ${d.getHours()}:${d.getMinutes()}`;
+	} else if (isYesterday(d)) {
+		return `昨天 ${d.getHours()}:${d.getMinutes()}`;
+	} else if (isThisYear(d)) {
+		return `${d.getMonth()}/${d.getDate()} ${d.getHours()}:${d.getMinutes()}`;
+	} else {
+		return `${d.getFullYear()}${d.getMonth()}/${d.getDate()}`;
+	}
+}
+
 export {
 	relativeDate,
-	roughDate
+	roughDate,
+	formatCreateDate
 };

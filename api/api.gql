@@ -58,7 +58,7 @@ type Board {
     rulingParty: Party
     parties: [Party]
     # TODO 模板應該用字串還是物件?
-    categories: [String]
+    categories(showDepricate: Boolean): [String]
     articleCount: Int
 }
 
@@ -70,6 +70,7 @@ type Query {
     articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
     
     articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
+    article(id: ID): Article
 }
 
 type Mutation {

@@ -4,7 +4,7 @@ import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { getGraphQLClient, extractErrMsg } from '../api';
+import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import '../../css/party.css';
 
 import { Party, EXILED_PARTY_NAME } from './index';

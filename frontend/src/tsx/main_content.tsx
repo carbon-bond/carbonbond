@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { getGraphQLClient } from './api';
+import { getGraphQLClient } from '../ts/api';
 
 type Board = {
 	id: string,
@@ -36,16 +36,21 @@ function MainContent(): JSX.Element {
 	}, []);
 
 	return (
-		<div>
-			<h1>金剛、石墨，參見！</h1>
-			{
-				board_list.map(board => (
-					<Link key={board.id} to={`/app/b/${board.boardName}`}>
-						<p>{board.boardName}</p>
-					</Link>
-				))
-			}
-		</div>
+		<>
+			<div className='content'>
+				<h1>金剛、石墨，參見！</h1>
+				{
+					board_list.map(board => (
+						<Link key={board.id} to={`/app/b/${board.boardName}`}>
+							<p>{board.boardName}</p>
+						</Link>
+					))
+				}
+			</div>
+			<div className='rightSideBar'>
+				右邊欄
+			</div>
+		</>
 	);
 }
 

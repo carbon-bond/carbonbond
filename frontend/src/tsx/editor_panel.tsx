@@ -4,9 +4,11 @@ import { RouteComponentProps } from 'react-router';
 
 import '../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from './global_state';
-import { getGraphQLClient, extractErrMsg } from './api';
+import { getGraphQLClient, extractErrMsg } from '../ts/api';
 import { toast } from 'react-toastify';
-import { Category } from './forum_util';
+import { DropDown } from './components';
+import { Category } from '../ts/forum_util';
+import { isInteger } from '../ts/regex_util';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
@@ -25,7 +27,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,
-			content: data.content
+			content: data.content.slice(0, data.cur_category.structure.length)
 		});
 		return res.createArticle;
 	}
@@ -97,88 +99,107 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 }
 
 function CategorySelector(): JSX.Element {
-	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-	function onTagClicked(category: Category): void {
-		if (editor_panel_data) {
-			setEditorPanelData({ ...editor_panel_data, cur_category: category });
-		}
-	}
+	const { editor_panel_data, setEditorPanelData } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
-		return <div styleName='categorySelector'>
-			{
-				editor_panel_data.categories.map((c, i) => {
-					if (c.name == editor_panel_data.cur_category.name) {
-						return <div styleName='selected categoryTag' key={i}>
-							<div styleName='tagTxt'>
-								{c.name}
-							</div>
-						</div>;
-					} else {
-						return <div styleName='categoryTag' key={i} onClick={() => onTagClicked(c)}>
-							<div styleName='tagTxt'>
-								{c.name}
-							</div>
-						</div>;
-					}
-				})
+		let data = editor_panel_data;
+		function onChange(name: string): void {
+			for (let c of data.categories) {
+				if (c.name == name) {
+					setEditorPanelData({ ...data, cur_category: c });
+					return;
+				}
 			}
-		</div>;
+		}
+		return <DropDown
+			style={{
+				width: 150,
+				height: '95%',
+				top: '2%',
+				zIndex: 1,
+				fontSize: 14
+			}}
+			className='test'
+			background_style={{ maxHeight: '60vh' }}
+			hover_color='#eee'
+			value={data.cur_category.name}
+			onChange={s => onChange(s)}
+			options={data.categories.map(c => c.name)} />;
 	} else {
 		throw new Error('尚未開始發文');
 	}
 }
 
-type InputEvent<T> = React.ChangeEvent<T>;
+function SingleColInput(props: {
+	col: Category['structure'][0]
+	value: string,
+	onChange: (s: string) => void,
+	single?: boolean
+}): JSX.Element {
+	let { col, value, onChange, single } = props;
+	function isValid(): boolean {
+		if (col.col_type == 'Int') {
+			return isInteger(value);
+		} else if (col.col_type.startsWith('Rating')) {
+			throw '尚未實作對 Rating 的檢查';
+		} else {
+			return true;
+		}
+	}
+	return <>
+		{
+			single ? null : <p styleName='colLabel'>
+				{col.col_name} ({col.col_type})
+			</p>
+		}
+		{
+			(() => {
+				if (col.col_type == 'Text') {
+					return <textarea
+						onChange={evt => onChange(evt.target.value)}
+						value={value}
+						styleName='textInput'
+						placeholder={single ? col.col_name : ''}
+					/>;
+				} else if (col.col_type == 'Line'
+					|| col.col_type == 'Int'
+					|| col.col_type.startsWith('Rating')
+				) {
+					return <input
+						onChange={evt => onChange(evt.target.value)}
+						value={value}
+						placeholder={single ? col.col_name : ''}
+						styleName={
+							[
+								'oneLineInput',
+								isValid() ? '' : 'inValid'
+							].join(' ')
+						}
+					/>;
+				}
+			})()
+		}
+	</>;
+
+}
+
 function InputsForStructure(): JSX.Element | null {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
 		let data = editor_panel_data;
-		function onChange<T extends HTMLInputElement | HTMLTextAreaElement>(
-			evt: InputEvent<T>,
-			index: number
-		): void {
+		function onChange(s: string, index: number): void {
 			if (editor_panel_data) {
 				let ep_data = { ...data };
-				ep_data.content[index] = evt.target.value;
+				ep_data.content[index] = s;
 				setEditorPanelData(ep_data);
 			}
 		}
 		let single = data.cur_category.structure.length == 1;
 		return <>
 			{
-				data.cur_category.structure.map((col, i) => {
-					return <>
-						{
-							single ? null : <p styleName='colLabel'>
-								{col.col_name} ({col.col_type})
-							</p>
-						}
-						{
-							(() => {
-								if (col.col_type == 'Text') {
-									return <textarea key={i}
-										onChange={evt => onChange(evt, i)}
-										value={data.content[i]}
-										styleName='textInput'
-										placeholder={single ? col.col_name : ''}
-									/>;
-								} else if (col.col_type == 'Line'
-									|| col.col_type == 'Int'
-									|| col.col_type.startsWith('Rating')
-								) {
-									return <input key={i}
-										onChange={evt => onChange(evt, i)}
-										value={data.content[i]}
-										styleName='oneLineInput'
-										placeholder={single ? col.col_name : ''}
-									/>;
-								} else {
-									return null;
-								}
-							})()
-						}
-					</>;
-				})
+				data.cur_category.structure.map((col, i) => (
+					<SingleColInput key={i} single={single} col={col}
+						value={data.content[i]} onChange={s => onChange(s, i)} />
+				))
 			}
 		</>;
 	} else {
@@ -198,20 +219,20 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 		};
 		return <div styleName='editorBody'>
 			<div style={{ ...body_style }} styleName='editorInnerBody'>
-				<CategorySelector />
-				{single ? null : <p styleName='colLabel'>文章標題</p>}
-				<input
-					onChange={evt => {
-						setEditorPanelData({
-							...data,
-							title: evt.target.value
-						});
-					}}
-					value={data.title}
-					styleName='oneLineInput'
-					placeholder={single ? '文章標題' : ''}
-				/>
-
+				<div styleName='articleMeta'>
+					<CategorySelector />
+					<input className='articleTitle'
+						onChange={evt => {
+							setEditorPanelData({
+								...data,
+								title: evt.target.value
+							});
+						}}
+						value={data.title}
+						styleName='oneLineInput'
+						placeholder='文章標題'
+					/>
+				</div>
 				<div styleName='articleContent'>
 					<InputsForStructure />
 					<div>

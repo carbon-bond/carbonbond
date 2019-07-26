@@ -22,10 +22,23 @@
     align-items: center;
     height: 34px;
     padding-right: 4px;
+    position: relative;
     .nonText {
         cursor: pointer;
         font-size: 22px;
         margin-left: 4px;
+        .emojiPicker {
+            position: absolute;
+            bottom: 40px;
+            transform: translateX(-50%);
+        }
+        .loading {
+            position: absolute;
+            bottom: 40px;
+            background: white;
+            border: 1px #888888 solid;
+            transform: translateX(-50%);
+        }
     }
     input {
         flex-grow: 1;
@@ -47,9 +60,23 @@
             margin-left: 5px;
         }
     }
-    .content {
+    .normal {
+        word-break: break-all;
         margin-top: 4px;
-        font-size: 14px;
+        font-size: 15px;
+        a:hover {
+            text-decoration: underline;
+        }
+    }
+    .emojis {
+        font-size: 35px;
+    }
+    .image {
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        width: calc(var(--room-width ) - 20px)
     }
     margin-bottom: 6px;
 }
@@ -178,10 +205,13 @@
                 flex-direction: column;
                 flex: 1;
             }
-            .oneLineInput{
+            .oneLineInput {
                 width: 100%;
                 display: block;
                 min-height: 30px;
+            }
+            .inValid {
+                box-shadow: 0px 0px 3px 0px red;
             }
             .textInput {
                 display: block;
@@ -194,28 +224,16 @@
             .colLabel {
                 margin-top: 5px;
             }
-            .categorySelector {
-                height: 30px;
+            .articleMeta {
+                min-height: 30px;
                 display: flex;
-                .categoryTag {
-                    flex: 1;
-                    cursor: pointer;
-                    background-color: white;
-                    display: inline-block;
-                    border-right-style: solid;
-                    border-right-width: 1px;
-                    border-right-color: gray;
-                    height: 100%;
-                    display: inline-flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    .tagTxt {
-                        text-align: center;
-                    }
+                flex-direction: row;
+                .test {
+                    background-color: blue;
                 }
-                .selected {
-                    background-color: gray;
-                    cursor: auto;
+                .articleTitle {
+                    height: 100%;
+                    flex: 1;
                 }
             }
         }

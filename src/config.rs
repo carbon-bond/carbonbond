@@ -4,7 +4,23 @@ use std::fs::File;
 use serde::{Serialize, Deserialize};
 use state::LocalStorage;
 
-use crate::custom_error::Fallible;
+use crate::custom_error::{Error, Fallible};
+
+#[derive(Debug)]
+pub enum Mode {
+    Release,
+    Dev,
+    Test,
+}
+
+pub fn get_mode() -> Mode {
+    match std::env::var("MODE").as_ref().map(|s| &**s) {
+        Ok("release") => Mode::Release,
+        Ok("dev") => Mode::Dev,
+        Ok("test") => Mode::Test,
+        _ => Mode::Dev,
+    }
+}
 
 pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
@@ -28,6 +44,7 @@ pub struct RawDatabaseConfig {
 
 #[derive(Debug)]
 pub struct Config {
+    pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
 }
@@ -44,24 +61,10 @@ pub struct DatabaseConfig {
     pub url: String,
 }
 
-impl From<RawConfig> for Fallible<Config> {
-    fn from(orig: RawConfig) -> Fallible<Config> {
-        Ok(Config {
-            server: Fallible::<ServerConfig>::from(orig.server)?,
-            database: Fallible::<DatabaseConfig>::from(orig.database)?,
-        })
-    }
-}
-
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mailgun_api_key = {
-            let mut buf = String::new();
-            let mut file = File::open(orig.mailgun_key_file)?;
-            file.read_to_string(&mut buf)?;
-            buf
-        };
-
+        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)
+            .map_err(|e| e.add_msg(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file)))?;
         Ok(ServerConfig {
             address: orig.address,
             port: orig.port,
@@ -76,24 +79,59 @@ impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
     }
 }
 
-pub fn load_config<P: AsRef<Path>>(path: P) -> Fallible<Config> {
+fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
+    let mut file = File::open(path.as_ref())?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+    Ok(content)
+}
+
+fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
+    if paths.len() == 0 {
+        return Err(Error::new_op("未指定設定檔"));
+    }
+    for p in paths.iter() {
+        if let Ok(content) = load_file_content(p) {
+            return Ok(content);
+        }
+    }
+    let paths: Vec<PathBuf> = paths.into_iter().map(|p| p.as_ref().to_owned()).collect();
+    return Err(Error::new_op(format!("找不到任何設定檔: {:?}", paths)));
+}
+
+/// 載入設定檔，回傳一個設定檔物件
+/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
     // 載入設定檔
-    let content = {
-        let pathr = path.as_ref();
-        let mut file = File::open(pathr)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        content
+    let mode = get_mode();
+    let content = if let Some(path) = path {
+        load_content_with_prior(&vec![path])?
+    } else {
+        let local_file = match get_mode() {
+            Mode::Release => "config/carbonbond.release.toml",
+            Mode::Dev => "config/carbonbond.dev.toml",
+            Mode::Test => "config/carbonbond.test.toml",
+        };
+        load_content_with_prior(&vec![
+            PathBuf::from(local_file),
+            PathBuf::from("config/carbonbond.toml"),
+        ])?
     };
 
     let raw_config: RawConfig = toml::from_str(&content)?;
-    let config = Fallible::<Config>::from(raw_config)?;
+    let config = Config {
+        mode,
+        server: Fallible::<ServerConfig>::from(raw_config.server)?,
+        database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
+    };
 
     Ok(config)
 }
 
-pub fn initialize_config<P: 'static + AsRef<Path>>(path: P) {
-    let path_owned = path.as_ref().to_owned();
+/// 載入設定檔，將設定檔物件儲存於全域狀態
+/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn initialize_config<P: 'static + AsRef<Path>>(path: &Option<P>) {
+    let path_owned: Option<PathBuf> = path.as_ref().map(|p| p.as_ref().to_owned());
     assert!(
         CONFIG.set(move || load_config(&path_owned).unwrap()),
         "initialize_config() is called twice",

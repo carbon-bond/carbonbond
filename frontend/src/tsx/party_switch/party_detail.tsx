@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { getGraphQLClient, extractErrMsg } from '../api';
+import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { Party, EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 import { toast } from 'react-toastify';

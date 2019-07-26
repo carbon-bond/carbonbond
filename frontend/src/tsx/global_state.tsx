@@ -1,9 +1,9 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import * as api from './api';
+import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category } from './forum_util';
+import { Category } from '../ts/forum_util';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -126,7 +126,7 @@ function useEditorPanelState(): {
 	openEditorPanel: (new_article_args?: NewArticleArgs) => void,
 	closeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
-	setEditorPanelData: (data: EditorPanelData | null) => void
+	setEditorPanelData: React.Dispatch<React.SetStateAction<EditorPanelData|null>>
 	} {
 	let [editor_panel_data, setEditorPanelData] = useState<EditorPanelData | null>(null);
 	let [open, setOpen] = useState(false);
@@ -352,7 +352,36 @@ function useAllChatState(): {
 	};
 }
 
+type Ref = React.MutableRefObject<HTMLElement | null>;
+function useScrollState(): {
+	setEmitter: (ref: Ref) => void,
+	useScrollToBottom: (ref: Ref, handler: () => void) => void
+	} {
+	let [emitter, setEmitter] = useState<Ref>(React.useRef(null));
+	function useScrollToBottom(ref: Ref, handler: () => void): void {
+		if (emitter.current) {
+			let listener = (): void => {
+				if (ref.current && emitter.current) {
+					let body = emitter.current;
+					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
+						handler();
+					}
+				} else if (emitter.current) {
+					emitter.current.removeEventListener('scroll', listener);
+				}
+			};
+			emitter.current.addEventListener('scroll', listener);
+		}
+	}
+
+	return {
+		setEmitter,
+		useScrollToBottom
+	};
+}
+
 export const UserState = createContainer(useUserState);
 export const BottomPanelState = createContainer(useBottomPanelState);
 export const AllChatState = createContainer(useAllChatState);
 export const EditorPanelState = createContainer(useEditorPanelState);
+export const ScrollState = createContainer(useScrollState);
