@@ -1,23 +1,13 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
-import { Category } from '../../ts/forum_util';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
 import { ScrollState } from '../global_state';
+import { Article } from '.';
+import { ArticleMetaBlock } from './article_meta_block';
 
 type Props = RouteComponentProps<{ article_id?: string }>;
-
-type Article = {
-	title: string,
-	authorId: string,
-	raw_category: { body: string },
-	category: Category,
-	content: string[],
-	energy: number,
-	createTime: number
-};
-
 async function fetchArticleDetail(id: string): Promise<Article> {
 	let client = getGraphQLClient();
 	const query = `
@@ -63,9 +53,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		return <div/>;
 	} else if (article) {
 		return <div ref={ref} styleName='articlePage'>
-			<h3>{article.category.name}</h3>
-			<h3>{article.title}</h3>
-			<h3>{article.authorId}</h3>
+			<ArticleMetaBlock article={article}/>
 			<div>
 				{
 					article.content.map((txt, i) => {

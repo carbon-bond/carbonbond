@@ -6,20 +6,14 @@ import { fetchCategories } from '../../ts/forum_util';
 
 import '../../css/board_page.css';
 import { getGraphQLClient } from '../../ts/api';
+import { ArticleMeta } from '.';
 
 const PAGE_SIZE: number = 10;
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
-type Article = {
-	id: String,
-	title: String,
-	categoryName: String,
-	author_id: String,
-};
-
 type ArticleList = {
-	articleList: Article[]
+	articleList: ArticleMeta[]
 };
 
 // TODO: Show fetching animation before data
@@ -31,6 +25,9 @@ function fetchArticles(board_name: string, page_size: number, offset: number): P
 			id
 			title
 			categoryName
+			authorId
+			energy
+			createTime
 		}
 	}`;
 	return graphQLClient.request(query);
@@ -54,9 +51,9 @@ export function BoardPage(props: Props): JSX.Element {
 		}
 	}
 
-	const [_articles, setArticles] = React.useState<Article[]>([]);
+	const [_articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
-	function appendArticles (newArticles: Article[]): void {
+	function appendArticles (newArticles: ArticleMeta[]): void {
 		setArticles([..._articles, ...newArticles]);
 	}
 

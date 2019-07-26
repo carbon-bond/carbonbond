@@ -1,3 +1,4 @@
+/* NOTE: 不要在這裡寫 margin，會跟 CSS grid 產生難以預期的交互作用 */
 .app {
     width: 100vw;
     height: 100vh;

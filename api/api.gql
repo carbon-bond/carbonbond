@@ -58,7 +58,7 @@ type Board {
     rulingParty: Party
     parties: [Party]
     # TODO 模板應該用字串還是物件?
-    categories: [String]
+    categories(showDepricate: Boolean): [String]
     articleCount: Int
 }
 

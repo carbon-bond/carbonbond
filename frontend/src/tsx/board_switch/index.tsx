@@ -7,6 +7,7 @@ import {
 
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
+import { Category } from '../../ts/forum_util';
 
 export function BoardSwitch(): JSX.Element {
 	return <>
@@ -25,4 +26,27 @@ export function BoardSwitch(): JSX.Element {
 			右邊欄
 		</div>
 	</>;
+}
+
+export type ArticleMeta = {
+	id: String,
+	title: String,
+	categoryName: String,
+	authorId: String,
+	energy: number,
+	createTime: number
+};
+
+export type Article = {
+	title: string,
+	authorId: string,
+	raw_category: { body: string },
+	category: Category,
+	content: string[],
+	energy: number,
+	createTime: number
+};
+
+export function isMeta(a: Article | ArticleMeta): a is ArticleMeta {
+	return !('content' in a);
 }
