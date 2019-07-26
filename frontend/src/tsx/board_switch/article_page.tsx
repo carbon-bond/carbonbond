@@ -3,6 +3,7 @@ import { RouteComponentProps } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { Category } from '../../ts/forum_util';
 import { toast } from 'react-toastify';
+import '../../css/article_page.css';
 
 type Props = RouteComponentProps<{ article_id?: string }>;
 
@@ -54,7 +55,7 @@ export function ArticlePage(props: Props): JSX.Element {
 	if (fetching) {
 		return <div/>;
 	} else if (article) {
-		return <div>
+		return <div styleName='articlePage'>
 			<h3>{article.category.name}</h3>
 			<h3>{article.title}</h3>
 			<h3>{article.authorId}</h3>

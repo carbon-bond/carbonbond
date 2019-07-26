@@ -32,27 +32,29 @@ function App(): JSX.Element {
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<Switch>
-					<Route path="/app/register/:invite_code" render={props =>
-						<RegisterPage {...props} />
-					} />
-					<Route path="/app/party" render={() =>
-						<PartySwitch />
-					} />
-					<Route path="*" render={() =>
-						<div className='forumBody'>
-							<Switch>
-								<Route exact path="/app" render={() => (
-									<MainContent></MainContent>
-								)} />
-								<Route path="/app/b/:board_name" render={() =>
-									<BoardSwitch />
-								} />
-								<Redirect to="/app" />
-							</Switch>
-						</div>
-					} />
-				</Switch>
+				<div className='mainBody'>
+					<Switch>
+						<Route path="/app/register/:invite_code" render={props =>
+							<RegisterPage {...props} />
+						} />
+						<Route path="/app/party" render={() =>
+							<PartySwitch />
+						} />
+						<Route path="*" render={() =>
+							<div className='forumBody'>
+								<Switch>
+									<Route exact path="/app" render={() => (
+										<MainContent></MainContent>
+									)} />
+									<Route path="/app/b/:board_name" render={() =>
+										<BoardSwitch />
+									} />
+									<Redirect to="/app" />
+								</Switch>
+							</div>
+						} />
+					</Switch>
+				</div>
 				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;

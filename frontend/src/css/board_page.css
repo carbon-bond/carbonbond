@@ -1,4 +1,5 @@
 ul {
+    /* FIXME: 直接對標籤做事會汙染所有元件 */
     width: 100%;
 }
 .article-title:first-child {
@@ -11,7 +12,8 @@ ul {
 }
 
 .board-content {
-    overflow-y: scroll;
     /* TODO: 應該不是這個元素在 overflow? */
+    overflow-y: scroll;
     max-height: 500px;
+    background-color: var(--main-color);
 }

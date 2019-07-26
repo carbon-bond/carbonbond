@@ -10,7 +10,7 @@ import { ArticlePage } from './article_page';
 
 export function BoardSwitch(): JSX.Element {
 	return <>
-		<div className='mainContent'>
+		<div className='content'>
 			<Switch>
 				<Route exact path='/app/b/:board_name' render={props =>
 					<BoardPage {...props} />
