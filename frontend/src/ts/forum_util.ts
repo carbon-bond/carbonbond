@@ -50,3 +50,25 @@ export async function fetchCategories(
 		}
 	});
 }
+
+export function idToCode(id: number): string {
+	let bytes: number[] = Array(6).fill(0);
+	let index = 0;
+	while (id > 0) {
+		let byte = id & 0xff;
+		bytes[index++] = byte;
+		id = (id - byte) / 256;
+	}
+	let s = bytes.map(n => String.fromCharCode(n)).join('');
+	return btoa(s);
+}
+
+export function codeToId(code: string): number {
+	let id = 0;
+	let bytes_str = atob(code);
+	for (let i = bytes_str.length-1; i >= 0; i--) {
+		let byte = bytes_str.charCodeAt(i);
+		id = id * 256 + byte;
+	}
+	return id;
+}

@@ -2,13 +2,14 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
-import '../css/bottom_panel.css';
-import { EditorPanelState, EditorPanelData } from './global_state';
-import { getGraphQLClient, extractErrMsg } from '../ts/api';
+import '../../css/bottom_panel.css';
+import { EditorPanelState, EditorPanelData } from '../global_state';
+import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
-import { DropDown } from './components';
-import { Category } from '../ts/forum_util';
-import { isInteger } from '../ts/regex_util';
+import { DropDown } from '../components';
+import { Category } from '../../ts/forum_util';
+import { isInteger } from '../../ts/regex_util';
+import { EdgeEditor } from './edge_editor';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
@@ -233,6 +234,7 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 						placeholder='文章標題'
 					/>
 				</div>
+				<EdgeEditor/>
 				<div styleName='articleContent'>
 					<InputsForStructure />
 					<div>
