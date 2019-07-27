@@ -75,15 +75,15 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Pa
 
 pub fn get_member_position(conn: &PgConnection, user_id: &str, party_id: i64) -> Fallible<i16> {
     use schema::party_members::dsl;
-    let membership = dsl::party_members
+    let member = dsl::party_members
         .filter(dsl::party_id.eq(party_id))
         .filter(dsl::user_id.eq(user_id))
-        .first::<models::PartyMember>(conn)
-        .or(Err(Error::new_logic(
-            format!("找不到政黨成員: {}", user_id),
-            404,
-        )))?;
-    Ok(membership.position)
+        .first::<models::PartyMember>(conn);
+    match member {
+        Ok(m) => Ok(m.position),
+        Err(diesel::result::Error::NotFound) => Ok(0),
+        Err(e) => Err(e.into()),
+    }
 }
 
 pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Fallible<()> {

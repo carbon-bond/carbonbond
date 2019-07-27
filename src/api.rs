@@ -22,8 +22,9 @@ impl juniper::Context for Ctx {}
 fn i64_to_id(id: i64) -> ID {
     ID::new(id.to_string())
 }
-fn id_to_i64(id: &ID) -> i64 {
-    id.parse::<i64>().unwrap()
+fn id_to_i64(id: &ID) -> Fallible<i64> {
+    id.parse::<i64>()
+        .or(Err(Error::new_logic(format!("ID 不為整數: {:?}", id), 403)))
 }
 fn systime_to_i32(time: std::time::SystemTime) -> i32 {
     time.duration_since(std::time::UNIX_EPOCH)
@@ -60,7 +61,7 @@ impl Party {
     fn energy(&self) -> i32 {
         self.energy
     }
-    fn position(&self, ctx: &Ctx, user_id: Option<String>) -> i32 {
+    fn position(&self, ctx: &Ctx, user_id: Option<String>) -> Fallible<i32> {
         // TODO: 這裡有 N+1 問題
         let user_id = {
             if let Some(id) = user_id {
@@ -68,33 +69,34 @@ impl Party {
             } else if let Some(id) = ctx.get_id() {
                 id
             } else {
-                return -1;
+                return Ok(0);
             }
         };
-        let position =
-            party::get_member_position(&*ctx.get_pg_conn(), &user_id, id_to_i64(&self.id));
-        if let Ok(position) = position {
-            position as i32
-        } else {
-            -1
-        }
+        party::get_member_position(&*ctx.get_pg_conn(), &user_id, id_to_i64(&self.id)?)
+            .map(|p| p as i32)
     }
-    fn board(&self, ctx: &Ctx) -> Option<Board> {
+    fn board(&self, ctx: &Ctx) -> Fallible<Option<Board>> {
         use db_schema::boards::dsl::*;
         if let Some(board_id) = self.board_id.clone() {
-            let board = boards
-                .filter(id.eq(id_to_i64(&board_id)))
-                .first::<db_models::Board>(&*ctx.get_pg_conn())
-                .ok();
-            board.map(|b| Board {
+            let res = boards
+                .filter(id.eq(id_to_i64(&board_id)?))
+                .first::<db_models::Board>(&*ctx.get_pg_conn());
+
+            let b = match res {
+                Err(diesel::result::Error::NotFound) => return Ok(None),
+                Err(e) => return Err(e.into()),
+                Ok(b) => b,
+            };
+
+            Ok(Some(Board {
                 id: i64_to_id(b.id),
                 detail: b.detail,
                 title: b.title,
                 board_name: b.board_name,
                 ruling_party_id: i64_to_id(b.ruling_party_id),
-            })
+            }))
         } else {
-            None
+            Ok(None)
         }
     }
 }
@@ -132,7 +134,7 @@ impl Article {
     fn category(&self, ctx: &Ctx) -> Fallible<Category> {
         use db_schema::categories::dsl::*;
         let c = categories
-            .filter(id.eq(id_to_i64(&self.category_id)))
+            .filter(id.eq(id_to_i64(&self.category_id)?))
             .first::<db_models::Category>(&*ctx.get_pg_conn())
             .map_err(|_| Error::new_logic("找不到分類", 404))?;
         Ok(Category {
@@ -152,7 +154,7 @@ impl Article {
     fn board(&self, ctx: &Ctx) -> Fallible<Board> {
         use db_schema::boards::dsl::*;
         let b = boards
-            .filter(id.eq(id_to_i64(&self.board_id)))
+            .filter(id.eq(id_to_i64(&self.board_id)?))
             .first::<db_models::Board>(&*ctx.get_pg_conn())
             .map_err(|_| Error::new_logic("找不到看板", 404))?;
         Ok(Board {
@@ -164,8 +166,8 @@ impl Article {
         })
     }
     fn content(&self, ctx: &Ctx) -> Fallible<Vec<String>> {
-        let id = id_to_i64(&self.id);
-        let c_id = id_to_i64(&self.category_id);
+        let id = id_to_i64(&self.id)?;
+        let c_id = id_to_i64(&self.category_id)?;
         forum::get_article_content(ctx, id, c_id).map_err(|err| err)
     }
 }
@@ -210,7 +212,7 @@ impl Board {
     fn categories(&self, ctx: &Ctx) -> Fallible<Vec<Category>> {
         use db_schema::categories::dsl::*;
         let results = categories
-            .filter(board_id.eq(id_to_i64(&self.id)))
+            .filter(board_id.eq(id_to_i64(&self.id)?))
             .load::<db_models::Category>(&*ctx.get_pg_conn())?;
         Ok(results
             .into_iter()
@@ -231,7 +233,7 @@ impl Board {
             query = query.filter(dsl::show_in_list.eq(true));
         }
         let count = query
-            .filter(dsl::board_id.eq(id_to_i64(&self.id)))
+            .filter(dsl::board_id.eq(id_to_i64(&self.id)?))
             .count()
             .get_result::<i64>(&*ctx.get_pg_conn())?;
         Ok(count as i32)
@@ -269,7 +271,7 @@ impl Query {
     fn article(ctx: &Ctx, id: ID) -> Fallible<Article> {
         use db_schema::articles::dsl;
         let article = dsl::articles
-            .filter(dsl::id.eq(id_to_i64(&id)))
+            .filter(dsl::id.eq(id_to_i64(&id)?))
             .first::<db_models::Article>(&*ctx.get_pg_conn())
             .map_err(|_| Error::new_logic("找不到文章", 404))?;
         Ok(Article {
@@ -287,8 +289,8 @@ impl Query {
         use db_schema::boards::dsl::*;
         let mut query = boards.into_boxed();
         if let Some(ids) = ids {
-            let ids: Vec<i64> = ids.iter().map(|t| id_to_i64(t)).collect();
-            query = query.filter(id.eq_any(ids));
+            let ids: Fallible<Vec<i64>> = ids.iter().map(|t| id_to_i64(t)).collect();
+            query = query.filter(id.eq_any(ids?));
         }
         let board_vec = query.load::<db_models::Board>(&*ctx.get_pg_conn())?;
         Ok(board_vec
