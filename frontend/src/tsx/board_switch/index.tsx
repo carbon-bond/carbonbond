@@ -28,6 +28,10 @@ export function BoardSwitch(): JSX.Element {
 	</>;
 }
 
+export type Board = {
+	boardName: string
+};
+
 export type ArticleMeta = {
 	id: string,
 	title: string,
@@ -46,6 +50,7 @@ export type Article = {
 	content: string[],
 	energy: number,
 	createTime: number
+	board: Board
 };
 
 export function isMeta(a: Article | ArticleMeta): a is ArticleMeta {

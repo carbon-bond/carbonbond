@@ -14,7 +14,8 @@ async function fetchArticleDetail(id: string): Promise<Article> {
 			query ArticleDetail($id: ID!) {
 				article(id: $id) {
 					id, title, authorId, energy, createTime,
-					content, raw_category:category { body }
+					content, raw_category:category { body },
+					board { boardName }
 				}
 			}
 		`;
@@ -33,6 +34,9 @@ export function ArticlePage(props: Props): JSX.Element {
 	React.useEffect(() => {
 		if (typeof article_id == 'string') {
 			fetchArticleDetail(article_id).then(a => {
+				if (!board_name || a.board.boardName != board_name) {
+					props.history.replace(`/app/b/${a.board.boardName}/a/${a.id}`);
+				}
 				setArticle(a);
 				setFetching(false);
 			}).catch(err => {

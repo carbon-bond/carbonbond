@@ -6,8 +6,8 @@ import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
-import { DropDown } from '../components';
-import { Category } from '../../ts/forum_util';
+import { DropDown, Option } from '../components';
+import { Category, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';
 
@@ -111,10 +111,19 @@ function CategorySelector(): JSX.Element {
 				}
 			}
 		}
-		let options = data.categories.map(c => ({
-			name: c.name,
-			disabled: false // FIXME: 這裡應該用鍵結狀況決定該不該讓人選
-		}));
+		let options: (string | Option)[] = data.categories.map(c => {
+			// 根據鍵結決定哪些分類不可選
+			let attach_to = data.edges.map(c => c.category);
+			if (checkCanAttach(c, attach_to)) {
+				return c.name;
+			} else {
+				return {
+					name: c.name,
+					mode: 'warn',
+					msg: '鍵結錯誤'
+				};
+			}
+		});
 		return <DropDown
 			style={{
 				width: 150,

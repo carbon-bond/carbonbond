@@ -4,6 +4,28 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/components.css';
 
+type Mode = 'able' | 'warn' | 'disable';
+
+export type Option = {
+	name: string,
+	mode?: Mode,
+	msg?: string
+};
+
+const Color = {
+	'able': 'inherit',
+	'warn': 'red',
+	'disable': 'gray'
+};
+
+function extractOption(op: string | Option): [string, Mode, string | undefined] {
+	if (typeof op == 'string') {
+		return [op, 'able', ''];
+	} else {
+		return [op.name, op.mode || 'able', op.msg];
+	}
+}
+
 export function DropDown(props: {
 	style?: React.CSSProperties,
 	selected_style?: React.CSSProperties,
@@ -12,7 +34,7 @@ export function DropDown(props: {
 	background_style?: React.CSSProperties,
 	hover_color?: string,
 	value: string,
-	options: ({ name: string, disabled: boolean } | string) [],
+	options: (Option | string) [],
 	onChange: (s: string) => void
 }): JSX.Element {
 	let [open, setOpen] = React.useState(false);
@@ -21,14 +43,26 @@ export function DropDown(props: {
 	let ref = React.useRef(null);
 	useOnClickOutside(ref, () => setOpen(false));
 
+	let [main_mode, main_msg] = ((): [Mode, string | undefined] => {
+		for (let op of props.options) {
+			let [name, mode, msg] = extractOption(op);
+			if (name == props.value) {
+				return [mode, msg];
+			}
+		}
+		return ['able', undefined]; // 走到這裡代表出問題了
+	})();
+
 	return <div ref={ref} style={props.style} styleName='dropDown' className={props.className}>
-		<div styleName='Btn' onClick={() => {
+		<div styleName='Btn' title={main_msg} onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
 			}
 		}}>
 			<p style={{ flex: 3 }} />
-			<p style={{ flex: 9, textAlign: 'center' }}> {props.value} </p>
+			<p style={{ flex: 9, textAlign: 'center', color: Color[main_mode] }}>
+				{props.value}
+			</p>
 			<p style={{ flex: 2, textAlign: 'right', transition: '.2s', opacity: open ? 0 : 1 }}>▾</p>
 			<p style={{ flex: 1 }} />
 		</div>
@@ -39,20 +73,19 @@ export function DropDown(props: {
 			visibility: open ? 'visible' : 'hidden',
 		}}>
 			{props.options.map((option, i) => {
-				let [name, disabled] = typeof option == 'string'
-					? [option, false] : [option.name, option.disabled];
+				let [name, mode, msg] = extractOption(option);
 				if (name != props.value) {
 					return <div key={i} style={{
 						...props.option_style,
 						...{ '--hover-color': hover_color } as React.CSSProperties,
-						color: disabled ? 'gray' : 'inherit'
+						color: Color[mode]
 					}} onClick={() => {
-						if (!disabled) {
+						if (mode != 'disable') {
 							props.onChange(name);
 							setOpen(false);
 						}
 					}}
-					title='test-title'
+					title={msg}
 					styleName='Option'>
 						<p>{name}</p>
 					</div>;
