@@ -2,15 +2,14 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import '../../css/edge_editor.css';
-
-type Transfuse = -1 | 0 | 1;
+import { EditorPanelState, Transfuse } from '../global_state';
 
 function EdgeBlock(props: {
 	onClick: () => void,
 	onTransfuse: (n: Transfuse) => void,
 	onDelete: () => void,
 	transfuse: Transfuse,
-	id: number
+	id: string
 }): JSX.Element {
 	function onTransfuseClicked(n: Transfuse): void {
 		if (n == props.transfuse) {
@@ -43,34 +42,47 @@ function EdgeBlock(props: {
 }
 
 function _EdgeEditor(props: RouteComponentProps): JSX.Element {
-	let [ids, setIds] = React.useState([0, 1, 2, 3, 4, 5, 6]);
-	let [transfuse, setTransfuse] = React.useState<Transfuse[]>([0, 1, 0, -1, 0, 0, -1]);
+	const { editor_panel_data, setEditorPanelData } = EditorPanelState.useContainer();
 
 	function deleteEdge(i: number): void {
-		setIds([...ids.slice(0, i), ...ids.slice(i+1)]);
-		setTransfuse([...transfuse.slice(0, i), ...transfuse.slice(i+1)]);
+		if (editor_panel_data) {
+			let data = { ...editor_panel_data };
+			data.edges = [...data.edges.slice(0, i), ...data.edges.slice(i + 1)];
+			setEditorPanelData(data);
+		}
 	}
 
-	return <div styleName='body'>
-		<div styleName='label'><div>鍵結</div></div>
-		<div styleName='editor'>
-			{
-				ids.map((id, i) => (
-					<EdgeBlock key={i}
-						id={id}
-						transfuse={transfuse[i]}
-						onClick={() => props.history.push(`/app/a/${id}`)}
-						onTransfuse={n => {
-							let tmp = [...transfuse];
-							tmp[i] = n;
-							setTransfuse(tmp);
-						}}
-						onDelete={() => deleteEdge(i)}
-					/>
-				))
-			}
-		</div>
-	</div >;
+	function setTransfuse(i: number, trans: Transfuse): void {
+		if (editor_panel_data) {
+			let data = { ...editor_panel_data };
+			data.edges = [...data.edges];
+			data.edges[i].transfuse = trans;
+			setEditorPanelData(data);
+		}
+	}
+
+
+	if (editor_panel_data) {
+		let edges = editor_panel_data.edges;
+		return <div styleName='body'>
+			<div styleName='label'><div>鍵結</div></div>
+			<div styleName='editor'>
+				{
+					edges.map(({ article_id, transfuse }, i) => (
+						<EdgeBlock key={i}
+							id={article_id}
+							transfuse={transfuse}
+							onClick={() => props.history.push(`/app/a/${article_id}`)}
+							onTransfuse={t => setTransfuse(i, t)}
+							onDelete={() => deleteEdge(i)}
+						/>
+					))
+				}
+			</div>
+		</div >;
+	} else {
+		return <div />;
+	}
 }
 
 const EdgeEditor = withRouter(_EdgeEditor);

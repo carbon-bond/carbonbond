@@ -104,7 +104,8 @@ function useBottomPanelState(): {
 	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
-type Edge = { article_id: string, category: Category , transfuse: number };
+export type Transfuse = -1 | 0 | 1;
+type Edge = { article_id: string, category: Category , transfuse: Transfuse };
 export type NewArticleArgs = {
 	board_name: string,
 	category?: Category,

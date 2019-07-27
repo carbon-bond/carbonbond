@@ -3,7 +3,7 @@ import { RouteComponentProps } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
-import { ScrollState, EditorPanelState } from '../global_state';
+import { ScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
 
@@ -49,16 +49,15 @@ export function ArticlePage(props: Props): JSX.Element {
 
 	function onReplyClick(): void {
 		if (article) {
-			let edge = { article_id: article.id, transfuse: 0, category: article.category };
+			let edge = {
+				article_id: article.id,
+				transfuse: 0 as Transfuse,
+				category: article.category
+			};
 			if (editor_panel_data) {
-				setEditorPanelData(data => {
-					if (data) {
-						data.edges.push(edge);
-						return data;
-					} else {
-						return null;
-					}
-				});
+				let data = { ...editor_panel_data };
+				data.edges.push(edge);
+				setEditorPanelData(data);
 			} else if (board_name && article) {
 				openEditorPanel({
 					board_name,
