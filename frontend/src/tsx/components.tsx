@@ -12,7 +12,7 @@ export function DropDown(props: {
 	background_style?: React.CSSProperties,
 	hover_color?: string,
 	value: string,
-	options: string[],
+	options: ({ name: string, disabled: boolean } | string) [],
 	onChange: (s: string) => void
 }): JSX.Element {
 	let [open, setOpen] = React.useState(false);
@@ -38,18 +38,23 @@ export function DropDown(props: {
 			opacity: open ? 1 : 0,
 			visibility: open ? 'visible' : 'hidden',
 		}}>
-			{props.options.map((txt, i) => {
-				if (txt != props.value) {
+			{props.options.map((option, i) => {
+				let [name, disabled] = typeof option == 'string'
+					? [option, false] : [option.name, option.disabled];
+				if (name != props.value) {
 					return <div key={i} style={{
 						...props.option_style,
-						...{ '--hover-color': hover_color } as React.CSSProperties
+						...{ '--hover-color': hover_color } as React.CSSProperties,
+						color: disabled ? 'gray' : 'inherit'
 					}} onClick={() => {
-						props.onChange(txt);
-						setOpen(false);
+						if (!disabled) {
+							props.onChange(name);
+							setOpen(false);
+						}
 					}}
 					title='test-title'
 					styleName='Option'>
-						<p>{txt}</p>
+						<p>{name}</p>
 					</div>;
 				}
 			})}

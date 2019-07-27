@@ -111,6 +111,10 @@ function CategorySelector(): JSX.Element {
 				}
 			}
 		}
+		let options = data.categories.map(c => ({
+			name: c.name,
+			disabled: false // FIXME: 這裡應該用鍵結狀況決定該不該讓人選
+		}));
 		return <DropDown
 			style={{
 				width: 150,
@@ -124,7 +128,7 @@ function CategorySelector(): JSX.Element {
 			hover_color='#eee'
 			value={data.cur_category.name}
 			onChange={s => onChange(s)}
-			options={data.categories.map(c => c.name)} />;
+			options={options} />;
 	} else {
 		throw new Error('尚未開始發文');
 	}
@@ -234,7 +238,7 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 						placeholder='文章標題'
 					/>
 				</div>
-				<EdgeEditor/>
+				{data.edges.length > 0 ? <EdgeEditor/> : null }
 				<div styleName='articleContent'>
 					<InputsForStructure />
 					<div>

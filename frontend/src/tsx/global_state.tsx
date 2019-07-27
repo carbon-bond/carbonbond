@@ -3,7 +3,7 @@ const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category } from '../ts/forum_util';
+import { Category, fetchCategories, checkCanAttach } from '../ts/forum_util';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -104,12 +104,12 @@ function useBottomPanelState(): {
 	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
+type Edge = { article_id: string, category: Category , transfuse: number };
 export type NewArticleArgs = {
 	board_name: string,
-	categories: Category[],
-	cur_category?: Category,
+	category?: Category,
 	title?: string,
-	edges?: { article_id: string, transfuse: number }[]
+	replying?: Edge,
 };
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
@@ -117,34 +117,52 @@ export type EditorPanelData = {
 	categories: Category[],
 	cur_category: Category,
 	title: string,
-	edges: { article_id: string, transfuse: number }[],
+	edges: Edge[],
 	content: string[]
 };
 
 function useEditorPanelState(): {
 	open: boolean,
-	openEditorPanel: (new_article_args?: NewArticleArgs) => void,
+	openEditorPanel: (new_article_args?: NewArticleArgs) => Promise<void>,
 	closeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: React.Dispatch<React.SetStateAction<EditorPanelData|null>>
 	} {
 	let [editor_panel_data, setEditorPanelData] = useState<EditorPanelData | null>(null);
 	let [open, setOpen] = useState(false);
-	function openEditorPanel(new_article_args?: NewArticleArgs): void {
-		if (new_article_args) {
+
+	async function openEditorPanel(args?: NewArticleArgs): Promise<void> {
+		if (args) {
 			// 開新文來編輯
 			if (editor_panel_data) {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
-				let cur_category = new_article_args.cur_category
-					|| new_article_args.categories[0];
+				let attached_to = args.replying ? [args.replying.category] : [];
+				let categories = await fetchCategories(args.board_name);
+				let cur_category = (() => {
+					if (args.category) {
+						if (!checkCanAttach(args.category, attached_to)) {
+							throw new Error('指定了一個無法選擇的分類');
+						} else {
+							return args.category;
+						}
+					} else {
+						let list = categories.filter(c => checkCanAttach(c, attached_to));
+						if (list.length == 0) {
+							throw new Error('沒有任何分類可以回覆該文章');
+						} else {
+							return list[0];
+						}
+					}
+				})();
+
 				setEditorPanelData({
 					cur_category,
-					board_name: new_article_args.board_name,
-					categories: new_article_args.categories,
-					title: new_article_args.title || '',
-					edges: new_article_args.edges || [],
+					categories,
+					edges: args.replying ? [args.replying] : [],
+					board_name: args.board_name,
+					title: args.title || '',
 					content: Array(cur_category.structure.length).fill('')
 				});
 			}

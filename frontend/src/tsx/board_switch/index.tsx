@@ -38,6 +38,7 @@ export type ArticleMeta = {
 };
 
 export type Article = {
+	id: string,
 	title: string,
 	authorId: string,
 	raw_category: { body: string },
