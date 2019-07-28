@@ -211,12 +211,27 @@ function useEditorPanelState(): {
 			setData(new_data);
 		}
 	}
+	function setEditorPanelData(
+		arg: EditorPanelData | null | ((d: EditorPanelData | null) => EditorPanelData|null)
+	): void {
+		let new_data = (() => {
+			if (typeof arg == 'function') {
+				return arg(data);
+			} else {
+				return arg;
+			}
+		})();
+		if (new_data && new_data.edges.length == 0) {
+			new_data.root_id = undefined;
+		}
+		setData(new_data);
+	}
 	return {
 		open,
 		openEditorPanel,
 		closeEditorPanel,
 		editor_panel_data: data,
-		setEditorPanelData: setData,
+		setEditorPanelData,
 		addEdge
 	};
 }

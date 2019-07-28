@@ -184,5 +184,27 @@ pub fn get_article_content<C: Context>(
     article_id: i64,
     category_id: i64,
 ) -> Fallible<Vec<String>> {
+    // TODO: 權限檢查，避免隱板文章外洩
     ctx.use_pg_conn(|conn| operation::get_article_content(conn, article_id, category_id))
+}
+
+pub fn get_articles_with_root<C: Context>(ctx: &C, root_id: i64) -> Fallible<Vec<models::Article>> {
+    // TODO: 權限檢查，避免隱板文章外洩
+    use schema::articles::dsl;
+    ctx.use_pg_conn(|conn| {
+        dsl::articles
+            .filter(dsl::root_id.eq(root_id))
+            .load::<models::Article>(conn)
+            .map_err(|e| e.into())
+    })
+}
+
+pub fn get_articles_connecting<C: Context>(
+    _ctx: &C,
+    _article_id: i64,
+    _find_ancestor: bool,
+) -> Fallible<Vec<models::Article>> {
+    // TODO: 權限檢查，避免隱板文章外洩
+
+    unimplemented!();
 }
