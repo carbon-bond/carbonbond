@@ -409,26 +409,31 @@ function useAllChatState(): {
 	};
 }
 
-type Ref = React.MutableRefObject<HTMLElement | null>;
+type Ref = React.MutableRefObject<HTMLElement | null | undefined>;
 function useScrollState(): {
 	setEmitter: (ref: Ref) => void,
-	useScrollToBottom: (ref: Ref, handler: () => void) => void
+	useScrollToBottom: (handler: () => void) => void
 	} {
 	let [emitter, setEmitter] = useState<Ref>(React.useRef(null));
-	function useScrollToBottom(ref: Ref, handler: () => void): void {
-		if (emitter.current) {
+	function useScrollToBottom(handler: () => void): void {
+		React.useEffect(() => {
 			let listener = (): void => {
-				if (ref.current && emitter.current) {
+				if (emitter.current) {
 					let body = emitter.current;
 					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
 						handler();
 					}
-				} else if (emitter.current) {
+				}
+			};
+			if (emitter.current) {
+				emitter.current.addEventListener('scroll', listener);
+			}
+			return () => {
+				if (emitter.current) {
 					emitter.current.removeEventListener('scroll', listener);
 				}
 			};
-			emitter.current.addEventListener('scroll', listener);
-		}
+		}, [handler, emitter.current]);
 	}
 
 	return {
