@@ -5,4 +5,10 @@
     margin-bottom: 20px;
 
     height: 1000px;
+    .reply {
+        cursor: pointer;
+    }
+    .cantReply {
+        color: gray;
+    }
 }

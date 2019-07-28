@@ -1,5 +1,6 @@
 import { getGraphQLClient } from './api';
 import { EditorPanelData, Transfuse } from '../tsx/global_state';
+import { Article } from '../tsx/board_switch';
 
 export type Category = {
 	name: string,
@@ -52,14 +53,31 @@ export function checkCanAttach(cat: Category, attached_to: Category[] | string[]
 	}
 }
 
-export function checkCanRelply(data: EditorPanelData|null, target: Category, transfuse: Transfuse): boolean {
+export function checkCanReply(
+	data: EditorPanelData | null,
+	target: Article,
+	transfuse: Transfuse
+): boolean {
 	if (data) {
 		// 有正在發的文
-		if (transfuse != 0 && !data.cur_category.transfusable) {
-			// 正在發的文不可輸能
+		if (target.board.boardName != data.board_name) {
+			// 檢查這個鍵結是否跨板
+			return false;
+		} else if (typeof data.root_id != 'undefined' && data.root_id != target.rootId) {
+			// 檢查這個鍵結是否跨主題
+			return false;
+		} else if (transfuse != 0 && !data.cur_category.transfusable) {
+			// 檢查有無違反輸能規則
 			return false;
 		} else {
-			return checkCanAttach(data.cur_category, [target]);
+			// 檢查這個鍵結是否已存在
+			for (let e of data.edges) {
+				if (e.article_id == target.id) {
+					return false;
+				}
+			}
+			// 檢查有無違反鍵結規則
+			return checkCanAttach(data.cur_category, [target.category]);
 		}
 	} else {
 		// TODO: 雖然沒有正在發文，但也有可能本板所有分類都不可用，不可單單回一個 true
@@ -88,4 +106,12 @@ export function codeToId(code: string): number {
 		id = id * 256 + byte;
 	}
 	return id;
+}
+
+export function genReplyTitle(title: string): string {
+	let match = title.match(/^ *Re: *(.*)/);
+	if (match) {
+		title = match[1];
+	}
+	return `Re: ${title}`;
 }

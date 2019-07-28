@@ -3,7 +3,7 @@ const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category, fetchCategories, checkCanAttach } from '../ts/forum_util';
+import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
 import { Article } from './board_switch';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
@@ -190,21 +190,7 @@ function useEditorPanelState(): {
 	}
 	function addEdge(article: Article, transfuse: Transfuse): void {
 		if (data) {
-			if (article.board.boardName != data.board_name) {
-				// 檢查這個鍵結是否跨板
-				throw new Error('不可跨板回文');
-			} else if (typeof data.root_id != 'undefined' && data.root_id != article.rootId) {
-				// 檢查這個鍵結是否跨主題
-				throw new Error('不可跨主題回文');
-			} else if (transfuse != 0 && !data.cur_category.transfusable) {
-				throw new Error(`${data.cur_category.name} 分類不可輸能`);
-			}
-			// 檢查這個鍵結是否已存在
-			for (let e of data.edges) {
-				if (e.article_id == article.id) {
-					throw new Error('該鍵結已存在');
-				}
-			}
+			checkCanReply(data, article, transfuse);
 			let new_data = { ...data };
 			new_data.root_id = article.rootId;
 			new_data.edges.push({ article_id: article.id, transfuse, category: article.category });

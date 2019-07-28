@@ -6,7 +6,7 @@ import '../../css/article_page.css';
 import { ScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
-import { checkCanRelply } from '../../ts/forum_util';
+import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 async function fetchArticleDetail(id: string): Promise<Article> {
@@ -62,11 +62,22 @@ export function ArticlePage(props: Props): JSX.Element {
 				}
 			} else if (board_name && article) {
 				openEditorPanel({
-					title: `Re: ${article.title}`,
+					title: genReplyTitle(article.title),
 					board_name,
 					replying: { article, transfuse }
 				}).catch(e => toast.error(extractErrMsg(e)));
 			}
+		}
+	}
+
+	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
+		let can_reply = article && checkCanReply(editor_panel_data, article, props.transfuse);
+		if (can_reply) {
+			return <div styleName='reply' onClick={() => onReplyClick(props.transfuse)}>
+				{props.label}
+			</div>;
+		} else {
+			return <div styleName='cantReply'>{props.label}</div>;
 		}
 	}
 
@@ -89,18 +100,9 @@ export function ArticlePage(props: Props): JSX.Element {
 					})
 				}
 			</div>
-			{
-				checkCanRelply(editor_panel_data, article.category, 1) ?
-					<div onClick={() => onReplyClick(1)}>挺</div> : null
-			}
-			{
-				checkCanRelply(editor_panel_data, article.category, 0) ?
-					<div onClick={() => onReplyClick(0)}>回</div> : null
-			}
-			{
-				checkCanRelply(editor_panel_data, article.category, -1) ?
-					<div onClick={() => onReplyClick(-1)}>鬥</div> : null
-			}
+			<ReplyBtn label='挺' transfuse={1}/>
+			<ReplyBtn label='回' transfuse={0}/>
+			<ReplyBtn label='戰' transfuse={-1}/>
 		</div>;
 	} else {
 		return <div>找不到文章QQ</div>;
