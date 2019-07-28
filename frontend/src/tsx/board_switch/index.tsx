@@ -50,7 +50,8 @@ export type Article = {
 	content: string[],
 	energy: number,
 	createTime: number
-	board: Board
+	board: Board,
+	rootId: string
 };
 
 export function isMeta(a: Article | ArticleMeta): a is ArticleMeta {

@@ -3,9 +3,10 @@ import { RouteComponentProps } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
-import { ScrollState, EditorPanelState, Transfuse } from '../global_state';
+import { ScrollState, EditorPanelState } from '../global_state';
 import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
+import { checkCanRelply } from '../../ts/forum_util';
 
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 async function fetchArticleDetail(id: string): Promise<Article> {
@@ -13,7 +14,7 @@ async function fetchArticleDetail(id: string): Promise<Article> {
 	const query = `
 			query ArticleDetail($id: ID!) {
 				article(id: $id) {
-					id, title, authorId, energy, createTime,
+					id, title, authorId, energy, createTime, rootId
 					content, raw_category:category { body },
 					board { boardName }
 				}
@@ -46,27 +47,25 @@ export function ArticlePage(props: Props): JSX.Element {
 		} else {
 			setFetching(false);
 		}
-	}, [article_id]);
+	}, [article_id, board_name, props.history]);
 
-	const { editor_panel_data, openEditorPanel, setEditorPanelData }
+	const { editor_panel_data, openEditorPanel, addEdge }
 		= EditorPanelState.useContainer();
 
 	function onReplyClick(): void {
 		if (article) {
-			let edge = {
-				article_id: article.id,
-				transfuse: 0 as Transfuse,
-				category: article.category
-			};
 			if (editor_panel_data) {
-				let data = { ...editor_panel_data };
-				data.edges.push(edge);
-				setEditorPanelData(data);
+				try {
+					addEdge(article, 0);
+				} catch (e) {
+					toast.error(extractErrMsg(e));
+				}
 			} else if (board_name && article) {
 				openEditorPanel({
+					title: `Re: ${article.title}`,
 					board_name,
-					replying: edge
-				});
+					replying: { article, transfuse: 0 }
+				}).catch(e => toast.error(extractErrMsg(e)));
 			}
 		}
 	}
@@ -90,7 +89,10 @@ export function ArticlePage(props: Props): JSX.Element {
 					})
 				}
 			</div>
-			<div onClick={() => onReplyClick()}>回覆</div>
+			{
+				checkCanRelply(editor_panel_data, article.category) ?
+					<div onClick={() => onReplyClick()}>回應</div> : null
+			}
 		</div>;
 	} else {
 		return <div>找不到文章QQ</div>;

@@ -108,6 +108,7 @@ struct Article {
     category_id: ID,
     energy: i32,
     create_time: i32,
+    root_id: ID,
 }
 #[juniper::object(Context = Ctx)]
 impl Article {
@@ -128,6 +129,9 @@ impl Article {
     }
     fn category_id(&self) -> ID {
         self.category_id.clone()
+    }
+    fn root_id(&self) -> ID {
+        self.root_id.clone()
     }
     fn category(&self, ctx: &Ctx) -> FieldResult<Category> {
         use db_schema::categories::dsl::*;
@@ -283,6 +287,7 @@ impl Query {
             category_id: i64_to_id(article.category_id),
             create_time: systime_to_i32(article.create_time),
             energy: 0,
+            root_id: i64_to_id(article.root_id),
         })
     }
     fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> FieldResult<Vec<Board>> {
@@ -343,6 +348,7 @@ impl Query {
                 category_name: a.category_name,
                 create_time: systime_to_i32(a.create_time),
                 energy: 0, // TODO: 鍵能
+                root_id: i64_to_id(a.root_id),
             })
             .collect())
     }

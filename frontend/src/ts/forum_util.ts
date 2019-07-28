@@ -1,4 +1,5 @@
 import { getGraphQLClient } from './api';
+import { EditorPanelData } from '../tsx/global_state';
 
 export type Category = {
 	name: string,
@@ -50,6 +51,15 @@ export function checkCanAttach(cat: Category, attached_to: Category[] | string[]
 		return true;
 	}
 }
+
+export function checkCanRelply(data: EditorPanelData|null, cat: Category): boolean {
+	if (data) {
+		return checkCanAttach(data.cur_category, [cat]);
+	} else {
+		return true;
+	}
+}
+
 
 export function idToCode(id: number): string {
 	let bytes: number[] = Array(6).fill(0);
