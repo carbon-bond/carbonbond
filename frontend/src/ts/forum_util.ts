@@ -1,5 +1,5 @@
 import { getGraphQLClient } from './api';
-import { EditorPanelData } from '../tsx/global_state';
+import { EditorPanelData, Transfuse } from '../tsx/global_state';
 
 export type Category = {
 	name: string,
@@ -52,10 +52,17 @@ export function checkCanAttach(cat: Category, attached_to: Category[] | string[]
 	}
 }
 
-export function checkCanRelply(data: EditorPanelData|null, cat: Category): boolean {
+export function checkCanRelply(data: EditorPanelData|null, target: Category, transfuse: Transfuse): boolean {
 	if (data) {
-		return checkCanAttach(data.cur_category, [cat]);
+		// 有正在發的文
+		if (transfuse != 0 && !data.cur_category.transfusable) {
+			// 正在發的文不可輸能
+			return false;
+		} else {
+			return checkCanAttach(data.cur_category, [target]);
+		}
 	} else {
+		// TODO: 雖然沒有正在發文，但也有可能本板所有分類都不可用，不可單單回一個 true
 		return true;
 	}
 }

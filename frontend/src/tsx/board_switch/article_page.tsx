@@ -3,7 +3,7 @@ import { RouteComponentProps } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
-import { ScrollState, EditorPanelState } from '../global_state';
+import { ScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
 import { checkCanRelply } from '../../ts/forum_util';
@@ -52,11 +52,11 @@ export function ArticlePage(props: Props): JSX.Element {
 	const { editor_panel_data, openEditorPanel, addEdge }
 		= EditorPanelState.useContainer();
 
-	function onReplyClick(): void {
+	function onReplyClick(transfuse: Transfuse): void {
 		if (article) {
 			if (editor_panel_data) {
 				try {
-					addEdge(article, 0);
+					addEdge(article, transfuse);
 				} catch (e) {
 					toast.error(extractErrMsg(e));
 				}
@@ -64,7 +64,7 @@ export function ArticlePage(props: Props): JSX.Element {
 				openEditorPanel({
 					title: `Re: ${article.title}`,
 					board_name,
-					replying: { article, transfuse: 0 }
+					replying: { article, transfuse }
 				}).catch(e => toast.error(extractErrMsg(e)));
 			}
 		}
@@ -90,8 +90,16 @@ export function ArticlePage(props: Props): JSX.Element {
 				}
 			</div>
 			{
-				checkCanRelply(editor_panel_data, article.category) ?
-					<div onClick={() => onReplyClick()}>回應</div> : null
+				checkCanRelply(editor_panel_data, article.category, 1) ?
+					<div onClick={() => onReplyClick(1)}>挺</div> : null
+			}
+			{
+				checkCanRelply(editor_panel_data, article.category, 0) ?
+					<div onClick={() => onReplyClick(0)}>回</div> : null
+			}
+			{
+				checkCanRelply(editor_panel_data, article.category, -1) ?
+					<div onClick={() => onReplyClick(-1)}>鬥</div> : null
 			}
 		</div>;
 	} else {

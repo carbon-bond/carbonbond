@@ -13,16 +13,16 @@ import { EdgeEditor } from './edge_editor';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
-		let edges = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
+		let replying = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
 		let client = getGraphQLClient();
 		const mutation = `
-				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!, $edges: [Edge!]!) {
+				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!, $replying: [Reply!]!) {
 					createArticle(
 						boardName: $board_name,
 						categoryName: $category_name,
 						title: $title,
 						content: $content,
-						edges: $edges
+						replying: $replying
 					)
 				}
 			`;
@@ -31,7 +31,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			category_name: data.cur_category.name,
 			title: data.title,
 			content: data.content.slice(0, data.cur_category.structure.length),
-			edges
+			replying
 		});
 		return res.createArticle;
 	}

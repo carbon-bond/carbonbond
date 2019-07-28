@@ -105,8 +105,12 @@ pub fn create_article(
     Ok(article.id)
 }
 
-pub fn create_edges(conn: &PgConnection, article_id: i64, edges: &Vec<(i64, i16)>) -> Fallible<()> {
-    let new_edges: Vec<models::NewEdge> = edges
+pub fn create_edges(
+    conn: &PgConnection,
+    article_id: i64,
+    replying: &Vec<(i64, i16)>,
+) -> Fallible<()> {
+    let new_edges: Vec<models::NewEdge> = replying
         .iter()
         .map(|&(to_node, transfuse)| models::NewEdge {
             from_node: article_id,

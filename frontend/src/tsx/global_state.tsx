@@ -166,7 +166,7 @@ function useEditorPanelState(): {
 					edges.push({
 						article_id: args.replying.article.id,
 						category: args.replying.article.category,
-						transfuse: 0
+						transfuse: args.replying.transfuse
 					});
 				}
 

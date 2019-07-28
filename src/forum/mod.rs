@@ -42,7 +42,7 @@ pub fn create_category<C: Context>(
 pub fn create_article<C: Context>(
     ctx: &C,
     board_name: &str,
-    edges: &Vec<(i64, i16)>,
+    replying: &Vec<(i64, i16)>,
     category_name: &str,
     title: &str,
     content: Vec<String>,
@@ -55,17 +55,17 @@ pub fn create_article<C: Context>(
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
-    if !c_body.rootable && edges.len() == 0 {
+    if !c_body.rootable && replying.len() == 0 {
         return Err(Error::new_logic(format!("分類不可為根: {}", category_name), 403).into());
     }
-    let mut node_ids = Vec::<i64>::with_capacity(edges.len());
-    for &(id, transfuse) in edges {
+    let mut node_ids = Vec::<i64>::with_capacity(replying.len());
+    for &(id, transfuse) in replying {
         if !c_body.transfusable && transfuse != 0 {
             return Err(Error::new_logic(format!("分類不可輸能: {}", category_name), 403).into());
         }
         node_ids.push(id);
     }
-    let node_ids: Vec<i64> = edges.iter().map(|(id, _)| *id).collect();
+    let node_ids: Vec<i64> = replying.iter().map(|(id, _)| *id).collect();
     let related_articles = get_articles_meta(ctx, &node_ids)?;
     let mut root_id: Option<i64> = None;
     for article in related_articles.iter() {
@@ -98,7 +98,7 @@ pub fn create_article<C: Context>(
             content,
         )?;
         // TODO 創造文章內容
-        operation::create_edges(conn, id, edges)?;
+        operation::create_edges(conn, id, replying)?;
         Ok(id)
     })
 }

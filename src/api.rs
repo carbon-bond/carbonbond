@@ -102,7 +102,7 @@ impl Party {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-struct Replying {
+struct Reply {
     article_id: ID,
     transfuse: i32,
 }
@@ -499,14 +499,21 @@ impl Mutation {
         board_name: String,
         category_name: String,
         title: String,
-        edges: Vec<Replying>,
+        replying: Vec<Reply>,
         content: Vec<String>,
     ) -> Fallible<ID> {
-        let edges: Fallible<Vec<(i64, i16)>> = edges
+        let replying: Fallible<Vec<(i64, i16)>> = replying
             .into_iter()
             .map(|e| id_to_i64(&e.article_id).map(|id| (id, e.transfuse as i16)))
             .collect();
-        let id = forum::create_article(ctx, &board_name, &edges?, &category_name, &title, content)?;
+        let id = forum::create_article(
+            ctx,
+            &board_name,
+            &replying?,
+            &category_name,
+            &title,
+            content,
+        )?;
         Ok(i64_to_id(id))
     }
     fn create_party(ctx: &Ctx, party_name: String, board_name: Option<String>) -> Fallible<ID> {
