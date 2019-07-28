@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps, Redirect } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
@@ -35,9 +35,6 @@ export function ArticlePage(props: Props): JSX.Element {
 	React.useEffect(() => {
 		if (typeof article_id == 'string') {
 			fetchArticleDetail(article_id).then(a => {
-				if (!board_name || a.board.boardName != board_name) {
-					props.history.replace(`/app/b/${a.board.boardName}/a/${a.id}`);
-				}
 				setArticle(a);
 				setFetching(false);
 			}).catch(err => {
@@ -48,6 +45,12 @@ export function ArticlePage(props: Props): JSX.Element {
 			setFetching(false);
 		}
 	}, [article_id, board_name, props.history]);
+
+	let scrollHandler = React.useCallback(() => {
+		console.log('成功!!');
+	}, []);
+	let { useScrollToBottom } = ScrollState.useContainer();
+	useScrollToBottom(scrollHandler);
 
 	const { editor_panel_data, openEditorPanel, addEdge }
 		= EditorPanelState.useContainer();
@@ -80,30 +83,27 @@ export function ArticlePage(props: Props): JSX.Element {
 			return <div styleName='cantReply'>{props.label}</div>;
 		}
 	}
-
-	let { useScrollToBottom } = ScrollState.useContainer();
-	let ref = React.useRef(null);
-	useScrollToBottom(ref, () => {
-		console.log('成功!!');
-	});
-
 	if (fetching) {
 		return <div />;
 	} else if (article) {
-		return <div ref={ref} styleName='articlePage'>
-			<ArticleMetaBlock article={article} />
-			<hr />
-			<div>
-				{
-					article.content.map((txt, i) => {
-						return <div key={i}>{txt}</div>;
-					})
-				}
-			</div>
-			<ReplyBtn label='挺' transfuse={1}/>
-			<ReplyBtn label='回' transfuse={0}/>
-			<ReplyBtn label='戰' transfuse={-1}/>
-		</div>;
+		if (board_name) {
+			return <div styleName='articlePage'>
+				<ArticleMetaBlock article={article} />
+				<hr />
+				<div>
+					{
+						article.content.map((txt, i) => {
+							return <div key={i}>{txt}</div>;
+						})
+					}
+				</div>
+				<ReplyBtn label='挺' transfuse={1} />
+				<ReplyBtn label='回' transfuse={0} />
+				<ReplyBtn label='戰' transfuse={-1} />
+			</div>;
+		} else {
+			return <Redirect to={`/app/b/${article.board.boardName}/a/${article.id}`}/>;
+		}
 	} else {
 		return <div>找不到文章QQ</div>;
 	}
