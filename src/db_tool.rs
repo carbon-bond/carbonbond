@@ -4,7 +4,6 @@ use std::fs;
 use std::path::PathBuf;
 
 use diesel::PgConnection;
-use failure::Fallible;
 #[macro_use]
 extern crate clap;
 
@@ -13,6 +12,7 @@ use carbonbond::user::{email, signup, find_user};
 use carbonbond::forum;
 use carbonbond::party;
 use carbonbond::db;
+use carbonbond::custom_error::{Error, Fallible};
 use carbonbond::config::{Config, load_config, Mode};
 
 static HELP_MSG: &'static str = "
@@ -74,7 +74,7 @@ fn match_subcommand() -> Fallible<(String, Vec<String>)> {
 
 fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() < 2 {
-        return Err(failure::format_err!("add 參數數量錯誤"));
+        return Err(Error::new_op("add 參數數量錯誤"));
     }
     let something = args[0].clone();
     let sub_args = args[1..].to_vec();
@@ -82,13 +82,13 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         "user" => add_user(ctx, &sub_args),
         "party" => add_party(ctx, &sub_args),
         "board" => add_board(ctx, &sub_args),
-        other => Err(failure::format_err!("無法 add {}", other)),
+        other => Err(Error::new_op(format!("無法 add {}", other))),
     }
 }
 
 fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
-        return Err(failure::format_err!("add user 參數數量錯誤"));
+        return Err(Error::new_op("add user 參數數量錯誤"));
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
@@ -108,13 +108,13 @@ fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         println!("成功建立政黨，id = {}", id);
         Ok(())
     } else {
-        Err(failure::format_err!("add party 參數數量錯誤"))
+        Err(Error::new_op("add party 參數數量錯誤"))
     }
 }
 
 fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 2 {
-        return Err(failure::format_err!("add board 參數數量錯誤"));
+        return Err(Error::new_op("add board 參數數量錯誤"));
     }
     let (party_name, board_name) = (&args[0], &args[1]);
     let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(conn, party_name));

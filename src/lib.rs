@@ -10,17 +10,17 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 
 #[macro_use]
 extern crate diesel;
-extern crate serde_json;
 #[macro_use]
-extern crate failure;
+extern crate derive_more;
+
+extern crate serde_json;
 extern crate regex;
 extern crate state;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 use actix_session::{Session};
 use diesel::pg::PgConnection;
-use failure::Fallible;
-use crate::custom_error::InternalError;
+use crate::custom_error::{Error, Fallible};
 
 pub trait Context {
     fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T;
@@ -47,18 +47,14 @@ impl Context for Ctx {
         callback(conn)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
-        if self.session.set::<String>("id", id.to_string()).is_err() {
-            Err(InternalError::new("記憶 ID 失敗").into())
-        } else {
-            Ok(())
-        }
+        self.session
+            .set::<String>("id", id)
+            .map_err(|_| Error::new_internal_without_source("記憶 ID 失敗"))
     }
     fn forget_id(&self) -> Fallible<()> {
-        if self.session.set::<String>("id", "".to_string()).is_err() {
-            Err(InternalError::new("清除 ID 失敗").into())
-        } else {
-            Ok(())
-        }
+        self.session
+            .set::<String>("id", "".to_owned())
+            .map_err(|_| Error::new_internal_without_source("清除 ID 失敗"))
     }
     fn get_id(&self) -> Option<String> {
         let id = match self.session.get::<String>("id") {

@@ -2,8 +2,9 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::fs::File;
 use serde::{Serialize, Deserialize};
-use failure::Fallible;
 use state::LocalStorage;
+
+use crate::custom_error::{Error, Fallible};
 
 #[derive(Debug)]
 pub enum Mode {
@@ -62,7 +63,8 @@ pub struct DatabaseConfig {
 
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)?;
+        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)
+            .map_err(|e| e.add_msg(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file)))?;
         Ok(ServerConfig {
             address: orig.address,
             port: orig.port,
@@ -78,26 +80,23 @@ impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
 }
 
 fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
-    let path = path.as_ref();
-    fn inner(path: &Path) -> Fallible<String> {
-        let mut file = File::open(path)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        Ok(content)
-    }
-    inner(path).map_err(|err| format_err!("讀取設定檔 {:?} 時發生錯誤，原始錯誤為 {}", path, err))
+    let mut file = File::open(path.as_ref())?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+    Ok(content)
 }
 
 fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
     if paths.len() == 0 {
-        return Err(failure::format_err!("未指定設定檔"));
+        return Err(Error::new_op("未指定設定檔"));
     }
     for p in paths.iter() {
         if let Ok(content) = load_file_content(p) {
             return Ok(content);
         }
     }
-    Err(failure::format_err!("設定檔讀取失敗"))
+    let paths: Vec<PathBuf> = paths.into_iter().map(|p| p.as_ref().to_owned()).collect();
+    return Err(Error::new_op(format!("找不到任何設定檔: {:?}", paths)));
 }
 
 /// 載入設定檔，回傳一個設定檔物件
