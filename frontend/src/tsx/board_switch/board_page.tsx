@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
-import { EditorPanelState, UserState } from '../global_state';
+import { EditorPanelState, UserState, ScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { getGraphQLClient } from '../../ts/api';
@@ -45,33 +45,34 @@ export function BoardPage(props: Props): JSX.Element {
 		}
 	}
 
-	const [_articles, setArticles] = React.useState<ArticleMeta[]>([]);
-
-	function appendArticles (newArticles: ArticleMeta[]): void {
-		setArticles([..._articles, ...newArticles]);
-	}
+	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
 	React.useEffect(() => {
-		fetchArticles(props.match.params.board_name, PAGE_SIZE, 0).then(articles => {
-			console.log(articles);
-			setArticles(articles.articleList);
+		fetchArticles(board_name, PAGE_SIZE, 0).then(more_articles => {
+			console.log(more_articles);
+			setArticles(more_articles.articleList);
 		});
-	}, [props.match.params.board_name]);
+	}, [board_name]);
 
-	const handleScoll = (e: React.SyntheticEvent): void => {
-		if (e.currentTarget.scrollHeight - e.currentTarget.scrollTop === e.currentTarget.clientHeight) {
+	const scrollHandler = React.useCallback((): void => {
+		// 第一次載入結束前不要動作
+		if (articles.length > 0) {
 			console.log('Touch End');
-			const length: number = _articles.length;
-			fetchArticles(props.match.params.board_name, PAGE_SIZE, length).then(articles => {
-				if (articles.articleList.length > 0) {
-					console.log(articles);
-					appendArticles(articles.articleList);
+			const length = articles.length;
+			fetchArticles(board_name, PAGE_SIZE, length).then(more_articles => {
+				// TODO: 載入到最早的文章就停
+				if (more_articles.articleList.length > 0) {
+					console.log(more_articles);
+					setArticles([...articles, ...more_articles.articleList]);
 				}
 			});
 		}
-	};
+	}, [articles, board_name]);
+	let ref = React.useRef(null);
+	let { useScrollToBottom } = ScrollState.useContainer();
+	useScrollToBottom(ref, scrollHandler);
 
-	return <div styleName="board-content" onScroll={handleScoll}>
+	return <div styleName="board-content" ref={ref}>
 		<h1>{board_name}</h1>
 		{
 			(() => {
@@ -83,7 +84,7 @@ export function BoardPage(props: Props): JSX.Element {
 
 		<ul>
 			{
-				_articles.map((article, idx) => (
+				articles.map((article, idx) => (
 					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
 						<li styleName="article-title">
 							<p>{article.id} - {article.title}</p>

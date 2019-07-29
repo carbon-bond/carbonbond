@@ -12,8 +12,5 @@ ul {
 }
 
 .board-content {
-    /* TODO: 應該不是這個元素在 overflow? */
-    overflow-y: scroll;
-    max-height: 500px;
     background-color: var(--main-color);
 }

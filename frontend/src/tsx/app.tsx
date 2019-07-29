@@ -27,16 +27,13 @@ import { ArticlePage } from './board_switch/article_page';
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
-
 	function Content(): JSX.Element {
 		let { setEmitter } = ScrollState.useContainer();
-		let ref = React.useRef(null);
-		setEmitter(ref);
 		return <Router>
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<div className='mainBody' ref={ref}>
+				<div className='mainBody' ref={ref => setEmitter(ref)}>
 					<Switch>
 						<Route path="/app/register/:invite_code" render={props =>
 							<RegisterPage {...props} />
