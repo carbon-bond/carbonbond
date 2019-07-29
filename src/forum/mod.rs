@@ -65,11 +65,12 @@ pub fn create_article<C: Context>(
         }
         node_ids.push(id);
     }
-    let node_ids: Vec<i64> = replying.iter().map(|(id, _)| *id).collect();
     let related_articles = get_articles_meta(ctx, &node_ids)?;
     let mut root_id: Option<i64> = None;
     for article in related_articles.iter() {
-        if root_id.is_none() {
+        if article.board_id != board.id {
+            return Err(Error::new_logic("內部連結指向不同看板", 403).into());
+        } else if root_id.is_none() {
             root_id = Some(article.root_id);
         } else if root_id.unwrap() != article.root_id {
             return Err(Error::new_logic("內部連結指向不同主題樹", 403).into());
