@@ -409,31 +409,35 @@ function useAllChatState(): {
 	};
 }
 
-type Ref = React.MutableRefObject<HTMLElement | null | undefined>;
+type Ref = React.MutableRefObject<null | HTMLElement>;
 function useScrollState(): {
-	setEmitter: (ref: Ref) => void,
-	useScrollToBottom: (handler: () => void) => void
+	setEmitter: (emitter: HTMLElement | null) => void,
+	useScrollToBottom: (ref: Ref, handler: () => void) => void
 	} {
-	let [emitter, setEmitter] = useState<Ref>(React.useRef(null));
-	function useScrollToBottom(handler: () => void): void {
-		React.useEffect(() => {
+	let [emitter, setEmitter] = useState<HTMLElement | null>(null);
+	function useScrollToBottom(ref: Ref, handler: () => void): void {
+		React.useLayoutEffect(() => {
 			let listener = (): void => {
-				if (emitter.current) {
-					let body = emitter.current;
-					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
+				if (emitter) {
+					let body = emitter;
+					if (ref.current && body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
 						handler();
 					}
 				}
 			};
-			if (emitter.current) {
-				emitter.current.addEventListener('scroll', listener);
+			if (emitter) {
+				listener(); // 先執行一次再說
+				emitter.addEventListener('scroll', listener);
+				window.addEventListener('resize', listener);
 			}
 			return () => {
-				if (emitter.current) {
-					emitter.current.removeEventListener('scroll', listener);
+				if (emitter) {
+					emitter.removeEventListener('scroll', listener);
+					window.removeEventListener('resize', listener);
 				}
 			};
-		}, [handler, emitter.current]);
+		}, [handler, ref, emitter]);
+		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
 	}
 
 	return {

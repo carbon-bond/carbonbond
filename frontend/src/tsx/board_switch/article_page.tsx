@@ -47,10 +47,14 @@ export function ArticlePage(props: Props): JSX.Element {
 	}, [article_id, board_name, props.history]);
 
 	let scrollHandler = React.useCallback(() => {
-		console.log('成功!!');
-	}, []);
+		// 文章載入之前不要動作
+		if (article) {
+			console.log('成功!!');
+		}
+	}, [article]);
+	let ref = React.useRef(null);
 	let { useScrollToBottom } = ScrollState.useContainer();
-	useScrollToBottom(scrollHandler);
+	useScrollToBottom(ref, scrollHandler);
 
 	const { editor_panel_data, openEditorPanel, addEdge }
 		= EditorPanelState.useContainer();
@@ -87,7 +91,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
-			return <div styleName='articlePage'>
+			return <div styleName='articlePage' ref={ref}>
 				<ArticleMetaBlock article={article} />
 				<hr />
 				<div>
