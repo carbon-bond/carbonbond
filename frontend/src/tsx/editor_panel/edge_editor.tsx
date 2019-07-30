@@ -36,7 +36,7 @@ function EdgeBlock(props: {
 				].join(' ')
 			} onClick={() => onTransfuseClicked(-1)}> ▾ </div>
 		</div>
-		<div styleName='aid inner' onClick={() => props.onClick()}>a/{props.id}</div>
+		<div styleName='articleId inner' onClick={() => props.onClick()}>a/{props.id}</div>
 		<div styleName='delete inner' onClick={() => props.onDelete()}>✗</div>
 	</div>;
 }
@@ -69,7 +69,7 @@ function _EdgeEditor(props: RouteComponentProps): JSX.Element {
 			<div styleName='editor'>
 				{
 					edges.map(({ article_id, transfuse }, i) => (
-						<EdgeBlock key={i}
+						<EdgeBlock key={article_id}
 							id={article_id}
 							transfuse={transfuse}
 							onClick={() => props.history.push(`/app/a/${article_id}`)}
@@ -81,7 +81,7 @@ function _EdgeEditor(props: RouteComponentProps): JSX.Element {
 			</div>
 		</div >;
 	} else {
-		return <div />;
+		return <></>;
 	}
 }
 

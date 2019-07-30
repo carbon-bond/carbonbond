@@ -8,7 +8,6 @@ import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 
-type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 async function fetchArticleDetail(id: string): Promise<Article> {
 	let client = getGraphQLClient();
 	const query = `
@@ -26,6 +25,7 @@ async function fetchArticleDetail(id: string): Promise<Article> {
 	return article;
 }
 
+type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 export function ArticlePage(props: Props): JSX.Element {
 	let article_id = props.match.params.article_id;
 	let board_name = props.match.params.board_name;
@@ -64,7 +64,7 @@ export function ArticlePage(props: Props): JSX.Element {
 				openEditorPanel({
 					title: genReplyTitle(article.title),
 					board_name,
-					replying: { article, transfuse }
+					reply_to: { article, transfuse }
 				}).catch(e => toast.error(extractErrMsg(e)));
 			}
 		}
@@ -88,7 +88,7 @@ export function ArticlePage(props: Props): JSX.Element {
 	});
 
 	if (fetching) {
-		return <div />;
+		return <></>;
 	} else if (article) {
 		return <div ref={ref} styleName='articlePage'>
 			<ArticleMetaBlock article={article} />

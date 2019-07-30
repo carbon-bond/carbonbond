@@ -42,7 +42,7 @@ pub fn create_category<C: Context>(
 pub fn create_article<C: Context>(
     ctx: &C,
     board_name: &str,
-    replying: &Vec<(i64, i16)>,
+    reply_to: &Vec<(i64, i16)>,
     category_name: &str,
     title: &str,
     content: Vec<String>,
@@ -55,11 +55,11 @@ pub fn create_article<C: Context>(
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
-    if !c_body.rootable && replying.len() == 0 {
+    if !c_body.rootable && reply_to.len() == 0 {
         return Err(Error::new_logic(format!("分類不可為根: {}", category_name), 403).into());
     }
-    let mut node_ids = Vec::<i64>::with_capacity(replying.len());
-    for &(id, transfuse) in replying {
+    let mut node_ids = Vec::<i64>::with_capacity(reply_to.len());
+    for &(id, transfuse) in reply_to {
         if !c_body.transfusable && transfuse != 0 {
             return Err(Error::new_logic(format!("分類不可輸能: {}", category_name), 403).into());
         }
@@ -99,7 +99,7 @@ pub fn create_article<C: Context>(
             content,
         )?;
         // TODO 創造文章內容
-        operation::create_edges(conn, id, replying)?;
+        operation::create_edges(conn, id, reply_to)?;
         Ok(id)
     })
 }

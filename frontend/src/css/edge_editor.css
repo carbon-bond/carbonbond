@@ -24,7 +24,7 @@
             display: inline-flex;
             margin: 2px;
             align-items: center;
-            .aid {
+            .articleId {
                 font-size: 12px;
                 display: inline-block;
                 min-width: 40px;
@@ -47,7 +47,6 @@
             }
             .transfuse {
                 display: inline-flex;
-                height: 100%;
                 height: 100%;
                 flex-direction: column;
                 hr {

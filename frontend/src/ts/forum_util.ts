@@ -35,17 +35,20 @@ export async function fetchCategories(board_name: string): Promise<Category[]> {
 	return ret.filter(c => c.name != '留言');
 }
 
-export function checkCanAttach(cat: Category, attached_to: Category[] | string[]): boolean {
-	if (attached_to.length == 0 && !cat.rootable) {
+export function checkCanAttach(
+	category: Category,
+	attached_to: Category[] | string[]
+): boolean {
+	if (attached_to.length == 0 && !category.rootable) {
 		return false;
-	} else if (cat.name == '留言') {
+	} else if (category.name == '留言') {
 		// NOTE: 留言使用不同的界面來發佈
 		return false;
 	} else {
-		// 必需可以指向 attached_to 的每一種
+		// 必須可以指向 attached_to 的每一種
 		for (let c of attached_to) {
 			let name = typeof(c) == 'string' ? c : c.name;
-			if (cat.attached_to.indexOf(name) == -1) {
+			if (!category.attached_to.includes(name)) {
 				return false;
 			}
 		}
@@ -83,29 +86,6 @@ export function checkCanReply(
 		// TODO: 雖然沒有正在發文，但也有可能本板所有分類都不可用，不可單單回一個 true
 		return true;
 	}
-}
-
-
-export function idToCode(id: number): string {
-	let bytes: number[] = Array(6).fill(0);
-	let index = 0;
-	while (id > 0) {
-		let byte = id & 0xff;
-		bytes[index++] = byte;
-		id = (id - byte) / 256;
-	}
-	let s = bytes.map(n => String.fromCharCode(n)).join('');
-	return btoa(s);
-}
-
-export function codeToId(code: string): number {
-	let id = 0;
-	let bytes_str = atob(code);
-	for (let i = bytes_str.length - 1; i >= 0; i--) {
-		let byte = bytes_str.charCodeAt(i);
-		id = id * 256 + byte;
-	}
-	return id;
 }
 
 export function genReplyTitle(title: string): string {

@@ -111,7 +111,7 @@ export type NewArticleArgs = {
 	board_name: string,
 	category?: Category,
 	title?: string,
-	replying?: { article: Article, transfuse: Transfuse },
+	reply_to?: { article: Article, transfuse: Transfuse },
 };
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
@@ -142,7 +142,7 @@ function useEditorPanelState(): {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
-				let attached_to = args.replying ? [args.replying.article.category] : [];
+				let attached_to = args.reply_to ? [args.reply_to.article.category] : [];
 				let categories = await fetchCategories(args.board_name);
 				let cur_category = (() => {
 					if (args.category) {
@@ -162,18 +162,18 @@ function useEditorPanelState(): {
 				})();
 
 				let edges: Edge[] = [];
-				if (args.replying) {
+				if (args.reply_to) {
 					edges.push({
-						article_id: args.replying.article.id,
-						category: args.replying.article.category,
-						transfuse: args.replying.transfuse
+						article_id: args.reply_to.article.id,
+						category: args.reply_to.article.category,
+						transfuse: args.reply_to.transfuse
 					});
 				}
 
 				setData({
 					cur_category,
 					categories,
-					root_id: args.replying ? args.replying.article.rootId : undefined,
+					root_id: args.reply_to ? args.reply_to.article.rootId : undefined,
 					edges,
 					board_name: args.board_name,
 					title: args.title || '',

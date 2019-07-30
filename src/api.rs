@@ -499,17 +499,17 @@ impl Mutation {
         board_name: String,
         category_name: String,
         title: String,
-        replying: Vec<Reply>,
+        reply_to: Vec<Reply>,
         content: Vec<String>,
     ) -> Fallible<ID> {
-        let replying: Fallible<Vec<(i64, i16)>> = replying
+        let reply_to: Fallible<Vec<(i64, i16)>> = reply_to
             .into_iter()
             .map(|e| id_to_i64(&e.article_id).map(|id| (id, e.transfuse as i16)))
             .collect();
         let id = forum::create_article(
             ctx,
             &board_name,
-            &replying?,
+            &reply_to?,
             &category_name,
             &title,
             content,

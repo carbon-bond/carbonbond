@@ -6,23 +6,29 @@ import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
-import { DropDown, Option } from '../components';
+import { Option, Select } from '../components';
 import { Category, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
-		let replying = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
+		let reply_to = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
 		let client = getGraphQLClient();
 		const mutation = `
-				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!, $replying: [Reply!]!) {
+				mutation Post(
+					$board_name: String!,
+					$category_name: String!,
+					$content: [String!]!,
+					$title: String!,
+					$reply_to: [Reply!]!
+				) {
 					createArticle(
 						boardName: $board_name,
 						categoryName: $category_name,
 						title: $title,
 						content: $content,
-						replying: $replying
+						replyTo: $reply_to
 					)
 				}
 			`;
@@ -31,7 +37,7 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			category_name: data.cur_category.name,
 			title: data.title,
 			content: data.content.slice(0, data.cur_category.structure.length),
-			replying
+			reply_to
 		});
 		return res.createArticle;
 	}
@@ -114,11 +120,11 @@ function CategorySelector(): JSX.Element {
 				}
 			}
 		}
-		let options: (string | Option)[] = data.categories.map(c => {
+		let options: Option[] = data.categories.map(c => {
 			// 根據鍵結決定哪些分類不可選
 			let attach_to = data.edges.map(c => c.category);
 			if (checkCanAttach(c, attach_to)) {
-				return c.name;
+				return { name: c.name };
 			} else {
 				return {
 					name: c.name,
@@ -127,7 +133,7 @@ function CategorySelector(): JSX.Element {
 				};
 			}
 		});
-		return <DropDown
+		return <Select
 			style={{
 				width: 150,
 				height: '95%',

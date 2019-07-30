@@ -26,7 +26,7 @@ function extractOption(op: string | Option): [string, Mode, string | undefined] 
 	}
 }
 
-export function DropDown(props: {
+export function Select(props: {
 	style?: React.CSSProperties,
 	selected_style?: React.CSSProperties,
 	className?: string,
@@ -50,11 +50,12 @@ export function DropDown(props: {
 				return [mode, msg];
 			}
 		}
+		console.error('UI 錯誤，給了下拉選單一個不存在選項中的值');
 		return ['able', undefined]; // 走到這裡代表出問題了
 	})();
 
-	return <div ref={ref} style={props.style} styleName='dropDown' className={props.className}>
-		<div styleName='Btn' title={main_msg} onClick={() => {
+	return <div ref={ref} style={props.style} styleName='select' className={props.className}>
+		<div styleName='btn' title={main_msg} onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
 			}
@@ -66,7 +67,7 @@ export function DropDown(props: {
 			<p style={{ flex: 2, textAlign: 'right', transition: '.2s', opacity: open ? 0 : 1 }}>▾</p>
 			<p style={{ flex: 1 }} />
 		</div>
-		<div styleName='Background' style={{
+		<div styleName='background' style={{
 			...props.background_style,
 			top: open ? '95%' : '0%',
 			opacity: open ? 1 : 0,
@@ -86,7 +87,7 @@ export function DropDown(props: {
 						}
 					}}
 					title={msg}
-					styleName='Option'>
+					styleName='option'>
 						<p>{name}</p>
 					</div>;
 				}
