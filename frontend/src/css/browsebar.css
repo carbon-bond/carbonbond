@@ -16,19 +16,19 @@
     display: inline-block;
     width: 100%;
     color: gray;
-    .boardName {
+    & .boardName {
         margin-top: 2px;
         margin-left: 2%;
         display: inline-block;
         margin-right: auto;
     }
-    .boardHeat {
+    & .boardHeat {
         margin-top: 2px;
         margin-right: 2%;
         display: block;
         float: right;
     }
-    .boardTitle {
+    & .boardTitle {
         font-size: 12px;
         margin-top: 3px;
         margin-left: 10px;
