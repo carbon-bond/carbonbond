@@ -23,12 +23,12 @@ export type Party = {
 
 export function PartySwitch(): JSX.Element {
 	return <Switch>
-		<Route exact path='/app/party' render={props =>
+		<Route exact path="/app/party" render={props =>
 			<MyPartyList {...props}/>
 		} />
-		<Route path='/app/party/:party_name' render={props =>
+		<Route path="/app/party/:party_name" render={props =>
 			<PartyDetail {...props}/>
 		} />
-		<Redirect to='/app/party'/>
+		<Redirect to="/app/party"/>
 	</Switch>;
 }

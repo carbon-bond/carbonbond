@@ -80,19 +80,19 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 	} if (fetching) {
 		return <div></div>;
 	} else {
-		return <div styleName='listBody'>
+		return <div styleName="listBody">
 			<CreatePartyBlock {...props} />
 			{
 				Object.keys(party_tree).map(b_name => {
-					return <div key={b_name} styleName='boardPartyBlock'>
+					return <div key={b_name} styleName="boardPartyBlock">
 						{
 							(() => {
 								if (b_name == EXILED_PARTY_NAME) {
-									return <div styleName='boardName'>{b_name}</div>;
+									return <div styleName="boardName">{b_name}</div>;
 								} else {
 									let href = `/app/${b_name}`;
-									return <Link to={href} styleName='boardName'>
-										<div styleName='boardName'>{b_name}</div>
+									return <Link to={href} styleName="boardName">
+										<div styleName="boardName">{b_name}</div>
 									</Link>;
 								}
 							})()
@@ -103,13 +103,13 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 									<Link
 										to={`/app/party/${party.partyName}`}
 										key={party.id}
-										styleName='partyColumn'
+										styleName="partyColumn"
 									>
 										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
-										<div styleName='partyLabel'>{party.partyName}</div>
-										<div styleName='partyLabel'>⚡{party.energy}</div>
-										<div styleName='partyLabel'>👑{party.chairmanId}</div>
-										<div styleName='partyLabel'>📊 10%</div>
+										<div styleName="partyLabel">{party.partyName}</div>
+										<div styleName="partyLabel">⚡{party.energy}</div>
+										<div styleName="partyLabel">👑{party.chairmanId}</div>
+										<div styleName="partyLabel">📊 10%</div>
 									</Link>
 								);
 							})
@@ -126,21 +126,21 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 	let [party_name, setPartyName] = React.useState('');
 	let [board_name, setBoardName] = React.useState('');
 	return <>
-		<div onClick={() => setExpand(!expand)} styleName='createParty'> 👥 創建政黨 </div>
+		<div onClick={() => setExpand(!expand)} styleName="createParty"> 👥 創建政黨 </div>
 		<div style={{ display: expand ? 'block' : 'none', textAlign: 'right' }}>
-			<input type='text'
+			<input type="text"
 				value={party_name}
-				placeholder='政黨名稱'
-				styleName='createPartyInput'
+				placeholder="政黨名稱"
+				styleName="createPartyInput"
 				onChange={evt => {
 					setPartyName(evt.target.value);
 					// TODO: 向後端詢問
 				}}
 			/>
-			<input type='text'
+			<input type="text"
 				value={board_name}
-				placeholder='依附於看板（預設為流亡政黨）'
-				styleName='createPartyInput'
+				placeholder="依附於看板（預設為流亡政黨）"
+				styleName="createPartyInput"
 				onChange={evt => {
 					setBoardName(evt.target.value);
 					// TODO: 向後端詢問

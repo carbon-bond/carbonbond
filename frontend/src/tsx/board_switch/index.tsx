@@ -11,18 +11,18 @@ import { Category } from '../../ts/forum_util';
 
 export function BoardSwitch(): JSX.Element {
 	return <>
-		<div className='content'>
+		<div className="content">
 			<Switch>
-				<Route exact path='/app/b/:board_name' render={props =>
+				<Route exact path="/app/b/:board_name" render={props =>
 					<BoardPage {...props} />
 				} />
-				<Route exact path='/app/b/:board_name/a/:article_id' render={props =>
+				<Route exact path="/app/b/:board_name/a/:article_id" render={props =>
 					<ArticlePage {...props} />
 				} />
-				<Redirect to='/app' />
+				<Redirect to="/app" />
 			</Switch>
 		</div>
-		<div className='rightSideBar'>
+		<div className="rightSideBar">
 			右邊欄
 		</div>
 	</>;

@@ -54,8 +54,8 @@ export function Select(props: {
 		return ['able', undefined]; // 走到這裡代表出問題了
 	})();
 
-	return <div ref={ref} style={props.style} styleName='select' className={props.className}>
-		<div styleName='btn' title={main_msg} onClick={() => {
+	return <div ref={ref} style={props.style} styleName="select" className={props.className}>
+		<div styleName="btn" title={main_msg} onClick={() => {
 			if (props.options.length > 1) {
 				setOpen(!open);
 			}
@@ -67,7 +67,7 @@ export function Select(props: {
 			<p style={{ flex: 2, textAlign: 'right', transition: '.2s', opacity: open ? 0 : 1 }}>▾</p>
 			<p style={{ flex: 1 }} />
 		</div>
-		<div styleName='background' style={{
+		<div styleName="background" style={{
 			...props.background_style,
 			top: open ? '95%' : '0%',
 			opacity: open ? 1 : 0,
@@ -87,7 +87,7 @@ export function Select(props: {
 						}
 					}}
 					title={msg}
-					styleName='option'>
+					styleName="option">
 						<p>{name}</p>
 					</div>;
 				}

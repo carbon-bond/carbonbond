@@ -72,7 +72,7 @@ export function BoardPage(props: Props): JSX.Element {
 	let { useScrollToBottom } = ScrollState.useContainer();
 	useScrollToBottom(ref, scrollHandler);
 
-	return <div styleName="board-content" ref={ref}>
+	return <div styleName="boardContent" ref={ref}>
 		<h1>{board_name}</h1>
 		{
 			(() => {
@@ -86,7 +86,7 @@ export function BoardPage(props: Props): JSX.Element {
 			{
 				articles.map((article, idx) => (
 					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
-						<li styleName="article-title">
+						<li styleName="articleTitle">
 							<p>{article.id} - {article.title}</p>
 						</li>
 					</Link>

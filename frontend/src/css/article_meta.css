@@ -1,35 +1,35 @@
 .articleMeta {
     display: flex;
     flex-direction: row;
-    .txtMeta {
+    & .txtMeta {
         flex: 1;
-        .cName {
+        & .cName {
             background-color: var(--cname-color);
             display: inline-block;
             padding: 2px;
             border-radius: 2px;
             font-weight: bold;
         }
-        .title {
+        & .title {
             font-weight: 500;
             font-size: 25px;
             height: 40px;
         }
-        .titleLong {
+        & .titleLong {
             font-size: 17px;
             height: 40px;
         }
-        .authorDate {
+        & .authorDate {
             margin-left: 10px;
             display: inline-block;
             color: #aaa;
-            .author {
+            & .author {
                 color: #aaa;
                 text-decoration: underline;
             }
         }
     }
-    .numMeta {
+    & .numMeta {
         width: 90px;
         font-size: 18px;
         display: flex;
