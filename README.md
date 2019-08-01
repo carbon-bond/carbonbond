@@ -1,9 +1,7 @@
+![Build Status](https://travis-ci.org/carbon-bond/carbonbond.svg?branch=master)
+
 # 碳鍵
 提高你的鍵能，把那些笨蛋嘴成渣吧！
-
-## CI
-
-![Build Status](https://travis-ci.org/MROS/carbonbond.svg?branch=master)
 
 ## 建置
 - 設定檔
