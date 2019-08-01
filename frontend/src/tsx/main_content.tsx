@@ -37,7 +37,7 @@ function MainContent(): JSX.Element {
 
 	return (
 		<>
-			<div className='content'>
+			<div className="content">
 				<h1>金剛、石墨，參見！</h1>
 				{
 					board_list.map(board => (
@@ -47,7 +47,7 @@ function MainContent(): JSX.Element {
 					))
 				}
 			</div>
-			<div className='rightSideBar'>
+			<div className="rightSideBar">
 				右邊欄
 			</div>
 		</>

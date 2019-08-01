@@ -20,6 +20,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "jsx-quotes": ["error", "prefer-double"],
         "keyword-spacing": ["error"],
         "guard-for-in": ["error"],
         "no-var": ["error"],

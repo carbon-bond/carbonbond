@@ -36,7 +36,7 @@ function App(): JSX.Element {
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<div className='mainBody' ref={ref}>
+				<div className="mainBody" ref={ref}>
 					<Switch>
 						<Route path="/app/register/:invite_code" render={props =>
 							<RegisterPage {...props} />
@@ -48,7 +48,7 @@ function App(): JSX.Element {
 							<ArticlePage {...props} />
 						} />
 						<Route path="*" render={() =>
-							<div className='forumBody'>
+							<div className="forumBody">
 								<Switch>
 									<Route exact path="/app" render={() => (
 										<MainContent></MainContent>

@@ -73,11 +73,11 @@ export function ArticlePage(props: Props): JSX.Element {
 	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
 		let can_reply = article && checkCanReply(editor_panel_data, article, props.transfuse);
 		if (can_reply) {
-			return <div styleName='reply' onClick={() => onReplyClick(props.transfuse)}>
+			return <div styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
 				{props.label}
 			</div>;
 		} else {
-			return <div styleName='cantReply'>{props.label}</div>;
+			return <div styleName="cantReply">{props.label}</div>;
 		}
 	}
 
@@ -90,7 +90,7 @@ export function ArticlePage(props: Props): JSX.Element {
 	if (fetching) {
 		return <></>;
 	} else if (article) {
-		return <div ref={ref} styleName='articlePage'>
+		return <div ref={ref} styleName="articlePage">
 			<ArticleMetaBlock article={article} />
 			<hr />
 			<div>
@@ -100,9 +100,9 @@ export function ArticlePage(props: Props): JSX.Element {
 					})
 				}
 			</div>
-			<ReplyBtn label='挺' transfuse={1}/>
-			<ReplyBtn label='回' transfuse={0}/>
-			<ReplyBtn label='戰' transfuse={-1}/>
+			<ReplyBtn label="挺" transfuse={1}/>
+			<ReplyBtn label="回" transfuse={0}/>
+			<ReplyBtn label="戰" transfuse={-1}/>
 		</div>;
 	} else {
 		return <div>找不到文章QQ</div>;

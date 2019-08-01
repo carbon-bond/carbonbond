@@ -67,11 +67,11 @@ export function PartyDetail(props: Props): JSX.Element {
 				{(() => {
 					if (party.board) {
 						let href = `/app/b/${party.board.boardName}`;
-						return <Link to={href} styleName='boardName'>
+						return <Link to={href} styleName="boardName">
 							<h3>- b/{party.board.boardName}</h3>
 						</Link>;
 					} else {
-						return <h3 styleName='boardName'>- {EXILED_PARTY_NAME}</h3>;
+						return <h3 styleName="boardName">- {EXILED_PARTY_NAME}</h3>;
 					}
 				})()}
 			</div>
@@ -96,8 +96,8 @@ function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element
 	return <>
 		<div onClick={() => setExpand(!expand)} style={{ cursor: 'pointer' }}>⚑創立看板</div>
 		<div style={{ display: expand ? 'block' : 'none' }}>
-			<input type='text'
-				placeholder='看板名稱'
+			<input type="text"
+				placeholder="看板名稱"
 				value={board_name}
 				onChange={evt => {
 					setBoardName(evt.target.value);

@@ -80,16 +80,16 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 		}
 	}
 	if (editor_panel_data) {
-		return <div styleName='singlePanel editorPanel'>
-			<div styleName='roomTitle title'>
-				<div styleName='leftSet'>發表文章</div>
-				<div onClick={() => onTitleClick()} styleName='middleSet'>
+		return <div styleName="singlePanel editorPanel">
+			<div styleName="roomTitle title">
+				<div styleName="leftSet">發表文章</div>
+				<div onClick={() => onTitleClick()} styleName="middleSet">
 					<div style={{ width: '100%', textAlign: 'center' }}>
 						b/{editor_panel_data.board_name}
 					</div>
 				</div>
-				<div styleName='rightSet'>
-					<div styleName='button' onClick={() => deleteEditor()}>✗</div>
+				<div styleName="rightSet">
+					<div styleName="button" onClick={() => deleteEditor()}>✗</div>
 				</div>
 			</div>
 			{
@@ -141,9 +141,9 @@ function CategorySelector(): JSX.Element {
 				zIndex: 1,
 				fontSize: 14
 			}}
-			className='test'
+			className="test"
 			background_style={{ maxHeight: '60vh' }}
-			hover_color='#eee'
+			hover_color="#eee"
 			value={data.cur_category.name}
 			onChange={s => onChange(s)}
 			options={options} />;
@@ -170,7 +170,7 @@ function SingleColInput(props: {
 	}
 	return <>
 		{
-			single ? null : <p styleName='colLabel'>
+			single ? null : <p styleName="colLabel">
 				{col.col_name} ({col.col_type})
 			</p>
 		}
@@ -180,7 +180,7 @@ function SingleColInput(props: {
 					return <textarea
 						onChange={evt => onChange(evt.target.value)}
 						value={value}
-						styleName='textInput'
+						styleName="textInput"
 						placeholder={single ? col.col_name : ''}
 					/>;
 				} else if (col.col_type == 'Line'
@@ -240,11 +240,11 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 			marginLeft: '2%',
 			marginRight: '2%',
 		};
-		return <div styleName='editorBody'>
-			<div style={{ ...body_style }} styleName='editorInnerBody'>
-				<div styleName='articleMeta'>
+		return <div styleName="editorBody">
+			<div style={{ ...body_style }} styleName="editorInnerBody">
+				<div styleName="articleMeta">
 					<CategorySelector />
-					<input className='articleTitle'
+					<input className="articleTitle"
 						onChange={evt => {
 							setEditorPanelData({
 								...data,
@@ -252,12 +252,12 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 							});
 						}}
 						value={data.title}
-						styleName='oneLineInput'
-						placeholder='文章標題'
+						styleName="oneLineInput"
+						placeholder="文章標題"
 					/>
 				</div>
 				{data.edges.length > 0 ? <EdgeEditor/> : null }
-				<div styleName='articleContent'>
+				<div styleName="articleContent">
 					<InputsForStructure />
 					<div>
 						<button onClick={() => {
