@@ -3,7 +3,8 @@ const { useState } = React;
 import { createContainer } from 'unstated-next';
 import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category } from '../ts/forum_util';
+import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
+import { Article } from './board_switch';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -104,12 +105,13 @@ function useBottomPanelState(): {
 	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
+export type Transfuse = -1 | 0 | 1;
+type Edge = { article_id: string, category: Category , transfuse: Transfuse };
 export type NewArticleArgs = {
 	board_name: string,
-	categories: Category[],
-	cur_category?: Category,
+	category?: Category,
 	title?: string,
-	edges?: { article_id: string, transfuse: number }[]
+	reply_to?: { article: Article, transfuse: Transfuse },
 };
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
@@ -117,38 +119,68 @@ export type EditorPanelData = {
 	categories: Category[],
 	cur_category: Category,
 	title: string,
-	edges: { article_id: string, transfuse: number }[],
-	content: string[]
+	edges: Edge[],
+	content: string[],
+	root_id?: string
 };
 
 function useEditorPanelState(): {
 	open: boolean,
-	openEditorPanel: (new_article_args?: NewArticleArgs) => void,
+	openEditorPanel: (new_article_args?: NewArticleArgs) => Promise<void>,
 	closeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
-	setEditorPanelData: React.Dispatch<React.SetStateAction<EditorPanelData|null>>
+	setEditorPanelData: React.Dispatch<React.SetStateAction<EditorPanelData|null>>,
+	addEdge: (article: Article, transfuse: Transfuse) => void
 	} {
-	let [editor_panel_data, setEditorPanelData] = useState<EditorPanelData | null>(null);
+	let [data, setData] = useState<EditorPanelData | null>(null);
 	let [open, setOpen] = useState(false);
-	function openEditorPanel(new_article_args?: NewArticleArgs): void {
-		if (new_article_args) {
+
+	async function openEditorPanel(args?: NewArticleArgs): Promise<void> {
+		if (args) {
 			// 開新文來編輯
-			if (editor_panel_data) {
+			if (data) {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
-				let cur_category = new_article_args.cur_category
-					|| new_article_args.categories[0];
-				setEditorPanelData({
+				let attached_to = args.reply_to ? [args.reply_to.article.category] : [];
+				let categories = await fetchCategories(args.board_name);
+				let cur_category = (() => {
+					if (args.category) {
+						if (!checkCanAttach(args.category, attached_to)) {
+							throw new Error('指定了一個無法選擇的分類');
+						} else {
+							return args.category;
+						}
+					} else {
+						let list = categories.filter(c => checkCanAttach(c, attached_to));
+						if (list.length == 0) {
+							throw new Error('沒有任何分類適用');
+						} else {
+							return list[0];
+						}
+					}
+				})();
+
+				let edges: Edge[] = [];
+				if (args.reply_to) {
+					edges.push({
+						article_id: args.reply_to.article.id,
+						category: args.reply_to.article.category,
+						transfuse: args.reply_to.transfuse
+					});
+				}
+
+				setData({
 					cur_category,
-					board_name: new_article_args.board_name,
-					categories: new_article_args.categories,
-					title: new_article_args.title || '',
-					edges: new_article_args.edges || [],
+					categories,
+					root_id: args.reply_to ? args.reply_to.article.rootId : undefined,
+					edges,
+					board_name: args.board_name,
+					title: args.title || '',
 					content: Array(cur_category.structure.length).fill('')
 				});
 			}
-		} else if (!editor_panel_data) {
+		} else if (!data) {
 			// TODO: 錯誤處理，沒有任何資訊卻想打開編輯視窗
 		}
 		setOpen(true);
@@ -156,12 +188,37 @@ function useEditorPanelState(): {
 	function closeEditorPanel(): void {
 		setOpen(false);
 	}
+	function addEdge(article: Article, transfuse: Transfuse): void {
+		if (data) {
+			checkCanReply(data, article, transfuse);
+			let new_data = { ...data };
+			new_data.root_id = article.rootId;
+			new_data.edges.push({ article_id: article.id, transfuse, category: article.category });
+			setData(new_data);
+		}
+	}
+	function setEditorPanelData(
+		arg: EditorPanelData | null | ((d: EditorPanelData | null) => EditorPanelData|null)
+	): void {
+		let new_data = (() => {
+			if (typeof arg == 'function') {
+				return arg(data);
+			} else {
+				return arg;
+			}
+		})();
+		if (new_data && new_data.edges.length == 0) {
+			new_data.root_id = undefined;
+		}
+		setData(new_data);
+	}
 	return {
 		open,
 		openEditorPanel,
 		closeEditorPanel,
-		editor_panel_data,
-		setEditorPanelData
+		editor_panel_data: data,
+		setEditorPanelData,
+		addEdge
 	};
 }
 

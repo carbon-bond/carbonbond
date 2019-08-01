@@ -2,24 +2,33 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
-import '../css/bottom_panel.css';
-import { EditorPanelState, EditorPanelData } from './global_state';
-import { getGraphQLClient, extractErrMsg } from '../ts/api';
+import '../../css/bottom_panel.css';
+import { EditorPanelState, EditorPanelData } from '../global_state';
+import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
-import { DropDown } from './components';
-import { Category } from '../ts/forum_util';
-import { isInteger } from '../ts/regex_util';
+import { Option, Select } from '../components';
+import { Category, checkCanAttach } from '../../ts/forum_util';
+import { isInteger } from '../../ts/regex_util';
+import { EdgeEditor } from './edge_editor';
 
 async function createArticle(data: EditorPanelData | null): Promise<number> {
 	if (data) {
+		let reply_to = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
 		let client = getGraphQLClient();
 		const mutation = `
-				mutation Post($board_name: String!, $category_name: String!, $content: [String!]!, $title: String!) {
+				mutation Post(
+					$board_name: String!,
+					$category_name: String!,
+					$content: [String!]!,
+					$title: String!,
+					$reply_to: [Reply!]!
+				) {
 					createArticle(
 						boardName: $board_name,
 						categoryName: $category_name,
 						title: $title,
-						content: $content
+						content: $content,
+						replyTo: $reply_to
 					)
 				}
 			`;
@@ -27,7 +36,8 @@ async function createArticle(data: EditorPanelData | null): Promise<number> {
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,
-			content: data.content.slice(0, data.cur_category.structure.length)
+			content: data.content.slice(0, data.cur_category.structure.length),
+			reply_to
 		});
 		return res.createArticle;
 	}
@@ -110,7 +120,20 @@ function CategorySelector(): JSX.Element {
 				}
 			}
 		}
-		return <DropDown
+		let options: Option[] = data.categories.map(c => {
+			// 根據鍵結決定哪些分類不可選
+			let attach_to = data.edges.map(c => c.category);
+			if (checkCanAttach(c, attach_to)) {
+				return { name: c.name };
+			} else {
+				return {
+					name: c.name,
+					mode: 'warn',
+					msg: '鍵結錯誤'
+				};
+			}
+		});
+		return <Select
 			style={{
 				width: 150,
 				height: '95%',
@@ -123,7 +146,7 @@ function CategorySelector(): JSX.Element {
 			hover_color='#eee'
 			value={data.cur_category.name}
 			onChange={s => onChange(s)}
-			options={data.categories.map(c => c.name)} />;
+			options={options} />;
 	} else {
 		throw new Error('尚未開始發文');
 	}
@@ -233,6 +256,7 @@ function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
 						placeholder='文章標題'
 					/>
 				</div>
+				{data.edges.length > 0 ? <EdgeEditor/> : null }
 				<div styleName='articleContent'>
 					<InputsForStructure />
 					<div>

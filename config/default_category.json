@@ -1,15 +1,20 @@
 [
     {
-        "name": "公告",
-        "transfusable": false,
-        "is_question": true,
+        "name": "回應",
+        "transfusable": true,
+        "is_question": false,
         "show_in_list": true,
-        "rootable": true,
+        "rootable": false,
         "threshold_to_post": {
             "bond_energy": 0,
             "position": 0
         },
-        "attached_to": [],
+        "attached_to": [
+            "問題",
+            "回應",
+            "留言",
+            "答案"
+        ],
         "structure": [
             {
                 "col_name": "內文",
@@ -62,10 +67,10 @@
         "version": 0
     },
     {
-        "name": "回覆",
+        "name": "留言",
         "transfusable": true,
         "is_question": false,
-        "show_in_list": true,
+        "show_in_list": false,
         "rootable": false,
         "threshold_to_post": {
             "bond_energy": 0,
@@ -73,7 +78,7 @@
         },
         "attached_to": [
             "問題",
-            "回覆",
+            "回應",
             "留言",
             "答案"
         ],
@@ -87,21 +92,16 @@
         "version": 0
     },
     {
-        "name": "留言",
-        "transfusable": true,
-        "is_question": false,
-        "show_in_list": false,
-        "rootable": false,
+        "name": "公告",
+        "transfusable": false,
+        "is_question": true,
+        "show_in_list": true,
+        "rootable": true,
         "threshold_to_post": {
             "bond_energy": 0,
             "position": 0
         },
-        "attached_to": [
-            "問題",
-            "回覆",
-            "留言",
-            "答案"
-        ],
+        "attached_to": [],
         "structure": [
             {
                 "col_name": "內文",

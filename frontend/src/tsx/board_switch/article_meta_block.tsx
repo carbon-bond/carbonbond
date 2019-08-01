@@ -6,9 +6,9 @@ import { Link } from 'react-router-dom';
 
 function Title(props: { title: string }): JSX.Element {
 	if (props.title.length > 20) { // TODO: 這裡應該看實際顯示長度
-		return <div styleName='titleLong'>{props.title}</div>;
+		return <pre styleName='titleLong'>{props.title}</pre>;
 	} else {
-		return <div styleName='title'>{props.title}</div>;
+		return <pre styleName='title'>{props.title}</pre>;
 	}
 }
 

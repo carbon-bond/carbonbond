@@ -1,4 +1,3 @@
-cargo-features = ["default-run"]
 [package]
 name = "carbonbond"
 version = "0.1.0"

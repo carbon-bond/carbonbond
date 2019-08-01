@@ -101,6 +101,12 @@ impl Party {
     }
 }
 
+#[derive(juniper::GraphQLInputObject)]
+struct Reply {
+    article_id: ID,
+    transfuse: i32,
+}
+
 struct Article {
     id: ID,
     title: String,
@@ -110,6 +116,7 @@ struct Article {
     category_id: ID,
     energy: i32,
     create_time: i32,
+    root_id: ID,
 }
 #[juniper::object(Context = Ctx)]
 impl Article {
@@ -130,6 +137,9 @@ impl Article {
     }
     fn category_id(&self) -> ID {
         self.category_id.clone()
+    }
+    fn root_id(&self) -> ID {
+        self.root_id.clone()
     }
     fn category(&self, ctx: &Ctx) -> Fallible<Category> {
         use db_schema::categories::dsl::*;
@@ -169,6 +179,23 @@ impl Article {
         let id = id_to_i64(&self.id)?;
         let c_id = id_to_i64(&self.category_id)?;
         forum::get_article_content(ctx, id, c_id).map_err(|err| err)
+    }
+    fn same_root_articles(&self, ctx: &Ctx) -> Fallible<Vec<Article>> {
+        let list = forum::get_articles_with_root(ctx, id_to_i64(&self.root_id)?)?;
+        Ok(list
+            .into_iter()
+            .map(|a| Article {
+                id: i64_to_id(a.id),
+                title: a.title,
+                board_id: i64_to_id(a.board_id),
+                author_id: a.author_id,
+                category_name: a.category_name,
+                category_id: i64_to_id(a.category_id),
+                create_time: systime_to_i32(a.create_time),
+                energy: 0,
+                root_id: i64_to_id(a.root_id),
+            })
+            .collect())
     }
 }
 
@@ -283,6 +310,7 @@ impl Query {
             category_id: i64_to_id(article.category_id),
             create_time: systime_to_i32(article.create_time),
             energy: 0,
+            root_id: i64_to_id(article.root_id),
         })
     }
     fn board_list(ctx: &Ctx, ids: Option<Vec<ID>>) -> Fallible<Vec<Board>> {
@@ -340,6 +368,7 @@ impl Query {
                 category_name: a.category_name,
                 create_time: systime_to_i32(a.create_time),
                 energy: 0, // TODO: 鍵能
+                root_id: i64_to_id(a.root_id),
             })
             .collect())
     }
@@ -470,10 +499,21 @@ impl Mutation {
         board_name: String,
         category_name: String,
         title: String,
+        reply_to: Vec<Reply>,
         content: Vec<String>,
     ) -> Fallible<ID> {
-        // TODO: 還缺乏 edge 和 content
-        let id = forum::create_article(ctx, &board_name, &vec![], &category_name, &title, content)?;
+        let reply_to: Fallible<Vec<(i64, i16)>> = reply_to
+            .into_iter()
+            .map(|e| id_to_i64(&e.article_id).map(|id| (id, e.transfuse as i16)))
+            .collect();
+        let id = forum::create_article(
+            ctx,
+            &board_name,
+            &reply_to?,
+            &category_name,
+            &title,
+            content,
+        )?;
         Ok(i64_to_id(id))
     }
     fn create_party(ctx: &Ctx, party_name: String, board_name: Option<String>) -> Fallible<ID> {

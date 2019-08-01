@@ -42,7 +42,7 @@ pub fn create_category<C: Context>(
 pub fn create_article<C: Context>(
     ctx: &C,
     board_name: &str,
-    edges: &Vec<(i64, i16)>,
+    reply_to: &Vec<(i64, i16)>,
     category_name: &str,
     title: &str,
     content: Vec<String>,
@@ -55,21 +55,22 @@ pub fn create_article<C: Context>(
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
     // TODO: 各項該做的檢查
-    if !c_body.rootable && edges.len() == 0 {
+    if !c_body.rootable && reply_to.len() == 0 {
         return Err(Error::new_logic(format!("分類不可為根: {}", category_name), 403).into());
     }
-    let mut node_ids = Vec::<i64>::with_capacity(edges.len());
-    for &(id, transfuse) in edges {
+    let mut node_ids = Vec::<i64>::with_capacity(reply_to.len());
+    for &(id, transfuse) in reply_to {
         if !c_body.transfusable && transfuse != 0 {
             return Err(Error::new_logic(format!("分類不可輸能: {}", category_name), 403).into());
         }
         node_ids.push(id);
     }
-    let node_ids: Vec<i64> = edges.iter().map(|(id, _)| *id).collect();
     let related_articles = get_articles_meta(ctx, &node_ids)?;
     let mut root_id: Option<i64> = None;
     for article in related_articles.iter() {
-        if root_id.is_none() {
+        if article.board_id != board.id {
+            return Err(Error::new_logic("內部連結指向不同看板", 403).into());
+        } else if root_id.is_none() {
             root_id = Some(article.root_id);
         } else if root_id.unwrap() != article.root_id {
             return Err(Error::new_logic("內部連結指向不同主題樹", 403).into());
@@ -98,7 +99,7 @@ pub fn create_article<C: Context>(
             content,
         )?;
         // TODO 創造文章內容
-        operation::create_edges(conn, id, edges)?;
+        operation::create_edges(conn, id, reply_to)?;
         Ok(id)
     })
 }
@@ -184,5 +185,27 @@ pub fn get_article_content<C: Context>(
     article_id: i64,
     category_id: i64,
 ) -> Fallible<Vec<String>> {
+    // TODO: 權限檢查，避免隱板文章外洩
     ctx.use_pg_conn(|conn| operation::get_article_content(conn, article_id, category_id))
+}
+
+pub fn get_articles_with_root<C: Context>(ctx: &C, root_id: i64) -> Fallible<Vec<models::Article>> {
+    // TODO: 權限檢查，避免隱板文章外洩
+    use schema::articles::dsl;
+    ctx.use_pg_conn(|conn| {
+        dsl::articles
+            .filter(dsl::root_id.eq(root_id))
+            .load::<models::Article>(conn)
+            .map_err(|e| e.into())
+    })
+}
+
+pub fn get_articles_connecting<C: Context>(
+    _ctx: &C,
+    _article_id: i64,
+    _find_ancestor: bool,
+) -> Fallible<Vec<models::Article>> {
+    // TODO: 權限檢查，避免隱板文章外洩
+
+    unimplemented!();
 }

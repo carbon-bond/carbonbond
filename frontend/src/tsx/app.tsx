@@ -21,6 +21,7 @@ import { BoardSwitch } from './board_switch';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
+import { ArticlePage } from './board_switch/article_page';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -42,6 +43,9 @@ function App(): JSX.Element {
 						} />
 						<Route path="/app/party" render={() =>
 							<PartySwitch />
+						} />
+						<Route path="/app/a/:article_id" render={props =>
+							<ArticlePage {...props} />
 						} />
 						<Route path="*" render={() =>
 							<div className='forumBody'>

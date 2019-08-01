@@ -1,4 +1,6 @@
 import { getGraphQLClient } from './api';
+import { EditorPanelData, Transfuse } from '../tsx/global_state';
+import { Article } from '../tsx/board_switch';
 
 export type Category = {
 	name: string,
@@ -14,10 +16,7 @@ export type Category = {
 	structure: { col_name: string, col_type: string, restriction: string }[],
 };
 
-export async function fetchCategories(
-	board_name: string,
-	atteched_to: string[]=[]
-): Promise<Category[]> {
+export async function fetchCategories(board_name: string): Promise<Category[]> {
 	// TODO: 快取?
 	const graphQLClient = getGraphQLClient();
 	const query = `
@@ -33,20 +32,66 @@ export async function fetchCategories(
 		board_name
 	});
 	let ret: Category[] = bodies.board.categories.map(c => JSON.parse(c.body));
-	return ret.filter(cat => {
-		if (atteched_to.length == 0 && !cat.rootable) {
+	return ret.filter(c => c.name != '留言');
+}
+
+export function checkCanAttach(
+	category: Category,
+	attached_to: Category[] | string[]
+): boolean {
+	if (attached_to.length == 0 && !category.rootable) {
+		return false;
+	} else if (category.name == '留言') {
+		// NOTE: 留言使用不同的界面來發佈
+		return false;
+	} else {
+		// 必須可以指向 attached_to 的每一種
+		for (let c of attached_to) {
+			let name = typeof(c) == 'string' ? c : c.name;
+			if (!category.attached_to.includes(name)) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+export function checkCanReply(
+	data: EditorPanelData | null,
+	target: Article,
+	transfuse: Transfuse
+): boolean {
+	if (data) {
+		// 有正在發的文
+		if (target.board.boardName != data.board_name) {
+			// 檢查這個鍵結是否跨板
 			return false;
-		} else if (cat.name == '留言') {
-			// NOTE: 留言使用不同的界面來發佈
+		} else if (typeof data.root_id != 'undefined' && data.root_id != target.rootId) {
+			// 檢查這個鍵結是否跨主題
+			return false;
+		} else if (transfuse != 0 && !data.cur_category.transfusable) {
+			// 檢查有無違反輸能規則
 			return false;
 		} else {
-			// 必需可以指向 atteched_to 的每一種
-			for (let name of atteched_to) {
-				if (cat.attached_to.indexOf(name) == -1) {
+			// 檢查這個鍵結是否已存在
+			for (let e of data.edges) {
+				if (e.article_id == target.id) {
 					return false;
 				}
 			}
-			return true;
+			// 檢查有無違反鍵結規則
+			return checkCanAttach(data.cur_category, [target.category]);
 		}
-	});
+	} else {
+		// TODO: 雖然沒有正在發文，但也有可能本板所有分類都不可用，不可單單回一個 true
+		return true;
+	}
+}
+
+export function genReplyTitle(title: string): string {
+	let match = title.match(/^ *Re: *(.*)/);
+	if (match) {
+		title = match[1];
+	}
+	return `Re: ${title}`;
 }

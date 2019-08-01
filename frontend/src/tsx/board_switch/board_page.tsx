@@ -2,7 +2,6 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { EditorPanelState, UserState } from '../global_state';
-import { fetchCategories } from '../../ts/forum_util';
 
 import '../../css/board_page.css';
 import { getGraphQLClient } from '../../ts/api';
@@ -42,12 +41,7 @@ export function BoardPage(props: Props): JSX.Element {
 		if (editor_panel_data) {
 			alert('正在編輯其它文章');
 		} else {
-			fetchCategories(board_name, []).then(categories => {
-				openEditorPanel({
-					board_name,
-					categories
-				});
-			});
+			openEditorPanel({ board_name });
 		}
 	}
 

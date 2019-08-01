@@ -65,7 +65,7 @@ export function BrowseBar(): JSX.Element {
 	}
 
 	if (fetching) {
-		return <div/>;
+		return <></>;
 	} else {
 		return <div styleName='browseBar' style={{ gridTemplateRows: genGridTemplate() }}>
 			<ShrinkableBlock

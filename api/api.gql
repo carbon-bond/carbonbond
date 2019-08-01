@@ -42,7 +42,7 @@ type Article {
     category: Category
     boardId: ID
     board: Board
-    author_id: String
+    authorId: String
     # TODO 鍵能?
     energy: Int
     createTime: Int
@@ -50,6 +50,8 @@ type Article {
     content: [String]
     edgesIn: [Edge]
     edgesOut: [Edge]
+    rootId: ID
+    sameRootArticles: [Article!]
 }
 
 type Board {
@@ -118,5 +120,10 @@ type Mutation {
     ### 板
     # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
     createBoard(name: String!): Boolean
-    createArticle(boardName: String!, categoryName: String!, title: String!, content: String!): ID!
+    createArticle(boardName: String!, categoryName: String!, title: String!, content: String!, replyTo: [Reply!]!): ID!
+}
+
+input Reply {
+    articleId: ID!,
+    transfuse: Int
 }
