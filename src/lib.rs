@@ -12,18 +12,17 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 extern crate diesel;
 #[macro_use]
 extern crate derive_more;
-
+extern crate r2d2;
 extern crate serde_json;
 extern crate regex;
 extern crate state;
 
-use std::sync::{Arc, Mutex, MutexGuard};
 use actix_session::{Session};
 use diesel::pg::PgConnection;
 use crate::custom_error::{Error, Fallible};
 
 pub trait Context {
-    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T;
+    fn use_pg_conn<T, F: FnOnce(PgConnection) -> T>(&self, callback: F) -> T;
     fn remember_id(&self, id: String) -> Fallible<()>;
     fn forget_id(&self) -> Fallible<()>;
     fn get_id(&self) -> Option<String>;
@@ -31,19 +30,18 @@ pub trait Context {
 
 pub struct Ctx {
     session: Session,
-    conn: Arc<Mutex<PgConnection>>,
 }
 impl Ctx {
-    pub fn get_pg_conn(&self) -> MutexGuard<PgConnection> {
-        self.conn.lock().unwrap()
+    pub fn get_pg_conn(&self) -> PgConnection {
+        db::connect_db().expect("資料庫連線失敗")
     }
 }
 impl Context for Ctx {
     fn use_pg_conn<T, F>(&self, callback: F) -> T
     where
-        F: FnOnce(&PgConnection) -> T,
+        F: FnOnce(PgConnection) -> T,
     {
-        let conn = &*self.conn.lock().unwrap();
+        let conn = db::connect_db().expect("資料庫連線失敗");
         callback(conn)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {

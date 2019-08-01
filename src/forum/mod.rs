@@ -15,16 +15,16 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallib
     // TODO: 撞名檢查，權限檢查，等等
     let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
     ctx.use_pg_conn(|conn| {
-        check_board_name_valid(conn, name)?;
-        let party = party::get_party_by_name(conn, party_name)?;
+        check_board_name_valid(&conn, name)?;
+        let party = party::get_party_by_name(&conn, party_name)?;
         if party.board_id.is_some() {
             Err(Error::new_logic(format!("{} 並非流亡政黨", party_name), 403).into())
         } else {
-            let position = party::get_member_position(conn, &user_id, party.id)?;
+            let position = party::get_member_position(&conn, &user_id, party.id)?;
             if position != 3 {
                 Err(Error::new_logic("並非黨主席", 403).into())
             } else {
-                operation::create_board(conn, party.id, name)
+                operation::create_board(&conn, party.id, name)
             }
         }
     })
@@ -36,7 +36,7 @@ pub fn create_category<C: Context>(
     category: &Vec<CategoryBody>,
 ) -> Fallible<i64> {
     // TODO: 權限檢查，等等
-    ctx.use_pg_conn(|conn| operation::create_category(conn, board_id, category))
+    ctx.use_pg_conn(|conn| operation::create_category(&conn, board_id, category))
 }
 
 pub fn create_article<C: Context>(
@@ -49,8 +49,8 @@ pub fn create_article<C: Context>(
 ) -> Fallible<i64> {
     let author_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
     let (board, category) = ctx.use_pg_conn(|conn| -> Fallible<_> {
-        let b = get_board_by_name(conn, &board_name)?;
-        let c = get_category(conn, category_name, b.id)?;
+        let b = get_board_by_name(&conn, &board_name)?;
+        let c = get_category(&conn, category_name, b.id)?;
         Ok((b, c))
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
@@ -88,7 +88,7 @@ pub fn create_article<C: Context>(
     let content = parse_content(&c_body.structure, content)?;
     ctx.use_pg_conn(|conn| {
         let id = operation::create_article(
-            conn,
+            &conn,
             &author_id,
             board.id,
             root_id,
@@ -98,7 +98,7 @@ pub fn create_article<C: Context>(
             content,
         )?;
         // TODO 創造文章內容
-        operation::create_edges(conn, id, edges)?;
+        operation::create_edges(&conn, id, edges)?;
         Ok(id)
     })
 }
@@ -112,7 +112,7 @@ pub fn get_articles_meta<C: Context>(
     let articles = ctx.use_pg_conn(|conn| {
         schema::articles::table
             .filter(id.eq_any(article_ids))
-            .load::<models::Article>(conn)
+            .load::<models::Article>(&conn)
     })?;
     if articles.len() == article_ids.len() {
         Ok(articles)
@@ -171,7 +171,7 @@ pub fn check_board_name_valid(conn: &PgConnection, name: &str) -> Fallible<()> {
     {
         Err(Error::new_logic("板名帶有不合法字串", 403).into())
     } else {
-        if get_board_by_name(conn, name).is_ok() {
+        if get_board_by_name(&conn, name).is_ok() {
             Err(Error::new_logic("與其它看板重名", 403).into())
         } else {
             Ok(())
@@ -184,5 +184,5 @@ pub fn get_article_content<C: Context>(
     article_id: i64,
     category_id: i64,
 ) -> Fallible<Vec<String>> {
-    ctx.use_pg_conn(|conn| operation::get_article_content(conn, article_id, category_id))
+    ctx.use_pg_conn(|conn| operation::get_article_content(&conn, article_id, category_id))
 }
