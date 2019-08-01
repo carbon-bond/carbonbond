@@ -49,7 +49,7 @@
     }
 }
 /* 在 chatContent 之中 */
-.DialogBlock {
+.dialogBlock {
     & .meta {
         & .who {
             font-weight: bold;
@@ -140,9 +140,6 @@
                     margin-bottom: 8px;
                     padding-left: 6px;
                     padding-right: 6px;
-                    & .leftSet {
-
-                    }
                     & .rightSet {
                         cursor: pointer;
                     }
@@ -160,8 +157,6 @@
                         padding: 1px 6px;
                     }
                 }
-            }
-            & .chatContent {
             }
         }
     }

@@ -84,7 +84,7 @@ const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
 	return <>
 	{
 		// XXX: key 要改成能表示時間順序的 id
-		agg_dialogs.map(dialog => <div key={Number(dialog.date)} styleName="DialogBlock">
+		agg_dialogs.map(dialog => <div key={Number(dialog.date)} styleName="dialogBlock">
 			<div styleName="meta">
 				<span styleName="who">{dialog.who}</span>
 				<span styleName="date">{relativeDate(dialog.date)}</span>
@@ -303,7 +303,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					</div>
 					<ChannelList />
 				</div>
-				<div styleName="chatContent">
+				<div>
 					<div ref={scroll_bottom_ref} styleName="dialogs">
 						<DialogBlocks dialogs={channel!.dialogs} />
 					</div>
