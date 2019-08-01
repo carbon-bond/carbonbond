@@ -28,7 +28,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Fallible<
         .values(&new_board)
         .get_result(conn)?;
 
-    create_category(&conn, board.id, &default_categories)?;
+    create_category(conn, board.id, &default_categories)?;
 
     // 將執政黨加入該板
     diesel::update(schema::parties::table.filter(schema::parties::dsl::id.eq(party_id)))
