@@ -23,16 +23,16 @@
     height: 34px;
     padding-right: 4px;
     position: relative;
-    .nonText {
+    & .nonText {
         cursor: pointer;
         font-size: 22px;
         margin-left: 4px;
-        .emojiPicker {
+        & .emojiPicker {
             position: absolute;
             bottom: 40px;
             transform: translateX(-50%);
         }
-        .loading {
+        & .loading {
             position: absolute;
             bottom: 40px;
             background: white;
@@ -40,7 +40,7 @@
             transform: translateX(-50%);
         }
     }
-    input {
+    & input {
         flex-grow: 1;
         margin-left: 4px;
         border-radius: 10px;
@@ -49,30 +49,30 @@
     }
 }
 /* 在 chatContent 之中 */
-.DialogBlock {
-    .meta {
-        .who {
+.dialogBlock {
+    & .meta {
+        & .who {
             font-weight: bold;
         }
-        .date {
+        & .date {
             font-size: 12px;
             color: #888888;
             margin-left: 5px;
         }
     }
-    .normal {
+    & .normal {
         word-break: break-all;
         margin-top: 4px;
         font-size: 15px;
-        a:hover {
+        & a:hover {
             text-decoration: underline;
         }
     }
-    .emojis {
+    & .emojis {
         font-size: 35px;
     }
-    .image {
-        img {
+    & .image {
+        & img {
             max-width: 100%;
             max-height: 100%;
         }
@@ -88,11 +88,11 @@
     display: flex;
     flex-direction: row;
     align-items: flex-end;
-    .singlePanel {
+    & .singlePanel {
         margin-right: 8px;
         border: 1px #DDDDDD solid;
     }
-    .title {
+    & .title {
         background: cadetblue;
         border: 1px #DDDDDD solid;
         height: 30px;
@@ -102,20 +102,20 @@
         align-items: center;
         justify-content: space-between;
     }
-    .chatPanel {
-        .roomTitle {
-            .leftSet {
+    & .chatPanel {
+        & .roomTitle {
+            & .leftSet {
                 font-size: 18px;
                 margin-left: 4px;
             }
-            .middleSet {
+            & .middleSet {
                 flex-grow: 1;
                 height: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
-            .rightSet {
+            & .rightSet {
                 font-size: 22px;
                 margin-right: 4px;
                 display: flex;
@@ -125,35 +125,32 @@
                 }
             }
         }
-        .panelContent {
+        & .panelContent {
             display: flex;
             flex-direction: row;
-            .channels {
+            & .channels {
                 width: 160px;
                 font-size: 15px;
                 padding-top: 6px;
                 padding-bottom: 6px;
-                .channelControl {
+                & .channelControl {
                     display: flex;
                     flex-direction: row;
                     justify-content: space-between;
                     margin-bottom: 8px;
                     padding-left: 6px;
                     padding-right: 6px;
-                    .leftSet {
-
-                    }
-                    .rightSet {
+                    & .rightSet {
                         cursor: pointer;
                     }
                 }
-                .channelList {
-                    .selected {
+                & .channelList {
+                    & .selected {
                         background: #E5E5E5;
                     }
-                    .channel {
+                    & .channel {
                         cursor: pointer;
-                        .channelSymbol {
+                        & .channelSymbol {
                             font-size: 17px;
                             font-weight: bold;
                         }
@@ -161,59 +158,57 @@
                     }
                 }
             }
-            .chatContent {
-            }
         }
     }
 
-    .editorPanel {
+    & .editorPanel {
         background: #F1F1F1;
         width: 500px;
-        .leftSet {
+        & .leftSet {
             font-size: 18px;
             margin-left: 4px;
         }
-        .middleSet {
+        & .middleSet {
             height: 100%;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
-        .rightSet {
+        & .rightSet {
             font-size: 22px;
             margin-right: 4px;
             display: flex;
             flex-direction: row;
-            .button {
+            & .button {
                 margin-left: 4px;
             }
         }
-        .editorBody {
+        & .editorBody {
             height: 550px;
             max-height: 70vh;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            .editorInnerBody {
+            & .editorInnerBody {
                 display: flex;
                 flex-direction: column;
                 height: 100%;
             }
-            .articleContent {
+            & .articleContent {
                 display: flex;
                 flex-direction: column;
                 flex: 1;
             }
-            .oneLineInput {
+            & .oneLineInput {
                 width: 100%;
                 display: block;
                 min-height: 30px;
             }
-            .inValid {
+            & .inValid {
                 box-shadow: 0px 0px 3px 0px red;
             }
-            .textInput {
+            & .textInput {
                 display: block;
                 overflow-y: auto;
                 width: 100%;
@@ -221,17 +216,17 @@
                 flex: 1;
                 min-height: 70%;
             }
-            .colLabel {
+            & .colLabel {
                 margin-top: 5px;
             }
-            .articleMeta {
+            & .articleMeta {
                 min-height: 30px;
                 display: flex;
                 flex-direction: row;
-                .test {
+                & .test {
                     background-color: blue;
                 }
-                .articleTitle {
+                & .articleTitle {
                     height: 100%;
                     flex: 1;
                 }

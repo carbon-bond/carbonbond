@@ -6,64 +6,64 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    .leftSet {
+    & .leftSet {
         margin-left: 30px;
         display: flex;
         justify-content: center;
         align-items: center;
-        .carbonbond {
+        & .carbonbond {
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             font-size: 30px;
             font-weight: bold;
-            img {
+            & img {
                 margin-right: 10px;
                 cursor: pointer;
                 width: 36px;
                 height: 36px;
             }
         }
-        .location {
+        & .location {
             color: blueviolet;
             font-size: 18px;
             margin-left: 35px;
         }
     }
-    .middleSet {
+    & .middleSet {
         flex-grow: 0.85;
         display: flex;
         align-items: center;
-        input {
+        & input {
             line-height: 28px;
             width: 100%;
         }
     }
-    .rightSet {
+    & .rightSet {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 60px;
-        .icon {
+        & .icon {
             cursor: pointer;
             padding: 5px;
             display: flex;
             align-items: center;
             font-size: 24px;
         }
-        .icon:hover {
+        & .icon:hover {
             background-color: #F4F4F4;
         }
-        .wrap {
+        & .wrap {
             display: flex;
             align-self: center;
             position: relative;
             justify-content: center;
-            .userInfo:hover {
+            & .userInfo:hover {
                 background-color: #F4F4F4;
             }
-            .userInfo {
+            & .userInfo {
                 margin-left: 20px;
                 margin-right: 10px;
                 cursor: pointer;
@@ -72,24 +72,24 @@
                 display: flex;
                 align-self: center;
                 align-items: center;
-                .image {
+                & .image {
                     font-size: 40px;
                 }
-                .userName {
+                & .userName {
                     margin-left: 5px;
                     color: brown;
                 }
-                .energy {
+                & .energy {
                     margin-left: 12px;
                 }
             }
-            .dropdown {
+            & .dropdown {
                 width: 85%;
                 position: absolute;
                 top: 50px;
                 display: flex;
                 flex-direction: column;
-                .triangle {
+                & .triangle {
                     align-self: center;
                     position: relative;
                     width: 0;
@@ -98,7 +98,7 @@
                     border-width: 0 15 15 15;
                     border-color: transparent transparent #FFDDAA transparent;
                 }
-                .features {
+                & .features {
                     padding-top: 15px;
                     padding-left: 15px;
                     padding-right: 15px;
@@ -106,17 +106,17 @@
                     border: #DDDDDD solid 1px;
                     display: flex;
                     flex-direction: column;
-                    .feature:hover {
+                    & .feature:hover {
                         background-color: #F4F4F4;
                     }
-                    .feature {
+                    & .feature {
                         cursor: pointer;
                         font-size: 18px;
                         margin-bottom: 10px;
                     }
                 }
             }
-            .login {
+            & .login {
                 cursor: pointer;
                 font-size: 120%;
                 text-align: center;
@@ -140,7 +140,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    .escape {
+    & .escape {
         cursor: pointer;
         font-size: 28px;
         position: absolute;
@@ -148,13 +148,13 @@
         right: -14px;
         color: red;
     }
-    input {
+    & input {
         position: relative;
         width: 70%;
         height: 40px;
         margin: 10px;
     }
-    button {
+    & button {
         margin-top: 10px;
     }
 }

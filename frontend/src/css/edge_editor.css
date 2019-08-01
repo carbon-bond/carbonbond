@@ -2,19 +2,19 @@
     width: 100%;
     background-color: white;
     display: flex;
-    .label {
+    & .label {
         padding: 3px;
         display: flex;
         align-items: center;
         color: gray;
     }
-    .editor {
+    & .editor {
         flex: 1;
         display: inline-flex;
         align-items: center;
         flex-wrap: wrap;
         padding: 2px;
-        .edgeBlock {
+        & .edgeBlock {
             cursor: pointer;
             height: 30px;
             border-style: solid;
@@ -24,7 +24,7 @@
             display: inline-flex;
             margin: 2px;
             align-items: center;
-            .articleId {
+            & .articleId {
                 font-size: 12px;
                 display: inline-block;
                 min-width: 40px;
@@ -37,7 +37,7 @@
                 border-right-width: 1px;
                 border-right-color: #ddd;
             }
-            .delete {
+            & .delete {
                 font-size: 15px;
                 width: 15px;
                 text-align: center;
@@ -45,31 +45,31 @@
                 height: 100%;
                 line-height: 30px;
             }
-            .transfuse {
+            & .transfuse {
                 display: inline-flex;
                 height: 100%;
                 flex-direction: column;
-                hr {
+                & hr {
                     border-color: #ddd;
                 }
-                .transfuseBtn {
+                & .transfuseBtn {
                     font-size: 12px;
                     flex: 1;
                     padding-left: 4px;
                     padding-right: 4px;
                 }
-                .selected {
+                & .selected {
                     color: red;
                 }
-                .unselected {
+                & .unselected {
                     color: black;
                 }
             }
-            .inner {
+            & .inner {
                 transition: .15s;
                 background-color: #f2f2f2;
             }
-            .inner:hover {
+            & .inner:hover {
                 background-color: #ddd;
             }
         }

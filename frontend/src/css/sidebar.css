@@ -9,8 +9,8 @@
     justify-content: space-between;
     align-items: center;
     color: #777777;
-    .topSet {
-        .icon {
+    & .topSet {
+        & .icon {
             text-align: center;
             margin-top: 12px;
             height: 43px;
@@ -18,8 +18,8 @@
             cursor: pointer;
         }
     }
-    .bottomSet {
-        .icon {
+    & .bottomSet {
+        & .icon {
             text-align: center;
             margin-top: 12px;
             height: 43px;

@@ -71,7 +71,7 @@ export function BoardPage(props: Props): JSX.Element {
 		}
 	};
 
-	return <div styleName="board-content" onScroll={handleScoll}>
+	return <div styleName="boardContent" onScroll={handleScoll}>
 		<h1>{board_name}</h1>
 		{
 			(() => {
@@ -85,7 +85,7 @@ export function BoardPage(props: Props): JSX.Element {
 			{
 				_articles.map((article, idx) => (
 					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
-						<li styleName="article-title">
+						<li styleName="articleTitle">
 							<p>{article.id} - {article.title}</p>
 						</li>
 					</Link>

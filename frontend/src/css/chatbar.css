@@ -1,7 +1,7 @@
 .chatbar {
     display: flex;
     flex-direction: column;
-    .chatUnit {
+    & .chatUnit {
         cursor: pointer;
         height: 46px;
         border: 1px #DDDDDD solid;
@@ -10,29 +10,29 @@
         justify-content: space-evenly;
         padding-left: 4px;
         padding-right: 4px;
-        .upSet {
+        & .upSet {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            .title {
-                .name {
+            & .title {
+                & .name {
                     font-size: 18px;
                 }
-                .channel {
+                & .channel {
                     font-size: 14px;
                     color: #882288;
                 }
             }
-            .date {
+            & .date {
                 font-size: 13px;
                 color: #666666;
-                .circle {
+                & .circle {
                     color: #00F100;
                 }
             }
         }
-        .downSet {
-            .lastMessage {
+        & .downSet {
+            & .lastMessage {
                 font-size: 13px;
                 height: 17px;
                 color: #5a5a5a;
@@ -40,16 +40,16 @@
                 white-space: nowrap;
                 overflow: hidden;
             }
-            .unreadChannels {
+            & .unreadChannels {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
-                .allRead {
+                & .allRead {
                     font-style: italic;
                     font-size: 13px;
                     color: #5a5a5a;
                 }
-                .channel {
+                & .channel {
                     font-weight: normal;
                     margin-right: 1px;
                     padding-left: 3px;
@@ -61,7 +61,7 @@
             }
         }
     }
-    .bold {
+    & .bold {
         font-weight: bold;
     }
 }

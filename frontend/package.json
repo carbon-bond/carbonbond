@@ -7,7 +7,8 @@
 		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx .",
 		"build": "webpack",
 		"watch": "webpack --watch",
-		"check-ts": "tsc"
+		"check-ts": "tsc",
+		"check-css": "stylelint '**/*.css'"
 	},
 	"dependencies": {
 		"@types/emoji-mart": "^2.8.4",
@@ -49,8 +50,8 @@
 		"html-webpack-plugin": "^3.2.0",
 		"postcss": "^7.0.16",
 		"postcss-loader": "^3.0.0",
-		"precss": "^4.0.0",
 		"style-loader": "^0.23.1",
+		"stylelint": "^10.1.0",
 		"typescript": "^3.4.5",
 		"webpack": "^4.32.2",
 		"webpack-cli": "^3.3.2"
