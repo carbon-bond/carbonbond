@@ -1,7 +1,4 @@
-use diesel::{
-    pg::PgConnection,
-    r2d2::ConnectionManager,
-};
+use diesel::{pg::PgConnection, r2d2::ConnectionManager};
 use r2d2::ManageConnection;
 use state::Storage;
 use crate::custom_error::Fallible;

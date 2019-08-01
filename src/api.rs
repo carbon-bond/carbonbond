@@ -489,13 +489,8 @@ impl Mutation {
 
 type Schema = juniper::RootNode<'static, Query, Mutation>;
 
-pub fn api(
-    gql: web::Json<GraphQLRequest>,
-    session: Session,
-) -> HttpResponse {
-    let ctx = Ctx {
-        session,
-    };
+pub fn api(gql: web::Json<GraphQLRequest>, session: Session) -> HttpResponse {
+    let ctx = Ctx { session };
     let schema = Schema::new(Query, Mutation);
     let res = gql.execute(&schema, &ctx);
     HttpResponse::Ok()
