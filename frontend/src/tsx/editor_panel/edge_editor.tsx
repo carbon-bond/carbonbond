@@ -18,8 +18,8 @@ function EdgeBlock(props: {
 			props.onTransfuse(n);
 		}
 	}
-	return <div styleName='edgeBlock'>
-		<div styleName='transfuse'>
+	return <div styleName="edgeBlock">
+		<div styleName="transfuse">
 			<div styleName={
 				[
 					'transfuseBtn',
@@ -36,8 +36,8 @@ function EdgeBlock(props: {
 				].join(' ')
 			} onClick={() => onTransfuseClicked(-1)}> ▾ </div>
 		</div>
-		<div styleName='articleId inner' onClick={() => props.onClick()}>a/{props.id}</div>
-		<div styleName='delete inner' onClick={() => props.onDelete()}>✗</div>
+		<div styleName="articleId inner" onClick={() => props.onClick()}>a/{props.id}</div>
+		<div styleName="delete inner" onClick={() => props.onDelete()}>✗</div>
 	</div>;
 }
 
@@ -64,9 +64,9 @@ function _EdgeEditor(props: RouteComponentProps): JSX.Element {
 
 	if (editor_panel_data) {
 		let edges = editor_panel_data.edges;
-		return <div styleName='body'>
-			<div styleName='label'><div>鍵結</div></div>
-			<div styleName='editor'>
+		return <div styleName="body">
+			<div styleName="label"><div>鍵結</div></div>
+			<div styleName="editor">
 				{
 					edges.map(({ article_id, transfuse }, i) => (
 						<EdgeBlock key={article_id}
