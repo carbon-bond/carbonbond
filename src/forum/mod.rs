@@ -111,9 +111,10 @@ pub fn get_articles_meta<C: Context>(
     // TODO: 檢查是否為隱板
     use crate::db::schema::articles::dsl::id;
     let articles = ctx.use_pg_conn(|conn| {
-        schema::articles::table
+        let ret = schema::articles::table
             .filter(id.eq_any(article_ids))
-            .load::<models::Article>(&conn)
+            .load::<models::Article>(&conn)?;
+        Ok(ret)
     })?;
     if articles.len() == article_ids.len() {
         Ok(articles)
@@ -195,7 +196,7 @@ pub fn get_articles_with_root<C: Context>(ctx: &C, root_id: i64) -> Fallible<Vec
     ctx.use_pg_conn(|conn| {
         dsl::articles
             .filter(dsl::root_id.eq(root_id))
-            .load::<models::Article>(conn)
+            .load::<models::Article>(&conn)
             .map_err(|e| e.into())
     })
 }

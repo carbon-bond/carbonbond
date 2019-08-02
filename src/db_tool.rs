@@ -42,8 +42,12 @@ struct DBToolCtx {
     config: Config,
 }
 impl Context for DBToolCtx {
-    fn use_pg_conn<T, F: FnOnce(PgConnection) -> T>(&self, callback: F) -> T {
-        callback(db::connect_db().expect("資料庫連線失敗"))
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
+    where
+        F: FnOnce(PgConnection) -> Fallible<T>,
+    {
+        let ret = callback(db::connect_db()?)?;
+        Ok(ret)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;

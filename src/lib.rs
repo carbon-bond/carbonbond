@@ -22,7 +22,9 @@ use diesel::pg::PgConnection;
 use crate::custom_error::{Error, Fallible};
 
 pub trait Context {
-    fn use_pg_conn<T, F: FnOnce(PgConnection) -> T>(&self, callback: F) -> T;
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
+    where
+        F: FnOnce(PgConnection) -> Fallible<T>;
     fn remember_id(&self, id: String) -> Fallible<()>;
     fn forget_id(&self) -> Fallible<()>;
     fn get_id(&self) -> Option<String>;
@@ -32,17 +34,18 @@ pub struct Ctx {
     session: Session,
 }
 impl Ctx {
-    pub fn get_pg_conn(&self) -> PgConnection {
-        db::connect_db().expect("資料庫連線失敗")
+    pub fn get_pg_conn(&self) -> Fallible<PgConnection> {
+        db::connect_db()
     }
 }
 impl Context for Ctx {
-    fn use_pg_conn<T, F>(&self, callback: F) -> T
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
     where
-        F: FnOnce(PgConnection) -> T,
+        F: FnOnce(PgConnection) -> Fallible<T>,
     {
-        let conn = db::connect_db().expect("資料庫連線失敗");
-        callback(conn)
+        let conn = db::connect_db()?;
+        let result = callback(conn)?;
+        Ok(result)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         self.session
