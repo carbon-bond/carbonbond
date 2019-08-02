@@ -32,18 +32,17 @@ function useScrollBottom(): React.RefObject<HTMLDivElement> {
 	return ref;
 }
 
-type Ref = React.MutableRefObject<null | HTMLElement>;
 function useScrollState(): {
 	setEmitter: (emitter: HTMLElement | null) => void,
-	useScrollToBottom: (ref: Ref, handler: () => void) => void
+	useScrollToBottom: (handler: () => void) => void
 	} {
 	let [emitter, setEmitter] = React.useState<HTMLElement | null>(null);
-	function useScrollToBottom(ref: Ref, handler: () => void): void {
+	function useScrollToBottom(handler: () => void): void {
 		React.useLayoutEffect(() => {
 			let listener = (): void => {
 				if (emitter) {
 					let body = emitter;
-					if (ref.current && body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
+					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
 						handler();
 					}
 				}
@@ -59,7 +58,7 @@ function useScrollState(): {
 					window.removeEventListener('resize', listener);
 				}
 			};
-		}, [handler, ref, emitter]);
+		}, [handler, emitter]);
 		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
 	}
 	return {

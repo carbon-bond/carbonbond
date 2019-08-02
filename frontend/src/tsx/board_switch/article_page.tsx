@@ -25,6 +25,61 @@ async function fetchArticleDetail(id: string): Promise<Article> {
 	return article;
 }
 
+function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
+	let { article, board_name } = props;
+
+	let scrollHandler = React.useCallback(() => {
+		console.log('成功!!');
+	}, []);
+	let { useScrollToBottom } = MainScrollState.useContainer();
+	useScrollToBottom(scrollHandler);
+
+	const { editor_panel_data, openEditorPanel, addEdge }
+		= EditorPanelState.useContainer();
+
+	function onReplyClick(transfuse: Transfuse): void {
+		if (editor_panel_data) {
+			try {
+				addEdge(article, transfuse);
+			} catch (e) {
+				toast.error(extractErrMsg(e));
+			}
+		} else if (board_name && article) {
+			openEditorPanel({
+				title: genReplyTitle(article.title),
+				board_name,
+				reply_to: { article, transfuse }
+			}).catch(e => toast.error(extractErrMsg(e)));
+		}
+	}
+
+	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
+		let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
+		if (can_reply) {
+			return <div styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
+				{props.label}
+			</div>;
+		} else {
+			return <div styleName="cantReply">{props.label}</div>;
+		}
+	}
+	return <div styleName="articlePage">
+		<ArticleMetaBlock article={article} />
+		<hr />
+		<div>
+			{
+				article.content.map((txt, i) => {
+					return <div key={i}>{txt}</div>;
+				})
+			}
+		</div>
+		<ReplyBtn label="挺" transfuse={1} />
+		<ReplyBtn label="回" transfuse={0} />
+		<ReplyBtn label="戰" transfuse={-1} />
+	</div>;
+
+}
+
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 export function ArticlePage(props: Props): JSX.Element {
 	let article_id = props.match.params.article_id;
@@ -45,68 +100,13 @@ export function ArticlePage(props: Props): JSX.Element {
 			setFetching(false);
 		}
 	}, [article_id, board_name, props.history]);
-
-	let scrollHandler = React.useCallback(() => {
-		// 文章載入之前不要動作
-		if (article) {
-			console.log('成功!!');
-		}
-	}, [article]);
-	let ref = React.useRef(null);
-	let { useScrollToBottom } = MainScrollState.useContainer();
-	useScrollToBottom(ref, scrollHandler);
-
-	const { editor_panel_data, openEditorPanel, addEdge }
-		= EditorPanelState.useContainer();
-
-	function onReplyClick(transfuse: Transfuse): void {
-		if (article) {
-			if (editor_panel_data) {
-				try {
-					addEdge(article, transfuse);
-				} catch (e) {
-					toast.error(extractErrMsg(e));
-				}
-			} else if (board_name && article) {
-				openEditorPanel({
-					title: genReplyTitle(article.title),
-					board_name,
-					reply_to: { article, transfuse }
-				}).catch(e => toast.error(extractErrMsg(e)));
-			}
-		}
-	}
-
-	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
-		let can_reply = article && checkCanReply(editor_panel_data, article, props.transfuse);
-		if (can_reply) {
-			return <div styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
-				{props.label}
-			</div>;
-		} else {
-			return <div styleName="cantReply">{props.label}</div>;
-		}
-	}
 	if (fetching) {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
-			return <div styleName="articlePage" ref={ref}>
-				<ArticleMetaBlock article={article} />
-				<hr />
-				<div>
-					{
-						article.content.map((txt, i) => {
-							return <div key={i}>{txt}</div>;
-						})
-					}
-				</div>
-				<ReplyBtn label="挺" transfuse={1} />
-				<ReplyBtn label="回" transfuse={0} />
-				<ReplyBtn label="戰" transfuse={-1} />
-			</div>;
+			return <ArticleDisplayPage article={article} board_name={board_name}/>;
 		} else {
-			return <Redirect to={`/app/b/${article.board.boardName}/a/${article.id}`}/>;
+			return <Redirect to={`/app/b/${article.board.boardName}/a/${article.id}`} />;
 		}
 	} else {
 		return <div>找不到文章QQ</div>;

@@ -410,10 +410,9 @@ function useAllChatState(): {
 	};
 }
 
-type Ref = React.MutableRefObject<null | HTMLElement>;
 function useMainScrollState(): {
 	setEmitter: (emitter: HTMLElement | null) => void,
-	useScrollToBottom: (ref: Ref, handler: () => void) => void
+	useScrollToBottom: (handler: () => void) => void
 	} {
 	return useScrollState();
 }

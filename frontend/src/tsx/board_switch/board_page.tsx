@@ -68,11 +68,10 @@ export function BoardPage(props: Props): JSX.Element {
 			});
 		}
 	}, [articles, board_name]);
-	let ref = React.useRef(null);
 	let { useScrollToBottom } = MainScrollState.useContainer();
-	useScrollToBottom(ref, scrollHandler);
+	useScrollToBottom(scrollHandler);
 
-	return <div styleName="boardContent" ref={ref}>
+	return <div styleName="boardContent">
 		<h1>{board_name}</h1>
 		{
 			(() => {
