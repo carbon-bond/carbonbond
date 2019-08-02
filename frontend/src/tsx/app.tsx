@@ -13,7 +13,7 @@ import 'normalize.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
-import { UserState, BottomPanelState, AllChatState, EditorPanelState, ScrollState } from './global_state';
+import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartySwitch } from './party_switch';
@@ -28,7 +28,7 @@ toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
 	function Content(): JSX.Element {
-		let { setEmitter } = ScrollState.useContainer();
+		let { setEmitter } = MainScrollState.useContainer();
 		return <Router>
 			<Header></Header>
 			<div className="other">
@@ -70,9 +70,9 @@ function App(): JSX.Element {
 				<BottomPanelState.Provider>
 					<AllChatState.Provider>
 						<EditorPanelState.Provider>
-							<ScrollState.Provider>
+							<MainScrollState.Provider>
 								<Content/>
-							</ScrollState.Provider>
+							</MainScrollState.Provider>
 						</EditorPanelState.Provider>
 					</AllChatState.Provider>
 				</BottomPanelState.Provider>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
-import { EditorPanelState, UserState, ScrollState } from '../global_state';
+import { EditorPanelState, UserState, MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { getGraphQLClient } from '../../ts/api';
@@ -69,7 +69,7 @@ export function BoardPage(props: Props): JSX.Element {
 		}
 	}, [articles, board_name]);
 	let ref = React.useRef(null);
-	let { useScrollToBottom } = ScrollState.useContainer();
+	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(ref, scrollHandler);
 
 	return <div styleName="boardContent" ref={ref}>

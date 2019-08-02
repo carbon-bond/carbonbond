@@ -3,7 +3,7 @@ import { RouteComponentProps, Redirect } from 'react-router';
 import { getGraphQLClient, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
-import { ScrollState, EditorPanelState, Transfuse } from '../global_state';
+import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
@@ -53,7 +53,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		}
 	}, [article]);
 	let ref = React.useRef(null);
-	let { useScrollToBottom } = ScrollState.useContainer();
+	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(ref, scrollHandler);
 
 	const { editor_panel_data, openEditorPanel, addEdge }

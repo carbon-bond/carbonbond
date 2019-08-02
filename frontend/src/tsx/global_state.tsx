@@ -5,6 +5,7 @@ import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
 import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
 import { Article } from './board_switch';
+import { useScrollState } from './utils';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -410,44 +411,15 @@ function useAllChatState(): {
 }
 
 type Ref = React.MutableRefObject<null | HTMLElement>;
-function useScrollState(): {
+function useMainScrollState(): {
 	setEmitter: (emitter: HTMLElement | null) => void,
 	useScrollToBottom: (ref: Ref, handler: () => void) => void
 	} {
-	let [emitter, setEmitter] = useState<HTMLElement | null>(null);
-	function useScrollToBottom(ref: Ref, handler: () => void): void {
-		React.useLayoutEffect(() => {
-			let listener = (): void => {
-				if (emitter) {
-					let body = emitter;
-					if (ref.current && body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
-						handler();
-					}
-				}
-			};
-			if (emitter) {
-				listener(); // 先執行一次再說
-				emitter.addEventListener('scroll', listener);
-				window.addEventListener('resize', listener);
-			}
-			return () => {
-				if (emitter) {
-					emitter.removeEventListener('scroll', listener);
-					window.removeEventListener('resize', listener);
-				}
-			};
-		}, [handler, ref, emitter]);
-		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
-	}
-
-	return {
-		setEmitter,
-		useScrollToBottom
-	};
+	return useScrollState();
 }
 
 export const UserState = createContainer(useUserState);
 export const BottomPanelState = createContainer(useBottomPanelState);
 export const AllChatState = createContainer(useAllChatState);
 export const EditorPanelState = createContainer(useEditorPanelState);
-export const ScrollState = createContainer(useScrollState);
+export const MainScrollState = createContainer(useMainScrollState);
