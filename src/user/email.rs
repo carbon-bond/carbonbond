@@ -1,4 +1,5 @@
 use std::process::Command;
+use diesel::{prelude::*, pg::PgConnection};
 use crate::custom_error::{Error, Fallible};
 use crate::config::CONFIG;
 
@@ -26,25 +27,32 @@ fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallibl
 }
 
 pub fn send_invite_email(
-    sender_id: Option<&str>,
+    conn: &PgConnection,
+    sender_id: Option<i64>,
     invite_code: &str,
     recv_email: &str,
 ) -> Fallible<()> {
-    let inviter_id = {
-        if let Some(id) = &sender_id {
-            &id
+    use crate::db::schema::users;
+
+    let inviter_name = {
+        if let Some(id) = sender_id {
+            users::table
+                .select(users::name)
+                .find(id)
+                .first::<String>(conn)
+                .or(Err(Error::new_logic(&format!("找不到使用者: {}", id), 401)))?
         } else {
-            "系統管理員"
+            "系統管理員".to_owned()
         }
     };
     let url = format!("http://carbon-bond.com/app/register/{}", invite_code);
-    let welcome_title = format!("{} 邀請您加入碳鍵", inviter_id);
+    let welcome_title = format!("{} 邀請您加入碳鍵", inviter_name);
     let welcome_msg = format!(
-        "<html> \
-         <h1>歡迎加入碳鍵！</h1> \
-         <p>點選以下連結，嘴爆那些笨蛋吧！</p> \
-         <a href=\"{}\">{}</a> <br/> \
-         </html>",
+        r#"<html>
+         <h1>歡迎加入碳鍵！</h1>
+         <p>點選以下連結，嘴爆那些笨蛋吧！</p>
+         <a href="{}">{}</a> <br/>
+         </html>"#,
         url, url
     );
 

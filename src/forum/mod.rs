@@ -20,7 +20,7 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallib
         if party.board_id.is_some() {
             Err(Error::new_logic(format!("{} 並非流亡政黨", party_name), 403).into())
         } else {
-            let position = party::get_member_position(&conn, &user_id, party.id)?;
+            let position = party::get_member_position(&conn, user_id, party.id)?;
             if position != 3 {
                 Err(Error::new_logic("並非黨主席", 403).into())
             } else {
@@ -75,22 +75,23 @@ pub fn create_article<C: Context>(
         } else if root_id.unwrap() != article.root_id {
             return Err(Error::new_logic("內部連結指向不同主題樹", 403).into());
         }
-        if !c_body.can_attach_to(&article.category_name) {
-            return Err(Error::new_logic(
-                format!(
-                    "分類 {} 與 {} 間不可建立關係",
-                    category_name, article.category_name
-                ),
-                403,
-            )
-            .into());
-        }
+        // FIXME: no category_name in Article struct
+        // if !c_body.can_attach_to(&article.category_name) {
+        //     return Err(Error::new_logic(
+        //         format!(
+        //             "分類 {} 與 {} 間不可建立關係",
+        //             category_name, article.category_name
+        //         ),
+        //         403,
+        //     )
+        //     .into());
+        // }
     }
     let content = parse_content(&c_body.structure, content)?;
     ctx.use_pg_conn(|conn| {
         let id = operation::create_article(
             &conn,
-            &author_id,
+            author_id,
             board.id,
             root_id,
             category.id,
@@ -190,13 +191,17 @@ pub fn get_article_content<C: Context>(
     ctx.use_pg_conn(|conn| operation::get_article_content(&conn, article_id, category_id))
 }
 
-pub fn get_articles_with_root<C: Context>(ctx: &C, root_id: i64) -> Fallible<Vec<models::Article>> {
+pub fn get_articles_with_root<C: Context>(
+    ctx: &C,
+    root_id: i64,
+) -> Fallible<Vec<(models::Article, models::Category)>> {
     // TODO: 權限檢查，避免隱板文章外洩
-    use schema::articles::dsl;
+    use schema::{articles, categories};
     ctx.use_pg_conn(|conn| {
-        dsl::articles
-            .filter(dsl::root_id.eq(root_id))
-            .load::<models::Article>(&conn)
+        articles::table
+            .inner_join(categories::table.on(articles::category_id.eq(categories::id)))
+            .filter(articles::root_id.eq(root_id))
+            .load::<(models::Article, models::Category)>(&conn)
             .map_err(|e| e.into())
     })
 }

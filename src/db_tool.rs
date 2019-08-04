@@ -38,7 +38,7 @@ reset
 ";
 
 struct DBToolCtx {
-    id: Option<String>,
+    id: Option<i64>,
     config: Config,
 }
 impl Context for DBToolCtx {
@@ -49,17 +49,20 @@ impl Context for DBToolCtx {
         let ret = callback(db::connect_db()?)?;
         Ok(ret)
     }
-    fn remember_id(&self, id: String) -> Fallible<()> {
+
+    fn remember_id(&self, id: i64) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;
         unsafe {
             (*_s).id = Some(id);
         }
         Ok(())
     }
+
     fn forget_id(&self) -> Fallible<()> {
         unimplemented!();
     }
-    fn get_id(&self) -> Option<String> {
+
+    fn get_id(&self) -> Option<i64> {
         self.id.clone()
     }
 }
@@ -94,9 +97,9 @@ fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
         return Err(Error::new_op("add user 參數數量錯誤"));
     }
-    let (email, id, password) = (&args[0], &args[1], &args[2]);
+    let (email, name, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    ctx.use_pg_conn(|conn| signup::create_user(&conn, email, id, password))?;
+    ctx.use_pg_conn(|conn| signup::create_user(&conn, email, name, password))?;
     Ok(())
 }
 
@@ -132,13 +135,17 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let invite_code = ctx.use_pg_conn(|conn| signup::create_invitation(&conn, None, &args[0]))?;
-    email::send_invite_email(None, &invite_code, &args[0])?;
+    ctx.use_pg_conn(|conn| {
+        let invite_code = signup::create_invitation(&conn, None, &args[0])?;
+        email::send_invite_email(&conn, None, &invite_code, &args[0])?;
+        Ok(())
+    })?;
     Ok(())
 }
+
 fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let id = args[0].clone();
-    ctx.use_pg_conn(|conn| find_user(&conn, &id))?;
+    let id = args[0].parse()?;
+    ctx.use_pg_conn(|conn| find_user(&conn, id))?;
     ctx.remember_id(id).unwrap();
     Ok(())
 }

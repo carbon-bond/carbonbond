@@ -4,7 +4,7 @@ use crate::db::models::User;
 use crate::db::schema;
 use crate::custom_error::{Error, Fallible};
 
-pub fn login(conn: &PgConnection, id: &str, password: &str) -> Fallible<()> {
+pub fn login(conn: &PgConnection, id: i64, password: &str) -> Fallible<()> {
     // TODO: 對 SQL 查詢的錯誤做分類
     let user = schema::users::table
         .find(id)

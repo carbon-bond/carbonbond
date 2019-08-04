@@ -13,31 +13,30 @@ table! {
         board_id -> Int8,
         root_id -> Int8,
         category_id -> Int8,
-        title -> Varchar,
-        author_id -> Varchar,
-        category_name -> Varchar,
+        title -> Text,
+        author_id -> Int8,
         show_in_list -> Bool,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
 table! {
     boards (id) {
         id -> Int8,
-        board_name -> Varchar,
-        title -> Varchar,
-        detail -> Varchar,
+        board_name -> Text,
+        title -> Text,
+        detail -> Text,
         ruling_party_id -> Int8,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
 table! {
     categories (id) {
         id -> Int8,
-        category_name -> Varchar,
+        category_name -> Text,
         board_id -> Int8,
-        body -> Varchar,
+        body -> Text,
         is_active -> Bool,
         replacing -> Nullable<Int8>,
     }
@@ -56,8 +55,8 @@ table! {
     invitations (id) {
         id -> Int8,
         code -> Varchar,
-        email -> Varchar,
-        create_time -> Timestamp,
+        email -> Text,
+        create_time -> Timestamptz,
     }
 }
 
@@ -65,10 +64,10 @@ table! {
     parties (id) {
         id -> Int8,
         board_id -> Nullable<Int8>,
-        party_name -> Varchar,
+        party_name -> Text,
         energy -> Int4,
-        chairman_id -> Varchar,
-        create_time -> Timestamp,
+        chairman_id -> Int8,
+        create_time -> Timestamptz,
     }
 }
 
@@ -79,20 +78,21 @@ table! {
         position -> Int2,
         dedication_ratio -> Int2,
         party_id -> Int8,
-        create_time -> Timestamp,
-        user_id -> Varchar,
+        create_time -> Timestamptz,
+        user_id -> Int8,
     }
 }
 
 table! {
     users (id) {
-        id -> Varchar,
-        email -> Varchar,
+        id -> Int8,
+        name -> Text,
+        email -> Text,
         energy -> Int4,
         invitation_credit -> Int4,
         password_hashed -> Bytea,
         salt -> Bytea,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -101,7 +101,6 @@ joinable!(articles -> boards (board_id));
 joinable!(articles -> categories (category_id));
 joinable!(articles -> users (author_id));
 joinable!(categories -> boards (board_id));
-joinable!(parties -> boards (board_id));
 joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));

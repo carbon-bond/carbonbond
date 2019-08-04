@@ -59,7 +59,7 @@ pub fn create_category(
 
 pub fn create_article(
     conn: &PgConnection,
-    author_id: &str,
+    author_id: i64,
     board_id: i64,
     root_id: Option<i64>,
     category_id: i64,
@@ -72,7 +72,6 @@ pub fn create_article(
         category_id,
         author_id,
         title,
-        category_name: &category.name,
         root_id: root_id.unwrap_or(0),
         show_in_list: category.show_in_list,
     };

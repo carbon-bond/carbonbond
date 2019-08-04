@@ -2,15 +2,16 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error as DBError;
 use rand::Rng;
-
-use crate::db::models::{NewUser, User, NewInvitation, Invitation};
-use crate::db::schema;
+use crate::db::{
+    schema,
+    models::{NewUser, User, NewInvitation, Invitation},
+};
 use crate::custom_error::{Error, Fallible};
 
 // 回傳邀請碼
 pub fn create_invitation(
     conn: &PgConnection,
-    sender: Option<&str>,
+    sender: Option<i64>,
     email: &str,
 ) -> Fallible<String> {
     use rand::distributions::Alphanumeric;
@@ -62,7 +63,7 @@ pub fn create_invitation(
 pub fn create_user_by_invitation(
     conn: &PgConnection,
     code: &str,
-    id: &str,
+    name: &str,
     password: &str,
 ) -> Fallible<User> {
     // TODO: 錯誤處理
@@ -71,18 +72,18 @@ pub fn create_user_by_invitation(
         .first::<Invitation>(conn)
         .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
 
-    create_user(&conn, &invitation.email, id, password)
+    create_user(&conn, &invitation.email, name, password)
 }
 
 // NOTE: 伺服器尚未用到該函式，是 db-tool 在用
 // TODO: 錯誤處理
-pub fn create_user(conn: &PgConnection, email: &str, id: &str, password: &str) -> Fallible<User> {
+pub fn create_user(conn: &PgConnection, email: &str, name: &str, password: &str) -> Fallible<User> {
     let salt = rand::thread_rng().gen::<[u8; 16]>();
 
     let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
 
     let new_user = NewUser {
-        id,
+        name,
         email,
         password_hashed: hash.to_vec(),
         salt: salt.to_vec(),
