@@ -32,7 +32,48 @@ function useScrollBottom(): React.RefObject<HTMLDivElement> {
 	return ref;
 }
 
+/**
+ * 回傳兩個與頁面卷動相關的函式：
+ * * `setEmitter` - 將 HTML 元素設定為卷動事件的發射器
+ * * `useScrollToBottom` - 使組件得以監聽發射器的卷動到底事件
+ */
+function useScrollState(): {
+	setEmitter: (emitter: HTMLElement | null) => void,
+	useScrollToBottom: (handler: () => void) => void
+	} {
+	let [emitter, setEmitter] = React.useState<HTMLElement | null>(null);
+	function useScrollToBottom(handler: () => void): void {
+		React.useLayoutEffect(() => {
+			let listener = (): void => {
+				if (emitter) {
+					let body = emitter;
+					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
+						handler();
+					}
+				}
+			};
+			if (emitter) {
+				listener(); // 先執行一次再說
+				emitter.addEventListener('scroll', listener);
+				window.addEventListener('resize', listener);
+			}
+			return () => {
+				if (emitter) {
+					emitter.removeEventListener('scroll', listener);
+					window.removeEventListener('resize', listener);
+				}
+			};
+		}, [handler, emitter]);
+		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
+	}
+	return {
+		setEmitter,
+		useScrollToBottom
+	};
+}
+
 export {
 	useInputValue,
-	useScrollBottom
+	useScrollBottom,
+	useScrollState
 };

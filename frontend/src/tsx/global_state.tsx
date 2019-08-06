@@ -5,6 +5,7 @@ import * as api from '../ts/api';
 import { produce, immerable } from 'immer';
 import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
 import { Article } from './board_switch';
+import { useScrollState } from './utils';
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -409,36 +410,15 @@ function useAllChatState(): {
 	};
 }
 
-type Ref = React.MutableRefObject<HTMLElement | null>;
-function useScrollState(): {
-	setEmitter: (ref: Ref) => void,
-	useScrollToBottom: (ref: Ref, handler: () => void) => void
+function useMainScrollState(): {
+	setEmitter: (emitter: HTMLElement | null) => void,
+	useScrollToBottom: (handler: () => void) => void
 	} {
-	let [emitter, setEmitter] = useState<Ref>(React.useRef(null));
-	function useScrollToBottom(ref: Ref, handler: () => void): void {
-		if (emitter.current) {
-			let listener = (): void => {
-				if (ref.current && emitter.current) {
-					let body = emitter.current;
-					if (body.scrollHeight - (body.scrollTop + body.clientHeight) < 3) {
-						handler();
-					}
-				} else if (emitter.current) {
-					emitter.current.removeEventListener('scroll', listener);
-				}
-			};
-			emitter.current.addEventListener('scroll', listener);
-		}
-	}
-
-	return {
-		setEmitter,
-		useScrollToBottom
-	};
+	return useScrollState();
 }
 
 export const UserState = createContainer(useUserState);
 export const BottomPanelState = createContainer(useBottomPanelState);
 export const AllChatState = createContainer(useAllChatState);
 export const EditorPanelState = createContainer(useEditorPanelState);
-export const ScrollState = createContainer(useScrollState);
+export const MainScrollState = createContainer(useMainScrollState);
