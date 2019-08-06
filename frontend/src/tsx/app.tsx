@@ -27,38 +27,43 @@ import { ArticlePage } from './board_switch/article_page';
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
-	function Content(): JSX.Element {
+	function MainBody(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
+		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+			<Switch>
+				<Route path="/app/register/:invite_code" render={props =>
+					<RegisterPage {...props} />
+				} />
+				<Route path="/app/party" render={() =>
+					<PartySwitch />
+				} />
+				<Route path="/app/a/:article_id" render={props =>
+					<ArticlePage {...props} />
+				} />
+				<Route path="*" render={() =>
+					<div className="forumBody">
+						<Switch>
+							<Route exact path="/app" render={() => (
+								<MainContent></MainContent>
+							)} />
+							<Route path="/app/b/:board_name" render={() =>
+								<BoardSwitch />
+							} />
+							<Redirect to="/app" />
+						</Switch>
+					</div>
+				} />
+			</Switch>
+		</div>;
+	}
+	function Content(): JSX.Element {
 		return <Router>
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<div className="mainBody" ref={ref => setEmitter(ref)}>
-					<Switch>
-						<Route path="/app/register/:invite_code" render={props =>
-							<RegisterPage {...props} />
-						} />
-						<Route path="/app/party" render={() =>
-							<PartySwitch />
-						} />
-						<Route path="/app/a/:article_id" render={props =>
-							<ArticlePage {...props} />
-						} />
-						<Route path="*" render={() =>
-							<div className="forumBody">
-								<Switch>
-									<Route exact path="/app" render={() => (
-										<MainContent></MainContent>
-									)} />
-									<Route path="/app/b/:board_name" render={() =>
-										<BoardSwitch />
-									} />
-									<Redirect to="/app" />
-								</Switch>
-							</div>
-						} />
-					</Switch>
-				</div>
+				<MainScrollState.Provider>
+					<MainBody />
+				</MainScrollState.Provider>
 				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;
@@ -70,9 +75,7 @@ function App(): JSX.Element {
 				<BottomPanelState.Provider>
 					<AllChatState.Provider>
 						<EditorPanelState.Provider>
-							<MainScrollState.Provider>
-								<Content/>
-							</MainScrollState.Provider>
+							<Content />
 						</EditorPanelState.Provider>
 					</AllChatState.Provider>
 				</BottomPanelState.Provider>
