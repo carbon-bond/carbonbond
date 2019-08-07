@@ -13,7 +13,7 @@ import 'normalize.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
-import { UserState, BottomPanelState, AllChatState, EditorPanelState, ScrollState } from './global_state';
+import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
 import { PartySwitch } from './party_switch';
@@ -27,41 +27,43 @@ import { ArticlePage } from './board_switch/article_page';
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
-
+	function MainBody(): JSX.Element {
+		let { setEmitter } = MainScrollState.useContainer();
+		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+			<Switch>
+				<Route path="/app/register/:invite_code" render={props =>
+					<RegisterPage {...props} />
+				} />
+				<Route path="/app/party" render={() =>
+					<PartySwitch />
+				} />
+				<Route path="/app/a/:article_id" render={props =>
+					<ArticlePage {...props} />
+				} />
+				<Route path="*" render={() =>
+					<div className="forumBody">
+						<Switch>
+							<Route exact path="/app" render={() => (
+								<MainContent></MainContent>
+							)} />
+							<Route path="/app/b/:board_name" render={() =>
+								<BoardSwitch />
+							} />
+							<Redirect to="/app" />
+						</Switch>
+					</div>
+				} />
+			</Switch>
+		</div>;
+	}
 	function Content(): JSX.Element {
-		let { setEmitter } = ScrollState.useContainer();
-		let ref = React.useRef(null);
-		setEmitter(ref);
 		return <Router>
 			<Header></Header>
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<div className="mainBody" ref={ref}>
-					<Switch>
-						<Route path="/app/register/:invite_code" render={props =>
-							<RegisterPage {...props} />
-						} />
-						<Route path="/app/party" render={() =>
-							<PartySwitch />
-						} />
-						<Route path="/app/a/:article_id" render={props =>
-							<ArticlePage {...props} />
-						} />
-						<Route path="*" render={() =>
-							<div className="forumBody">
-								<Switch>
-									<Route exact path="/app" render={() => (
-										<MainContent></MainContent>
-									)} />
-									<Route path="/app/b/:board_name" render={() =>
-										<BoardSwitch />
-									} />
-									<Redirect to="/app" />
-								</Switch>
-							</div>
-						} />
-					</Switch>
-				</div>
+				<MainScrollState.Provider>
+					<MainBody />
+				</MainScrollState.Provider>
 				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;
@@ -73,9 +75,7 @@ function App(): JSX.Element {
 				<BottomPanelState.Provider>
 					<AllChatState.Provider>
 						<EditorPanelState.Provider>
-							<ScrollState.Provider>
-								<Content/>
-							</ScrollState.Provider>
+							<Content />
 						</EditorPanelState.Provider>
 					</AllChatState.Provider>
 				</BottomPanelState.Provider>
