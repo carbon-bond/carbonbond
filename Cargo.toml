@@ -6,25 +6,25 @@ edition = "2018"
 default-run = "server"
 
 [dependencies]
-diesel = { version = "~1", features = ["postgres", "r2d2", "chrono"] }
-actix-web = "~1"
-log = "~0"
-env_logger = "~0"
-rand = "~0"
-rust-argon2 = "~0"
-juniper = "~0"
-serde_json = "~1"
-serde = { version = "~1", features = ["derive"] }
-actix = "~0"
-actix-session = "~0"
-actix-files = "~0"
-regex = "~1"
-clap = {version = "~2", features = ["yaml"]}
-toml = "~0"
-state = { version = "~0", features = ["const_fn", "tls"] }
-derive_more = "~0"
-r2d2 = "~0"
-chrono = { version = "~0", features = ["serde"] }
+diesel = { version = "1.4.2", features = ["postgres", "r2d2", "chrono"] }
+actix-web = "1.0.5"
+log = "0.4.8"
+env_logger = "0.6.2"
+rand = "0.7.0"
+rust-argon2 = "0.5.0"
+juniper = "0.13.1"
+serde_json = "1.0.40"
+serde = { version = "1.0.98", features = ["derive"] }
+actix = "0.8.3"
+actix-session = "0.2.0"
+actix-files = "0.1.4"
+regex = "1.2.1"
+clap = {version = "2.33.0", features = ["yaml"]}
+toml = "0.5.1"
+state = { version = "0.4.1", features = ["const_fn", "tls"] }
+derive_more = "0.15.0"
+r2d2 = "0.8.5"
+chrono = { version = "0.4.7", features = ["serde"] }
 
 [[bin]]
 name = "server"
