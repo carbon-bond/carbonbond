@@ -12,7 +12,7 @@ type User {
     id: String
     energy: Int
     # 剩餘邀請信數目
-    invatationMailCount: Int
+    invitationMailCount: Int
 }
 
 type Party {
