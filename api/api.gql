@@ -11,6 +11,8 @@ type Me {
 type User {
     id: String
     energy: Int
+    # 剩餘邀請信數目
+    invitationMailCount: Int
 }
 
 type Party {
@@ -84,8 +86,8 @@ type Mutation {
     logout(): Error
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
     signupByInvitation(code: String!, id: String!, password: String!): Boolean
-    # 邀請別人加入碳鍵，第二個參數 invition 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    inviteSignup(email: String!): Boolean
+    # 邀請別人加入碳鍵，第二個參數 invitation 是邀請人自己寫的邀請詞，會被嵌入邀請信
+    inviteSignup(email: String!, invitation: String!): Boolean
 
 
     ### 政黨
@@ -121,6 +123,10 @@ type Mutation {
     # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
     createBoard(name: String!): Boolean
     createArticle(boardName: String!, categoryName: String!, title: String!, content: String!, replyTo: [Reply!]!): ID!
+    changePassword(oldPassword: String!, newPassword: String!): Boolean
+    # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
+    forgetPassword(id: String!): Boolean
+    resetPassword(code: String!, newPassword: String!): Boolean
 }
 
 input Reply {
