@@ -61,7 +61,7 @@ export function BoardPage(props: Props): JSX.Element {
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
-	return <div styleName="boardContent">
+	return <div className="boardContent">
 		<h1>{board_name}</h1>
 		{
 			(() => {
@@ -75,12 +75,76 @@ export function BoardPage(props: Props): JSX.Element {
 			{
 				articles.map((article, idx) => (
 					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
-						<li styleName="articleTitle">
-							<p>{article.id} - {article.title}</p>
-						</li>
+						<BoardItem article={article} />
 					</Link>
 				))
 			}
 		</ul>
 	</div>;
+}
+
+function BoardItem(props: Props): JSX.Element {
+	return (
+		<div styleName="articleContainer">
+			<div styleName="articleHeader">
+				<div styleName="articleType">心情</div>
+				<div styleName="authorId">嗨嗨我是無定</div>
+				<div styleName="articleTime">2019年08月11日</div>
+				<div styleName="articleTag">標籤</div>
+			</div>
+			<div styleName="articleBody">
+				<div styleName="leftPart">
+					<div styleName="articleTitle">這裡是文章標題</div>
+					<div styleName="articleContent">這裡是文章內容的一小部分，16px是標準字不要再嫌小快煩死</div>
+				</div>
+				{/* <div styleName="rightPart">
+					<div styleName="articlePic">
+						<img src="/img/test.jpg" alt="" />
+					</div>
+				</div> */}
+			</div>
+			<div styleName="articleFooter">
+				<div styleName="articleBtns">
+					<div styleName="articleBtnItem">
+						<i class="material-icons">
+							question_answer
+						</i>
+						<span styleName="num">1,297</span>則留言
+					</div>
+					<div styleName="articleBtnItem">
+						<i class="material-icons">
+							share
+						</i>
+						分享
+					</div>
+					<div styleName="articleBtnItem">
+						<i class="material-icons">
+							star
+						</i>
+						收藏
+					</div>
+					<div styleName="articleBtnItem">
+						<i class="material-icons">
+							notifications
+						</i>
+						追蹤
+					</div>
+				</div>
+				<div styleName="articleData">
+					<div styleName="articleBtnItemPower">
+						<img src="/img/energy.png" alt="" />
+						1,275
+					</div>
+					<div styleName="articleBtnItemFight">
+						<img src="/img/fight.png" alt="" />
+						500
+					</div>
+					<div styleName="articleBtnItemPush">
+						<img src="/img/push.png" alt="" />
+						775
+					</div>
+				</div>
+			</div>
+		</div>
+	)
 }
