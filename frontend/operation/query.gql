@@ -1,0 +1,63 @@
+query Me {
+	me { id }
+}
+
+query CategoriesOfBoard($board_name: String!) {
+	board(name: $board_name) {
+		categories {
+			body
+		}
+	}
+}
+
+query ArticleDetail($id: ID!) {
+	article(id: $id) {
+		id, title, authorId, energy,
+		createTime, rootId, content,
+		category { body },
+		board { boardName }
+	}
+}
+
+fragment ArticleMeta on Article {
+	id
+	title
+	category { body }
+	authorId
+	energy
+	createTime
+}
+
+query ArticleList($board_name: String!, $page_size: Int!, $offset: Int!, $show_hidden: Boolean) {
+	articleList(
+		boardName: $board_name,
+		pageSize: $page_size,
+		offset: $offset,
+		showHidden: $show_hidden
+	) {
+		...ArticleMeta
+	}
+}
+
+fragment BoardMeta on Board {
+	id, boardName, title, rulingPartyId
+}
+
+query BoardList($ids: [ID!]) {
+	boardList(ids: $ids) { ...BoardList }
+}
+
+fragment PartyMeta on Party {
+	id, partyName, boardId, energy, chairmanId
+}
+query MyPartyList($board_name: String) {
+    myPartyList(boardName: $board_name) { ...PartyMeta }
+}
+
+query PartyDetail($name: String!) {
+	party(partyName: $name) {
+		id, partyName, boardId,
+		energy, chairmanId, position,
+		board { boardName }
+	}
+}

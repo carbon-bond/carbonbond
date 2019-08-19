@@ -6,7 +6,8 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import * as api from '../ts/api';
+import { gqlFetcher, GQL, extractErrMsg } from '../ts/api';
+
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
 
@@ -17,23 +18,23 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(id: string, password: string): Promise<{}> {
 		try {
-			await api.login_request(id, password);
+			await GQL.LoginAjax(gqlFetcher, { id, password });
 			setLogining(false);
 			setLogin(id);
 			toast('登入成功');
 		} catch (err) {
-			toast.error(api.extractErrMsg(err));
+			toast.error(extractErrMsg(err));
 		}
 		return {};
 	}
 	async function logout_request(): Promise<{}> {
 		try {
-			await api.logout_request();
+			await GQL.LogoutAjax(gqlFetcher);
 			setLogout();
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			toast.error(api.extractErrMsg(err));
+			toast.error(extractErrMsg(err));
 		}
 		return {};
 	}

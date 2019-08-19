@@ -1,39 +1,25 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { getGraphQLClient, extractErrMsg } from '../../ts/api';
-import { Party, EXILED_PARTY_NAME } from './index';
+import { gqlFetcher, GQL, extractErrMsg } from '../../ts/api';
+import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 import { toast } from 'react-toastify';
 
 import '../../css/party.css';
 
+type Party = GQL.PartyDetailQuery['party'];
 type Props = RouteComponentProps<{ party_name?: string }>;
 
-function createBoard(party_name: string, board_name: string): Promise<void> {
-	let client = getGraphQLClient();
-	const mutation = `
-			mutation CreateBoard($party_name: String!, $board_name: String!) {
-				createBoard(partyName: $party_name, boardName: $board_name)
-			}
-		`;
-	return client.request(mutation, {
+async function createBoard(party_name: string, board_name: string): Promise<void> {
+	await GQL.CreateBoardAjax(gqlFetcher, {
 		party_name, board_name
 	});
+	return;
 }
 
 async function fetchPartyDetail(name: string): Promise<Party> {
-	let client = getGraphQLClient();
-	const query = `
-			query PartyDetail($name: String!) {
-				party(partyName: $name) {
-					id, partyName, boardId,
-					energy, chairmanId, position,
-					board { boardName }
-				}
-			}
-		`;
-	let res: { party: Party } = await client.request(query, { name });
+	let res = await GQL.PartyDetailAjax(gqlFetcher, { name });
 	return res.party;
 }
 

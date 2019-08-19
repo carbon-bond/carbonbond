@@ -3,133 +3,72 @@ schema {
     mutation: Mutation
 }
 
-type Me {
-    # 若 id 爲 null，代表尚未登入
-    id: String
-}
-
-type User {
-    id: String
-    energy: Int
-    # 剩餘邀請信數目
-    invitationMailCount: Int
+type Category {
+    body: String!
 }
 
 type Party {
-    id: ID
-    name: String
-    # TODO 填入更多
-}
-
-enum PartyPosition {
-    chairman,          # 黨主席
-    representative,    # 黨代表
-    normal             # 一般黨員
-}
-
-type Category {
-    
-}
-
-type Edge {
-    article: Article
-    transfuse: Int
-}
-
-type Article {
-    id: ID
-    title: String
-    categoryName: String
-    categoryId: String
-    category: Category
+    id: ID!
+    partyName: String!
+    chairmanId: String!
+    energy: Int!
+    position(userId: String): Int!
     boardId: ID
     board: Board
-    authorId: String
-    # TODO 鍵能?
-    energy: Int
-    createTime: Int
-
-    content: [String]
-    edgesIn: [Edge]
-    edgesOut: [Edge]
-    rootId: ID
-    sameRootArticles: [Article!]
 }
 
 type Board {
-    id: ID
-    board_name: String
-    rulingParty: Party
-    parties: [Party]
-    # TODO 模板應該用字串還是物件?
-    categories(showDepricate: Boolean): [String]
-    articleCount: Int
+    id: ID!
+    boardName: String!
+    categories: [Category!]!
+    title: String!
+    rulingPartyId: ID!
+}
+
+type Article {
+	id: ID!
+    title: String!
+    authorId: String!
+    energy: Int!
+    createTime: Int!
+    rootId: ID!
+    content: [String!]!
+    category: Category!
+	board: Board!
+}
+
+type Me {
+    id: String
 }
 
 type Query {
-    # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
+
+    myPartyList(boardName: String): [Party!]!
+    party(partyName: String!): Party!
+
     board(name: String!): Board!
-    boardList(ids: [ID]): [Board]!
-    articleList(boardName: String!, showHidden: Boolean, pageSize: Int!, offset: Int!): [Article]
-    
-    articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
-    article(id: ID): Article
-}
+    boardList(ids: [ID!]): [Board!]!
 
-type Mutation {
-    ### 註冊、登出入
-
-    # 登入（會 set-cookie）
-    login(id: String!, password: String!): Boolean
-    # 登出（清除 cookie）
-    logout(): Error
-    # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
-    signupByInvitation(code: String!, id: String!, password: String!): Boolean
-    # 邀請別人加入碳鍵，第二個參數 invitation 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    inviteSignup(email: String!, invitation: String!): Boolean
-
-
-    ### 政黨
-
-    ## 政黨本身的生命週期
-    # 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
-    createParty(partyName: String!, boardName: String): ID
-    # 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
-    tryRuling(id: ID, boardName: String!): Boolean
-    # 出走。開始流亡。（權限：黨主席）
-    exile(partyName: String!): Boolean
-
-    ## 黨員
-    # 申請入黨。可能需要審核。
-    applyToJoinParty(PartyId: ID): Boolean
-    # 接受申請。（權限：黨代表以上）
-    acceptJoinParty(memberId: String, PartyId: ID): Boolean
-    # 拒絕申請。（權限：黨代表以上）
-    rejectJoinParty(memberId: String, PartyId: ID): Boolean
-    # 邀請入黨。（權限：黨代表以上？）
-    inviteToJoinParty(memberId: String, PartyId: ID): Boolean
-    # 離黨（黨主席退位後方可離黨）
-    leaveParty(PartyId: ID): Boolean
-    # 拔擢、貶謫（權限：黨主席？）
-    # 指派他人爲黨主席後，原主席退位成爲黨代表
-    assignPartyPosition(memberId: String, position: PartyPosition): Boolean
-
-    # TODO:
-    # - 罷免黨代表、黨主席機制
-    # - 黨內設定，例如：要什麼職位才能接受申請或進行拔擢、是否爲私密政黨、入黨是否需要審核。
-
-    ### 板
-    # 創板。同時會使執行該請求的流亡政黨成爲該板執政黨
-    createBoard(name: String!): Boolean
-    createArticle(boardName: String!, categoryName: String!, title: String!, content: String!, replyTo: [Reply!]!): ID!
-    changePassword(oldPassword: String!, newPassword: String!): Boolean
-    # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
-    forgetPassword(id: String!): Boolean
-    resetPassword(code: String!, newPassword: String!): Boolean
+    article(id: ID!): Article!
+    articleList(boardName: String! offset: Int! pageSize: Int! showHidden: Boolean): [Article!]!
 }
 
 input Reply {
     articleId: ID!,
-    transfuse: Int
+    transfuse: Int!
+}
+
+type Mutation {
+    login(id: String! password: String!): Boolean!
+    logout: Boolean!
+	createArticle(
+		boardName: String!
+		categoryName: String!
+		title: String!
+		content: [String!]!
+		replyTo: [Reply!]!
+	): ID!
+    createParty(partyName: String! boardName: String): ID!
+    createBoard(boardName: String! partyName: String!): ID!
 }

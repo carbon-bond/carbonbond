@@ -1,9 +1,9 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import * as api from '../ts/api';
+import { gqlFetcher, GQL } from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
+import { Category, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
 
@@ -13,7 +13,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<{}> {
-		const data = await api.me_request();
+		const data = await GQL.MeAjax(gqlFetcher);
 		if (data.me.id != null) {
 			setUserState({ login: true, user_id: data.me.id });
 		} else {
@@ -143,7 +143,7 @@ function useEditorPanelState(): {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
-				let attached_to = args.reply_to ? [args.reply_to.article.category] : [];
+				let attached_to = args.reply_to ? [getArticleCategory(args.reply_to.article)] : [];
 				let categories = await fetchCategories(args.board_name);
 				let cur_category = (() => {
 					if (args.category) {

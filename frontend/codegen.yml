@@ -1,0 +1,9 @@
+overwrite: true
+schema: "../api/api.gql"
+documents: "./operation/*.gql"
+generates:
+  src/ts/api/gql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "./gql-codegen-typescript-ajax.js"

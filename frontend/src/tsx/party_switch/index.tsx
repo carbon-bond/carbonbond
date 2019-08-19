@@ -10,17 +10,6 @@ import { PartyDetail } from './party_detail';
 
 export const EXILED_PARTY_NAME = '流亡政黨';
 
-export type Party = {
-	id: string,
-	partyName: string,
-	energy: number,
-	chairmanId: string,
-	boardId: string | null,
-	ruling?: true,
-	position?: number,
-	board?: { boardName: string }
-};
-
 export function PartySwitch(): JSX.Element {
 	return <Switch>
 		<Route exact path="/app/party" render={props =>
