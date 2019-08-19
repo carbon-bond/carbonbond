@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
+
 import { EditorPanelState, UserState, MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { ajaxOperation } from '../../ts/api';
+import { relativeDate } from '../../ts/date';
 import { ArticleMeta } from '.';
 
 const PAGE_SIZE: number = 10;
@@ -74,7 +76,7 @@ export function BoardPage(props: Props): JSX.Element {
 		<ul>
 			{
 				articles.map((article, idx) => (
-					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
+					<Link to={`/app/b/${board_name}/a/${article.id}`} key={`article-${idx}`}>
 						<BoardItem article={article} />
 					</Link>
 				))
@@ -83,18 +85,18 @@ export function BoardPage(props: Props): JSX.Element {
 	</div>;
 }
 
-function BoardItem(props: Props): JSX.Element {
+function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
-				<div styleName="articleType">心情</div>
-				<div styleName="authorId">嗨嗨我是無定</div>
-				<div styleName="articleTime">2019年08月11日</div>
+				<div styleName="articleType">{ props.article.categoryName }</div>
+				<div styleName="authorId">{ props.article.authorId }</div>
+				<div styleName="articleTime">{ relativeDate(new Date(props.article.createTime)) }</div>
 				<div styleName="articleTag">標籤</div>
 			</div>
 			<div styleName="articleBody">
 				<div styleName="leftPart">
-					<div styleName="articleTitle">這裡是文章標題</div>
+					<div styleName="articleTitle">{ props.article.title }</div>
 					<div styleName="articleContent">這裡是文章內容的一小部分，16px是標準字不要再嫌小快煩死</div>
 				</div>
 				{/* <div styleName="rightPart">
@@ -106,25 +108,25 @@ function BoardItem(props: Props): JSX.Element {
 			<div styleName="articleFooter">
 				<div styleName="articleBtns">
 					<div styleName="articleBtnItem">
-						<i class="material-icons">
+						<i className="material-icons">
 							question_answer
 						</i>
 						<span styleName="num">1,297</span>則留言
 					</div>
 					<div styleName="articleBtnItem">
-						<i class="material-icons">
+						<i className="material-icons">
 							share
 						</i>
 						分享
 					</div>
 					<div styleName="articleBtnItem">
-						<i class="material-icons">
+						<i className="material-icons">
 							star
 						</i>
 						收藏
 					</div>
 					<div styleName="articleBtnItem">
-						<i class="material-icons">
+						<i className="material-icons">
 							notifications
 						</i>
 						追蹤
@@ -133,7 +135,7 @@ function BoardItem(props: Props): JSX.Element {
 				<div styleName="articleData">
 					<div styleName="articleBtnItemPower">
 						<img src="/img/energy.png" alt="" />
-						1,275
+						{ props.article.energy }
 					</div>
 					<div styleName="articleBtnItemFight">
 						<img src="/img/fight.png" alt="" />
