@@ -107,18 +107,19 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
-			<div styleName="leftSet">
-				<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
-					<img src="/img/icon.png" alt="" />
-					碳鍵
+			<div styleName="container">
+				<div styleName="leftSet">
+					<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
+						<img src="/img/icon.png" alt="" />
+					</div>
+					<div styleName="location">全站熱門</div>
+					<div styleName="searchPart" contentEditable={true} placeholder="搜尋全站">
+					</div>
 				</div>
-				<div styleName="location">全站熱門</div>
-			</div>
-			<div styleName="middleSet">
-				<input type="text" placeholder="🔍 搜尋全站" />
-			</div>
-			<div styleName="rightSet">
-				{ UserStatus() }
+
+				<div styleName="rightSet">
+					{ UserStatus() }
+				</div>
 			</div>
 		</div>
 	);
