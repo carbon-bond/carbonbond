@@ -12,18 +12,19 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 extern crate diesel;
 #[macro_use]
 extern crate derive_more;
-
+extern crate r2d2;
 extern crate serde_json;
 extern crate regex;
 extern crate state;
 
-use std::sync::{Arc, Mutex, MutexGuard};
 use actix_session::{Session};
 use diesel::pg::PgConnection;
 use crate::custom_error::{Error, Fallible};
 
 pub trait Context {
-    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T;
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
+    where
+        F: FnOnce(PgConnection) -> Fallible<T>;
     fn remember_id(&self, id: String) -> Fallible<()>;
     fn forget_id(&self) -> Fallible<()>;
     fn get_id(&self) -> Option<String>;
@@ -31,20 +32,20 @@ pub trait Context {
 
 pub struct Ctx {
     session: Session,
-    conn: Arc<Mutex<PgConnection>>,
 }
 impl Ctx {
-    pub fn get_pg_conn(&self) -> MutexGuard<PgConnection> {
-        self.conn.lock().unwrap()
+    pub fn get_pg_conn(&self) -> Fallible<PgConnection> {
+        db::connect_db()
     }
 }
 impl Context for Ctx {
-    fn use_pg_conn<T, F>(&self, callback: F) -> T
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
     where
-        F: FnOnce(&PgConnection) -> T,
+        F: FnOnce(PgConnection) -> Fallible<T>,
     {
-        let conn = &*self.conn.lock().unwrap();
-        callback(conn)
+        let conn = db::connect_db()?;
+        let result = callback(conn)?;
+        Ok(result)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         self.session

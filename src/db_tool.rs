@@ -42,8 +42,12 @@ struct DBToolCtx {
     config: Config,
 }
 impl Context for DBToolCtx {
-    fn use_pg_conn<T, F: FnOnce(&PgConnection) -> T>(&self, callback: F) -> T {
-        callback(&db::connect_db(&self.config.database.url))
+    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
+    where
+        F: FnOnce(PgConnection) -> Fallible<T>,
+    {
+        let ret = callback(db::connect_db()?)?;
+        Ok(ret)
     }
     fn remember_id(&self, id: String) -> Fallible<()> {
         let _s = self as *const Self as *mut Self;
@@ -92,7 +96,7 @@ fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     }
     let (email, id, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    ctx.use_pg_conn(|conn| signup::create_user(conn, email, id, password))?;
+    ctx.use_pg_conn(|conn| signup::create_user(&conn, email, id, password))?;
     Ok(())
 }
 
@@ -117,7 +121,7 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         return Err(Error::new_op("add board 參數數量錯誤"));
     }
     let (party_name, board_name) = (&args[0], &args[1]);
-    let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(conn, party_name));
+    let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(&conn, party_name));
     if find_party.is_err() {
         let id = party::create_party(ctx, None, party_name)?;
         println!("建立政黨 {}, id = {}", party_name, id);
@@ -128,13 +132,13 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let invite_code = ctx.use_pg_conn(|conn| signup::create_invitation(conn, None, &args[0]))?;
+    let invite_code = ctx.use_pg_conn(|conn| signup::create_invitation(&conn, None, &args[0]))?;
     email::send_invite_email(None, &invite_code, &args[0])?;
     Ok(())
 }
 fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let id = args[0].clone();
-    ctx.use_pg_conn(|conn| find_user(conn, &id))?;
+    ctx.use_pg_conn(|conn| find_user(&conn, &id))?;
     ctx.remember_id(id).unwrap();
     Ok(())
 }
@@ -220,6 +224,9 @@ fn main() -> Fallible<()> {
             .map(|p| PathBuf::from(p));
         load_config(&config_file)?
     };
+
+    // 初始化資料庫
+    db::init_db(&config.database.url);
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
     let mut ctx = DBToolCtx { id: None, config };

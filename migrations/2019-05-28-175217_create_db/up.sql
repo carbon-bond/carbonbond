@@ -68,7 +68,8 @@ CREATE TABLE parties (
   party_name VARCHAR(20) NOT NULL,
   energy INT NOT NULL DEFAULT 0,
   chairman_id VARCHAR(20) REFERENCES users(id) NOT NULL,
-  create_time TIMESTAMP NOT NULL DEFAULT Now()
+  create_time TIMESTAMP NOT NULL DEFAULT Now(),
+  UNIQUE(party_name)
 );
 
 CREATE TABLE party_members (

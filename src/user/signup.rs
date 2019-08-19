@@ -71,7 +71,7 @@ pub fn create_user_by_invitation(
         .first::<Invitation>(conn)
         .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
 
-    create_user(conn, &invitation.email, id, password)
+    create_user(&conn, &invitation.email, id, password)
 }
 
 // NOTE: 伺服器尚未用到該函式，是 db-tool 在用

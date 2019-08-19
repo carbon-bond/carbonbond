@@ -10,7 +10,6 @@ extern crate clap;
 extern crate toml;
 
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::middleware::Logger;
@@ -41,11 +40,10 @@ fn main() -> Fallible<()> {
     info!("伺服器位置：{}", address);
     info!("資料庫位置：{}", &conf.database.url);
 
-    let sys = actix_rt::System::new("carbon-bond-runtime");
+    // 初始化資料庫連線池
+    db::init_db(&conf.database.url);
 
-    // TODO: 建造一個資料庫連接池，以避免只有單條連線，導致性能瓶頸
-    // 現有的 r2d2 對 postgres 的支援不完美
-    let conn = Arc::new(Mutex::new(db::connect_db(&conf.database.url)));
+    let sys = actix_rt::System::new("carbon-bond-runtime");
 
     HttpServer::new(move || {
         let log_format = "
@@ -56,7 +54,6 @@ fn main() -> Fallible<()> {
                         處理時間: %T 秒";
 
         App::new()
-            .data(conn.clone())
             .wrap(Logger::new(log_format))
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .route("/api", web::post().to(api::api))
