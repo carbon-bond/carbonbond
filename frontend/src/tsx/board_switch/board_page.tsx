@@ -148,5 +148,5 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
