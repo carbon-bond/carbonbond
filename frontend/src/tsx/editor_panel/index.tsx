@@ -7,7 +7,7 @@ import { EditorPanelState, EditorPanelData } from '../global_state';
 import { gqlFetcher, GQL, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import { Option, Select } from '../components';
-import { Category, checkCanAttach } from '../../ts/forum_util';
+import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';
 
@@ -135,7 +135,7 @@ function CategorySelector(): JSX.Element {
 }
 
 function SingleColInput(props: {
-	col: Category['structure'][0]
+	col: CategoryBody['structure'][0]
 	value: string,
 	onChange: (s: string) => void,
 	single?: boolean

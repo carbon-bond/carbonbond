@@ -17,6 +17,7 @@ matrix:
       before_script:
         - cd frontend
         - yarn
+        - yarn api-codegen
       script:
         - yarn lint
         - yarn check-ts

@@ -44,7 +44,7 @@ fragment BoardMeta on Board {
 }
 
 query BoardList($ids: [ID!]) {
-	boardList(ids: $ids) { ...BoardList }
+	boardList(ids: $ids) { ...BoardMeta }
 }
 
 fragment PartyMeta on Party {
