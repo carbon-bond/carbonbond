@@ -1,12 +1,10 @@
-use std::io::{stdin, stdout};
-use std::io::Write;
-use std::fs;
-use std::path::PathBuf;
-
-use diesel::PgConnection;
 #[macro_use]
 extern crate clap;
+extern crate rustyline;
 
+use std::{fs, path::PathBuf};
+use diesel::PgConnection;
+use rustyline::{Editor, error::ReadlineError, config::Config as RustyLineConfig};
 use carbonbond::{
     user::{email, signup, find_user_by_name, find_user_by_id},
     custom_error::{Error, Fallible},
@@ -14,6 +12,7 @@ use carbonbond::{
     Context, forum, party, db,
 };
 
+static COMMAND_HISTORY_FILE: &'static str = ".db_tool_history";
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
 
@@ -34,14 +33,39 @@ invite 子命令：
     invite <信箱地址>
 reset
     清除資料庫並重建
+exit
+    離開程式
 ";
+
+enum CommandResult {
+    Success,
+    Eof,
+}
 
 struct DBToolCtx {
     id: Option<i64>,
     config: Config,
+    line_editor: Editor<()>,
 }
 
 impl DBToolCtx {
+    fn new(config: Config) -> DBToolCtx {
+        let editor_config = RustyLineConfig::builder()
+            .max_history_size(100000)
+            .history_ignore_dups(true)
+            .history_ignore_space(true)
+            .auto_add_history(true)
+            .build();
+        let mut line_editor = Editor::<()>::with_config(editor_config);
+        line_editor.load_history(COMMAND_HISTORY_FILE).ok();
+
+        DBToolCtx {
+            id: None,
+            config,
+            line_editor,
+        }
+    }
+
     fn get_user(&self) -> Fallible<Option<db::models::User>> {
         match self.id {
             Some(id) => {
@@ -79,16 +103,35 @@ impl Context for DBToolCtx {
     }
 }
 
-fn match_subcommand() -> Fallible<(String, Vec<String>)> {
-    let mut buff = String::new();
-    loop {
-        stdin().read_line(&mut buff)?;
-        let words: Vec<String> = buff.split_whitespace().map(|w| w.to_owned()).collect();
+fn match_subcommand(ctx: &mut DBToolCtx) -> Fallible<Option<(String, Vec<String>)>> {
+    let prompt = match ctx.get_user()? {
+        Some(user) => format!("{} > ", user.name),
+        None => "> ".to_owned(),
+    };
+
+    let command = loop {
+        let line = match ctx.line_editor.readline(&prompt) {
+            Ok(line) => Ok(line),
+            Err(ReadlineError::Eof) => {
+                print!("^D");
+                return Ok(None);
+            }
+            Err(ReadlineError::Interrupted) => {
+                print!("^C");
+                continue;
+            }
+            Err(error) => Err(error),
+        }?;
+
+        let words: Vec<String> = line.split_whitespace().map(|w| w.to_owned()).collect();
         if words.len() == 0 {
             continue;
         }
-        return Ok((words[0].clone(), words[1..].to_vec()));
-    }
+
+        break (words[0].clone(), words[1..].to_vec());
+    };
+
+    return Ok(Some(command));
 }
 
 fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
@@ -162,15 +205,30 @@ fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     Ok(())
 }
 
-fn reset_database(ctx: &DBToolCtx) -> Fallible<()> {
+fn reset_database(ctx: &mut DBToolCtx) -> Fallible<()> {
     if let Mode::Release = ctx.config.mode {
         println!("危險操作！請輸入 carbonbond 以繼續");
-        print!("> ");
-        stdout().flush()?;
 
-        let mut buff = String::new();
-        stdin().read_line(&mut buff)?;
-        if &buff != "carbonbond\n" {
+        let prompt = match ctx.get_user()? {
+            Some(user) => format!("{} (reset)> ", user.name),
+            None => "(reset)> ".to_owned(),
+        };
+        let line = loop {
+            use ReadlineError::*;
+
+            let line = match ctx.line_editor.readline(&prompt) {
+                Ok(line) => Ok(line),
+                Err(Interrupted) | Err(Eof) => {
+                    println!("操作取消");
+                    return Ok(());
+                }
+                Err(error) => Err(error),
+            }?;
+
+            break line;
+        };
+
+        if &line != "carbonbond\n" {
             println!("操作取消");
             return Ok(());
         }
@@ -196,11 +254,10 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     let txt = fs::read_to_string(file_path).expect("讀取檔案失敗");
     for cmd in txt.split("\n").into_iter() {
         match ctx.get_user()? {
-            Some(user) => print!("{} > ", user.name),
-            _ => print!("> "),
+            Some(user) => println!("{} > {}", user.name, cmd),
+            _ => println!("> {}", cmd),
         }
-        println!("{}", cmd);
-        stdout().flush()?;
+
         let vec_cmd: Vec<String> = cmd.split(" ").map(|s| s.to_owned()).collect();
         if let Err(e) = dispatch_command(ctx, &vec_cmd[0], &vec_cmd[1..].to_vec()) {
             println!("{:?}", e);
@@ -209,17 +266,20 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     Ok(())
 }
 
-fn exec_command(ctx: &mut DBToolCtx) -> Fallible<()> {
-    match ctx.get_user()? {
-        Some(user) => print!("{} > ", user.name),
-        _ => print!("> "),
-    }
-    stdout().flush()?;
-    let (subcommand, args) = match_subcommand()?;
+fn exec_command(ctx: &mut DBToolCtx) -> Fallible<CommandResult> {
+    let (subcommand, args) = match match_subcommand(ctx)? {
+        Some(command) => command,
+        None => return Ok(CommandResult::Eof),
+    };
+
     dispatch_command(ctx, &subcommand, &args)
 }
 
-fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -> Fallible<()> {
+fn dispatch_command(
+    ctx: &mut DBToolCtx,
+    subcommand: &str,
+    args: &Vec<String>,
+) -> Fallible<CommandResult> {
     match subcommand {
         "help" => println!("{}", HELP_MSG),
         "h" => println!("{}", HELP_MSG),
@@ -228,9 +288,10 @@ fn dispatch_command(ctx: &mut DBToolCtx, subcommand: &str, args: &Vec<String>) -
         "as" => as_user(ctx, &args)?,
         "invite" => invite(ctx, &args)?,
         "reset" => reset_database(ctx)?,
+        "exit" => return Ok(CommandResult::Eof),
         other => println!("無 {} 指令", other),
     }
-    Ok(())
+    Ok(CommandResult::Success)
 }
 
 fn main() -> Fallible<()> {
@@ -248,13 +309,19 @@ fn main() -> Fallible<()> {
     db::init_db(&config.database.url);
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx { id: None, config };
+    let mut ctx = DBToolCtx::new(config);
     loop {
         match exec_command(&mut ctx) {
+            Ok(CommandResult::Success) => {}
+            Ok(CommandResult::Eof) => {
+                ctx.line_editor.save_history(COMMAND_HISTORY_FILE)?;
+                break;
+            }
             Err(error) => {
                 println!("執行失敗： {}", error);
             }
-            _ => {}
         }
     }
+
+    Ok(())
 }

@@ -17,3 +17,6 @@ node_modules/
 
 # log
 **/*.log
+
+# temp files
+.db_tool_history
