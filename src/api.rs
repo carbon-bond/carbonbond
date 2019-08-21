@@ -18,12 +18,12 @@ use crate::forum;
 use crate::{Ctx, Context};
 impl juniper::Context for Ctx {}
 
-trait CarbonbonID {
+trait CarbonbondID {
     fn from_i64(id: i64) -> ID;
     fn to_i64(&self) -> Fallible<i64>;
 }
 
-impl CarbonbonID for ID {
+impl CarbonbondID for ID {
     fn from_i64(id: i64) -> ID {
         ID::new(id.to_string())
     }
@@ -205,16 +205,16 @@ impl Article {
         let list = forum::get_articles_with_root(ctx, self.root_id.to_i64()?)?;
         Ok(list
             .into_iter()
-            .map(|(art, cat)| Article {
-                id: ID::from_i64(art.id),
-                title: art.title,
-                board_id: ID::from_i64(art.board_id),
-                author_id: ID::from_i64(art.author_id),
-                category_name: cat.category_name,
-                category_id: ID::from_i64(art.category_id),
-                create_time: art.create_time,
+            .map(|(article, category)| Article {
+                id: ID::from_i64(article.id),
+                title: article.title,
+                board_id: ID::from_i64(article.board_id),
+                author_id: ID::from_i64(article.author_id),
+                category_name: category.category_name,
+                category_id: ID::from_i64(article.category_id),
+                create_time: article.create_time,
                 energy: 0,
-                root_id: ID::from_i64(art.root_id),
+                root_id: ID::from_i64(article.root_id),
             })
             .collect())
     }
@@ -382,16 +382,16 @@ impl Query {
 
         Ok(article_vec
             .into_iter()
-            .map(|(art, cat)| Article {
-                id: ID::from_i64(art.id),
-                title: art.title.clone(),
-                board_id: ID::from_i64(art.board_id),
-                author_id: ID::from_i64(art.author_id),
-                category_id: ID::from_i64(art.category_id),
-                category_name: cat.category_name,
-                create_time: art.create_time,
+            .map(|(article, category)| Article {
+                id: ID::from_i64(article.id),
+                title: article.title.clone(),
+                board_id: ID::from_i64(article.board_id),
+                author_id: ID::from_i64(article.author_id),
+                category_id: ID::from_i64(article.category_id),
+                category_name: category.category_name,
+                create_time: article.create_time,
                 energy: 0, // TODO: 鍵能
-                root_id: ID::from_i64(art.root_id),
+                root_id: ID::from_i64(article.root_id),
             })
             .collect())
     }
@@ -482,11 +482,11 @@ struct Mutation;
     Context = Ctx,
 )]
 impl Mutation {
-    fn login(ctx: &Ctx, id: ID, password: String) -> Fallible<bool> {
-        match user::login(&ctx.get_pg_conn()?, id.to_i64()?, &password) {
+    fn login(ctx: &Ctx, name: String, password: String) -> Fallible<bool> {
+        match user::login(&ctx.get_pg_conn()?, &name, &password) {
             Err(error) => Err(error),
-            Ok(()) => {
-                ctx.remember_id(id.to_i64()?)?;
+            Ok(user) => {
+                ctx.remember_id(user.id)?;
                 Ok(true)
             }
         }
@@ -501,7 +501,6 @@ impl Mutation {
         match ctx.get_id() {
             None => Err(Error::new_logic("尚未登入", 401)),
             Some(id) => {
-                // TODO: 寫宏來處理類似邏輯
                 let conn = ctx.get_pg_conn()?;
                 let invite_code = signup::create_invitation(&conn, Some(id), &email)?;
                 email::send_invite_email(&conn, Some(id), &invite_code, &email)

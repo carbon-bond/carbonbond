@@ -22,15 +22,15 @@ function me_request(): Promise<Me> {
 	return graphQLClient.request(query);
 }
 
-function login_request(id: string, password: string): Promise<LoginResponse> {
+function login_request(name: string, password: string): Promise<LoginResponse> {
 	const graphQLClient = getGraphQLClient();
 	const query = `
-			mutation Login($id: String!, $password: String!) {
-				login(id: $id, password: $password)
+			mutation Login($name: String!, $password: String!) {
+				login(name: $name, password: $password)
 			}
 		`;
 	return graphQLClient.request(query, {
-		id, password
+		name, password
 	});
 }
 

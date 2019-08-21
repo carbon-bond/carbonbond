@@ -156,8 +156,8 @@ fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let name: String = args[0].parse()?;
-    let user = ctx.use_pg_conn(|conn| find_user_by_name(&conn, &name))?;
+    let name = &args[0];
+    let user = ctx.use_pg_conn(|conn| find_user_by_name(&conn, name))?;
     ctx.remember_id(user.id)?;
     Ok(())
 }

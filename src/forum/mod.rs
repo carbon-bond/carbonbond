@@ -67,7 +67,7 @@ pub fn create_article<C: Context>(
     }
     let related_articles = get_articles_meta(ctx, &node_ids)?;
     let mut root_id: Option<i64> = None;
-    for article in related_articles.iter() {
+    for (article, category_of_article) in related_articles.iter() {
         if article.board_id != board.id {
             return Err(Error::new_logic("內部連結指向不同看板", 403).into());
         } else if root_id.is_none() {
@@ -75,17 +75,17 @@ pub fn create_article<C: Context>(
         } else if root_id.unwrap() != article.root_id {
             return Err(Error::new_logic("內部連結指向不同主題樹", 403).into());
         }
-        // FIXME: no category_name in Article struct
-        // if !c_body.can_attach_to(&article.category_name) {
-        //     return Err(Error::new_logic(
-        //         format!(
-        //             "分類 {} 與 {} 間不可建立關係",
-        //             category_name, article.category_name
-        //         ),
-        //         403,
-        //     )
-        //     .into());
-        // }
+
+        if !c_body.can_attach_to(&category_of_article.category_name) {
+            return Err(Error::new_logic(
+                format!(
+                    "分類 {} 與 {} 間不可建立關係",
+                    category_name, category_of_article.category_name
+                ),
+                403,
+            )
+            .into());
+        }
     }
     let content = parse_content(&c_body.structure, content)?;
     ctx.use_pg_conn(|conn| {
@@ -108,26 +108,27 @@ pub fn create_article<C: Context>(
 pub fn get_articles_meta<C: Context>(
     ctx: &C,
     article_ids: &Vec<i64>,
-) -> Fallible<Vec<models::Article>> {
+) -> Fallible<Vec<(models::Article, models::Category)>> {
     // TODO: 檢查是否為隱板
-    use crate::db::schema::articles::dsl::id;
-    let articles = ctx.use_pg_conn(|conn| {
-        let ret = schema::articles::table
-            .filter(id.eq_any(article_ids))
-            .load::<models::Article>(&conn)?;
+    use crate::db::schema::{articles, categories};
+    let pairs = ctx.use_pg_conn(|conn| {
+        let ret = articles::table
+            .filter(articles::id.eq_any(article_ids))
+            .inner_join(categories::table.on(categories::id.eq(articles::category_id)))
+            .load::<(models::Article, models::Category)>(&conn)?;
         Ok(ret)
     })?;
-    if articles.len() == article_ids.len() {
-        Ok(articles)
+    if pairs.len() == article_ids.len() {
+        Ok(pairs)
     } else {
         Err(Error::new_logic("找不到文章資料", 404).into())
     }
 }
 
 pub fn get_board_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Board> {
-    use schema::boards::dsl::*;
-    boards
-        .filter(board_name.eq(&name))
+    use schema::boards;
+    boards::table
+        .filter(boards::board_name.eq(&name))
         .first::<models::Board>(conn)
         .or(Err(
             Error::new_logic(format!("找不到看板: {}", name), 404).into()
@@ -139,11 +140,11 @@ pub fn get_category(
     category_name: &str,
     board_id: i64,
 ) -> Fallible<models::Category> {
-    use schema::categories::dsl;
-    dsl::categories
-        .filter(dsl::is_active.eq(true))
-        .filter(dsl::category_name.eq(category_name))
-        .filter(dsl::board_id.eq(board_id))
+    use schema::categories;
+    categories::table
+        .filter(categories::is_active.eq(true))
+        .filter(categories::category_name.eq(category_name))
+        .filter(categories::board_id.eq(board_id))
         .first::<models::Category>(conn)
         .or(Err(Error::new_logic(
             format!("找不到分類: {}", category_name),
