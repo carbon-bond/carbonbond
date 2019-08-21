@@ -7,13 +7,12 @@ use diesel::PgConnection;
 #[macro_use]
 extern crate clap;
 
-use carbonbond::Context;
-use carbonbond::user::{email, signup, find_user};
-use carbonbond::forum;
-use carbonbond::party;
-use carbonbond::db;
-use carbonbond::custom_error::{Error, Fallible};
-use carbonbond::config::{Config, load_config, Mode};
+use carbonbond::{
+    user::{email, signup, find_user_by_name, find_user_by_id},
+    custom_error::{Error, Fallible},
+    config::{Config, load_config, Mode},
+    Context, forum, party, db,
+};
 
 static HELP_MSG: &'static str = "
 <> 表示必填， [] 表示選填
@@ -41,6 +40,19 @@ struct DBToolCtx {
     id: Option<i64>,
     config: Config,
 }
+
+impl DBToolCtx {
+    fn get_user(&self) -> Fallible<Option<db::models::User>> {
+        match self.id {
+            Some(id) => {
+                let user = self.use_pg_conn(|conn| find_user_by_id(&conn, id))?;
+                Ok(Some(user))
+            }
+            None => Ok(None),
+        }
+    }
+}
+
 impl Context for DBToolCtx {
     fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
     where
@@ -144,9 +156,9 @@ fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let id = args[0].parse()?;
-    ctx.use_pg_conn(|conn| find_user(&conn, id))?;
-    ctx.remember_id(id).unwrap();
+    let name: String = args[0].parse()?;
+    let user = ctx.use_pg_conn(|conn| find_user_by_name(&conn, &name))?;
+    ctx.remember_id(user.id)?;
     Ok(())
 }
 
@@ -183,8 +195,8 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     };
     let txt = fs::read_to_string(file_path).expect("讀取檔案失敗");
     for cmd in txt.split("\n").into_iter() {
-        match ctx.get_id() {
-            Some(id) => print!("{} > ", id),
+        match ctx.get_user()? {
+            Some(user) => print!("{} > ", user.name),
             _ => print!("> "),
         }
         println!("{}", cmd);
@@ -198,8 +210,8 @@ fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn exec_command(ctx: &mut DBToolCtx) -> Fallible<()> {
-    match ctx.get_id() {
-        Some(id) => print!("{} > ", id),
+    match ctx.get_user()? {
+        Some(user) => print!("{} > ", user.name),
         _ => print!("> "),
     }
     stdout().flush()?;
