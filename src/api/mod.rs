@@ -14,91 +14,29 @@ use crate::custom_error::{Error, Fallible};
 use crate::db::{models as db_models, schema as db_schema};
 use crate::forum;
 
-use crate::{Ctx, Context};
+pub(self) use crate::{Ctx, Context};
 impl juniper::Context for Ctx {}
 
-fn i64_to_id(id: i64) -> ID {
+pub(self) fn i64_to_id(id: i64) -> ID {
     ID::new(id.to_string())
 }
-fn id_to_i64(id: &ID) -> Fallible<i64> {
+pub(self) fn id_to_i64(id: &ID) -> Fallible<i64> {
     id.parse::<i64>()
         .or(Err(Error::new_logic(format!("ID 不為整數: {:?}", id), 403)))
 }
-fn systime_to_i32(time: std::time::SystemTime) -> i32 {
+pub(self) fn systime_to_i32(time: std::time::SystemTime) -> i32 {
     time.duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_secs() as i32
 }
 
+mod api_party;
+pub use api_party::Party;
+
 #[derive(juniper::GraphQLObject)]
 struct Me {
     id: Option<String>,
 }
-
-struct Party {
-    id: ID,
-    party_name: String,
-    board_id: Option<ID>,
-    chairman_id: String,
-    energy: i32,
-}
-#[juniper::object(Context = Ctx)]
-impl Party {
-    fn id(&self) -> ID {
-        self.id.clone()
-    }
-    fn party_name(&self) -> String {
-        self.party_name.clone()
-    }
-    fn board_id(&self) -> Option<ID> {
-        self.board_id.clone()
-    }
-    fn chairman_id(&self) -> String {
-        self.chairman_id.clone()
-    }
-    fn energy(&self) -> i32 {
-        self.energy
-    }
-    fn position(&self, ctx: &Ctx, user_id: Option<String>) -> Fallible<i32> {
-        // TODO: 這裡有 N+1 問題
-        let user_id = {
-            if let Some(id) = user_id {
-                id
-            } else if let Some(id) = ctx.get_id() {
-                id
-            } else {
-                return Ok(0);
-            }
-        };
-        party::get_member_position(&ctx.get_pg_conn()?, &user_id, id_to_i64(&self.id)?)
-            .map(|p| p as i32)
-    }
-    fn board(&self, ctx: &Ctx) -> Fallible<Option<Board>> {
-        use db_schema::boards::dsl::*;
-        if let Some(board_id) = self.board_id.clone() {
-            let res = boards
-                .filter(id.eq(id_to_i64(&board_id)?))
-                .first::<db_models::Board>(&ctx.get_pg_conn()?);
-
-            let b = match res {
-                Err(diesel::result::Error::NotFound) => return Ok(None),
-                Err(e) => return Err(e.into()),
-                Ok(b) => b,
-            };
-
-            Ok(Some(Board {
-                id: i64_to_id(b.id),
-                detail: b.detail,
-                title: b.title,
-                board_name: b.board_name,
-                ruling_party_id: i64_to_id(b.ruling_party_id),
-            }))
-        } else {
-            Ok(None)
-        }
-    }
-}
-
 #[derive(juniper::GraphQLInputObject)]
 struct Reply {
     article_id: ID,
@@ -206,7 +144,7 @@ struct Category {
     replacing: Option<ID>,
 }
 
-struct Board {
+pub struct Board {
     id: ID,
     board_name: String,
     ruling_party_id: ID,

@@ -8,6 +8,7 @@ pub mod config;
 
 pub const MAX_ARTICLE_COLUMN: usize = 15;
 
+extern crate juniper;
 #[macro_use]
 extern crate diesel;
 #[macro_use]

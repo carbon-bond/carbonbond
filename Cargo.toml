@@ -24,6 +24,7 @@ toml = "~0"
 state = { version = "~0", features = ["const_fn", "tls"] }
 derive_more = "~0"
 r2d2 = "~0"
+juniper-from-schema = "0.3.0"
 
 [[bin]]
 name = "server"

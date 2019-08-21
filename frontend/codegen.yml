@@ -1,5 +1,5 @@
 overwrite: true
-schema: "../api/api.gql"
+schema: "../api/*.gql"
 documents: "./operation/*.gql"
 generates:
   src/ts/api/gql.ts:

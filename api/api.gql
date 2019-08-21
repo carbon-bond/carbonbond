@@ -7,16 +7,6 @@ type Category {
     body: String!
 }
 
-type Party {
-    id: ID!
-    partyName: String!
-    chairmanId: String!
-    energy: Int!
-    position(userId: String): Int!
-    boardId: ID
-    board: Board
-}
-
 type Board {
     id: ID!
     boardName: String!
@@ -42,20 +32,25 @@ type Me {
 }
 
 type Query {
-    me: Me!
+    me: Me! @juniper(ownership: "owned")
 
-    myPartyList(boardName: String): [Party!]!
-    party(partyName: String!): Party!
+    myPartyList(boardName: String): [Party!]! @juniper(ownership: "owned")
+    party(partyName: String!): Party! @juniper(ownership: "owned")
 
-    board(name: String!): Board!
-    boardList(ids: [ID!]): [Board!]!
+    board(name: String!): Board! @juniper(ownership: "owned")
+    boardList(ids: [ID!]): [Board!]! @juniper(ownership: "owned")
 
-    article(id: ID!): Article!
-    articleList(boardName: String! offset: Int! pageSize: Int! showHidden: Boolean): [Article!]!
+    article(id: ID!): Article! @juniper(ownership: "owned")
+    articleList(
+        boardName: String!
+        offset: Int!
+        pageSize: Int!
+        showHidden: Boolean
+    ): [Article!]! @juniper(ownership: "owned")
 }
 
 input Reply {
-    articleId: ID!,
+    articleId: ID!
     transfuse: Int!
 }
 
@@ -68,7 +63,7 @@ type Mutation {
 		title: String!
 		content: [String!]!
 		replyTo: [Reply!]!
-	): ID!
-    createParty(partyName: String! boardName: String): ID!
-    createBoard(boardName: String! partyName: String!): ID!
+	): ID! @juniper(ownership: "owned")
+    createParty(partyName: String! boardName: String): ID! @juniper(ownership: "owned")
+    createBoard(boardName: String! partyName: String!): ID! @juniper(ownership: "owned")
 }
