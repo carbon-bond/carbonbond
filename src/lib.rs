@@ -1,4 +1,5 @@
 pub mod api;
+pub mod chat;
 pub mod custom_error;
 pub mod user;
 pub mod forum;
