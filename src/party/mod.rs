@@ -17,14 +17,14 @@ pub fn create_party<C: Context>(ctx: &C, board_name: Option<&str>, name: &str) -
             None => None,
         };
         check_party_name_valid(&conn, name)?;
-        create_party_db(&conn, &user_id, board_id, name)
+        create_party_db(&conn, user_id, board_id, name)
     })
 }
 
 /// 回傳剛創的政黨 id
 fn create_party_db(
     conn: &PgConnection,
-    user_id: &str,
+    user_id: i64,
     board_id: Option<i64>,
     name: &str,
 ) -> Fallible<i64> {
@@ -45,7 +45,7 @@ fn create_party_db(
 
 fn add_party_member(
     conn: &PgConnection,
-    user_id: &str,
+    user_id: i64,
     party_id: i64,
     position: i16,
 ) -> Fallible<()> {
@@ -73,7 +73,7 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Pa
         })
 }
 
-pub fn get_member_position(conn: &PgConnection, user_id: &str, party_id: i64) -> Fallible<i16> {
+pub fn get_member_position(conn: &PgConnection, user_id: i64, party_id: i64) -> Fallible<i16> {
     use schema::party_members::dsl;
     let member = dsl::party_members
         .filter(dsl::party_id.eq(party_id))

@@ -15,11 +15,11 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
 
-	async function login_request(id: string, password: string): Promise<{}> {
+	async function login_request(name: string, password: string): Promise<{}> {
 		try {
-			await api.login_request(id, password);
+			await api.login_request(name, password);
 			setLogining(false);
-			setLogin(id);
+			setLogin(name);
 			toast('登入成功');
 		} catch (err) {
 			toast.error(api.extractErrMsg(err));
@@ -38,14 +38,14 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		return {};
 	}
 	function LoginModal(): JSX.Element {
-		let id = useInputValue('').input_props;
+		let name = useInputValue('').input_props;
 		let password = useInputValue('').input_props;
 		let ref_all = React.useRef(null);
 		useOnClickOutside(ref_all, () => setLogining(false));
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter') {
-				login_request(id.value, password.value);
+				login_request(name.value, password.value);
 			} else if (e.key == 'Escape') {
 				setLogining(false);
 			}
@@ -54,9 +54,9 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		if (logining) {
 			return <div ref={ref_all} styleName="loginModal">
 				<div styleName="escape" onClick={ () => setLogining(false) }>✗</div>
-				<input type="text" placeholder="😎 使用者名稱" autoFocus {...id} onKeyDown={onKeyDown} />
+				<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
 				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-				<button onClick={ () => login_request(id.value, password.value) }>登入</button>
+				<button onClick={ () => login_request(name.value, password.value) }>登入</button>
 			</div>;
 		} else {
 			return <></>;
