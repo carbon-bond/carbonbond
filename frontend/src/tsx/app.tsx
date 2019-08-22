@@ -16,6 +16,7 @@ import '../css/global.css?global';
 import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
 import { MainContent } from './main_content';
 import { RegisterPage } from './register_page';
+import { InvitePage } from './invite_page';
 import { PartySwitch } from './party_switch';
 import { BoardSwitch } from './board_switch';
 import { Header } from './header';
@@ -34,6 +35,9 @@ function App(): JSX.Element {
 			<Switch>
 				<Route path="/app/register/:invite_code" render={props =>
 					<RegisterPage {...props} />
+				} />
+				<Route path="/app/invite" render={() =>
+					<InvitePage />
 				} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
