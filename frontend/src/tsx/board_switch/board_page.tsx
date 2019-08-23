@@ -86,12 +86,13 @@ export function BoardPage(props: Props): JSX.Element {
 }
 
 function BoardItem(props: { article: ArticleMeta }): JSX.Element {
+	const dateString: string = relativeDate(new Date(props.article.createTime * 1000));
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
 				<div styleName="articleType">{ props.article.categoryName }</div>
 				<div styleName="authorId">{ props.article.authorId }</div>
-				<div styleName="articleTime">{ relativeDate(new Date(props.article.createTime)) }</div>
+				<div styleName="articleTime">{ dateString }</div>
 				<div styleName="articleTag">標籤</div>
 			</div>
 			<div styleName="articleBody">
