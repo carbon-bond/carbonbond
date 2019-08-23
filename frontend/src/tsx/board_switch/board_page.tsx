@@ -97,7 +97,9 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 			<div styleName="articleBody">
 				<div styleName="leftPart">
 					<div styleName="articleTitle">{ props.article.title }</div>
-					<div styleName="articleContent">這裡是文章內容的一小部分，16px是標準字不要再嫌小快煩死</div>
+					<div styleName="articleContent">
+						{ props.article.content.length ? props.article.content[0].slice(0, 25) : '內文空白' }
+					</div>
 				</div>
 				{/* <div styleName="rightPart">
 					<div styleName="articlePic">
