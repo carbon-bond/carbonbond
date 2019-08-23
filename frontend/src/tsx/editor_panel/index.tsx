@@ -4,7 +4,7 @@ import { RouteComponentProps } from 'react-router';
 
 import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
-import { gqlFetcher, GQL, extractErrMsg } from '../../ts/api';
+import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import { Option, Select } from '../components';
 import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
@@ -14,7 +14,7 @@ import { EdgeEditor } from './edge_editor';
 async function createArticle(data: EditorPanelData | null): Promise<string> {
 	if (data) {
 		let reply_to = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
-		let res = await GQL.PostArticleAjax(gqlFetcher, {
+		let res = await ajaxOperation.PostArticle({
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,

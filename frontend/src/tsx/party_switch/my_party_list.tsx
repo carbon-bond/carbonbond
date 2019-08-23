@@ -4,7 +4,7 @@ import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { gqlFetcher, GQL, extractErrMsg } from '../../ts/api';
+import { GQL, extractErrMsg, ajaxOperation } from '../../ts/api';
 import '../../css/party.css';
 
 import { EXILED_PARTY_NAME } from './index';
@@ -16,7 +16,7 @@ type PartyTree = { [board_name: string]: (Party & { ruling?: boolean })[] };
 async function fetchPartyTree(): Promise<PartyTree> {
 	let tree: PartyTree = {};
 	let b_name_id_table: { [id: string]: Board | null } = {};
-	let res = await GQL.MyPartyListAjax(gqlFetcher);
+	let res = await ajaxOperation.MyPartyList();
 	let party_list = res.myPartyList;
 	for (let party of party_list) {
 		if (party.boardId) {
@@ -25,7 +25,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 			tree[EXILED_PARTY_NAME] = [];
 		}
 	}
-	let res2 = await GQL.BoardListAjax(gqlFetcher, { ids: Object.keys(b_name_id_table) });
+	let res2 = await ajaxOperation.BoardList({ ids: Object.keys(b_name_id_table) });
 	let board_list = res2.boardList;
 	for (let board of board_list) {
 		b_name_id_table[board.id] = board;
@@ -133,7 +133,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			/>
 			<br />
 			<button onClick={() => {
-				GQL.CreatePartyAjax(gqlFetcher, {
+				ajaxOperation.CreateParty({
 					party_name,
 					board_name: board_name.length == 0 ? undefined : board_name
 				}).then(() => {

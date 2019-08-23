@@ -1,4 +1,4 @@
-import { gqlFetcher, GQL } from './api';
+import { ajaxOperation } from './api';
 import { EditorPanelData, Transfuse } from '../tsx/global_state';
 import { Article, ArticleMeta } from '../tsx/board_switch';
 
@@ -22,7 +22,7 @@ export function getArticleCategory(article: Article | ArticleMeta): CategoryBody
 
 export async function fetchCategories(board_name: string): Promise<CategoryBody[]> {
 	// TODO: 快取?
-	let bodies = await GQL.CategoriesOfBoardAjax(gqlFetcher, { board_name });
+	let bodies = await ajaxOperation.CategoriesOfBoard({ board_name });
 	let ret: CategoryBody[] = bodies.board.categories.map(c => JSON.parse(c.body));
 	return ret.filter(c => c.name != '留言');
 }

@@ -3,14 +3,14 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 import '../css/browsebar.css';
-import { GQL, gqlFetcher, extractErrMsg } from '../ts/api';
+import { extractErrMsg, ajaxOperation, GQL } from '../ts/api';
 import { UserState } from './global_state';
 import { STORAGE_NAME } from '../ts/constants';
 
 type Board = GQL.BoardMetaFragment;
 
 async function fetchHotBoards(): Promise<Board[]> {
-	let res = await GQL.BoardListAjax(gqlFetcher);
+	let res = await ajaxOperation.BoardList();
 	return res.boardList;
 }
 

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { EditorPanelState, UserState, MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
-import { gqlFetcher, GQL } from '../../ts/api';
+import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
 
 const PAGE_SIZE: number = 10;
@@ -18,7 +18,7 @@ async function fetchArticles(
 	page_size: number,
 	offset: number
 ): Promise<ArticleMeta[]> {
-	let res = await GQL.ArticleListAjax(gqlFetcher, { board_name, page_size, offset });
+	let res = await ajaxOperation.ArticleList({ board_name, page_size, offset });
 	return res.articleList;
 }
 

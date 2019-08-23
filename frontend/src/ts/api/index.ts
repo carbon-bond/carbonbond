@@ -1,11 +1,9 @@
-import { print } from 'graphql';
 import { GraphQLClient } from 'graphql-request';
 
 import * as GQL from './gql';
 
 // eslint-disable-next-line
-async function gqlFetcher(ast: any, variables?: Object): Promise<any> {
-	let query = print(ast);
+async function gqlFetcher(query: string, variables?: Object): Promise<any> {
 	let client = new GraphQLClient('/api');
 	return await client.request(query, variables);
 }
@@ -22,8 +20,10 @@ function extractErrMsg(err: { response: { errors: { message: string }[] } } | Er
 	}
 }
 
+const ajaxOperation = new GQL.AjaxOperation(gqlFetcher);
+
 export {
 	extractErrMsg,
-	gqlFetcher,
-	GQL
+	GQL,
+	ajaxOperation
 };

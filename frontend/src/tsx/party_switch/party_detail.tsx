@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { gqlFetcher, GQL, extractErrMsg } from '../../ts/api';
+import { GQL, extractErrMsg, ajaxOperation } from '../../ts/api';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 import { toast } from 'react-toastify';
@@ -12,14 +12,14 @@ type Party = GQL.PartyDetailQuery['party'];
 type Props = RouteComponentProps<{ party_name?: string }>;
 
 async function createBoard(party_name: string, board_name: string): Promise<void> {
-	await GQL.CreateBoardAjax(gqlFetcher, {
+	await ajaxOperation.CreateBoard({
 		party_name, board_name
 	});
 	return;
 }
 
 async function fetchPartyDetail(name: string): Promise<Party> {
-	let res = await GQL.PartyDetailAjax(gqlFetcher, { name });
+	let res = await ajaxOperation.PartyDetail({ name });
 	return res.party;
 }
 

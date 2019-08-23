@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { gqlFetcher, GQL } from '../ts/api';
+import { ajaxOperation, GQL } from '../ts/api';
 
 type Board = GQL.BoardMetaFragment;
 
 async function fetchBoardList(): Promise<Board[]> {
-	let res = await GQL.BoardListAjax(gqlFetcher);
+	let res = await ajaxOperation.BoardList();
 	return res.boardList;
 }
 

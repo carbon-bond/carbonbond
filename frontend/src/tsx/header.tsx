@@ -6,7 +6,7 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import { gqlFetcher, GQL, extractErrMsg } from '../ts/api';
+import { extractErrMsg, ajaxOperation } from '../ts/api';
 
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
@@ -18,7 +18,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(id: string, password: string): Promise<{}> {
 		try {
-			await GQL.LoginAjax(gqlFetcher, { id, password });
+			await ajaxOperation.Login({ id, password });
 			setLogining(false);
 			setLogin(id);
 			toast('登入成功');
@@ -29,7 +29,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	}
 	async function logout_request(): Promise<{}> {
 		try {
-			await GQL.LogoutAjax(gqlFetcher);
+			await ajaxOperation.Logout();
 			setLogout();
 			setExtended(false);
 			toast('您已登出');

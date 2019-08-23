@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
-import { gqlFetcher, extractErrMsg, GQL } from '../../ts/api';
+import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
@@ -9,7 +9,7 @@ import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
 
 async function fetchArticleDetail(id: string): Promise<Article> {
-	let res = await GQL.ArticleDetailAjax(gqlFetcher, { id });
+	let res = await ajaxOperation.ArticleDetail({ id });
 	return res.article;
 }
 

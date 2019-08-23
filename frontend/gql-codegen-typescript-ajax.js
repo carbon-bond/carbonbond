@@ -1,31 +1,79 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 const graphql_1 = require('graphql');
-const path_1 = require('path');
 const visitor_plugin_common_1 = require('@graphql-codegen/visitor-plugin-common');
+const plugin_helpers_1 = require('@graphql-codegen/plugin-helpers');
 const autoBind = require('auto-bind');
-const change_case_1 = require('change-case');
+const graphql_tag_1 = require('graphql-tag');
+
+const DocumentMode = visitor_plugin_common_1.DocumentMode;
 
 class AjaxVisitor extends visitor_plugin_common_1.ClientSideBaseVisitor {
 	constructor(fragments, rawConfig) {
 		super(fragments, rawConfig, { });
 		autoBind(this);
+		this.documentString = '';
 	}
 	_buildAjaxFunc(node, documentVariableName, operationType, operationResultType, operationVariablesTypes) {
-		const funcName = this.convertName(node.name.value, { suffix: 'Ajax', useTypesPrefix: false });
 		const isVariablesRequired = node.variableDefinitions.some(variableDef => variableDef.type.kind === graphql_1.Kind.NON_NULL_TYPE);
 		/*if (operationType === 'Subscription') {
 			generics.unshift(operationResultType);
 		}*/
-		return `export async function ${funcName}(
-	fetcher: (query: any, variables?: Object) => Promise<any>,
-	variables${isVariablesRequired ? '' : '?'}: ${operationVariablesTypes}
-): Promise<${operationResultType}> {
-	return await fetcher(${documentVariableName}, variables) as ${operationResultType};
-}`;
+		return `
+	public async ${node.name.value}(
+		variables${isVariablesRequired ? '' : '?'}: ${operationVariablesTypes}
+	): Promise<${operationResultType}> {
+		return await this.fetcher(${documentVariableName}, variables) as ${operationResultType};
+	}`
+		;
 	}
 	buildOperation(node, documentVariableName, operationType, operationResultType, operationVariablesTypes) {
 		return this._buildAjaxFunc(node, documentVariableName, operationType, operationResultType, operationVariablesTypes);
+	}
+
+	_gql(node) {
+		const doc = this._prepareDocument(`
+    ${graphql_1.print(node)}
+    ${this._includeFragments(this._transformFragments(node))}`);
+		if (this.config.documentMode === DocumentMode.documentNode) {
+			const gqlObj = graphql_tag_1.default(doc);
+			if (gqlObj && gqlObj['loc']) {
+				delete gqlObj.loc;
+			}
+			return JSON.stringify(gqlObj);
+		}
+		return '`' + doc + '`';
+	}
+
+	OperationDefinition(node) {
+		if (!node.name || !node.name.value) {
+			return null;
+		}
+		this._collectedOperations.push(node);
+		const documentVariableName = this.convertName(node, {
+			suffix: this.config.documentVariableSuffix,
+			prefix: this.config.documentVariablePrefix,
+			transformUnderscore: this.config.transformUnderscore,
+			useTypesPrefix: false,
+		});
+		let documentString = '';
+		if (this.config.documentMode !== DocumentMode.external) {
+			documentString = `${this.config.noExport ? '' : 'export'} const ${documentVariableName}${this.config.documentMode === DocumentMode.documentNode ? ': DocumentNode' : ''} = ${this._gql(node)};`;
+		}
+		const operationType = plugin_helpers_1.toPascalCase(node.operation);
+		const operationTypeSuffix = this.config.dedupeOperationSuffix && node.name.value.toLowerCase().endsWith(node.operation) ? '' : operationType;
+		const operationResultType = this.convertName(node, {
+			suffix: operationTypeSuffix + this._parsedConfig.operationResultSuffix,
+			transformUnderscore: this.config.transformUnderscore,
+		});
+		const operationVariablesTypes = this.convertName(node, {
+			suffix: operationTypeSuffix + 'Variables',
+			transformUnderscore: this.config.transformUnderscore,
+		});
+		const additional = this.buildOperation(node, documentVariableName, operationType, operationResultType, operationVariablesTypes);
+		this.documentString += documentString + '\n';
+
+		return [additional].filter(a => a).join('\n');
 	}
 }
 
@@ -41,8 +89,18 @@ exports.plugin = (schema, documents, config) => {
 	];
 	const visitor = new AjaxVisitor(allFragments, config);
 	const visitorResult = graphql_1.visit(allAst, { leave: visitor });
+
+	let content = `
+${visitor.fragments}
+${visitor.documentString}
+export class AjaxOperation {
+	constructor(private fetcher: (query: string, variables?: Object) => Promise<any>) { }
+${visitorResult.definitions.filter(t => typeof t === 'string').join('\n')}
+}
+	`;
+
 	return {
-		prepend: visitor.getImports(),
-		content: [visitor.fragments, ...visitorResult.definitions.filter(t => typeof t === 'string')].join('\n'),
+		content
 	};
 };
+

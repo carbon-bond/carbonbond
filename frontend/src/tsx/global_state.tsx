@@ -1,7 +1,7 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { gqlFetcher, GQL } from '../ts/api';
+import { ajaxOperation } from '../ts/api';
 import { produce, immerable } from 'immer';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
@@ -13,7 +13,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<{}> {
-		const data = await GQL.MeAjax(gqlFetcher);
+		const data = await ajaxOperation.Me();
 		if (data.me.id != null) {
 			setUserState({ login: true, user_id: data.me.id });
 		} else {
