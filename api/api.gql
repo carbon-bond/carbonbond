@@ -66,6 +66,16 @@ type Board {
     articleCount: Int
 }
 
+type Invitation {
+    code: ID
+    # 邀請人的名稱
+    inviter_name: String
+    # 受邀人的 email
+    invitee_email: String
+    # 邀請詞
+    words: String
+}
+
 type Query {
     # 詢問目前登入狀態，伺服器會根據 cookie 返回登入身份
     me: Me!
@@ -75,6 +85,8 @@ type Query {
     
     articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article]
     article(id: ID): Article
+
+    invitation(code: ID): Invitation
 }
 
 type Mutation {
@@ -87,7 +99,7 @@ type Mutation {
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
     signupByInvitation(code: String!, name: String!, password: String!): Boolean
     # 邀請別人加入碳鍵，第二個參數 invitation 是邀請人自己寫的邀請詞，會被嵌入邀請信
-    inviteSignup(email: String!, invitation: String!): Boolean
+    inviteSignup(email: String!, invitation_words: String!): Boolean
 
 
     ### 政黨
