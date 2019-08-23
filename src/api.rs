@@ -38,7 +38,7 @@ impl CarbonbondID for ID {
 
 #[derive(juniper::GraphQLObject)]
 struct Me {
-    id: Option<ID>,
+    name: Option<String>,
 }
 
 struct Party {
@@ -296,10 +296,17 @@ struct Query;
 impl Query {
     fn me(ctx: &Ctx) -> Fallible<Me> {
         let me = match ctx.get_id() {
-            None => Me { id: None },
-            Some(id) => Me {
-                id: Some(ID::from_i64(id)),
-            },
+            None => Me { name: None },
+            Some(id) => {
+                use db_schema::users;
+                let user = users::table
+                    .find(id)
+                    .first::<db_models::User>(&ctx.get_pg_conn()?)?;
+
+                Me {
+                    name: Some(user.name),
+                }
+            }
         };
         Ok(me)
     }

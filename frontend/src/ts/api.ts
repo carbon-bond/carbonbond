@@ -4,7 +4,7 @@ export type LoginResponse = {
 	login: true
 };
 
-export type Me = { me: { id: string | null } };
+export type Me = { me: { name: string | null } };
 
 function getGraphQLClient(endpoint='/api'): GraphQLClient {
 	return new GraphQLClient(endpoint);
@@ -15,7 +15,7 @@ function me_request(): Promise<Me> {
 	const query = `
 		query {
 			me {
-				id
+				name
 			}
 		}
 	`;
