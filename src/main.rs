@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use actix_files::{Files, NamedFile};
 use actix_web::{middleware::Logger, web, HttpServer, App, HttpRequest, Result as ActixResult};
 use actix_session::CookieSession;
-use carbonbond::{api, db, config, custom_error::Fallible};
+use carbonbond::{api, chat, db, config, custom_error::Fallible};
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
@@ -55,6 +55,7 @@ fn main() -> Fallible<()> {
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
             .route("/app/{tail:.*}", web::get().to(index))
+            .route("/ws", web::get().to(chat::ws))
             .route("/", web::get().to(index))
             .default_service(Files::new("", "./frontend/static"))
     })

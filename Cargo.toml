@@ -27,6 +27,7 @@ r2d2 = "0.8.5"
 chrono = { version = "0.4.7", features = ["serde"] }
 bytes = "0.4.12"
 prost = "0.5.0"
+actix-web-actors = "1.0.2"
 
 [build-dependencies]
 prost-build = { version = "0.5.0" }
