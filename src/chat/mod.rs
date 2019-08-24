@@ -23,7 +23,7 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for MyWs {
                 let client_send_meta = chat_proto::ClientSendMeta::decode(&bin).unwrap();
                 println!("{}", client_send_meta.id);
                 ctx.binary(bin)
-            },
+            }
             _ => (),
         }
     }

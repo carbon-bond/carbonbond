@@ -5,8 +5,8 @@
 	"license": "MIT",
 	"scripts": {
 		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx .",
-		"build": "webpack",
-		"watch": "webpack --watch",
+		"build": "node build.js",
+		"watch": "node build.js --watch",
 		"check-ts": "tsc",
 		"check-css": "stylelint '**/*.css'"
 	},
