@@ -13,6 +13,7 @@ use actix_files::{Files, NamedFile};
 use actix_web::{middleware::Logger, web, HttpServer, App, HttpRequest, Result as ActixResult};
 use actix_session::CookieSession;
 use carbonbond::{api, chat, db, config, custom_error::Fallible};
+use actix::Actor;
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
@@ -40,6 +41,9 @@ fn main() -> Fallible<()> {
     db::init_db(&conf.database.url);
     let sys = actix::System::new("carbon-bond-runtime");
 
+    // 啓動聊天伺服器 actor
+    let chat_server_addr = chat::Server::default().start();
+
     HttpServer::new(move || {
         let log_format = "
                         '%r' %s
@@ -55,8 +59,12 @@ fn main() -> Fallible<()> {
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
             .route("/app/{tail:.*}", web::get().to(index))
-            .route("/ws", web::get().to(chat::ws))
             .route("/", web::get().to(index))
+            .service(
+                web::scope("/ws")
+                    .data(chat_server_addr.clone())
+                    .route("", web::get().to(chat::ws)),
+            )
             .default_service(Files::new("", "./frontend/static"))
     })
     .bind(&address)?
