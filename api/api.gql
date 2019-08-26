@@ -91,4 +91,19 @@ type Mutation {
     logout: Boolean! @juniper(ownership: "owned")
     inviteSignup(email: String!): Boolean! @juniper(ownership: "owned")
     signupByInvitation(code: String! id: String! password: String!): Boolean! @juniper(ownership: "owned")
+
+    # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
+    # forgetPassword(id: String!): Boolean!
+    # resetPassword(code: String!, newPassword: String!): Boolean!
+
+
+    # 政黨
+
+    ## 政黨本身的生命週期
+    ### 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
+    # createParty(partyName: String!, boardName: String): ID
+    ### 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
+    # tryRuling(id: ID, boardName: String!): Boolean
+    ### 出走。開始流亡。（權限：黨主席）
+    # exile(partyName: String!): Boolean
 }
