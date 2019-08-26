@@ -174,7 +174,7 @@ pub struct DirectChat {
     // 限制 id_1 < id_2
     pub user_id_1: i64,
     pub user_id_2: i64,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]
@@ -190,7 +190,7 @@ pub struct DirectMessage {
     pub direct_chat_id: i64,
     pub sender_id: i64,
     pub content: String,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]
@@ -209,7 +209,7 @@ pub struct GroupChat {
     // 爲了實作方便，創建 ChatGroup 的時候，會創建一個預設的頻道指向它
     // 也就是說，還沒升級的羣組一樣會有一個頻道，但可以此布林值來判定它是否有被升級過
     pub upgraded: bool,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]
@@ -224,7 +224,7 @@ pub struct GroupChatMember {
     pub id: i64,
     pub group_chat_id: i64,
     pub member_id: i64,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]
@@ -239,7 +239,7 @@ pub struct ChatChannel {
     pub id: i64,
     pub group_chat_id: i64,
     pub name: String,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]
@@ -255,7 +255,7 @@ pub struct ChannelMessage {
     pub chat_channel_id: i64,
     pub sender_id: i64,
     pub content: String,
-    pub create_time: std::time::SystemTime,
+    pub create_time: DateTime<Utc>,
 }
 
 #[derive(Insertable)]

@@ -20,6 +20,7 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for MyWs {
             ws::Message::Ping(msg) => ctx.pong(&msg),
             ws::Message::Text(text) => ctx.text(text),
             ws::Message::Binary(bin) => {
+                // TODO: 避免直接 unwrap
                 let client_send_meta = chat_proto::ClientSendMeta::decode(&bin).unwrap();
                 println!("{}", client_send_meta.id);
                 ctx.binary(bin)
