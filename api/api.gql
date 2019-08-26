@@ -31,13 +31,18 @@ type Party {
     board: Board @juniper(ownership: "owned")
 }
 
+type User {
+    userName: String!
+    energy: Int!
+}
+
 type Article {
 	id: ID!
     title: String!
-    authorId: ID!
     energy: Int!
     createTime: Int!
     rootId: ID!
+    author: User! @juniper(ownership: "owned")
     content: [String!]! @juniper(ownership: "owned")
     category: Category! @juniper(ownership: "owned")
 	board: Board! @juniper(ownership: "owned")

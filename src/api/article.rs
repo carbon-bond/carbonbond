@@ -4,9 +4,10 @@ use diesel::prelude::*;
 
 use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
+use crate::user::find_user_by_id;
 use crate::forum;
 
-use super::{id_to_i64, i64_to_id, Context, Category, Board};
+use super::{id_to_i64, i64_to_id, Context, Category, Board, User};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Article]);
 
@@ -28,9 +29,6 @@ impl ArticleFields for Article {
     fn field_title(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
         Ok(&self.title)
     }
-    fn field_author_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
-        Ok(&self.author_id)
-    }
     fn field_root_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
         Ok(&self.root_id)
     }
@@ -39,6 +37,19 @@ impl ArticleFields for Article {
     }
     fn field_create_time(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
         Ok(&self.create_time)
+    }
+    fn field_author(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        _trail: &QueryTrail<'_, User, juniper_from_schema::Walked>,
+    ) -> Fallible<User> {
+        let author_id = id_to_i64(&self.author_id)?;
+        let user = find_user_by_id(&ex.context().get_pg_conn()?, author_id)?;
+        Ok(User {
+            user_name: user.name,
+            energy: 0,
+            id: self.author_id.clone(),
+        })
     }
     fn field_category(
         &self,

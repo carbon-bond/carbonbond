@@ -12,10 +12,11 @@ query CategoriesOfBoard($board_name: String!) {
 
 query ArticleDetail($id: ID!) {
 	article(id: $id) {
-		id, title, authorId, energy,
+		id, title, energy,
 		createTime, rootId, content,
 		category { body },
 		board { boardName }
+		author { userName, energy }
 	}
 }
 
@@ -23,7 +24,7 @@ fragment ArticleMeta on Article {
 	id
 	title
 	category { body }
-	authorId
+	author { userName }
 	energy
 	createTime
 }

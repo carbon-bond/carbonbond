@@ -19,6 +19,9 @@ pub(self) fn id_to_i64(id: &ID) -> Fallible<i64> {
         .or(Err(Error::new_logic(format!("ID 不為整數: {:?}", id), 403)))
 }
 
+mod user;
+pub(self) use user::User;
+
 mod party;
 pub(self) use party::Party;
 

@@ -4,6 +4,7 @@ use diesel::prelude::*;
 
 use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
+use crate::user::find_user_by_name;
 use crate::party;
 
 use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board};
@@ -40,9 +41,10 @@ impl PartyFields for Party {
         user_name: Option<String>,
     ) -> Fallible<i32> {
         let user_id = {
-            if let Some(_name) = user_name {
+            if let Some(name) = user_name {
                 // TODO 想辦法根據 user_name 取出 user_id
-                return Err(Error::new_internal_without_source("未實作"));
+                let user = find_user_by_name(&ex.context().get_pg_conn()?, &name)?;
+                user.id
             } else if let Some(id) = ex.context().get_id() {
                 id
             } else {

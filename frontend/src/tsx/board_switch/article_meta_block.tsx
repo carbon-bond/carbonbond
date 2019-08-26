@@ -20,7 +20,7 @@ export function ArticleMetaBlock(props: { article: ArticleMeta | Article }): JSX
 		<div styleName="txtMeta">
 			<div styleName="cName">{category.name}</div>
 			<div styleName="authorDate">
-				<Link styleName="author" to={`/app/u/${article.authorId}`}>{article.authorId}</Link>
+				<Link styleName="author" to={`/app/u/${article.author.userName}`}>{article.author.userName}</Link>
 				&nbsp;發表於{formatCreateDate(article.createTime)}
 			</div>
 			<Title title={article.title} />
