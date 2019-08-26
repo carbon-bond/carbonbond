@@ -1,9 +1,0 @@
-type Party {
-    id: ID!
-    partyName: String!
-    chairmanId: String!
-    energy: Int! @juniper(ownership: "owned")
-    position(userId: String): Int! @juniper(ownership: "owned")
-    boardId: ID
-    board: Board @juniper(ownership: "owned")
-}

@@ -4,10 +4,11 @@ use diesel::prelude::*;
 
 use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
-use super::{id_to_i64, i64_to_id, Ctx as Context, Context as ContextTrait, Board};
 use crate::party;
 
-graphql_schema_from_file!("api/party.gql", error_type: Error);
+use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board};
+
+graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Party]);
 
 pub struct Party {
     pub id: ID,
@@ -30,8 +31,8 @@ impl PartyFields for Party {
     fn field_chairman_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
         Ok(&self.chairman_id)
     }
-    fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<i32> {
-        Ok(self.energy)
+    fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+        Ok(&self.energy)
     }
     fn field_position(
         &self,

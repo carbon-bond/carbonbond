@@ -432,7 +432,7 @@ dependencies = [
  "diesel 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "juniper-from-schema 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "juniper-from-schema 0.3.0 (git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.8.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -905,16 +905,16 @@ dependencies = [
 [[package]]
 name = "juniper-from-schema"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition#c2de14056b764e7d21e4da55d1a2b71b84c1d41f"
 dependencies = [
  "juniper 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "juniper-from-schema-code-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "juniper-from-schema-code-gen 0.3.0 (git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition)",
 ]
 
 [[package]]
 name = "juniper-from-schema-code-gen"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition#c2de14056b764e7d21e4da55d1a2b71b84c1d41f"
 dependencies = [
  "colored 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "graphql-parser 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2277,8 +2277,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum itoa 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "501266b7edd0174f8530248f87f99c88fbe60ca4ef3dd486835b8d8d53136f7f"
 "checksum juniper 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d95deabb0bc5e15f508d48017b3791502e734a3d64c261d8ef9658899f04f351"
 "checksum juniper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b570603cc5ea362590965be2d201f24c5e39f2675953d46813ea4c5f7a34e75c"
-"checksum juniper-from-schema 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "04596b716b6a04ff4e235f8463399c5216f392ab35cad7b34c385ae9626a20a4"
-"checksum juniper-from-schema-code-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a508064325e4b619222a2d5b22e3f35f6529f55ba1c9fe59254edd1941988363"
+"checksum juniper-from-schema 0.3.0 (git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition)" = "<none>"
+"checksum juniper-from-schema-code-gen 0.3.0 (git+https://github.com/carbon-bond/juniper-from-schema?branch=feature-split-definition)" = "<none>"
 "checksum juniper_codegen 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f787e228fc7df6061a0b9474dc0223199c7b917a3fe2ba874272b077a1c8a46b"
 "checksum juniper_codegen 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)" = "230e99ba589c473bb53d33bf4bd9aedcb7069c50b336bb76dcff9f69a1b19418"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"

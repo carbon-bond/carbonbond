@@ -4,15 +4,31 @@ schema {
 }
 
 type Category {
+    id: ID!
     body: String!
+    isActive: Boolean!
+    board: Board! @juniper(ownership: "owned")
 }
 
 type Board {
     id: ID!
     boardName: String!
-    categories: [Category!]!
+    categories: [Category!]! @juniper(ownership: "owned")
     title: String!
+    detail: String!
     rulingPartyId: ID!
+    articleCount(showHidden: Boolean): Int! @juniper(ownership: "owned")
+    parties: [Party!]! @juniper(ownership: "owned")
+}
+
+type Party {
+    id: ID!
+    partyName: String!
+    chairmanId: String!
+    boardId: ID
+    energy: Int!
+    position(userId: String): Int! @juniper(ownership: "owned")
+    board: Board @juniper(ownership: "owned")
 }
 
 type Article {
@@ -22,9 +38,10 @@ type Article {
     energy: Int!
     createTime: Int!
     rootId: ID!
-    content: [String!]!
-    category: Category!
-	board: Board!
+    content: [String!]! @juniper(ownership: "owned")
+    category: Category! @juniper(ownership: "owned")
+	board: Board! @juniper(ownership: "owned")
+    sameRootArticles: [Article!]! @juniper(ownership: "owned")
 }
 
 type Me {
@@ -47,6 +64,10 @@ type Query {
         pageSize: Int!
         showHidden: Boolean
     ): [Article!]! @juniper(ownership: "owned")
+
+    checkBoardNameValid(name: String!): String @juniper(ownership: "owned")
+    checkPartyNameValid(name: String!): String @juniper(ownership: "owned")
+    checkArticleContentValid(content: [String!]!boardName: String!categoryName: String!): [String]! @juniper(ownership: "owned")
 }
 
 input Reply {
@@ -55,8 +76,6 @@ input Reply {
 }
 
 type Mutation {
-    login(id: String! password: String!): Boolean!
-    logout: Boolean!
 	createArticle(
 		boardName: String!
 		categoryName: String!
@@ -64,6 +83,12 @@ type Mutation {
 		content: [String!]!
 		replyTo: [Reply!]!
 	): ID! @juniper(ownership: "owned")
+
     createParty(partyName: String! boardName: String): ID! @juniper(ownership: "owned")
     createBoard(boardName: String! partyName: String!): ID! @juniper(ownership: "owned")
+
+    login(id: String! password: String!): Boolean! @juniper(ownership: "owned")
+    logout: Boolean! @juniper(ownership: "owned")
+    inviteSignup(email: String!): Boolean! @juniper(ownership: "owned")
+    signupByInvitation(code: String! id: String! password: String!): Boolean! @juniper(ownership: "owned")
 }
