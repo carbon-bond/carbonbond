@@ -1,8 +1,11 @@
-use actix::{Actor, StreamHandler, Recipient, Handler};
+use actix::{Actor, StreamHandler, Handler};
 use actix::prelude::*;
 use super::api;
 use super::server::Server;
+use super::chat_proto;
 use actix_web_actors::ws;
+use prost::Message;
+use bytes::IntoBuf;
 
 pub struct ChatSession {
     pub id: i64,
@@ -49,9 +52,14 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for ChatSession {
             }
             ws::Message::Binary(bin) => {
                 // TODO: 避免直接 unwrap
-                // let client_send_meta = chat_proto::ClientSendMeta::decode(&bin).unwrap();
-                // println!("{}", client_send_meta.id);
-                // ctx.binary(bin)
+                let mut buf = bin.into_buf();
+
+                let client_send_meta =
+                    chat_proto::ClientSendMeta::decode_length_delimited(&mut buf).unwrap();
+                println!("id: {}", client_send_meta.id);
+
+                let send = chat_proto::Send::decode_length_delimited(&mut buf).unwrap();
+                println!("content: {}", send.content);
             }
             _ => (),
         }
