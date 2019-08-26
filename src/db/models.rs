@@ -167,3 +167,101 @@ pub struct NewPartyMember {
     pub party_id: i64,
     pub user_id: i64,
 }
+
+#[derive(Queryable, Debug)]
+pub struct DirectChat {
+    pub id: i64,
+    // 限制 id_1 < id_2
+    pub user_id_1: i64,
+    pub user_id_2: i64,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "direct_chats"]
+pub struct NewDirectChat {
+    pub user_id_1: i64,
+    pub user_id_2: i64,
+}
+
+#[derive(Queryable, Debug)]
+pub struct DirectMessage {
+    pub id: i64,
+    pub direct_chat_id: i64,
+    pub sender_id: i64,
+    pub content: String,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "direct_messages"]
+pub struct NewDirectMessage {
+    pub direct_chat_id: i64,
+    pub sender_id: i64,
+    pub content: String,
+}
+
+#[derive(Queryable, Debug)]
+pub struct GroupChat {
+    pub id: i64,
+    pub name: String,
+    // 表示是否已被升級爲有頻道的羣組
+    // 爲了實作方便，創建 ChatGroup 的時候，會創建一個預設的頻道指向它
+    // 也就是說，還沒升級的羣組一樣會有一個頻道，但可以此布林值來判定它是否有被升級過
+    pub upgraded: bool,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "group_chats"]
+pub struct NewGroupChat {
+    pub name: String,
+    pub upgraded: bool,
+}
+
+#[derive(Queryable, Debug)]
+pub struct GroupChatMember {
+    pub id: i64,
+    pub group_chat_id: i64,
+    pub member_id: i64,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "group_chat_members"]
+pub struct NewGroupChatMember {
+    pub group_chat_id: i64,
+    pub member_id: i64,
+}
+
+#[derive(Queryable, Debug)]
+pub struct ChatChannel {
+    pub id: i64,
+    pub group_chat_id: i64,
+    pub name: String,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "chat_channels"]
+pub struct NewChatChannel {
+    pub group_chat_id: i64,
+    pub name: String,
+}
+
+#[derive(Queryable, Debug)]
+pub struct ChannelMessage {
+    pub id: i64,
+    pub chat_channel_id: i64,
+    pub sender_id: i64,
+    pub content: String,
+    pub create_time: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "channel_messages"]
+pub struct NewChannelMessage {
+    pub chat_channel_id: i64,
+    pub sender_id: i64,
+    pub content: String,
+}

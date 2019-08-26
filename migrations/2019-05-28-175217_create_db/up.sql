@@ -104,3 +104,47 @@ CREATE TABLE party_members (
 );
 
 CREATE INDEX party_members_create_time_index ON party_members(create_time);
+
+CREATE TABLE direct_chats (
+  id BIGSERIAL PRIMARY KEY,
+  user_id_1 BIGINT REFERENCES users(id) NOT NULL,
+  user_id_2 BIGINT REFERENCES users(id) NOT NULL,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);
+
+CREATE TABLE direct_messages (
+  id BIGSERIAL PRIMARY KEY,
+  direct_chat_id BIGINT REFERENCES direct_chats(id) NOT NULL,
+  sender_id BIGINT REFERENCES users(id) NOT NULL,
+  content TEXT NOT NULL,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);
+
+CREATE TABLE group_chats (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  upgraded BOOLEAN NOT NULL DEFAULT false,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);
+
+CREATE TABLE group_chat_members (
+  id BIGSERIAL PRIMARY KEY,
+  group_chat_id BIGINT REFERENCES group_chats(id) NOT NULL,
+  member_id BIGINT REFERENCES users(id) NOT NULL,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);
+
+CREATE TABLE chat_channels (
+  id BIGSERIAL PRIMARY KEY,
+  group_chat_id BIGINT REFERENCES group_chats(id) NOT NULL,
+  name TEXT NOT NULL,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);
+
+CREATE TABLE channel_messages (
+  id BIGSERIAL PRIMARY KEY,
+  chat_channel_id BIGINT REFERENCES chat_channels(id) NOT NULL,
+  sender_id BIGINT REFERENCES users(id) NOT NULL,
+  content TEXT NOT NULL,
+  create_time TIMESTAMP NOT NULL DEFAULT Now()
+);

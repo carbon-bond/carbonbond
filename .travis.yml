@@ -19,9 +19,9 @@ matrix:
         - yarn
       script:
         - yarn lint
+        - yarn build
         - yarn check-ts
         - yarn check-css
-        - yarn build
 after_success:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
   - chmod +x send.sh
