@@ -42,7 +42,7 @@ fn main() -> Fallible<()> {
     let sys = actix::System::new("carbon-bond-runtime");
 
     // 啓動聊天伺服器 actor
-    let chat_server_addr = chat::Server::default().start();
+    let chat_server_addr = chat::server::Server::default().start();
 
     HttpServer::new(move || {
         let log_format = "
