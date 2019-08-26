@@ -15,13 +15,13 @@ impl MutationFields for Mutation {
     fn field_login(
         &self,
         ex: &juniper::Executor<'_, Context>,
-        id: String,
+        name: String,
         password: String,
     ) -> Fallible<bool> {
-        match login(&ex.context().get_pg_conn()?, &id, &password) {
+        match login(&ex.context().get_pg_conn()?, &name, &password) {
             Err(error) => Err(error),
-            Ok(()) => {
-                ex.context().remember_id(id)?;
+            Ok(user) => {
+                ex.context().remember_id(user.id)?;
                 Ok(true)
             }
         }
@@ -34,14 +34,15 @@ impl MutationFields for Mutation {
         &self,
         ex: &juniper::Executor<'_, Context>,
         email: String,
+        _invitation_words: String,
     ) -> Fallible<bool> {
         match ex.context().get_id() {
             None => Err(Error::new_logic("尚未登入", 401)),
             Some(id) => {
                 // TODO: 寫宏來處理類似邏輯
-                let invite_code =
-                    signup::create_invitation(&ex.context().get_pg_conn()?, Some(&id), &email)?;
-                email::send_invite_email(Some(&id), &invite_code, &email)
+                let conn = &ex.context().get_pg_conn()?;
+                let invite_code = signup::create_invitation(conn, Some(id), &email)?;
+                email::send_invite_email(conn, Some(id), &invite_code, &email)
                     .map(|_| true)
                     .map_err(|err| err)
             }
@@ -51,10 +52,10 @@ impl MutationFields for Mutation {
         &self,
         ex: &juniper::Executor<'_, Context>,
         code: String,
-        id: String,
+        name: String,
         password: String,
     ) -> Fallible<bool> {
-        signup::create_user_by_invitation(&ex.context().get_pg_conn()?, &code, &id, &password)
+        signup::create_user_by_invitation(&ex.context().get_pg_conn()?, &code, &name, &password)
             .map(|_| true)
             .map_err(|err| err)
     }

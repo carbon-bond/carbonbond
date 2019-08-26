@@ -1,6 +1,5 @@
 extern crate actix_web;
 extern crate actix_files;
-extern crate actix_rt;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
@@ -10,13 +9,10 @@ extern crate clap;
 extern crate toml;
 
 use std::path::PathBuf;
-use actix_files::Files;
-use actix_files::NamedFile;
-use actix_web::middleware::Logger;
-use actix_web::{HttpServer, web, App, HttpRequest, Result as ActixResult};
-use actix_session::{CookieSession};
-
-use carbonbond::{api, db, config, custom_error::Fallible};
+use actix_files::{Files, NamedFile};
+use actix_web::{middleware::Logger, web, HttpServer, App, HttpRequest, Result as ActixResult};
+use actix_session::CookieSession;
+use carbonbond::{api, chat, db, config, custom_error::Fallible};
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
@@ -42,8 +38,7 @@ fn main() -> Fallible<()> {
 
     // 初始化資料庫連線池
     db::init_db(&conf.database.url);
-
-    let sys = actix_rt::System::new("carbon-bond-runtime");
+    let sys = actix::System::new("carbon-bond-runtime");
 
     HttpServer::new(move || {
         let log_format = "
@@ -60,6 +55,7 @@ fn main() -> Fallible<()> {
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
             .route("/app/{tail:.*}", web::get().to(index))
+            .route("/ws", web::get().to(chat::ws))
             .route("/", web::get().to(index))
             .default_service(Files::new("", "./frontend/static"))
     })

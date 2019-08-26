@@ -24,17 +24,17 @@ type Board {
 type Party {
     id: ID!
     partyName: String!
-    chairmanId: String!
+    chairmanId: ID!      # 應該改為一個 User type
     boardId: ID
     energy: Int!
-    position(userId: String): Int! @juniper(ownership: "owned")
+    position(userName: String): Int! @juniper(ownership: "owned")
     board: Board @juniper(ownership: "owned")
 }
 
 type Article {
 	id: ID!
     title: String!
-    authorId: String!
+    authorId: ID!
     energy: Int!
     createTime: Int!
     rootId: ID!
@@ -45,7 +45,7 @@ type Article {
 }
 
 type Me {
-    id: String
+    name: String
 }
 
 type Query {
@@ -68,6 +68,19 @@ type Query {
     checkBoardNameValid(name: String!): String @juniper(ownership: "owned")
     checkPartyNameValid(name: String!): String @juniper(ownership: "owned")
     checkArticleContentValid(content: [String!]!boardName: String!categoryName: String!): [String]! @juniper(ownership: "owned")
+
+    # invitation(code: ID): Invitation
+    # articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article!]!
+}
+
+type Invitation {
+    code: ID
+    # 邀請人的名稱
+    inviter_name: String
+    # 受邀人的 email
+    invitee_email: String
+    # 邀請詞
+    words: String
 }
 
 input Reply {
@@ -87,23 +100,44 @@ type Mutation {
     createParty(partyName: String! boardName: String): ID! @juniper(ownership: "owned")
     createBoard(boardName: String! partyName: String!): ID! @juniper(ownership: "owned")
 
-    login(id: String! password: String!): Boolean! @juniper(ownership: "owned")
+    # 登入（會 set-cookie）
+    login(name: String!, password: String!): Boolean! @juniper(ownership: "owned")
+    # 登出（清除 cookie）
     logout: Boolean! @juniper(ownership: "owned")
-    inviteSignup(email: String!): Boolean! @juniper(ownership: "owned")
-    signupByInvitation(code: String! id: String! password: String!): Boolean! @juniper(ownership: "owned")
+    # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
+    signupByInvitation(code: String!, name: String!, password: String!): Boolean! @juniper(ownership: "owned")
+    # 邀請別人加入碳鍵，第二個參數 invitation 是邀請人自己寫的邀請詞，會被嵌入邀請信
+    inviteSignup(email: String!, invitationWords: String!): Boolean! @juniper(ownership: "owned")
 
     # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
     # forgetPassword(id: String!): Boolean!
     # resetPassword(code: String!, newPassword: String!): Boolean!
-
+    # changePassword(oldPassword: String!, newPassword: String!): Boolean
 
     # 政黨
+    ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
+    #createParty(partyName: String!, boardName: String): ID
+    ## 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
+    #tryRuling(id: ID, boardName: String!): Boolean
+    ## 出走。開始流亡。（權限：黨主席）
+    #exile(partyName: String!): Boolean
 
-    ## 政黨本身的生命週期
-    ### 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
-    # createParty(partyName: String!, boardName: String): ID
-    ### 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
-    # tryRuling(id: ID, boardName: String!): Boolean
-    ### 出走。開始流亡。（權限：黨主席）
-    # exile(partyName: String!): Boolean
+    # 黨員
+    ## 申請入黨。可能需要審核。
+    #applyToJoinParty(PartyId: ID): Boolean
+    ## 接受申請。（權限：黨代表以上）
+    #acceptJoinParty(memberId: String, PartyId: ID): Boolean
+    ## 拒絕申請。（權限：黨代表以上）
+    #rejectJoinParty(memberId: String, PartyId: ID): Boolean
+    ## 邀請入黨。（權限：黨代表以上？）
+    #inviteToJoinParty(memberId: String, PartyId: ID): Boolean
+    ## 離黨（黨主席退位後方可離黨）
+    #leaveParty(PartyId: ID): Boolean
+    ## 指派他人爲黨主席後，原主席退位成爲黨代表
+    #assignPartyPosition(memberId: String, position: PartyPosition): Boolean
+
+    # TODO:
+    # - 罷免黨代表、黨主席機制
+    # - 黨內設定，例如：要什麼職位才能接受申請或進行拔擢、是否爲私密政黨、入黨是否需要審核。
 }
+

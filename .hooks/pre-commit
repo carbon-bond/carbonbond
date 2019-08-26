@@ -3,6 +3,6 @@ cargo fmt -- --check || exit 1
 
 cd frontend
 yarn lint || exit 1
-yarn check-ts || exit 1
+yarn build || exit 1
+yarn check-ts
 yarn check-css || exit 1
-yarn build

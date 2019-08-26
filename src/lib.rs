@@ -1,4 +1,5 @@
 pub mod api;
+pub mod chat;
 pub mod custom_error;
 pub mod user;
 pub mod forum;
@@ -16,6 +17,9 @@ extern crate r2d2;
 extern crate serde_json;
 extern crate regex;
 extern crate state;
+extern crate actix;
+extern crate actix_session;
+extern crate actix_files;
 
 use actix_session::{Session};
 use diesel::pg::PgConnection;
@@ -25,9 +29,9 @@ pub trait Context {
     fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
     where
         F: FnOnce(PgConnection) -> Fallible<T>;
-    fn remember_id(&self, id: String) -> Fallible<()>;
+    fn remember_id(&self, iremember_idd: i64) -> Fallible<()>;
     fn forget_id(&self) -> Fallible<()>;
-    fn get_id(&self) -> Option<String>;
+    fn get_id(&self) -> Option<i64>;
 }
 
 pub struct Ctx {
@@ -47,30 +51,26 @@ impl Context for Ctx {
         let result = callback(conn)?;
         Ok(result)
     }
-    fn remember_id(&self, id: String) -> Fallible<()> {
+
+    fn remember_id(&self, id: i64) -> Fallible<()> {
         self.session
-            .set::<String>("id", id)
+            .set::<i64>("id", id)
             .map_err(|_| Error::new_internal_without_source("記憶 ID 失敗"))
     }
+
     fn forget_id(&self) -> Fallible<()> {
-        self.session
-            .set::<String>("id", "".to_owned())
-            .map_err(|_| Error::new_internal_without_source("清除 ID 失敗"))
+        self.session.remove("id");
+        Ok(())
     }
-    fn get_id(&self) -> Option<String> {
-        let id = match self.session.get::<String>("id") {
-            Err(_) => return None,
-            Ok(id) => id,
-        };
-        if id.is_none() {
-            None
-        } else {
-            let id = id.unwrap();
-            if id == "" {
+
+    fn get_id(&self) -> Option<i64> {
+        match self.session.get::<i64>("id") {
+            Err(_) => {
+                // TODO: 發生錯誤時隱性地清除 ID
+                self.session.remove("id");
                 None
-            } else {
-                Some(id)
             }
+            Ok(result) => result,
         }
     }
 }

@@ -7,7 +7,7 @@ use crate::custom_error::{Fallible, Error};
 use crate::party;
 use crate::forum;
 
-use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party, systime_to_i32};
+use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Query]);
 
@@ -19,16 +19,20 @@ impl QueryFields for Query {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Me, juniper_from_schema::Walked>,
     ) -> Fallible<Me> {
-        match ex.context().get_id() {
-            None => Ok(Me { id: None }),
+        let me = match ex.context().get_id() {
+            None => Me { name: None },
             Some(id) => {
-                if id == "".to_string() {
-                    Ok(Me { id: None })
-                } else {
-                    Ok(Me { id: Some(id) })
+                use db_schema::users;
+                let user = users::table
+                    .find(id)
+                    .first::<db_models::User>(&ex.context().get_pg_conn()?)?;
+
+                Me {
+                    name: Some(user.name),
                 }
             }
-        }
+        };
+        Ok(me)
     }
     fn field_board(
         &self,
@@ -60,10 +64,9 @@ impl QueryFields for Query {
             id: i64_to_id(article.id),
             title: article.title,
             board_id: i64_to_id(article.board_id),
-            author_id: article.author_id,
-            category_name: article.category_name,
+            author_id: i64_to_id(article.author_id),
             category_id: i64_to_id(article.category_id),
-            create_time: systime_to_i32(article.create_time),
+            create_time: article.create_time.timestamp() as i32,
             energy: 0,
             root_id: i64_to_id(article.root_id),
         })
@@ -125,10 +128,9 @@ impl QueryFields for Query {
                 id: i64_to_id(a.id),
                 title: a.title.clone(),
                 board_id: i64_to_id(a.board_id),
-                author_id: a.author_id.clone(),
+                author_id: i64_to_id(a.author_id),
                 category_id: i64_to_id(a.category_id),
-                category_name: a.category_name,
-                create_time: systime_to_i32(a.create_time),
+                create_time: a.create_time.timestamp() as i32,
                 energy: 0, // TODO: 鍵能
                 root_id: i64_to_id(a.root_id),
             })
@@ -145,7 +147,7 @@ impl QueryFields for Query {
             id: i64_to_id(party.id),
             party_name: party.party_name,
             board_id: party.board_id.map(|id| i64_to_id(id)),
-            chairman_id: party.chairman_id,
+            chairman_id: i64_to_id(party.chairman_id),
             energy: party.energy,
         })
     }
@@ -183,7 +185,7 @@ impl QueryFields for Query {
                 id: i64_to_id(p.id),
                 party_name: p.party_name,
                 board_id: p.board_id.map(|id| i64_to_id(id)),
-                chairman_id: p.chairman_id,
+                chairman_id: i64_to_id(p.chairman_id),
                 energy: p.energy,
             })
             .collect())

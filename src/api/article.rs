@@ -6,7 +6,7 @@ use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
 use crate::forum;
 
-use super::{id_to_i64, i64_to_id, Context, Category, Board, systime_to_i32};
+use super::{id_to_i64, i64_to_id, Context, Category, Board};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Article]);
 
@@ -14,8 +14,7 @@ pub struct Article {
     pub id: ID,
     pub title: String,
     pub board_id: ID,
-    pub author_id: String,
-    pub category_name: String,
+    pub author_id: ID,
     pub category_id: ID,
     pub energy: i32,
     pub create_time: i32,
@@ -29,7 +28,7 @@ impl ArticleFields for Article {
     fn field_title(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
         Ok(&self.title)
     }
-    fn field_author_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
+    fn field_author_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
         Ok(&self.author_id)
     }
     fn field_root_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
@@ -90,14 +89,13 @@ impl ArticleFields for Article {
         let list = forum::get_articles_with_root(ex.context(), id_to_i64(&self.root_id)?)?;
         Ok(list
             .into_iter()
-            .map(|a| Article {
+            .map(|(a, _c)| Article {
                 id: i64_to_id(a.id),
                 title: a.title,
                 board_id: i64_to_id(a.board_id),
-                author_id: a.author_id,
-                category_name: a.category_name,
+                author_id: i64_to_id(a.author_id),
                 category_id: i64_to_id(a.category_id),
-                create_time: systime_to_i32(a.create_time),
+                create_time: a.create_time.timestamp() as i32,
                 energy: 0,
                 root_id: i64_to_id(a.root_id),
             })

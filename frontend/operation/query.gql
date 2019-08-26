@@ -1,5 +1,5 @@
 query Me {
-	me { id }
+	me { name }
 }
 
 query CategoriesOfBoard($board_name: String!) {

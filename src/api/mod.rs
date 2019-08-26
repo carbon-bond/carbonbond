@@ -18,11 +18,6 @@ pub(self) fn id_to_i64(id: &ID) -> Fallible<i64> {
     id.parse::<i64>()
         .or(Err(Error::new_logic(format!("ID 不為整數: {:?}", id), 403)))
 }
-pub(self) fn systime_to_i32(time: std::time::SystemTime) -> i32 {
-    time.duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_secs() as i32
-}
 
 mod party;
 pub(self) use party::Party;
@@ -50,12 +45,12 @@ mod simple_types {
     graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Reply, Me]);
 
     pub struct Me {
-        pub id: Option<String>,
+        pub name: Option<String>,
     }
 
     impl MeFields for Me {
-        fn field_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<String>> {
-            Ok(&self.id)
+        fn field_name(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<String>> {
+            Ok(&self.name)
         }
     }
 }

@@ -14,7 +14,7 @@ pub struct Party {
     pub id: ID,
     pub party_name: String,
     pub board_id: Option<ID>,
-    pub chairman_id: String,
+    pub chairman_id: ID,
     pub energy: i32,
 }
 
@@ -28,7 +28,7 @@ impl PartyFields for Party {
     fn field_board_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<ID>> {
         Ok(&self.board_id)
     }
-    fn field_chairman_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
+    fn field_chairman_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
         Ok(&self.chairman_id)
     }
     fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
@@ -37,18 +37,19 @@ impl PartyFields for Party {
     fn field_position(
         &self,
         ex: &juniper::Executor<'_, Context>,
-        user_id: Option<String>,
+        user_name: Option<String>,
     ) -> Fallible<i32> {
         let user_id = {
-            if let Some(id) = user_id {
-                id
+            if let Some(_name) = user_name {
+                // TODO 想辦法根據 user_name 取出 user_id
+                return Err(Error::new_internal_without_source("未實作"));
             } else if let Some(id) = ex.context().get_id() {
                 id
             } else {
                 return Ok(0);
             }
         };
-        party::get_member_position(&ex.context().get_pg_conn()?, &user_id, id_to_i64(&self.id)?)
+        party::get_member_position(&ex.context().get_pg_conn()?, user_id, id_to_i64(&self.id)?)
             .map(|p| p as i32)
     }
     fn field_board(

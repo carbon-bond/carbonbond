@@ -14,8 +14,8 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 
 	async function getLoginState(): Promise<{}> {
 		const data = await ajaxOperation.Me();
-		if (data.me.id != null) {
-			setUserState({ login: true, user_id: data.me.id });
+		if (data.me.name != null) {
+			setUserState({ login: true, user_id: data.me.name });
 		} else {
 			setUserState({ login: false, fetching: false });
 		}
