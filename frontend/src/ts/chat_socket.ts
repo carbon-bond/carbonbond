@@ -1,40 +1,38 @@
 import { chat_proto } from './protobuf/chat_proto.js';
 
 const {
-	ClientSendMeta,
-	Direction,
-	Send,
+	ClientSendData,
 } = chat_proto;
 
 class ChatSocket {
 	socket: WebSocket;
-	constructor() {
+	id: number;
+	constructor(id: number) {
 		const url = `ws://${window.location.hostname}:${window.location.port}/ws`;
+		this.id = id;
 		this.socket = new WebSocket(url);
-		this.socket.onopen = () => {
-			this.socket.send('hi');
-			const meta = ClientSendMeta.create({
-				id: 2,
-				direction: Direction.REQUEST,
-				type: ClientSendMeta.Type.SEND
-			});
-			const send = Send.create({
-				directReceiverId: 0,
-				content: '大力金剛掌'
-			});
-			const buf1 = ClientSendMeta.encodeDelimited(meta).finish();
-			console.log(buf1);
-			const buf2 = Send.encodeDelimited(send).finish();
-			console.log(buf2);
-			const msg = new Uint8Array(buf1.length + buf2.length);
-			msg.set(buf1);
-			msg.set(buf2, buf1.length);
-			console.log(msg);
-			this.socket.send(msg);
-		};
-		this.socket.onmessage = (event) => {
-			console.log(`from server: ${event.data}`);
-		};
+	}
+	async connect(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.socket.onopen = () => {
+				const data = ClientSendData.create({
+					id: this.id,
+					send: {
+						directReceiverId: 0,
+						content: '大力金剛掌'
+					}
+				});
+				const buf = ClientSendData.encodeDelimited(data).finish();
+				this.socket.send(buf);
+				resolve();
+			};
+			this.socket.onerror = function (err) {
+				reject(err);
+			};
+			this.socket.onmessage = (event) => {
+				console.log(`from server: ${event.data}`);
+			};
+		});
 	}
 }
 

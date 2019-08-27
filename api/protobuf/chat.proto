@@ -4,35 +4,20 @@ package chat_proto;
 
 // 時間都以 uint64 來表示 unix time
 
-enum Direction {
-    REQUEST = 0;
-    RESPONSE = 1;
-}
-// 每個請求／回應之前都會有一個 Meta 結構
-// 用以讓接收者者知道 "接下來的請求是什麼型別/是要回應哪一個請求"
-// 也才能夠反序列化該訊息
-message ClientSendMeta {
+message ClientSendData {
     int64 id = 1;
-    Direction direction = 2;
-    // 若爲 response ，不需要看 Type
-    // 由它對應的 request 便可知曉
-    enum Type {
-        SEND = 0;
-        HISTORY = 1;
-        RECENT_CHAT = 2;
+    oneof Data {
+        Send send = 2;
+        History history = 3;
+        RecentChat recent_chat = 4;
     }
-    Type type = 3;
 }
 
 message ServerSendMeta {
     int64 id = 1;
-    Direction direction = 2;
-    // 若爲 response ，不需要看 Type
-    // 由它對應的 request 便可知曉
-    enum Type {
-        INCOMING = 0;
+    oneof Data {
+        Incoming incoming = 2;
     }
-    Type type = 3;
 }
 
 // 常用結構
@@ -98,8 +83,6 @@ message RecentChatResponse {
     string reason = 2;
     repeated ChatAbstract chats = 3;
 }
-
-
 
 message Send {
     oneof Location {

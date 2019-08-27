@@ -87,4 +87,4 @@ function App(): JSX.Element {
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
-const _ = new ChatSocket();
+const chat_socket = new ChatSocket(1);

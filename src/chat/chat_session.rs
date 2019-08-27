@@ -54,12 +54,19 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for ChatSession {
                 // TODO: 避免直接 unwrap
                 let mut buf = bin.into_buf();
 
-                let client_send_meta =
-                    chat_proto::ClientSendMeta::decode_length_delimited(&mut buf).unwrap();
-                println!("id: {}", client_send_meta.id);
-
-                let send = chat_proto::Send::decode_length_delimited(&mut buf).unwrap();
-                println!("content: {}", send.content);
+                let data = chat_proto::ClientSendData::decode_length_delimited(&mut buf).unwrap();
+                println!("id: {}", data.id);
+                use chat_proto::client_send_data::Data;
+                if let Some(data) = data.data {
+                    match data {
+                        Data::Send(send) => {
+                            println!("content: {}", send.content);
+                        }
+                        _ => {
+                            println!("未知指令");
+                        }
+                    }
+                }
             }
             _ => (),
         }
