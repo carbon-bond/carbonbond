@@ -1,3 +1,6 @@
+// NOTE: graphql-codegen 的外掛，邏輯獨立於主程式
+//       故採用該函式庫的命名風格，不遵守碳鍵的程式碼規範
+
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 const graphql = require('graphql');

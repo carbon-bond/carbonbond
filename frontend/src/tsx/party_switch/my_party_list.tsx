@@ -11,7 +11,7 @@ import { EXILED_PARTY_NAME } from './index';
 
 type Board = GQL.BoardMetaFragment;
 type Party = GQL.PartyMetaFragment;
-type PartyTree = { [board_name: string]: (Party & { ruling?: boolean })[] };
+type PartyTree = { [board_name: string]: (Party & { ruling: boolean })[] };
 
 async function fetchPartyTree(): Promise<PartyTree> {
 	let tree: PartyTree = {};
@@ -35,14 +35,10 @@ async function fetchPartyTree(): Promise<PartyTree> {
 		if (party.boardId) {
 			let board = b_name_id_table[party.boardId];
 			if (board) {
-				if (party.id == board.rulingPartyId) {
-					tree[`b/${board.boardName}`].push({ ...party, ruling: true });
-				} else {
-					tree[`b/${board.boardName}`].push(party);
-				}
+				tree[`b/${board.boardName}`].push({ ...party, ruling: party.id == board.rulingPartyId });
 			}
 		} else {
-			tree[EXILED_PARTY_NAME].push(party);
+			tree[EXILED_PARTY_NAME].push({ ...party, ruling: false });
 		}
 	}
 	return tree;
