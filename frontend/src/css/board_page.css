@@ -1,3 +1,12 @@
+.articleWrapper {
+    padding: 20px 20px 10px 20px;
+    display: block;
+    position: relative;
+}
+.articleWrapper:not(:first-child) {
+    padding: 10px 20px 20px 20px;
+    
+}
 .articleContainer {
     background-color: #fafafa;
     overflow: hidden;
