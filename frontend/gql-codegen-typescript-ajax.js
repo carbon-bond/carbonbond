@@ -1,22 +1,20 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-const graphql_1 = require('graphql');
-const visitor_plugin_common_1 = require('@graphql-codegen/visitor-plugin-common');
-const plugin_helpers_1 = require('@graphql-codegen/plugin-helpers');
+const graphql = require('graphql');
+const { DocumentMode, ClientSideBaseVisitor } = require('@graphql-codegen/visitor-plugin-common');
+const { toPascalCase } = require('@graphql-codegen/plugin-helpers');
 const autoBind = require('auto-bind');
-const graphql_tag_1 = require('graphql-tag');
+const graphql_tag = require('graphql-tag');
 
-const DocumentMode = visitor_plugin_common_1.DocumentMode;
-
-class AjaxVisitor extends visitor_plugin_common_1.ClientSideBaseVisitor {
+class AjaxVisitor extends ClientSideBaseVisitor {
 	constructor(fragments, rawConfig) {
 		super(fragments, rawConfig, { });
 		autoBind(this);
 		this.documentString = '';
 	}
-	_buildAjaxFunc(node, documentVariableName, operationType, operationResultType, operationVariablesTypes) {
-		const isVariablesRequired = node.variableDefinitions.some(variableDef => variableDef.type.kind === graphql_1.Kind.NON_NULL_TYPE);
-		/*if (operationType === 'Subscription') {
+	_buildAjaxFunc(node, documentVariableName, _operationType, operationResultType, operationVariablesTypes) {
+		const isVariablesRequired = node.variableDefinitions.some(variableDef => variableDef.type.kind === graphql.Kind.NON_NULL_TYPE);
+		/*if (_operationType === 'Subscription') {
 			generics.unshift(operationResultType);
 		}*/
 		return `
@@ -33,10 +31,10 @@ class AjaxVisitor extends visitor_plugin_common_1.ClientSideBaseVisitor {
 
 	_gql(node) {
 		const doc = this._prepareDocument(`
-    ${graphql_1.print(node)}
+    ${graphql.print(node)}
     ${this._includeFragments(this._transformFragments(node))}`);
 		if (this.config.documentMode === DocumentMode.documentNode) {
-			const gqlObj = graphql_tag_1.default(doc);
+			const gqlObj = graphql_tag.default(doc);
 			if (gqlObj && gqlObj['loc']) {
 				delete gqlObj.loc;
 			}
@@ -60,7 +58,8 @@ class AjaxVisitor extends visitor_plugin_common_1.ClientSideBaseVisitor {
 		if (this.config.documentMode !== DocumentMode.external) {
 			documentString = `${this.config.noExport ? '' : 'export'} const ${documentVariableName}${this.config.documentMode === DocumentMode.documentNode ? ': DocumentNode' : ''} = ${this._gql(node)};`;
 		}
-		const operationType = plugin_helpers_1.toPascalCase(node.operation);
+		this.documentString += documentString + '\n';
+		const operationType = toPascalCase(node.operation);
 		const operationTypeSuffix = this.config.dedupeOperationSuffix && node.name.value.toLowerCase().endsWith(node.operation) ? '' : operationType;
 		const operationResultType = this.convertName(node, {
 			suffix: operationTypeSuffix + this._parsedConfig.operationResultSuffix,
@@ -71,24 +70,21 @@ class AjaxVisitor extends visitor_plugin_common_1.ClientSideBaseVisitor {
 			transformUnderscore: this.config.transformUnderscore,
 		});
 		const additional = this.buildOperation(node, documentVariableName, operationType, operationResultType, operationVariablesTypes);
-		this.documentString += documentString + '\n';
 
-		return [additional].filter(a => a).join('\n');
+		return additional;
 	}
 }
 
 exports.AjaxVisitor = AjaxVisitor;
 
-exports.plugin = (schema, documents, config) => {
-	const allAst = graphql_1.concatAST(documents.reduce((prev, v) => {
-		return [...prev, v.content];
-	}, []));
+exports.plugin = (_schema, documents, config) => {
+	const allAst = graphql.concatAST(documents.map(v => v.content));
 	const allFragments = [
-		...allAst.definitions.filter(d => d.kind === graphql_1.Kind.FRAGMENT_DEFINITION).map(fragmentDef => ({ node: fragmentDef, name: fragmentDef.name.value, onType: fragmentDef.typeCondition.name.value, isExternal: false })),
+		...allAst.definitions.filter(d => d.kind === graphql.Kind.FRAGMENT_DEFINITION).map(fragmentDef => ({ node: fragmentDef, name: fragmentDef.name.value, onType: fragmentDef.typeCondition.name.value, isExternal: false })),
 		...(config.externalFragments || []),
 	];
 	const visitor = new AjaxVisitor(allFragments, config);
-	const visitorResult = graphql_1.visit(allAst, { leave: visitor });
+	const visitorResult = graphql.visit(allAst, { leave: visitor });
 
 	let content = `
 ${visitor.fragments}
