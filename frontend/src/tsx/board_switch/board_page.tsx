@@ -73,15 +73,15 @@ export function BoardPage(props: Props): JSX.Element {
 			})()
 		}
 
-		<ul>
+		<div>
 			{
 				articles.map((article, idx) => (
-					<Link to={`/app/b/${board_name}/a/${article.id}`} key={`article-${idx}`}>
+					<Link to={`/app/b/${board_name}/a/${article.id}`} key={`article-${idx}`} styleName="articleWrapper">
 						<BoardItem article={article} />
 					</Link>
 				))
 			}
-		</ul>
+		</div>
 	</div>;
 }
 
