@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
-		"lint": "eslint --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
+		"lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx .",
 		"build": "node build.js",
 		"watch": "node build.js --watch",
 		"check-ts": "tsc",
