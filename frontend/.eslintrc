@@ -28,7 +28,10 @@
         "no-trailing-spaces": ["error"],
         "curly": ["error"],
         /* 沒用到的變數需要符合以 _ 開頭的命名規範 */
-        "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "_.*" }],
+		"@typescript-eslint/no-unused-vars": ["error", {
+			"varsIgnorePattern": "^_.*",
+			"argsIgnorePattern": "^_.*"
+		}],
         "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/no-use-before-define": ["error"],
         "@typescript-eslint/no-explicit-any": ["error"],
