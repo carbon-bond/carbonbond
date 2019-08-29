@@ -1,0 +1,30 @@
+mutation Login($name: String!, $password: String!) {
+	login(name: $name, password: $password)
+}
+mutation Logout {
+	logout
+}
+
+mutation PostArticle(
+	$board_name: String!,
+	$category_name: String!,
+	$content: [String!]!,
+	$title: String!,
+	$reply_to: [Reply!]!
+) {
+	createArticle(
+		boardName: $board_name,
+		categoryName: $category_name,
+		title: $title,
+		content: $content,
+		replyTo: $reply_to
+	)
+}
+
+mutation CreateParty($party_name: String!, $board_name: String) {
+	createParty(partyName: $party_name, boardName: $board_name)
+}
+
+mutation CreateBoard($party_name: String!, $board_name: String!) {
+	createBoard(partyName: $party_name, boardName: $board_name)
+}

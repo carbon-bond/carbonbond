@@ -1,28 +1,16 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
-import { getGraphQLClient, extractErrMsg } from '../../ts/api';
+import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
-import { Article } from '.';
 import { ArticleMetaBlock } from './article_meta_block';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
+import { Article } from '.';
 
 async function fetchArticleDetail(id: string): Promise<Article> {
-	let client = getGraphQLClient();
-	const query = `
-			query ArticleDetail($id: ID!) {
-				article(id: $id) {
-					id, title, authorId, energy, createTime, rootId
-					content, raw_category:category { body },
-					board { boardName }
-				}
-			}
-		`;
-	let res: { article: Article } = await client.request(query, { id });
-	let article = res.article;
-	article.category = JSON.parse(article.raw_category.body);
-	return article;
+	let res = await ajaxOperation.ArticleDetail({ id });
+	return res.article;
 }
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {

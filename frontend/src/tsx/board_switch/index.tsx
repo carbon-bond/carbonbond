@@ -7,7 +7,10 @@ import {
 
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
-import { Category } from '../../ts/forum_util';
+import { GQL } from '../../ts/api';
+
+export type Article = GQL.ArticleDetailQuery['article'];
+export type ArticleMeta = GQL.ArticleMetaFragment;
 
 export function BoardSwitch(): JSX.Element {
 	return <>
@@ -31,29 +34,3 @@ export function BoardSwitch(): JSX.Element {
 export type Board = {
 	boardName: string
 };
-
-export type ArticleMeta = {
-	id: string,
-	title: string,
-	categoryName: string,
-	authorId: string,
-	energy: number,
-	createTime: number
-};
-
-export type Article = {
-	id: string,
-	title: string,
-	authorId: string,
-	raw_category: { body: string },
-	category: Category,
-	content: string[],
-	energy: number,
-	createTime: number
-	board: Board,
-	rootId: string
-};
-
-export function isMeta(a: Article | ArticleMeta): a is ArticleMeta {
-	return !('content' in a);
-}

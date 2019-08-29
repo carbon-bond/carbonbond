@@ -4,35 +4,17 @@ import { RouteComponentProps } from 'react-router';
 
 import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
-import { getGraphQLClient, extractErrMsg } from '../../ts/api';
+import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import { Option, Select } from '../components';
-import { Category, checkCanAttach } from '../../ts/forum_util';
+import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';
 
-async function createArticle(data: EditorPanelData | null): Promise<number> {
+async function createArticle(data: EditorPanelData | null): Promise<string> {
 	if (data) {
 		let reply_to = data.edges.map(e => ({ articleId: e.article_id, transfuse: e.transfuse }));
-		let client = getGraphQLClient();
-		const mutation = `
-				mutation Post(
-					$board_name: String!,
-					$category_name: String!,
-					$content: [String!]!,
-					$title: String!,
-					$reply_to: [Reply!]!
-				) {
-					createArticle(
-						boardName: $board_name,
-						categoryName: $category_name,
-						title: $title,
-						content: $content,
-						replyTo: $reply_to
-					)
-				}
-			`;
-		let res: { createArticle: number } = await client.request(mutation, {
+		let res = await ajaxOperation.PostArticle({
 			board_name: data.board_name,
 			category_name: data.cur_category.name,
 			title: data.title,
@@ -73,7 +55,7 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 			setEditorPanelData(null);
 		}
 	}
-	function onPost(a_id: number): void {
+	function onPost(a_id: string): void {
 		if (editor_panel_data) {
 			props.history.push(`/app/b/${editor_panel_data.board_name}/a/${a_id}`);
 			setEditorPanelData(null);
@@ -153,7 +135,7 @@ function CategorySelector(): JSX.Element {
 }
 
 function SingleColInput(props: {
-	col: Category['structure'][0]
+	col: CategoryBody['structure'][0]
 	value: string,
 	onChange: (s: string) => void,
 	single?: boolean
@@ -230,7 +212,7 @@ function InputsForStructure(): JSX.Element | null {
 	}
 }
 
-function EditorBody(props: { onPost: (id: number) => void }): JSX.Element {
+function EditorBody(props: { onPost: (id: string) => void }): JSX.Element {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data) {
 		let data = editor_panel_data;

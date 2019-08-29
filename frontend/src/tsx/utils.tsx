@@ -63,7 +63,7 @@ function useScrollState(): {
 					window.removeEventListener('resize', listener);
 				}
 			};
-		}, [handler, emitter]);
+		}, [emitter, handler]);
 		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
 	}
 	return {

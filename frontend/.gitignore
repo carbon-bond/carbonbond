@@ -7,5 +7,8 @@ dist/
 # log
 *.log
 
+# codegen
+src/ts/api/gql.ts
+
 # protobuf
 src/ts/protobuf/

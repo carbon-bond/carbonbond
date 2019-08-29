@@ -4,32 +4,22 @@ import { Link } from 'react-router-dom';
 import { EditorPanelState, UserState, MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
-import { getGraphQLClient } from '../../ts/api';
+import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
 
 const PAGE_SIZE: number = 10;
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
-type ArticleList = {
-	articleList: ArticleMeta[]
-};
-
 // TODO: Show fetching animation before data
 
-function fetchArticles(board_name: string, page_size: number, offset: number): Promise<ArticleList> {
-	const graphQLClient = getGraphQLClient();
-	const query = `query {
-		articleList(boardName: "${board_name}", pageSize: ${page_size}, offset: ${offset}) {
-			id
-			title
-			categoryName
-			authorId
-			energy
-			createTime
-		}
-	}`;
-	return graphQLClient.request(query);
+async function fetchArticles(
+	board_name: string,
+	page_size: number,
+	offset: number
+): Promise<ArticleMeta[]> {
+	let res = await ajaxOperation.ArticleList({ board_name, page_size, offset });
+	return res.articleList;
 }
 
 export function BoardPage(props: Props): JSX.Element {
@@ -50,7 +40,7 @@ export function BoardPage(props: Props): JSX.Element {
 	React.useEffect(() => {
 		fetchArticles(board_name, PAGE_SIZE, 0).then(more_articles => {
 			console.log(more_articles);
-			setArticles(more_articles.articleList);
+			setArticles(more_articles);
 		});
 	}, [board_name]);
 
@@ -61,9 +51,9 @@ export function BoardPage(props: Props): JSX.Element {
 			const length = articles.length;
 			fetchArticles(board_name, PAGE_SIZE, length).then(more_articles => {
 				// TODO: 載入到最早的文章就停
-				if (more_articles.articleList.length > 0) {
+				if (more_articles.length > 0) {
 					console.log(more_articles);
-					setArticles([...articles, ...more_articles.articleList]);
+					setArticles([...articles, ...more_articles]);
 				}
 			});
 		}

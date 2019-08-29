@@ -37,10 +37,23 @@ function protobuf_compile() {
 	}
 }
 
+function api_codegen() {
+	try {
+		execSync('yarn api-codegen', { stdio: 'inherit' });
+		console.log('graphql 編譯完成'.green);
+	} catch (err) {
+		console.log('graphql 編譯錯誤'.red);
+	}
+}
+
 if (argv['watch']) {
 	// protobuf
 	protobuf_compile();
 	watch(`${__dirname}/../api/protobuf`, protobuf_compile);
+	// api codegen
+	api_codegen();
+	watch(`${__dirname}/../api/api.gql`, api_codegen);
+	watch(`${__dirname}/operation`, api_codegen);
 
 	// webpack
 	compiler.watch({
@@ -50,6 +63,9 @@ if (argv['watch']) {
 } else {
 	// protobuf
 	protobuf_compile();
+
+	// api codegen
+	api_codegen();
 
 	// webpack
 	compiler.run(handler);

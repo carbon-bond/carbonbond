@@ -1,8 +1,8 @@
-import { getGraphQLClient } from './api';
+import { ajaxOperation } from './api';
 import { EditorPanelData, Transfuse } from '../tsx/global_state';
-import { Article } from '../tsx/board_switch';
+import { Article, ArticleMeta } from '../tsx/board_switch';
 
-export type Category = {
+export type CategoryBody = {
 	name: string,
 	transfusable: boolean,
 	is_question: boolean,
@@ -16,28 +16,20 @@ export type Category = {
 	structure: { col_name: string, col_type: string, restriction: string }[],
 };
 
-export async function fetchCategories(board_name: string): Promise<Category[]> {
+export function getArticleCategory(article: Article | ArticleMeta): CategoryBody {
+	return JSON.parse(article.category.body);
+}
+
+export async function fetchCategories(board_name: string): Promise<CategoryBody[]> {
 	// TODO: 快取?
-	const graphQLClient = getGraphQLClient();
-	const query = `
-			query Categories($board_name: String!) {
-				board(name: $board_name) {
-					categories {
-						body
-					}
-				}
-			}
-		`;
-	let bodies: { board: { categories: { body: string }[] } } = await graphQLClient.request(query, {
-		board_name
-	});
-	let ret: Category[] = bodies.board.categories.map(c => JSON.parse(c.body));
+	let bodies = await ajaxOperation.CategoriesOfBoard({ board_name });
+	let ret: CategoryBody[] = bodies.board.categories.map(c => JSON.parse(c.body));
 	return ret.filter(c => c.name != '留言');
 }
 
 export function checkCanAttach(
-	category: Category,
-	attached_to: Category[] | string[]
+	category: CategoryBody,
+	attached_to: CategoryBody[] | string[]
 ): boolean {
 	if (attached_to.length == 0 && !category.rootable) {
 		return false;
@@ -80,7 +72,7 @@ export function checkCanReply(
 				}
 			}
 			// 檢查有無違反鍵結規則
-			return checkCanAttach(data.cur_category, [target.category]);
+			return checkCanAttach(data.cur_category, [getArticleCategory(target)]);
 		}
 	} else {
 		// TODO: 雖然沒有正在發文，但也有可能本板所有分類都不可用，不可單單回一個 true

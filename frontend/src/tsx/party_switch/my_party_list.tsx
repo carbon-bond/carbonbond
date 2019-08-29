@@ -4,26 +4,19 @@ import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { getGraphQLClient, extractErrMsg } from '../../ts/api';
+import { GQL, extractErrMsg, ajaxOperation } from '../../ts/api';
 import '../../css/party.css';
 
-import { Party, EXILED_PARTY_NAME } from './index';
+import { EXILED_PARTY_NAME } from './index';
 
-type Board = { id: string, boardName: string, rulingPartyId: string };
-type PartyTree = { [board_name: string]: Party[] };
+type Board = GQL.BoardMetaFragment;
+type Party = GQL.PartyMetaFragment;
+type PartyTree = { [board_name: string]: (Party & { ruling: boolean })[] };
 
 async function fetchPartyTree(): Promise<PartyTree> {
 	let tree: PartyTree = {};
 	let b_name_id_table: { [id: string]: Board | null } = {};
-	let client = getGraphQLClient();
-	const query1 = `
-			{
-				myPartyList {
-					id, partyName, boardId, energy, chairmanId
-				}
-			}
-		`;
-	let res: { myPartyList: Party[] } = await client.request(query1);
+	let res = await ajaxOperation.MyPartyList();
 	let party_list = res.myPartyList;
 	for (let party of party_list) {
 		if (party.boardId) {
@@ -32,16 +25,7 @@ async function fetchPartyTree(): Promise<PartyTree> {
 			tree[EXILED_PARTY_NAME] = [];
 		}
 	}
-	let query2 = `
-		query BoardList($ids: [ID!]!) {
-			boardList(ids: $ids) {
-				boardName, id, rulingPartyId
-			}
-		}
-	`;
-	let res2: { boardList: Board[] } = await client.request(query2, {
-		ids: Object.keys(b_name_id_table)
-	});
+	let res2 = await ajaxOperation.BoardList({ ids: Object.keys(b_name_id_table) });
 	let board_list = res2.boardList;
 	for (let board of board_list) {
 		b_name_id_table[board.id] = board;
@@ -51,13 +35,10 @@ async function fetchPartyTree(): Promise<PartyTree> {
 		if (party.boardId) {
 			let board = b_name_id_table[party.boardId];
 			if (board) {
-				if (party.id == board.rulingPartyId) {
-					party.ruling = true;
-				}
-				tree[`b/${board.boardName}`].push(party);
+				tree[`b/${board.boardName}`].push({ ...party, ruling: party.id == board.rulingPartyId });
 			}
 		} else {
-			tree[EXILED_PARTY_NAME].push(party);
+			tree[EXILED_PARTY_NAME].push({ ...party, ruling: false });
 		}
 	}
 	return tree;
@@ -148,13 +129,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			/>
 			<br />
 			<button onClick={() => {
-				let client = getGraphQLClient();
-				const query = `
-					mutation CreateParty($party_name: String!, $board_name: String) {
-						createParty(partyName: $party_name, boardName: $board_name)
-					}
-				`;
-				client.request(query, {
+				ajaxOperation.CreateParty({
 					party_name,
 					board_name: board_name.length == 0 ? undefined : board_name
 				}).then(() => {

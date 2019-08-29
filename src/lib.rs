@@ -13,14 +13,6 @@ pub const MAX_ARTICLE_COLUMN: usize = 15;
 extern crate diesel;
 #[macro_use]
 extern crate derive_more;
-extern crate r2d2;
-extern crate serde_json;
-extern crate regex;
-extern crate state;
-extern crate actix;
-extern crate actix_session;
-extern crate actix_files;
-extern crate chrono;
 
 use actix_session::{Session};
 use diesel::pg::PgConnection;

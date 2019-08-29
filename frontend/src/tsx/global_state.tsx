@@ -1,9 +1,9 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import * as api from '../ts/api';
+import { ajaxOperation } from '../ts/api';
 import { produce, immerable } from 'immer';
-import { Category, fetchCategories, checkCanAttach, checkCanReply } from '../ts/forum_util';
+import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
 
@@ -13,7 +13,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<{}> {
-		const data = await api.me_request();
+		const data = await ajaxOperation.Me();
 		if (data.me.name != null) {
 			setUserState({ login: true, user_id: data.me.name });
 		} else {
@@ -107,18 +107,18 @@ function useBottomPanelState(): {
 }
 
 export type Transfuse = -1 | 0 | 1;
-type Edge = { article_id: string, category: Category , transfuse: Transfuse };
+type Edge = { article_id: string, category: CategoryBody , transfuse: Transfuse };
 export type NewArticleArgs = {
 	board_name: string,
-	category?: Category,
+	category?: CategoryBody,
 	title?: string,
 	reply_to?: { article: Article, transfuse: Transfuse },
 };
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
 	board_name: string,
-	categories: Category[],
-	cur_category: Category,
+	categories: CategoryBody[],
+	cur_category: CategoryBody,
 	title: string,
 	edges: Edge[],
 	content: string[],
@@ -143,7 +143,7 @@ function useEditorPanelState(): {
 				// TODO: 錯誤處理，編輯其它文章到一半試圖直接切換文章
 				return;
 			} else {
-				let attached_to = args.reply_to ? [args.reply_to.article.category] : [];
+				let attached_to = args.reply_to ? [getArticleCategory(args.reply_to.article)] : [];
 				let categories = await fetchCategories(args.board_name);
 				let cur_category = (() => {
 					if (args.category) {
@@ -166,7 +166,7 @@ function useEditorPanelState(): {
 				if (args.reply_to) {
 					edges.push({
 						article_id: args.reply_to.article.id,
-						category: args.reply_to.article.category,
+						category: getArticleCategory(args.reply_to.article),
 						transfuse: args.reply_to.transfuse
 					});
 				}
@@ -194,7 +194,11 @@ function useEditorPanelState(): {
 			checkCanReply(data, article, transfuse);
 			let new_data = { ...data };
 			new_data.root_id = article.rootId;
-			new_data.edges.push({ article_id: article.id, transfuse, category: article.category });
+			new_data.edges.push({
+				article_id: article.id,
+				category: getArticleCategory(article),
+				transfuse
+			});
 			setData(new_data);
 		}
 	}

@@ -6,7 +6,8 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import * as api from '../ts/api';
+import { extractErrMsg, ajaxOperation } from '../ts/api';
+
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
 
@@ -17,23 +18,23 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(name: string, password: string): Promise<{}> {
 		try {
-			await api.login_request(name, password);
+			await ajaxOperation.Login({ name, password });
 			setLogining(false);
 			setLogin(name);
 			toast('登入成功');
 		} catch (err) {
-			toast.error(api.extractErrMsg(err));
+			toast.error(extractErrMsg(err));
 		}
 		return {};
 	}
 	async function logout_request(): Promise<{}> {
 		try {
-			await api.logout_request();
+			await ajaxOperation.Logout();
 			setLogout();
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			toast.error(api.extractErrMsg(err));
+			toast.error(extractErrMsg(err));
 		}
 		return {};
 	}

@@ -1,37 +1,20 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { getGraphQLClient } from '../ts/api';
+import { ajaxOperation, GQL } from '../ts/api';
 
-type Board = {
-	id: string,
-	boardName: string,
-	rulingPartyId: string
-};
+type Board = GQL.BoardMetaFragment;
 
-type BoardList = {
-	boardList: Board[]
-};
-
-function fetchBoardList(): Promise<BoardList> {
-	const graphQLClient = getGraphQLClient();
-	const query = `
-		query {
-			boardList {
-				id
-				boardName
-				rulingPartyId
-			}
-		}
-	`;
-	return graphQLClient.request(query);
+async function fetchBoardList(): Promise<Board[]> {
+	let res = await ajaxOperation.BoardList();
+	return res.boardList;
 }
 
 function MainContent(): JSX.Element {
 	let [board_list, setBoardList] = React.useState<Board[]>([]);
 	React.useEffect(() => {
 		fetchBoardList().then(board_list => {
-			setBoardList(board_list.boardList);
+			setBoardList(board_list);
 		});
 	}, []);
 
