@@ -45,9 +45,9 @@ impl BoardFields for Board {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Category, juniper_from_schema::Walked>,
     ) -> Fallible<Vec<Category>> {
-        use db_schema::categories::dsl::*;
-        let results = categories
-            .filter(board_id.eq(id_to_i64(&self.id)?))
+        use db_schema::categories;
+        let results = categories::table
+            .filter(categories::board_id.eq(id_to_i64(&self.id)?))
             .load::<db_models::Category>(&ex.context().get_pg_conn()?)?;
         Ok(results
             .into_iter()
@@ -65,14 +65,14 @@ impl BoardFields for Board {
         ex: &juniper::Executor<'_, Context>,
         show_hidden: Option<bool>,
     ) -> Fallible<i32> {
-        use db_schema::articles::dsl;
+        use db_schema::articles;
         let show_hidden = show_hidden.unwrap_or(false);
-        let mut query = dsl::articles.into_boxed();
+        let mut query = articles::table.into_boxed();
         if !show_hidden {
-            query = query.filter(dsl::show_in_list.eq(true));
+            query = query.filter(articles::show_in_list.eq(true));
         }
         let count = query
-            .filter(dsl::board_id.eq(id_to_i64(&self.id)?))
+            .filter(articles::board_id.eq(id_to_i64(&self.id)?))
             .count()
             .get_result::<i64>(&ex.context().get_pg_conn()?)?;
         Ok(count as i32)

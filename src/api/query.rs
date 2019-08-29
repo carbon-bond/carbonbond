@@ -55,9 +55,9 @@ impl QueryFields for Query {
         _trail: &QueryTrail<'_, Article, juniper_from_schema::Walked>,
         id: ID,
     ) -> Fallible<Article> {
-        use db_schema::articles::dsl;
-        let article = dsl::articles
-            .filter(dsl::id.eq(id_to_i64(&id)?))
+        use db_schema::articles;
+        let article = articles::table
+            .filter(articles::id.eq(id_to_i64(&id)?))
             .first::<db_models::Article>(&ex.context().get_pg_conn()?)
             .map_err(|_| Error::new_logic("找不到文章", 404))?;
         Ok(Article {
@@ -77,11 +77,11 @@ impl QueryFields for Query {
         _trail: &QueryTrail<'_, Board, juniper_from_schema::Walked>,
         ids: Option<Vec<ID>>,
     ) -> Fallible<Vec<Board>> {
-        use db_schema::boards::dsl::*;
-        let mut query = boards.into_boxed();
+        use db_schema::boards;
+        let mut query = boards::table.into_boxed();
         if let Some(ids) = ids {
             let ids: Fallible<Vec<i64>> = ids.iter().map(|t| id_to_i64(t)).collect();
-            query = query.filter(id.eq_any(ids?));
+            query = query.filter(boards::id.eq_any(ids?));
         }
         let board_vec = query.load::<db_models::Board>(&ex.context().get_pg_conn()?)?;
         Ok(board_vec
@@ -105,19 +105,19 @@ impl QueryFields for Query {
         show_hidden: Option<bool>,
     ) -> Fallible<Vec<Article>> {
         let conn = ex.context().get_pg_conn()?;
-        use db_schema::articles::dsl;
+        use db_schema::articles;
         let show_hidden = show_hidden.unwrap_or(false);
         let board = forum::get_board_by_name(&conn, &board_name)?;
 
-        let mut query = dsl::articles
-            .filter(dsl::board_id.eq(board.id))
+        let mut query = articles::table
+            .filter(articles::board_id.eq(board.id))
             .into_boxed();
         if !show_hidden {
-            query = query.filter(dsl::show_in_list.eq(true));
+            query = query.filter(articles::show_in_list.eq(true));
         }
 
         let article_vec = query
-            .order(dsl::create_time.asc())
+            .order(articles::create_time.asc())
             .offset(offset as i64)
             .limit(page_size as i64)
             .load::<db_models::Article>(&conn)?;
@@ -165,19 +165,19 @@ impl QueryFields for Query {
         use db_schema::party_members;
         let conn = ex.context().get_pg_conn()?;
         let party_ids = party_members::table
-            .filter(party_members::dsl::user_id.eq(user_id))
-            .select(party_members::dsl::party_id)
+            .filter(party_members::user_id.eq(user_id))
+            .select(party_members::party_id)
             .load::<i64>(&conn)?;
 
-        use db_schema::parties::dsl;
-        let mut query = dsl::parties.into_boxed();
+        use db_schema::parties;
+        let mut query = parties::table.into_boxed();
         if let Some(board_name) = board_name {
             let board = forum::get_board_by_name(&conn, &*board_name)?;
-            query = query.filter(dsl::board_id.eq(board.id));
+            query = query.filter(parties::board_id.eq(board.id));
         }
 
         let party_vec = query
-            .filter(dsl::id.eq_any(party_ids))
+            .filter(parties::id.eq_any(party_ids))
             .load::<db_models::Party>(&conn)?;
         Ok(party_vec
             .into_iter()

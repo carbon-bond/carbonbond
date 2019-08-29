@@ -32,10 +32,10 @@ impl CategoryFields for Category {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Board, juniper_from_schema::Walked>,
     ) -> Fallible<Board> {
-        use db_schema::boards::dsl;
+        use db_schema::boards;
         let board_id = id_to_i64(&self.board_id)?;
-        let board = dsl::boards
-            .filter(dsl::id.eq(board_id))
+        let board = boards::table
+            .filter(boards::id.eq(board_id))
             .first::<db_models::Board>(&ex.context().get_pg_conn()?)?;
         Ok(Board {
             id: self.board_id.clone(),

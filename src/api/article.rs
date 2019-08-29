@@ -56,9 +56,9 @@ impl ArticleFields for Article {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Category, juniper_from_schema::Walked>,
     ) -> Fallible<Category> {
-        use db_schema::categories::dsl::*;
-        let c = categories
-            .filter(id.eq(id_to_i64(&self.category_id)?))
+        use db_schema::categories;
+        let c = categories::table
+            .filter(categories::id.eq(id_to_i64(&self.category_id)?))
             .first::<db_models::Category>(&ex.context().get_pg_conn()?)
             .map_err(|_| Error::new_logic("找不到分類", 404))?;
         Ok(Category {
@@ -74,9 +74,9 @@ impl ArticleFields for Article {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Board, juniper_from_schema::Walked>,
     ) -> Fallible<Board> {
-        use db_schema::boards::dsl::*;
-        let b = boards
-            .filter(id.eq(id_to_i64(&self.board_id)?))
+        use db_schema::boards;
+        let b = boards::table
+            .filter(boards::id.eq(id_to_i64(&self.board_id)?))
             .first::<db_models::Board>(&ex.context().get_pg_conn()?)
             .map_err(|_| Error::new_logic("找不到看板", 404))?;
         Ok(Board {

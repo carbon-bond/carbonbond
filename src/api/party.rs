@@ -59,10 +59,10 @@ impl PartyFields for Party {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Board, juniper_from_schema::Walked>,
     ) -> Fallible<Option<Board>> {
-        use db_schema::boards::dsl::*;
+        use db_schema::boards;
         if let Some(board_id) = self.board_id.clone() {
-            let res = boards
-                .filter(id.eq(id_to_i64(&board_id)?))
+            let res = boards::table
+                .filter(boards::id.eq(id_to_i64(&board_id)?))
                 .first::<db_models::Board>(&ex.context().get_pg_conn()?);
 
             let b = match res {
