@@ -1,6 +1,7 @@
 use juniper_from_schema::graphql_schema_from_file;
 use juniper::ID;
 use diesel::prelude::*;
+use chrono::{DateTime, offset::Utc};
 
 use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
@@ -18,7 +19,7 @@ pub struct Article {
     pub author_id: ID,
     pub category_id: ID,
     pub energy: i32,
-    pub create_time: i32,
+    pub create_time: DateTime<Utc>,
     pub root_id: ID,
 }
 
@@ -35,7 +36,7 @@ impl ArticleFields for Article {
     fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
         Ok(&self.energy)
     }
-    fn field_create_time(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+    fn field_create_time(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&DateTime<Utc>> {
         Ok(&self.create_time)
     }
     fn field_author(
@@ -106,7 +107,7 @@ impl ArticleFields for Article {
                 board_id: i64_to_id(a.board_id),
                 author_id: i64_to_id(a.author_id),
                 category_id: i64_to_id(a.category_id),
-                create_time: a.create_time.timestamp() as i32,
+                create_time: a.create_time,
                 energy: 0,
                 root_id: i64_to_id(a.root_id),
             })

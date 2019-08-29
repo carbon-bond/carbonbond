@@ -1,3 +1,5 @@
+scalar DateTime
+
 schema {
     query: Query
     mutation: Mutation
@@ -40,7 +42,7 @@ type Article {
 	id: ID!
     title: String!
     energy: Int!
-    createTime: Int!
+    createTime: DateTime!
     rootId: ID!
     author: User! @juniper(ownership: "owned")
     content: [String!]! @juniper(ownership: "owned")

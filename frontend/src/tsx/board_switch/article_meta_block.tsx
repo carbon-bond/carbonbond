@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../../css/article_meta.css';
-import { formatCreateDate } from '../../ts/date';
+import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, ArticleMeta } from '.';
 import { getArticleCategory } from '../../ts/forum_util';
@@ -21,7 +21,7 @@ export function ArticleMetaBlock(props: { article: ArticleMeta | Article }): JSX
 			<div styleName="cName">{category.name}</div>
 			<div styleName="authorDate">
 				<Link styleName="author" to={`/app/u/${article.author.userName}`}>{article.author.userName}</Link>
-				&nbsp;發表於{formatCreateDate(article.createTime)}
+				&nbsp;發表於{relativeDate(new Date(article.createTime))}
 			</div>
 			<Title title={article.title} />
 		</div>

@@ -66,7 +66,7 @@ impl QueryFields for Query {
             board_id: i64_to_id(article.board_id),
             author_id: i64_to_id(article.author_id),
             category_id: i64_to_id(article.category_id),
-            create_time: article.create_time.timestamp() as i32,
+            create_time: article.create_time,
             energy: 0,
             root_id: i64_to_id(article.root_id),
         })
@@ -130,7 +130,7 @@ impl QueryFields for Query {
                 board_id: i64_to_id(a.board_id),
                 author_id: i64_to_id(a.author_id),
                 category_id: i64_to_id(a.category_id),
-                create_time: a.create_time.timestamp() as i32,
+                create_time: a.create_time,
                 energy: 0, // TODO: 鍵能
                 root_id: i64_to_id(a.root_id),
             })

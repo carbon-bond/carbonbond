@@ -3,6 +3,9 @@ schema: "../api/*.gql"
 documents: "./operation/*.gql"
 generates:
   src/ts/api/gql.ts:
+    config:
+      scalars:
+        DateTime: string
     plugins:
       - "typescript"
       - "typescript-operations"
