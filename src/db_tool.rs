@@ -9,7 +9,7 @@ use carbonbond::{
     user::{email, signup, find_user_by_name, find_user_by_id},
     custom_error::{Error, Fallible},
     config::{CONFIG, initialize_config, Mode},
-    Context, forum, party, db,
+    Context, forum, party, chat, db,
 };
 
 static COMMAND_HISTORY_FILE: &'static str = ".db_tool_history";
@@ -26,6 +26,8 @@ add 子命令：
         如果填入已存在的看板名，會建立該板的在野黨
     add board <流亡政黨名> <看板名>
         如果找不到流亡政黨，會直接建立政黨及看板
+    add direct_chat <使用者名稱 1> <使用者名稱 2>
+    add direct_msg <直接對話 id> <訊息內容>
 as 子命令：
     as <使用者名稱>
         db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
@@ -142,6 +144,8 @@ fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
         "user" => add_user(ctx, &sub_args),
         "party" => add_party(ctx, &sub_args),
         "board" => add_board(ctx, &sub_args),
+        "direct_chat" => add_direct_chat(ctx, &sub_args),
+        "direct_msg" => add_direct_message(ctx, &sub_args),
         other => Err(Error::new_op(format!("無法 add {}", other))),
     }
 }
@@ -187,6 +191,27 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     }
     let id = forum::create_board(ctx, party_name, board_name)?;
     println!("成功建立看板，id = {}", id);
+    Ok(())
+}
+
+fn add_direct_chat(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
+    if args.len() != 2 {
+        return Err(Error::new_op("add direct_chat 參數數量錯誤"));
+    }
+    let (user_id_1, user_id_2) = (args[0].parse().unwrap(), args[1].parse().unwrap());
+    let chat_id = ctx.use_pg_conn(|conn| chat::create_direct_chat(&conn, user_id_1, user_id_2))?;
+    println!("創建直接對話，id = {}", chat_id);
+    Ok(())
+}
+
+fn add_direct_message(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
+    if args.len() != 2 {
+        return Err(Error::new_op("add direct_msg 參數數量錯誤"));
+    }
+    let (chat_id, content) = (args[0].parse().unwrap(), args[1].to_owned());
+    ctx.use_pg_conn(|conn| {
+        chat::create_direct_message(&conn, chat_id, ctx.get_id().unwrap(), content)
+    })?;
     Ok(())
 }
 
