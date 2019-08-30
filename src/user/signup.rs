@@ -39,11 +39,11 @@ pub fn create_invitation(
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
                 let target = schema::users::table.find(id);
-                use schema::users::dsl::*;
+                use schema::{users, invitations};
                 diesel::update(target)
-                    .set(invitation_credit.eq(invitation_credit - 1))
+                    .set(users::invitation_credit.eq(users::invitation_credit - 1))
                     .execute(conn)?;
-                diesel::insert_into(schema::invitations::table)
+                diesel::insert_into(invitations::table)
                     .values(&new_invitation)
                     .execute(conn)?;
                 Ok(invite_code)
