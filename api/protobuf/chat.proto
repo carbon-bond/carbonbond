@@ -25,8 +25,9 @@ message Message {
     // 每則訊息在它所屬的聊天室／頻道中都有一個獨一無二的 id
     int64 id = 1;
     int64 sender_id = 2;
-    string content = 3;
-    uint64 time = 4;
+    int64 sender_name = 3;
+    string content = 4;
+    uint64 time = 5;
 }
 
 message ChannelLocation {
@@ -63,15 +64,21 @@ message RecentChatResponse {
     message ChatAbstract {
         message DirectChat {
             int64 direct_chat_id = 1;
-            string latest_message = 2;
+            string name = 2;
+            string latest_message = 3;
+            uint64 read_time = 4;
         }
         message GroupChat {
             int64 group_chat_id = 1;
-            string latest_message = 2;
+            string group_name = 2;
+            string latest_message = 3;
+            uint64 read_time = 4;
         }
         message UpgradedGroupChat {
             int64 group_chat_id = 1;
-            repeated string channel_names = 2;
+            string group_name = 2;
+            repeated string channel_names = 3;
+            uint64 read_time = 4;
         }
         oneof Info {
             DirectChat simple_chat = 1;

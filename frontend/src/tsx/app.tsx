@@ -22,7 +22,6 @@ import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { ArticlePage } from './board_switch/article_page';
-import { ChatSocket } from '../ts/chat_socket';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -86,5 +85,3 @@ function App(): JSX.Element {
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
-
-const chat_socket = new ChatSocket(1);
