@@ -143,3 +143,15 @@
 .articleBtnItemPush {
     color: #4e9a40;
 }
+
+.postArticleButton {
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #e51a30;
+    color: #fafafa;
+    text-align: center;
+}
+
+.rightSidebarBlock {
+    background-color: #fafafa;
+}

@@ -64,7 +64,6 @@ export function BoardPage(props: Props): JSX.Element {
 	useScrollToBottom(scrollHandler);
 
 	return <div className="boardContent">
-		<h1>{board_name}</h1>
 		{
 			(() => {
 				if (user_state.login) {
