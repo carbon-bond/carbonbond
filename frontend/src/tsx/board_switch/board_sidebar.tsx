@@ -6,6 +6,8 @@ import '../../css/board_page.css';
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
+
+
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
@@ -21,15 +23,42 @@ export function BoardSidebar(props: Props): JSX.Element {
 	}
 
 	return <>
-		<div className="rightSidebarItem">
-			{ user_state.login && <div onClick={() => onEditClick()} styleName="postArticleButton">發表文章</div> }
+		<div styleName="rightSidebarItem">
+			{ user_state.login && <div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton">發表文章</div> }
 		</div>
-		<div className="rightSidebarItem">
-			<div styleName="rightSidebarBlock">看板簡介</div>
+		<div styleName="rightSidebarItem">
+			<div styleName="rightSidebarBlock">
+				<div styleName="header">看板簡介</div>
+				<div styleName="content">
+					這是一個看板內容的簡介，這是一個看板內容的簡介，這是一個看板內容的簡介，這是一個看板內容的簡介
+				</div>
+				<div styleName="rightSidebarButton trackBoardButton">追蹤此看板</div>
+			</div>
 		</div>
 
-		<div className="rightSidebarItem">
-			<div styleName="rightSidebarBlock">政黨列表</div>
+		<div styleName="rightSidebarItem">
+			<div styleName="rightSidebarBlock">
+				<div styleName="header">政黨列表</div>
+				<div styleName="content">
+					<div styleName="partyItem mainPartyItem">
+						<div styleName="partyTitle">執政黨</div>
+						<div styleName="partyName">這裡是黨名</div>
+						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />87k</div>
+					</div>
+
+					<div styleName="partyItem">
+						<div styleName="partyTitle">在野黨</div>
+						<div styleName="partyName">這裡是黨名</div>
+						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />22k</div>
+					</div>
+					<div styleName="partyItem">
+						<div styleName="partyTitle"></div>
+						<div styleName="partyName">這裡是黨名</div>
+						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />1k</div>
+					</div>
+				</div>
+				<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
+			</div>
 		</div>
 	</>;
 }
