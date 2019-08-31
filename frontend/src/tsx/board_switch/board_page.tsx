@@ -81,7 +81,7 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 				<div styleName="leftPart">
 					<div styleName="articleTitle">{ props.article.title }</div>
 					<div styleName="articleContent">
-						{ props.article.content.length ? props.article.content[0].slice(0, 25) : '內文空白' }
+						{ props.article.content }
 					</div>
 				</div>
 				{/* <div styleName="rightPart">
