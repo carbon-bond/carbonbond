@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { EditorPanelState, UserState, MainScrollState } from '../global_state';
+import { UserState, MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { ajaxOperation } from '../../ts/api';
@@ -26,16 +26,7 @@ async function fetchArticles(
 
 export function BoardPage(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
-	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
 	let board_name = props.match.params.board_name;
-
-	function onEditClick(): void {
-		if (editor_panel_data) {
-			alert('正在編輯其它文章');
-		} else {
-			openEditorPanel({ board_name });
-		}
-	}
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
@@ -63,15 +54,7 @@ export function BoardPage(props: Props): JSX.Element {
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
-	return <div className="boardContent">
-		{
-			(() => {
-				if (user_state.login) {
-					return <h5 onClick={() => onEditClick()}>發表文章</h5>;
-				}
-			})()
-		}
-
+	return <>
 		<div>
 			{
 				articles.map((article, idx) => (
@@ -81,7 +64,7 @@ export function BoardPage(props: Props): JSX.Element {
 				))
 			}
 		</div>
-	</div>;
+	</>;
 }
 
 function BoardItem(props: { article: ArticleMeta }): JSX.Element {

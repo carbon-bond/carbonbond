@@ -1,3 +1,56 @@
+.boardHeader {
+
+    height: 100%;
+    display: flex;
+    flex-direction: column;    
+    justify-content: flex-end;
+    padding: 10px;
+    position: relative;
+
+    & .headerLeft {
+        flex: 1;
+        & .boardTitle {
+            padding: 10px;
+            font-size: 30px;
+        }
+        & .boardSubTitle {
+            padding: 10px;
+        }
+    }
+
+    & .headerRight {
+        flex: 1;
+        padding: 10px;
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        
+        color: #4b4b4b;
+
+        & .dataBox {
+            display: flex;
+            
+            & .dataBoxItem {
+                padding: 0px 20px;
+                flex: 1;
+
+                & .number {
+                    text-align: center;
+                    font-size: 24px;
+                    margin-bottom: 5px;
+                }
+
+                & .text {
+                }
+            }
+
+            & .dataBoxItem:not(:last-child) {
+                border-right: 2px #4b4b4b solid;
+            }
+        }
+    }
+}
+
 .articleWrapper {
     padding: 20px 20px 10px 20px;
     display: block;
@@ -144,14 +197,77 @@
     color: #4e9a40;
 }
 
-.postArticleButton {
+
+.rightSidebarItem {
+    padding: 10px 0px;
+
+}
+
+.rightSidebarButton {
     padding: 10px;
     border-radius: 20px;
+    text-align: center;   
+}
+
+.postArticleButton {
     background-color: #e51a30;
     color: #fafafa;
-    text-align: center;
+}
+
+.trackBoardButton {
+    border: 2px #e51a30 solid;
+    color: #e51a30;
+
+}
+
+.showPartyButton {
+    border: 2px #9e9e9e solid;
+    color: #9e9e9e;
+
 }
 
 .rightSidebarBlock {
     background-color: #fafafa;
+    padding: 15px;
+    color: #333;
+
+    & .header {
+        font-size: 24px;
+    }
+
+    & .content {
+        padding: 15px 2px;
+
+        & .partyItem {
+            display: flex;
+            padding: 5px 0px;
+
+            & .partyTitle {
+                flex: 1;
+            }
+
+            & .partyName {
+                flex: 2;
+            }
+
+            & .partyScore {
+                flex: 1;
+                color: #e59b1a;
+                font-weight: 300;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+
+                & .logo {
+                    height: 1em;
+                    padding: 0px 5px;
+                }
+            }
+        }
+
+        & .mainPartyItem {
+            color: #e51a30;
+            font-weight: bold;
+        }
+    }
 }

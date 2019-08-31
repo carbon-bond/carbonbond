@@ -15,13 +15,34 @@ export type Article = GQL.ArticleDetailQuery['article'];
 export type ArticleMeta = GQL.ArticleMetaFragment;
 
 
+import '../../css/board_page.css';
 
 export function BoardSwitch(): JSX.Element {
 	return <>
 		<div className="switchHeader">
 			<Switch>
 				<Route exact path="/app/b/:board_name" render={props =>
-					<h1>{ props.match.params.board_name }</h1>
+					<div styleName="boardHeader">
+						<div>
+							<div styleName="headerLeft">
+								<div styleName="boardTitle">{ props.match.params.board_name }</div>
+								<div styleName="boardSubTitle">版主的話</div>
+							</div>
+
+							<div styleName="headerRight">
+								<div styleName="dataBox">
+									<div styleName="dataBoxItem">
+										<div styleName="number">1.2K</div>
+										<div styleName="text">追蹤人數</div>
+									</div>
+									<div styleName="dataBoxItem">
+										<div styleName="number">800</div>
+										<div styleName="text">在線人數</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				} />
 			</Switch>
 		</div>
