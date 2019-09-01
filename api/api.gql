@@ -76,18 +76,19 @@ type Query {
     checkPartyNameValid(name: String!): String @juniper(ownership: "owned")
     checkArticleContentValid(content: [String!]!boardName: String!categoryName: String!): [String]! @juniper(ownership: "owned")
 
-    # invitation(code: ID): Invitation
+    invitation(code: ID!): Invitation!  @juniper(ownership: "owned")
     # articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article!]!
 }
 
 type Invitation {
-    code: ID
+    code: ID!
     # 邀請人的名稱
-    inviter_name: String
+    inviterName: String!
     # 受邀人的 email
-    invitee_email: String
+    inviteeEmail: String!
     # 邀請詞
-    words: String
+    words: String!
+    isUsed: Boolean!
 }
 
 input Reply {

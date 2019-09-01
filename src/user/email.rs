@@ -8,12 +8,17 @@ fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallibl
     let mailgun_api_key: &str = &config.server.mailgun_api_key;
     let cmd = format!(
         "curl -s --user 'api:{}' \
-         https://api.mailgun.net/v3/mail.carbon-bond.com/messages \
-         -F from='碳鍵 <noreply@mail.carbon-bond.com>' \
+         https://api.mailgun.net/v3/{}/messages \
+         -F from='{}' \
          -F to='{}' \
          -F subject='{}' \
          --form-string html='{}'",
-        mailgun_api_key, recv_email, title, html_content
+        mailgun_api_key,
+        config.server.mail_domain,
+        config.server.mail_from,
+        recv_email,
+        title,
+        html_content
     );
 
     let output = Command::new("sh")
@@ -31,7 +36,9 @@ pub fn send_invite_email(
     sender_id: Option<i64>,
     invite_code: &str,
     recv_email: &str,
+    invitation_words: &str,
 ) -> Fallible<()> {
+    let config = CONFIG.get();
     use crate::db::schema::users;
 
     let inviter_name = {
@@ -45,15 +52,16 @@ pub fn send_invite_email(
             "系統管理員".to_owned()
         }
     };
-    let url = format!("http://carbon-bond.com/app/register/{}", invite_code);
+    let url = format!("{}/app/register/{}", config.server.base_url, invite_code);
     let welcome_title = format!("{} 邀請您加入碳鍵", inviter_name);
     let welcome_msg = format!(
         r#"<html>
          <h1>歡迎加入碳鍵！</h1>
          <p>點選以下連結，嘴爆那些笨蛋吧！</p>
          <a href="{}">{}</a> <br/>
+         <blockquote>{}</blockquote>
          </html>"#,
-        url, url
+        url, url, invitation_words
     );
 
     println!(
