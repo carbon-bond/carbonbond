@@ -34,6 +34,9 @@ pub(self) use article::Article;
 mod category;
 pub(self) use category::Category;
 
+mod invitation;
+pub(self) use invitation::Invitation;
+
 mod query;
 use query::Query;
 

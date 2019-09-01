@@ -7,7 +7,7 @@ use crate::custom_error::{Fallible, Error};
 use crate::party;
 use crate::forum;
 
-use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party};
+use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party, Invitation};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Query]);
 
@@ -235,5 +235,26 @@ impl QueryFields for Query {
                 })
                 .collect())
         }
+    }
+    fn field_invitation(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Invitation, juniper_from_schema::Walked>,
+        code: ID,
+    ) -> Fallible<Invitation> {
+        let invitation = db_schema::invitations::table
+            .filter(db_schema::invitations::code.eq(code.to_string()))
+            .first::<db_models::Invitation>(&ex.context().get_pg_conn()?)
+            .or(Err(Error::new_logic(
+                format!("查無邀請碼: {}", code.to_string()),
+                404,
+            )))?;
+        Ok(Invitation {
+            code: code,
+            inviter_name: invitation.inviter_name,
+            invitee_email: invitation.email,
+            words: invitation.words,
+            is_used: invitation.is_used,
+        })
     }
 }

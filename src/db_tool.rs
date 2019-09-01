@@ -8,7 +8,7 @@ use rustyline::{Editor, error::ReadlineError, config::Config as RustyLineConfig}
 use carbonbond::{
     user::{email, signup, find_user_by_name, find_user_by_id},
     custom_error::{Error, Fallible},
-    config::{Config, load_config, Mode},
+    config::{CONFIG, initialize_config, Mode},
     Context, forum, party, db,
 };
 
@@ -44,12 +44,11 @@ enum CommandResult {
 
 struct DBToolCtx {
     id: Option<i64>,
-    config: Config,
     line_editor: Editor<()>,
 }
 
 impl DBToolCtx {
-    fn new(config: Config) -> DBToolCtx {
+    fn new() -> DBToolCtx {
         let editor_config = RustyLineConfig::builder()
             .max_history_size(100000)
             .history_ignore_dups(true)
@@ -61,7 +60,6 @@ impl DBToolCtx {
 
         DBToolCtx {
             id: None,
-            config,
             line_editor,
         }
     }
@@ -152,9 +150,12 @@ fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
         return Err(Error::new_op("add user 參數數量錯誤"));
     }
+    let conf = CONFIG.get();
     let (email, name, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
-    ctx.use_pg_conn(|conn| signup::create_user(&conn, email, name, password))?;
+    ctx.use_pg_conn(|conn| {
+        signup::create_user(&conn, email, name, password, conf.user.invitation_credit)
+    })?;
     Ok(())
 }
 
@@ -191,8 +192,8 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 
 fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     ctx.use_pg_conn(|conn| {
-        let invite_code = signup::create_invitation(&conn, None, &args[0])?;
-        email::send_invite_email(&conn, None, &invite_code, &args[0])?;
+        let invite_code = signup::create_invitation(&conn, ctx.get_id(), &args[0], "")?;
+        email::send_invite_email(&conn, ctx.get_id(), &invite_code, &args[0], "")?;
         Ok(())
     })?;
     Ok(())
@@ -206,7 +207,8 @@ fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn reset_database(ctx: &mut DBToolCtx) -> Fallible<()> {
-    if let Mode::Release = ctx.config.mode {
+    let conf = CONFIG.get();
+    if let Mode::Release = conf.mode {
         println!("危險操作！請輸入 carbonbond 以繼續");
 
         let prompt = match ctx.get_user()? {
@@ -238,7 +240,7 @@ fn reset_database(ctx: &mut DBToolCtx) -> Fallible<()> {
         .arg("database")
         .arg("reset")
         .arg("--database-url")
-        .arg(&ctx.config.database.url)
+        .arg(&conf.database.url)
         .output()?
         .stdout;
     println!("{}", String::from_utf8_lossy(&out));
@@ -296,20 +298,19 @@ fn dispatch_command(
 
 fn main() -> Fallible<()> {
     // 載入設定
-    let config = {
-        let args_config = load_yaml!("db_tool_args.yaml");
-        let arg_matches = clap::App::from_yaml(args_config).get_matches();
-        let config_file = arg_matches
-            .value_of("config_file")
-            .map(|p| PathBuf::from(p));
-        load_config(&config_file)?
-    };
+    let args_config = load_yaml!("args.yaml");
+    let arg_matches = clap::App::from_yaml(args_config).get_matches();
+    let config_file = arg_matches
+        .value_of("config_file")
+        .map(|p| PathBuf::from(p));
+    initialize_config(&config_file);
+    let conf = CONFIG.get();
 
     // 初始化資料庫
-    db::init_db(&config.database.url);
+    db::init_db(&conf.database.url);
 
     println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx::new(config);
+    let mut ctx = DBToolCtx::new();
     loop {
         match exec_command(&mut ctx) {
             Ok(CommandResult::Success) => {}
