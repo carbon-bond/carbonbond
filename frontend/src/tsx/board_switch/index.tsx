@@ -8,7 +8,6 @@ import {
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
 import { BoardSidebar } from './board_sidebar';
-import { Category } from '../../ts/forum_util';
 import { GQL } from '../../ts/api';
 
 export type Article = GQL.ArticleDetailQuery['article'];
