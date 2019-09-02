@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { UserState, MainScrollState } from '../global_state';
+import { MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { ajaxOperation } from '../../ts/api';
@@ -25,7 +25,6 @@ async function fetchArticles(
 }
 
 export function BoardPage(props: Props): JSX.Element {
-	let { user_state } = UserState.useContainer();
 	let board_name = props.match.params.board_name;
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
@@ -68,7 +67,7 @@ export function BoardPage(props: Props): JSX.Element {
 }
 
 function BoardItem(props: { article: ArticleMeta }): JSX.Element {
-	const dateString: string = relativeDate(new Date(props.article.createTime * 1000));
+	const dateString: string = relativeDate(new Date(props.article.createTime));
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
