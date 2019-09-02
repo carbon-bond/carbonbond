@@ -68,11 +68,23 @@ export function BoardPage(props: Props): JSX.Element {
 
 function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 	const dateString: string = relativeDate(new Date(props.article.createTime));
+
+	let userName = '';
+	let categoryName = '';
+	try {
+		userName = props.article.author.userName;
+		categoryName = JSON.parse(props.article.category.body).name;
+	}
+	catch (e) {
+		userName = '未知';
+		categoryName = '未知';
+	}
+
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
-				<div styleName="articleType">{ props.article.categoryName }</div>
-				<div styleName="authorId">{ props.article.authorId }</div>
+				<div styleName="articleType">{ categoryName }</div>
+				<div styleName="authorId">{ userName }</div>
 				<div styleName="articleTime">{ dateString }</div>
 				<div styleName="articleTag">標籤</div>
 			</div>
