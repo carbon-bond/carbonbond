@@ -16,8 +16,11 @@ CREATE INDEX users_email_index ON users(email);
 CREATE TABLE invitations (
   id BIGSERIAL PRIMARY KEY,
   code VARCHAR(32) NOT NULL,
+  inviter_name TEXT NOT NULL,
   email TEXT NOT NULL,
-  create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  words TEXT NOT NULL,
+  create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  is_used BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX invitations_create_time_index ON invitations(create_time);

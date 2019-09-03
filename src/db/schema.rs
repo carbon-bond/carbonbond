@@ -111,8 +111,11 @@ table! {
     invitations (id) {
         id -> Int8,
         code -> Varchar,
+        inviter_name -> Text,
         email -> Text,
+        words -> Text,
         create_time -> Timestamptz,
+        is_used -> Bool,
     }
 }
 
