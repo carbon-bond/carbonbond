@@ -53,10 +53,21 @@ pub fn send_invite_email(
         }
     };
     let mut invitation_words_html = format!("<p>{}</p>", invitation_words.replace("\n", "</p><p>"));
+    let style = r#"
+        margin: 20px 0px;
+        background-color: #eeeeee;
+        border-left: 5px solid #00aae1;
+        padding: 5px;
+        padding-left: 15px;
+        border-radius: 6px;
+    "#;
     invitation_words_html = if invitation_words == "" {
         "".to_owned()
     } else {
-        format!("<blockquote style=\"margin: 20px; padding: 10px; background-color: #eeeeee; border-left: 5px solid #00aae1;; margin: 15px 30px 0 10px; padding-left: 20px; border-radius: 6px;\">{}</blockquote>", invitation_words_html)
+        format!(
+            "<blockquote style=\"{}\">{}</blockquote>",
+            style, invitation_words_html
+        )
     };
     let url = format!("{}/app/register/{}", config.server.base_url, invite_code);
     let welcome_title = format!("{} 邀請您加入碳鍵", inviter_name);
