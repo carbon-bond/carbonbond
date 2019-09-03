@@ -30,7 +30,7 @@ as 子命令：
     as <使用者名稱>
         db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
 invite 子命令：
-    invite <信箱地址>
+    invite <信箱地址> [邀請詞]
 reset
     清除資料庫並重建
 exit
@@ -191,9 +191,17 @@ fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
+    let invitation_words = if args.len() == 1 { "" } else { &args[1] };
     ctx.use_pg_conn(|conn| {
-        let invite_code = signup::create_invitation(&conn, ctx.get_id(), &args[0], "")?;
-        email::send_invite_email(&conn, ctx.get_id(), &invite_code, &args[0], "")?;
+        let invite_code =
+            signup::create_invitation(&conn, ctx.get_id(), &args[0], invitation_words)?;
+        email::send_invite_email(
+            &conn,
+            ctx.get_id(),
+            &invite_code,
+            &args[0],
+            invitation_words,
+        )?;
         Ok(())
     })?;
     Ok(())
@@ -298,7 +306,7 @@ fn dispatch_command(
 
 fn main() -> Fallible<()> {
     // 載入設定
-    let args_config = load_yaml!("args.yaml");
+    let args_config = load_yaml!("db_tool_args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
     let config_file = arg_matches
         .value_of("config_file")

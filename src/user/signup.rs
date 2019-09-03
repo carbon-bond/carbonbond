@@ -58,7 +58,7 @@ pub fn create_invitation(
         None => {
             let new_invitation = NewInvitation {
                 code: &invite_code,
-                inviter_name: "系統管理員",
+                inviter_name: "",
                 email,
                 words,
             };
@@ -83,17 +83,15 @@ pub fn create_user_by_invitation(
         .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
     let mut invitation_credit = 0;
     let config = CONFIG.get();
-    if invitation.inviter_name == "系統管理員" {
+    if invitation.inviter_name == "" {
         invitation_credit = config.user.invitation_credit;
     }
-    diesel::update(schema::invitations::table.filter(schema::invitations::dsl::code.eq(code)))
-        .set(schema::invitations::dsl::is_used.eq(true))
+    diesel::update(schema::invitations::table.filter(schema::invitations::code.eq(code)))
+        .set(schema::invitations::is_used.eq(true))
         .execute(conn)?;
     create_user(&conn, &invitation.email, name, password, invitation_credit)
 }
 
-// NOTE: 伺服器尚未用到該函式，是 db-tool 在用
-// TODO: 錯誤處理
 pub fn create_user(
     conn: &PgConnection,
     email: &str,

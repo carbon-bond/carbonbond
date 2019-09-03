@@ -16,14 +16,26 @@ url = "postgres://postgres@localhost:5432/carbonbond"
 [user]
 invitation_credit = 20
 email_whitelist = [
+    # 臺大
     '@ntu\.edu\.tw$',
+    # 清大
     '@(oz|m\d{2,3})\.nthu\.edu\.tw$',
+    # 交大
     '@nctu\.edu\.tw$',
+    # 成大
     '@mail\.ncku\.edu\.tw$',
+    # 政大
     '@nccu\.edu\.tw$',
+    # 中央
     '@cc\.ncu\.edu\.tw$',
+    # 中興
     '@mail\.nchu\.edu\.tw$',
+    # 中山
+    '@student\.nsysu\.edu\.tw$',
+    # 中正
     '@ccu\.edu\.tw$',
+    # 臺師大
     '@ntnu\.edu\.tw$',
+    # 高師大
     '@mail\.nknu\.edu\.tw$'
 ]
