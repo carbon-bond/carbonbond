@@ -47,7 +47,6 @@ impl MutationFields for Mutation {
                 if !matches.matched_any() {
                     Err(Error::new_logic("不支援的信箱", 403))
                 } else {
-                    // TODO: 寫宏來處理類似邏輯
                     let conn = &ex.context().get_pg_conn()?;
                     let invite_code =
                         signup::create_invitation(&conn, Some(id), &email, &invitation_words)?;

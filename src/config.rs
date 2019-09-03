@@ -83,8 +83,9 @@ pub struct UserConfig {
 
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)
+        let mut mailgun_api_key = load_file_content(&orig.mailgun_key_file)
             .map_err(|e| e.add_msg(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file)))?;
+        mailgun_api_key = mailgun_api_key.trim().to_owned();
         Ok(ServerConfig {
             address: orig.address,
             port: orig.port,

@@ -49,8 +49,14 @@ pub fn send_invite_email(
                 .first::<String>(conn)
                 .or(Err(Error::new_logic(&format!("找不到使用者: {}", id), 401)))?
         } else {
-            "系統管理員".to_owned()
+            "".to_owned()
         }
+    };
+    let mut invitation_words_html = format!("<p>{}</p>", invitation_words.replace("\n", "</p><p>"));
+    invitation_words_html = if invitation_words == "" {
+        "".to_owned()
+    } else {
+        format!("<blockquote style=\"margin: 20px; padding: 10px; background-color: #eeeeee; border-left: 5px solid #00aae1;; margin: 15px 30px 0 10px; padding-left: 20px; border-radius: 6px;\">{}</blockquote>", invitation_words_html)
     };
     let url = format!("{}/app/register/{}", config.server.base_url, invite_code);
     let welcome_title = format!("{} 邀請您加入碳鍵", inviter_name);
@@ -59,9 +65,9 @@ pub fn send_invite_email(
          <h1>歡迎加入碳鍵！</h1>
          <p>點選以下連結，嘴爆那些笨蛋吧！</p>
          <a href="{}">{}</a> <br/>
-         <blockquote>{}</blockquote>
+         {}
          </html>"#,
-        url, url, invitation_words
+        url, url, invitation_words_html
     );
 
     println!(
