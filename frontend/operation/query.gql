@@ -37,6 +37,7 @@ fragment ArticleMeta on Article {
 	author { userName }
 	energy
 	createTime
+	content
 }
 
 query ArticleList($board_name: String!, $page_size: Int!, $offset: Int!, $show_hidden: Boolean) {
