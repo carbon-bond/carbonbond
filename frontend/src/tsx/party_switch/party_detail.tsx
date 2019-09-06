@@ -61,7 +61,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			</div>
 			{
 				(() => {
-					if (!party.board && user_state.login && user_state.user_id == party.chairmanId) {
+					if (!party.board && user_state.login && user_state.user_id == party.chairman.userName) {
 						return <CreateBoardBlock party_name={party.partyName} rp={props}/>;
 					} else {
 						return null;

@@ -111,7 +111,7 @@ table! {
     invitations (id) {
         id -> Int8,
         code -> Varchar,
-        inviter_name -> Text,
+        inviter_id -> Nullable<Int8>,
         email -> Text,
         words -> Text,
         create_time -> Timestamptz,
@@ -167,6 +167,7 @@ joinable!(direct_messages -> direct_chats (direct_chat_id));
 joinable!(direct_messages -> users (sender_id));
 joinable!(group_chat_members -> group_chats (group_chat_id));
 joinable!(group_chat_members -> users (member_id));
+joinable!(invitations -> users (inviter_id));
 joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));

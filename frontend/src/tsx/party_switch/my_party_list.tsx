@@ -88,7 +88,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
 										<div styleName="partyLabel">{party.partyName}</div>
 										<div styleName="partyLabel">⚡{party.energy}</div>
-										<div styleName="partyLabel">👑{party.chairmanId}</div>
+										<div styleName="partyLabel">👑{party.chairman.userName}</div>
 										<div styleName="partyLabel">📊 10%</div>
 									</Link>
 								);

@@ -27,7 +27,7 @@ pub struct NewUser<'a> {
 pub struct Invitation {
     pub id: i64,
     pub code: String,
-    pub inviter_name: String,
+    pub inviter_id: Option<i64>,
     pub email: String,
     pub words: String,
     pub create_time: DateTime<Utc>,
@@ -38,7 +38,7 @@ pub struct Invitation {
 #[table_name = "invitations"]
 pub struct NewInvitation<'a> {
     pub code: &'a str,
-    pub inviter_name: &'a str,
+    pub inviter_id: Option<i64>,
     pub email: &'a str,
     pub words: &'a str,
 }

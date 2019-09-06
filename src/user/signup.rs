@@ -35,7 +35,7 @@ pub fn create_invitation(
 
             let new_invitation = NewInvitation {
                 code: &invite_code,
-                inviter_name: &user.name,
+                inviter_id: Some(id),
                 email,
                 words,
             };
@@ -60,7 +60,7 @@ pub fn create_invitation(
         None => {
             let new_invitation = NewInvitation {
                 code: &invite_code,
-                inviter_name: "",
+                inviter_id: None,
                 email,
                 words,
             };
@@ -85,7 +85,7 @@ pub fn create_user_by_invitation(
         .or(Err(Error::new_not_found(DataType::InviteCode, code)))?;
     let mut invitation_credit = 0;
     let config = CONFIG.get();
-    if invitation.inviter_name == "" {
+    if invitation.inviter_id.is_none() {
         invitation_credit = config.user.invitation_credit;
     }
     diesel::update(schema::invitations::table.filter(schema::invitations::code.eq(code)))

@@ -49,7 +49,7 @@ query BoardList($ids: [ID!]) {
 }
 
 fragment PartyMeta on Party {
-	id, partyName, boardId, energy, chairmanId
+	id, partyName, boardId, energy, chairman { userName }
 }
 query MyPartyList($board_name: String) {
     myPartyList(boardName: $board_name) { ...PartyMeta }
@@ -58,7 +58,8 @@ query MyPartyList($board_name: String) {
 query PartyDetail($name: String!) {
 	party(partyName: $name) {
 		id, partyName, boardId,
-		energy, chairmanId, position,
+		energy, position,
+ 		chairman { userName },
 		board { boardName }
 	}
 }

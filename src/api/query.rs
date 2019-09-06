@@ -257,7 +257,7 @@ impl QueryFields for Query {
             })?;
         Ok(Invitation {
             code: code,
-            inviter_name: invitation.inviter_name,
+            inviter_id: invitation.inviter_id,
             invitee_email: invitation.email,
             words: invitation.words,
             is_used: invitation.is_used,

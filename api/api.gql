@@ -26,7 +26,7 @@ type Board {
 type Party {
     id: ID!
     partyName: String!
-    chairmanId: ID!      # 應該改為一個 User type
+    chairman: User! @juniper(ownership: "owned")
     boardId: ID
     energy: Int!
     position(userName: String): Int! @juniper(ownership: "owned")
@@ -83,7 +83,7 @@ type Query {
 type Invitation {
     code: ID!
     # 邀請人的名稱
-    inviterName: String!
+    inviter: User @juniper(ownership: "owned")
     # 受邀人的 email
     inviteeEmail: String!
     # 邀請詞
@@ -118,7 +118,7 @@ type Mutation {
     inviteSignup(email: String!, invitationWords: String!): Boolean! @juniper(ownership: "owned")
 
     # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
-    # forgetPassword(id: String!): Boolean!
+    # forgetPassword(name: String!): Boolean!
     # resetPassword(code: String!, newPassword: String!): Boolean!
     # changePassword(oldPassword: String!, newPassword: String!): Boolean
 
@@ -126,7 +126,7 @@ type Mutation {
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
     #createParty(partyName: String!, boardName: String): ID
     ## 奪權。在野黨向執政黨發起挑戰。（權限：黨主席）
-    #tryRuling(id: ID, boardName: String!): Boolean
+    #tryRuling(partyName: String!): Boolean
     ## 出走。開始流亡。（權限：黨主席）
     #exile(partyName: String!): Boolean
 

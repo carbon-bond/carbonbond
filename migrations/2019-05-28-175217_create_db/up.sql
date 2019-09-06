@@ -16,7 +16,7 @@ CREATE INDEX users_email_index ON users(email);
 CREATE TABLE invitations (
   id BIGSERIAL PRIMARY KEY,
   code VARCHAR(32) NOT NULL,
-  inviter_name TEXT NOT NULL,
+  inviter_id BIGINT REFERENCES users(id),
   email TEXT NOT NULL,
   words TEXT NOT NULL,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),

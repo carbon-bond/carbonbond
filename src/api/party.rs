@@ -4,10 +4,10 @@ use diesel::prelude::*;
 
 use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
-use crate::user::find_user_by_name;
+use crate::user::{find_user_by_name, find_user_by_id};
 use crate::party;
 
-use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board};
+use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, User};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Party]);
 
@@ -29,8 +29,17 @@ impl PartyFields for Party {
     fn field_board_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<ID>> {
         Ok(&self.board_id)
     }
-    fn field_chairman_id(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&ID> {
-        Ok(&self.chairman_id)
+    fn field_chairman(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        _trail: &QueryTrail<'_, User, juniper_from_schema::Walked>,
+    ) -> Fallible<User> {
+        let user = find_user_by_id(&ex.context().get_pg_conn()?, id_to_i64(&self.chairman_id)?)?;
+        Ok(User {
+            id: self.chairman_id.clone(),
+            user_name: user.name,
+            energy: 0,
+        })
     }
     fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
         Ok(&self.energy)
