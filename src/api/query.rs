@@ -1,9 +1,10 @@
 use juniper_from_schema::graphql_schema_from_file;
 use juniper::ID;
 use diesel::prelude::*;
+use diesel::result::Error as DBError;
 
 use crate::db::{models as db_models, schema as db_schema};
-use crate::custom_error::{Fallible, Error};
+use crate::custom_error::{Fallible, Error, ErrorKey, DataType};
 use crate::party;
 use crate::forum;
 
@@ -59,7 +60,7 @@ impl QueryFields for Query {
         let article = articles::table
             .filter(articles::id.eq(id_to_i64(&id)?))
             .first::<db_models::Article>(&ex.context().get_pg_conn()?)
-            .map_err(|_| Error::new_logic("找不到文章", 404))?;
+            .map_err(|_| Error::new_not_found(DataType::Article, &id))?;
         Ok(Article {
             id: i64_to_id(article.id),
             title: article.title,
@@ -79,11 +80,16 @@ impl QueryFields for Query {
     ) -> Fallible<Vec<Board>> {
         use db_schema::boards;
         let mut query = boards::table.into_boxed();
-        if let Some(ids) = ids {
+        if let Some(ids) = &ids {
             let ids: Fallible<Vec<i64>> = ids.iter().map(|t| id_to_i64(t)).collect();
             query = query.filter(boards::id.eq_any(ids?));
         }
         let board_vec = query.load::<db_models::Board>(&ex.context().get_pg_conn()?)?;
+        if let Some(ids) = &ids {
+            if ids.len() != board_vec.len() {
+                return Err(Error::new_not_found(DataType::Board, ids));
+            }
+        }
         Ok(board_vec
             .into_iter()
             .map(|b| Board {
@@ -160,7 +166,7 @@ impl QueryFields for Query {
         let user_id = ex
             .context()
             .get_id()
-            .ok_or(Error::new_logic("尚未登入", 401))?;
+            .ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
         // TODO 用 join?
         use db_schema::party_members;
         let conn = ex.context().get_pg_conn()?;
@@ -222,7 +228,7 @@ impl QueryFields for Query {
         let category = forum::get_category(&ex.context().get_pg_conn()?, &category_name, board.id)?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         if c_body.structure.len() != content.len() {
-            Err(Error::new_logic("結構長度有誤", 403))
+            Err(Error::new_logic(ErrorKey::InvalidLength))
         } else {
             Ok(content
                 .into_iter()
@@ -245,10 +251,10 @@ impl QueryFields for Query {
         let invitation = db_schema::invitations::table
             .filter(db_schema::invitations::code.eq(code.to_string()))
             .first::<db_models::Invitation>(&ex.context().get_pg_conn()?)
-            .or(Err(Error::new_logic(
-                format!("查無邀請碼: {}", code.to_string()),
-                404,
-            )))?;
+            .map_err(|e| match e {
+                DBError::NotFound => Error::new_not_found(DataType::InviteCode, &code),
+                _ => e.into(),
+            })?;
         Ok(Invitation {
             code: code,
             inviter_name: invitation.inviter_name,

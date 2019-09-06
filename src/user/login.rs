@@ -2,7 +2,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use crate::db::models::User;
 use crate::db::schema;
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, ErrorKey, DataType};
 
 pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> {
     use schema::users;
@@ -10,10 +10,7 @@ pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> 
     let user = users::table
         .filter(users::name.eq(name))
         .first::<User>(conn)
-        .or(Err(Error::new_logic(
-            &format!("找不到使用者: {}", name),
-            401,
-        )))?;
+        .map_err(|_| Error::new_not_found(DataType::User, name))?;
 
     let equal = argon2::verify_raw(
         password.as_bytes(),
@@ -24,6 +21,8 @@ pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> 
 
     match equal {
         true => Ok(user),
-        false => Err(Error::new_logic("密碼錯誤", 401)),
+        false => Err(Error::new_logic(ErrorKey::InvalidArgument(
+            "password".to_owned(),
+        ))),
     }
 }

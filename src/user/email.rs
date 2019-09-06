@@ -1,6 +1,6 @@
 use std::process::Command;
 use diesel::{prelude::*, pg::PgConnection};
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, DataType};
 use crate::config::CONFIG;
 
 fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallible<String> {
@@ -47,7 +47,7 @@ pub fn send_invite_email(
                 .select(users::name)
                 .find(id)
                 .first::<String>(conn)
-                .or(Err(Error::new_logic(&format!("找不到使用者: {}", id), 401)))?
+                .or(Err(Error::new_not_found(DataType::User, id)))?
         } else {
             "".to_owned()
         }

@@ -1,19 +1,69 @@
 use std::error::Error as StdError;
 
-use juniper::{FieldError, Value, DefaultScalarValue, IntoFieldError};
+use juniper::{FieldError, Value, IntoFieldError};
 
-#[derive(Clone, Display)]
+#[derive(Clone, Display, Debug)]
+pub enum DataType {
+    #[display(fmt = "CATEGORY")]
+    Category,
+    #[display(fmt = "CONTENT")]
+    Content,
+    #[display(fmt = "BOARD")]
+    Board,
+    #[display(fmt = "ARTICLE")]
+    Article,
+    #[display(fmt = "PARTY")]
+    Party,
+    #[display(fmt = "USER")]
+    User,
+    #[display(fmt = "INVITE_CODE")]
+    InviteCode,
+}
+
+#[derive(Clone, Display, Debug)]
+pub enum BadOpType {
+    #[display(fmt = "NOT_EXILE")]
+    NotExile,
+    #[display(fmt = "NOT_ROOTABLE")]
+    NotRootable,
+    #[display(fmt = "NOT_TRANSFUSABLE")]
+    NotTransfusable,
+    #[display(fmt = "REPLY_TO_DIFFERENT_BOARD")]
+    ReplyToDifferentBoard,
+    #[display(fmt = "REPLY_TO_DIFFERENT_TOPIC")]
+    ReplyToDifferentTopic,
+    #[display(fmt = "CANT_REPLY_TO_CATEGORY")]
+    CantReplyToCategory,
+    #[display(fmt = "NO_INVITE_CREDIT")]
+    NoInviteCredit,
+}
+
+#[derive(Clone, Display, Debug)]
 pub enum ErrorKey {
     #[display(fmt = "INTERNAL")]
     Internal,
-    #[display(fmt = "AUTH")]
-    Auth,
+    #[display(fmt = "NEED_LOGIN")]
+    NeedLogin,
+    #[display(fmt = "PERMISSION_DENIED")]
+    PermissionDenied,
+    #[display(fmt = "NOT_FOUND({}, {})", "_0", "_1")]
+    NotFound(DataType, String),
+    #[display(fmt = "PARSE_ID")]
+    ParseID,
+    #[display(fmt = "INVALID_ARGUMENT({})", "_0")]
+    InvalidArgument(String),
+    #[display(fmt = "INVALID_LENGTH")]
+    InvalidLength,
+    #[display(fmt = "BAD_OPERATION({})", "_0")]
+    BadOperation(BadOpType),
+    #[display(fmt = "PARSING_JSON")]
+    ParsingJson,
+    #[display(fmt = "DUPLICATE")]
+    Duplicate,
 }
 
-fn build_field_err(msg: &str, key: i32) -> FieldError {
-    // let key = format!("{:?}", key);
-    // FieldError::new(msg, Value::Scalar(DefaultScalarValue::String(key)))
-    FieldError::new(msg, Value::Scalar(DefaultScalarValue::Int(key)))
+fn build_field_err(key: ErrorKey) -> FieldError {
+    FieldError::new(key, Value::null())
 }
 
 #[derive(Debug)]
@@ -21,7 +71,7 @@ pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
     OperationError { msg: String },
     /// 此錯誤代表應拋給前端使用者的訊息
-    LogicError { msg: String, key: i32 },
+    LogicError { key: ErrorKey },
     /// 此錯誤代表其它無法預期的錯誤
     InternalError {
         msg: Option<String>,
@@ -35,11 +85,11 @@ impl Error {
             msg: msg.as_ref().to_owned(),
         }
     }
-    pub fn new_logic<S: AsRef<str>>(msg: S, key: i32) -> Error {
-        Error::LogicError {
-            msg: msg.as_ref().to_owned(),
-            key,
-        }
+    pub fn new_logic(key: ErrorKey) -> Error {
+        Error::LogicError { key }
+    }
+    pub fn new_not_found<S: std::fmt::Debug>(err_type: DataType, target: S) -> Error {
+        Error::new_logic(ErrorKey::NotFound(err_type, format!("{:?}", target)))
     }
     /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
@@ -63,9 +113,7 @@ impl Error {
     pub fn add_msg<S: AsRef<str>>(self, more_msg: S) -> Error {
         let more_msg = more_msg.as_ref().to_owned();
         match self {
-            Error::LogicError { msg, key } => {
-                Error::new_logic(format!("{}\n{}", more_msg, msg), key)
-            }
+            Error::LogicError { key } => Error::new_logic(key),
             Error::OperationError { msg } => Error::new_op(format!("{}\n{}", more_msg, msg)),
             Error::InternalError { msg, source } => {
                 let new_msg = if let Some(msg) = msg {
@@ -86,7 +134,7 @@ use std::fmt;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::LogicError { msg, key } => write!(f, "邏輯錯誤：{}，錯誤種類：{}", msg, key),
+            Error::LogicError { key } => write!(f, "邏輯錯誤，錯誤種類：{}", key),
             Error::OperationError { msg } => write!(f, "操作錯誤：{}", msg),
             Error::InternalError { msg, source } => {
                 write!(f, "內部錯誤")?;
@@ -105,8 +153,8 @@ impl fmt::Display for Error {
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::LogicError { msg, key } => build_field_err(&msg, key),
-            _ => build_field_err("內部錯誤", 500),
+            Error::LogicError { key } => build_field_err(key),
+            _ => build_field_err(ErrorKey::Internal),
         }
     }
 }

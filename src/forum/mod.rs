@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 
 use crate::db::{models, schema};
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, ErrorKey, DataType, BadOpType};
 use crate::Context;
 use crate::party;
 
@@ -13,16 +13,16 @@ pub mod operation;
 /// 回傳剛創的板的 id
 pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallible<i64> {
     // TODO: 撞名檢查，權限檢查，等等
-    let user_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
+    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
     ctx.use_pg_conn(|conn| {
         check_board_name_valid(&conn, name)?;
         let party = party::get_party_by_name(&conn, party_name)?;
         if party.board_id.is_some() {
-            Err(Error::new_logic(format!("{} 並非流亡政黨", party_name), 403).into())
+            Err(Error::new_logic(ErrorKey::BadOperation(BadOpType::NotExile)).into())
         } else {
             let position = party::get_member_position(&conn, user_id, party.id)?;
             if position != 3 {
-                Err(Error::new_logic("並非黨主席", 403).into())
+                Err(Error::new_logic(ErrorKey::PermissionDenied).into())
             } else {
                 operation::create_board(&conn, party.id, name)
             }
@@ -47,21 +47,22 @@ pub fn create_article<C: Context>(
     title: &str,
     content: Vec<String>,
 ) -> Fallible<i64> {
-    let author_id = ctx.get_id().ok_or(Error::new_logic("尚未登入", 401))?;
+    let author_id = ctx.get_id().ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
     let (board, category) = ctx.use_pg_conn(|conn| -> Fallible<_> {
         let b = get_board_by_name(&conn, &board_name)?;
         let c = get_category(&conn, category_name, b.id)?;
         Ok((b, c))
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
-    // TODO: 各項該做的檢查
     if !c_body.rootable && reply_to.len() == 0 {
-        return Err(Error::new_logic(format!("分類不可為根: {}", category_name), 403).into());
+        return Err(Error::new_logic(ErrorKey::BadOperation(BadOpType::NotRootable)).into());
     }
     let mut node_ids = Vec::<i64>::with_capacity(reply_to.len());
     for &(id, transfuse) in reply_to {
         if !c_body.transfusable && transfuse != 0 {
-            return Err(Error::new_logic(format!("分類不可輸能: {}", category_name), 403).into());
+            return Err(
+                Error::new_logic(ErrorKey::BadOperation(BadOpType::NotTransfusable)).into(),
+            );
         }
         node_ids.push(id);
     }
@@ -69,22 +70,21 @@ pub fn create_article<C: Context>(
     let mut root_id: Option<i64> = None;
     for (article, category_of_article) in related_articles.iter() {
         if article.board_id != board.id {
-            return Err(Error::new_logic("內部連結指向不同看板", 403).into());
+            return Err(
+                Error::new_logic(ErrorKey::BadOperation(BadOpType::ReplyToDifferentBoard)).into(),
+            );
         } else if root_id.is_none() {
             root_id = Some(article.root_id);
         } else if root_id.unwrap() != article.root_id {
-            return Err(Error::new_logic("內部連結指向不同主題樹", 403).into());
+            return Err(
+                Error::new_logic(ErrorKey::BadOperation(BadOpType::ReplyToDifferentTopic)).into(),
+            );
         }
 
         if !c_body.can_attach_to(&category_of_article.category_name) {
-            return Err(Error::new_logic(
-                format!(
-                    "分類 {} 與 {} 間不可建立關係",
-                    category_name, category_of_article.category_name
-                ),
-                403,
-            )
-            .into());
+            return Err(
+                Error::new_logic(ErrorKey::BadOperation(BadOpType::CantReplyToCategory)).into(),
+            );
         }
     }
     let content = parse_content(&c_body.structure, content)?;
@@ -121,7 +121,7 @@ pub fn get_articles_meta<C: Context>(
     if pairs.len() == article_ids.len() {
         Ok(pairs)
     } else {
-        Err(Error::new_logic("找不到文章資料", 404).into())
+        Err(Error::new_not_found(DataType::Article, article_ids).into())
     }
 }
 
@@ -130,9 +130,7 @@ pub fn get_board_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Bo
     boards::table
         .filter(boards::board_name.eq(&name))
         .first::<models::Board>(conn)
-        .or(Err(
-            Error::new_logic(format!("找不到看板: {}", name), 404).into()
-        ))
+        .or(Err(Error::new_not_found(DataType::Board, name)).into())
 }
 
 pub fn get_category(
@@ -146,11 +144,7 @@ pub fn get_category(
         .filter(categories::category_name.eq(category_name))
         .filter(categories::board_id.eq(board_id))
         .first::<models::Category>(conn)
-        .or(Err(Error::new_logic(
-            format!("找不到分類: {}", category_name),
-            404,
-        )
-        .into()))
+        .or(Err(Error::new_not_found(DataType::Category, category_name)).into())
 }
 
 pub fn parse_content(
@@ -158,7 +152,7 @@ pub fn parse_content(
     content: Vec<String>,
 ) -> Fallible<Vec<StringOrI32>> {
     if content.len() != col_struct.len() {
-        Err(Error::new_logic("結構長度有誤", 403).into())
+        Err(Error::new_logic(ErrorKey::InvalidLength).into())
     } else {
         let mut res: Vec<StringOrI32> = vec![];
         for (i, c) in content.into_iter().enumerate() {
@@ -170,13 +164,14 @@ pub fn parse_content(
 
 pub fn check_board_name_valid(conn: &PgConnection, name: &str) -> Fallible<()> {
     if name.len() == 0 {
-        Err(Error::new_logic("板名不可為空", 403).into())
+        Err(Error::new_logic(ErrorKey::InvalidLength).into())
     } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
     {
-        Err(Error::new_logic("板名帶有不合法字串", 403).into())
+        // TODO: 更多不合法字元
+        Err(Error::new_logic(ErrorKey::InvalidArgument(name.to_owned())).into())
     } else {
         if get_board_by_name(&conn, name).is_ok() {
-            Err(Error::new_logic("與其它看板重名", 403).into())
+            Err(Error::new_logic(ErrorKey::Duplicate).into())
         } else {
             Ok(())
         }
