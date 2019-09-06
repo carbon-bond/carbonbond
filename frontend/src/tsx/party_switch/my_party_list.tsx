@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { toast } from 'react-toastify';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { GQL, extractErrMsg, ajaxOperation } from '../../ts/api';
+import { GQL, matchErrAndShow, ajaxOperation } from '../../ts/api';
 import '../../css/party.css';
 
 import { EXILED_PARTY_NAME } from './index';
@@ -53,7 +52,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 		fetchPartyTree().then(tree => {
 			setPartyTree(tree);
 			setFetching(false);
-		});
+		}).catch(err => matchErrAndShow(err));
 	}, []);
 
 	if (!user_state.login && !user_state.fetching) {
@@ -135,7 +134,8 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 				}).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
-					toast.error(extractErrMsg(err));
+					matchErrAndShow(err, ['DUPLICATE', '與其它政黨重名'],
+						['INVALID_ARGUMENT', '政黨名含有不合法字元'], ['INVALID_LENGTH', '政黨名長度有誤']);
 				});
 			}}>確認</button>
 		</div>

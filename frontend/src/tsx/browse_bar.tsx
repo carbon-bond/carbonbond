@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 import '../css/browsebar.css';
-import { extractErrMsg, ajaxOperation, GQL } from '../ts/api';
+import { matchErrAndShow, ajaxOperation, GQL } from '../ts/api';
 import { UserState } from './global_state';
 import { STORAGE_NAME } from '../ts/constants';
 
@@ -36,7 +35,7 @@ export function BrowseBar(): JSX.Element {
 			setHotBoards(boards);
 			setFetching(false);
 		}).catch((err => {
-			toast.error(extractErrMsg(err));
+			matchErrAndShow(err); // 熱門板應該不會有什麼可預期的錯誤
 			setFetching(false);
 		}));
 	}, []);

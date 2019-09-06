@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { GQL, extractErrMsg, ajaxOperation } from '../../ts/api';
+import { GQL, matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
-import { toast } from 'react-toastify';
 
 import '../../css/party.css';
 
@@ -34,8 +33,7 @@ export function PartyDetail(props: Props): JSX.Element {
 				setParty(p);
 				setFetching(false);
 			}).catch(err => {
-				toast.error(extractErrMsg(err));
-				setFetching(false);
+				matchErrAndShow(err, ['NOT_FOUND', '找不到政黨']);
 			});
 		} else {
 			setFetching(false);
@@ -94,7 +92,8 @@ function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element
 					// FIXME: 跳轉到新創立的看板
 					props.rp.history.push(`/app/b/${board_name}`);
 				}).catch(err => {
-					toast.error(extractErrMsg(err));
+					matchErrAndShow(err, ['DUPLICATE', '與其它看板重名'],
+						['INVALID_ARGUMENT', '看板名含有不合法字元'], ['INVALID_LENGTH', '看板名長度有誤']);
 				});
 			}}>確認</button>
 		</div>

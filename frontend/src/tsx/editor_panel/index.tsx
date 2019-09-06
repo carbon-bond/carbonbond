@@ -4,8 +4,7 @@ import { RouteComponentProps } from 'react-router';
 
 import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
-import { ajaxOperation, extractErrMsg } from '../../ts/api';
-import { toast } from 'react-toastify';
+import { ajaxOperation, matchErrAndShow } from '../../ts/api';
 import { Option, Select } from '../components';
 import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
@@ -246,7 +245,7 @@ function EditorBody(props: { onPost: (id: string) => void }): JSX.Element {
 							createArticle(data).then(id => {
 								props.onPost(id);
 							}).catch(err => {
-								toast.error(extractErrMsg(err));
+								matchErrAndShow(err, ['BAD_OPERATION', '錯誤操作']);
 							});
 						}}>送出文章</button>
 						<button>儲存草稿</button>

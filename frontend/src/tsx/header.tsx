@@ -6,7 +6,7 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import { extractErrMsg, ajaxOperation } from '../ts/api';
+import { matchErrAndShow, ajaxOperation } from '../ts/api';
 
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
@@ -23,7 +23,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			setLogin(name);
 			toast('登入成功');
 		} catch (err) {
-			toast.error(extractErrMsg(err));
+			matchErrAndShow(err, ['INVALID_ARGUMENT', '密碼錯誤'], ['NOT_FOUND', '無此帳號']);
 		}
 		return {};
 	}
@@ -34,7 +34,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			toast.error(extractErrMsg(err));
+			matchErrAndShow(err);
 		}
 		return {};
 	}
