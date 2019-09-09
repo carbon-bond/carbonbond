@@ -25,6 +25,7 @@ function protobuf_compile() {
 	const out = `${__dirname}/src/ts/protobuf/chat_proto.js`;
 	const args = ['--target', 'static-module',
 		'-w', 'es6',
+		'--force-number',
 		'-o', out,
 		`${__dirname}/../api/protobuf/chat.proto`].join(' ');
 	try {

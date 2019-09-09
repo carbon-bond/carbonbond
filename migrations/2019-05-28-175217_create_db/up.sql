@@ -121,6 +121,7 @@ CREATE TABLE direct_messages (
   sender_id BIGINT REFERENCES users(id) NOT NULL,
   content TEXT NOT NULL,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  -- read_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE group_chats (

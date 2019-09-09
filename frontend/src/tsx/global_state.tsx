@@ -7,6 +7,11 @@ import { Record, List, Map } from 'immutable';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
+import { chat_proto } from '../ts/protobuf/chat_proto.js';
+
+const {
+	ServerSendData,
+} = chat_proto;
 
 type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
 
@@ -228,7 +233,15 @@ function useEditorPanelState(): {
 	};
 }
 
-export class Message extends Record({ sender_name: '', content: '', time: new Date(0) }) { }
+export class Message extends Record({ sender_name: '', content: '', time: new Date(0) }) {
+	static fromProtobuf(message: chat_proto.IMessage): Message {
+		return new Message({
+			sender_name: message.senderName!,
+			content: message.content!,
+			time: new Date(message.time!)
+		});
+	}
+}
 
 export class DirectChatData extends Record({
 	history: List<Message>(),
@@ -303,6 +316,9 @@ class AllChat extends Record({
 	group: Map<string, GroupChatData>(),
 	direct: Map<string, DirectChatData>(),
 }) {
+	addChat(name: string, chat: DirectChatData): AllChat {
+		return this.setIn(['direct', name], chat);
+	}
 	addMessage(name: string, message: Message): AllChat {
 		return this.updateIn(['direct', name], direct => direct.addMessage(message));
 	}
@@ -386,6 +402,40 @@ function useAllChatState(): {
 			}),
 		})
 	}));
+
+
+	React.useEffect(() => {
+		const onmessage = (event: MessageEvent): void => {
+			const buf = new Uint8Array(event.data);
+			const data = ServerSendData.decode(buf);
+			switch (data.Data) {
+				case 'recentChatResponse': {
+					const recent_chats = data.recentChatResponse!.chats!.chats!;
+					let new_all_chat = all_chat;
+					for (let chat of recent_chats) {
+						if (chat.directChat) {
+							console.log(`direct chat id: ${chat.directChat.directChatId}`);
+							let direct_chat_data = new DirectChatData({
+								id: chat.directChat.directChatId!,
+								name: chat.directChat.name!,
+								history: List([Message.fromProtobuf(chat.directChat.latestMessage!)]),
+								read_time: new Date(chat.directChat.readTime!),
+							});
+							new_all_chat = new_all_chat.addChat(chat.directChat.name!, direct_chat_data);
+						}
+						// TODO: chat.groupChat, chat.upgradedGroupChat
+					}
+					setAllChat(new_all_chat);
+					break;
+				}
+				default: {
+					console.error('聊天 websocket 收到未識別的資料型別');
+				}
+			}
+			console.log(data.recentChatResponse);
+		};
+		window.chat_socket.setHandler(onmessage);
+	}, [all_chat]);
 
 	function addDialog(name: string, message: Message): void {
 		setAllChat(all_chat.addMessage(name, message));

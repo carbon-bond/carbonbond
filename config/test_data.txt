@@ -1,8 +1,11 @@
 reset
 add user a@carbonbond.com a 1
 add user b@carbonbond.com b 1
+add user 金剛@carbonbond.com 金剛 1
 as a
 add board 共產國際 我們的板
 add party 流浪的人
 add direct_chat 1 2
+add direct_chat 1 3
 add direct_msg 1 你好，我是a先生
+add direct_msg 2 yo!金剛

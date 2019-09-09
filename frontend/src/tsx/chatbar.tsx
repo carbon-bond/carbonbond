@@ -3,7 +3,6 @@ import '../css/chatbar.css';
 import { BottomPanelState, AllChatState, ChatData, DirectChatData, GroupChatData } from './global_state';
 import { roughDate } from '../ts/date';
 
-// TODO: 文字太長以致超出 ChatUnit 大小時，要自動附加刪節號提示讀者
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();
 	const message = props.chat.newestMessage()!;
@@ -32,6 +31,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			return <></>;
 		}
 	}
+
 	function LastDate(): JSX.Element {
 		const date = roughDate(message.time);
 		if (is_unread) {

@@ -2,7 +2,7 @@ syntax = 'proto3';
 
 package chat_proto;
 
-// 時間都以 uint64 來表示 unix time
+// 時間都以 int64 來表示 unix time （毫秒）
 
 message ClientSendData {
     int64 id = 1;
@@ -10,24 +10,32 @@ message ClientSendData {
         Send send = 2;
         History history = 3;
         RecentChat recent_chat = 4;
+        IncomingResponse incoming_response = 5;
     }
 }
 
-message ServerSendMeta {
+message ServerSendData {
     int64 id = 1;
     oneof Data {
         Incoming incoming = 2;
+        SendResponse send_response = 3;
+        HistoryResponse history_response = 4;
+        RecentChatResponse recent_chat_response = 5;
     }
 }
 
 // 常用結構
+message Error {
+    string reason = 1;
+}
+
 message Message {
     // 每則訊息在它所屬的聊天室／頻道中都有一個獨一無二的 id
     int64 id = 1;
     int64 sender_id = 2;
-    int64 sender_name = 3;
+    string sender_name = 3;
     string content = 4;
-    uint64 time = 5;
+    int64 time = 5;
 }
 
 message ChannelLocation {
@@ -49,13 +57,13 @@ message IncomingResponse {
     string reason = 2;
 }
 
-// 以下 API 由客戶端主動發出
+// 以下 API 由客戶端發出
 
 // websocket 一連通就發出
 // 獲取時間在 before_time 之前的 number 個對話
 message RecentChat {
     int64 number = 1;
-    uint64 before_time = 2;
+    int64 before_time = 2;
 }
 
 message RecentChatResponse {
@@ -65,30 +73,34 @@ message RecentChatResponse {
         message DirectChat {
             int64 direct_chat_id = 1;
             string name = 2;
-            string latest_message = 3;
-            uint64 read_time = 4;
+            Message latest_message = 3;
+            int64 read_time = 4;
         }
         message GroupChat {
             int64 group_chat_id = 1;
             string group_name = 2;
-            string latest_message = 3;
-            uint64 read_time = 4;
+            Message latest_message = 3;
+            int64 read_time = 4;
         }
         message UpgradedGroupChat {
             int64 group_chat_id = 1;
             string group_name = 2;
             repeated string channel_names = 3;
-            uint64 read_time = 4;
+            int64 read_time = 4;
         }
         oneof Info {
-            DirectChat simple_chat = 1;
+            DirectChat direct_chat = 1;
             GroupChat group_chat = 2;
             UpgradedGroupChat upgraded_group_chat = 3;
         }
     }
-    bool ok = 1;
-    string reason = 2;
-    repeated ChatAbstract chats = 3;
+    message ChatAbstracts {
+        repeated ChatAbstract chats = 1;
+    }
+    oneof Response {
+        Error error = 1;
+        ChatAbstracts chats = 2;
+    }
 }
 
 message Send {

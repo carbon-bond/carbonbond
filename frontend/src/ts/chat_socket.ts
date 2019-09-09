@@ -7,19 +7,19 @@ const {
 class ChatSocket {
 	socket: WebSocket;
 	id: number;
+	opened: Promise<void>;
 	constructor(id: number) {
 		const url = `ws://${window.location.hostname}:${window.location.port}/ws`;
 		this.id = id;
 		this.socket = new WebSocket(url);
-	}
-	async connect(): Promise<void> {
-		return new Promise((resolve, reject) => {
+		this.opened = new Promise((resolve, reject) => {
+			console.log('connecting');
 			this.socket.onopen = () => {
 				const data = ClientSendData.create({
-					id: this.id,
-					send: {
-						directReceiverId: 0,
-						content: '大力金剛掌'
+					id: 0,
+					recentChat: {
+						beforeTime: (new Date()).getTime(),
+						number: 20
 					}
 				});
 				const buf = ClientSendData.encodeDelimited(data).finish();
@@ -29,9 +29,15 @@ class ChatSocket {
 			this.socket.onerror = function (err) {
 				reject(err);
 			};
-			this.socket.onmessage = (event) => {
-				console.log(`from server: ${event.data}`);
-			};
+			this.socket.binaryType = 'arraybuffer';
+		});
+	}
+	setHandler(onmessage: (this: WebSocket, ev: MessageEvent) => void): void {
+		this.socket.onmessage = onmessage;
+	}
+	send(buf: Uint8Array): void {
+		this.opened.then(() => {
+			this.socket.send(buf);
 		});
 	}
 }
