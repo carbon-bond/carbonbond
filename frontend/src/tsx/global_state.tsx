@@ -335,8 +335,8 @@ class AllChat extends Record({
 
 function useAllChatState(): {
 	all_chat: AllChat
-	addDialog: Function
-	addChannelDialog: Function
+	addMessage: Function
+	addChannelMessage: Function
 	updateLastRead: Function
 	updateLastReadChannel: Function
 	} {
@@ -437,11 +437,11 @@ function useAllChatState(): {
 		window.chat_socket.setHandler(onmessage);
 	}, [all_chat]);
 
-	function addDialog(name: string, message: Message): void {
+	function addMessage(name: string, message: Message): void {
 		setAllChat(all_chat.addMessage(name, message));
 	}
 
-	function addChannelDialog(name: string, channel_name: string, message: Message): void {
+	function addChannelMessage(name: string, channel_name: string, message: Message): void {
 		setAllChat(all_chat.addChannelMessage(name, channel_name, message));
 	}
 
@@ -456,8 +456,8 @@ function useAllChatState(): {
 
 	return {
 		all_chat,
-		addDialog,
-		addChannelDialog,
+		addMessage,
+		addChannelMessage,
 		updateLastRead,
 		updateLastReadChannel
 	};
