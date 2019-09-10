@@ -53,8 +53,10 @@ message Incoming {
 }
 
 message IncomingResponse {
-    bool ok = 1;
-    string reason = 2;
+    oneof Response {
+        Error error = 1;
+        bool ok = 2;
+    }
 }
 
 // 以下 API 由客戶端發出
@@ -94,6 +96,8 @@ message RecentChatResponse {
             UpgradedGroupChat upgraded_group_chat = 3;
         }
     }
+    // NOTE: protobuf 的 repeated（陣列）必須包裝一層才能放到 oneof
+    // 因此會導致額外的包裝
     message ChatAbstracts {
         repeated ChatAbstract chats = 1;
     }
@@ -112,8 +116,10 @@ message Send {
 }
 
 message SendResponse {
-    bool ok = 1;
-    string reason = 2;
+    oneof Response {
+        Error error = 1;
+        bool ok = 2;
+    }
 }
 
 message History {
@@ -128,7 +134,11 @@ message History {
 }
 
 message HistoryResponse {
-    bool ok = 1;
-    string reason = 2;
-    repeated Message messages = 3;
+    message Messages {
+        repeated Message messages = 1;
+    }
+    oneof Response {
+        Error error = 1;
+        Messages messages = 2;
+    }
 }
