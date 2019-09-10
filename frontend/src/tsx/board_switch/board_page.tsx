@@ -54,15 +54,15 @@ export function BoardPage(props: Props): JSX.Element {
 	useScrollToBottom(scrollHandler);
 
 	return <>
-		<div>
-			{
-				articles.map((article, idx) => (
-					<Link to={`/app/b/${board_name}/a/${article.id}`} key={`article-${idx}`} styleName="articleWrapper">
+		{
+			articles.map((article, idx) => (
+				<div styleName="articleWrapper">
+					<Link to={`/app/b/${board_name}/a/${article.id}`} key={`article-${idx}`}>
 						<BoardItem article={article} />
 					</Link>
-				))
-			}
-		</div>
+				</div>
+			))
+		}
 	</>;
 }
 
@@ -83,23 +83,23 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
-				<div styleName="articleType">{ categoryName }</div>
-				<div styleName="authorId">{ userName }</div>
-				<div styleName="articleTime">{ dateString }</div>
+				<div styleName="articleType">{categoryName}</div>
+				<div styleName="authorId">{userName}</div>
+				<div styleName="articleTime">{dateString}</div>
 				<div styleName="articleTag">標籤</div>
 			</div>
 			<div styleName="articleBody">
 				<div styleName="leftPart">
-					<div styleName="articleTitle">{ props.article.title }</div>
+					<div styleName="articleTitle">{props.article.title}</div>
 					<div styleName="articleContent">
-						{ props.article.content }
+						{props.article.content}
 					</div>
 				</div>
-				{/* <div styleName="rightPart">
+				<div styleName="rightPart">
 					<div styleName="articlePic">
 						<img src="/img/test.jpg" alt="" />
 					</div>
-				</div> */}
+				</div>
 			</div>
 			<div styleName="articleFooter">
 				<div styleName="articleBtns">
@@ -131,7 +131,7 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 				<div styleName="articleData">
 					<div styleName="articleBtnItemPower">
 						<img src="/img/energy.png" alt="" />
-						{ props.article.energy }
+						{props.article.energy}
 					</div>
 					<div styleName="articleBtnItemFight">
 						<img src="/img/fight.png" alt="" />
