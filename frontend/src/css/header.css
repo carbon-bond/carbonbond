@@ -42,6 +42,7 @@
         }
         & .searchPart {
             line-height: 40px;
+            cursor: text;
             height: 40px;
             width: 500px;
             border-radius: 3px;

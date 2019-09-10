@@ -65,7 +65,7 @@
     overflow: hidden;
     width: 100%;
     max-width: 1150px;
-    padding: 24px;
+    padding: 18px 20px;
 
     /* 為了內容 white-space: nowrap 不跑版 */
     /* https://stackoverflow.com/questions/37186433/white-space-nowrap-affects-width */
@@ -127,6 +127,7 @@
 .leftPart {
     display: block;
     width: 70%;
+    flex: 1;
 }
 .articleTitle {
     font-size: 20px;
@@ -143,8 +144,10 @@
     white-space: nowrap;
 }
 .rightPart {
+    justify-content: flex-end;
     max-width: 30%;
-
+    flex: 1;
+    padding: 0 10px;
 }
 .articlePic {
     height: 112px;
@@ -215,7 +218,8 @@
 .rightSidebarButton {
     padding: 10px;
     border-radius: 20px;
-    text-align: center;   
+    text-align: center;
+    cursor: pointer;
 }
 
 .postArticleButton {
