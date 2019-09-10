@@ -126,8 +126,7 @@
 }
 .leftPart {
     display: block;
-    width: 70%;
-    flex: 1;
+    width: 100%;
 }
 .articleTitle {
     font-size: 20px;
@@ -143,12 +142,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.rightPart {
+/* .rightPart {
     justify-content: flex-end;
     max-width: 30%;
     flex: 1;
     padding: 0 10px;
-}
+} */
 .articlePic {
     height: 112px;
     width: 200px;
