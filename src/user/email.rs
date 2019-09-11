@@ -88,3 +88,21 @@ pub fn send_invite_email(
 
     Ok(())
 }
+
+pub fn send_reset_password_email(code: &str, recv_email: &str) -> Fallible<()> {
+    let config = CONFIG.get();
+    let url = format!("{}/app/reset_password/{}", config.server.base_url, code);
+    let title = "重設碳鍵密碼";
+    let message = format!(
+        r#"<html>
+        <p>點選以下連結重設密碼。</p>
+        <a href="{}">{}</a>
+        </html>"#,
+        url, url
+    );
+    println!(
+        "重設密碼信回應 {}",
+        send_html_email(recv_email, &title, &message)?
+    );
+    Ok(())
+}

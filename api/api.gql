@@ -118,9 +118,9 @@ type Mutation {
     inviteSignup(email: String!, invitationWords: String!): Boolean! @juniper(ownership: "owned")
 
     # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
-    # forgetPassword(id: String!): Boolean!
-    # resetPassword(code: String!, newPassword: String!): Boolean!
-    # changePassword(oldPassword: String!, newPassword: String!): Boolean
+    forgetPassword(name: String!): Boolean! @juniper(ownership: "owned")
+    resetPassword(code: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
+    changePassword(oldPassword: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
 
     # 政黨
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
