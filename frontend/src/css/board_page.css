@@ -66,12 +66,6 @@
     width: 100%;
     max-width: 1150px;
     padding: 18px 20px;
-
-    /* 為了內容 white-space: nowrap 不跑版 */
-    /* https://stackoverflow.com/questions/37186433/white-space-nowrap-affects-width */
-    display: table;
-    table-layout: fixed;
-    /* End */
 }
 .articleHeader {
     display: flex;
@@ -139,8 +133,11 @@
     font-size: 16px;
     color: #9e9e9e;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* text-overflow: ellipsis; */
+    /* white-space: nowrap; */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 /* .rightPart {
     justify-content: flex-end;
