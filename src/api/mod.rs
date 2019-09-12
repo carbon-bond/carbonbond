@@ -7,6 +7,7 @@ use actix_web::web;
 use actix_session::{Session};
 
 use crate::custom_error::{Error, Fallible};
+use crate::config;
 
 pub(self) use crate::{Ctx as Context, Context as ContextTrait};
 impl juniper::Context for Context {}
@@ -75,7 +76,10 @@ pub fn api(gql: web::Json<GraphQLRequest>, session: Session) -> HttpResponse {
 }
 
 pub fn graphiql(_req: HttpRequest) -> HttpResponse {
-    let html = graphiql_source("http://localhost:8080/api");
+    let conf = config::CONFIG.get();
+    let url = format!("http://{}:{}/api", &conf.server.address, &conf.server.port);
+
+    let html = graphiql_source(&url);
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(html)
