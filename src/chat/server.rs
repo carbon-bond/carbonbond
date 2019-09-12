@@ -29,14 +29,15 @@ impl Handler<api::Connect> for Server {
 impl Handler<api::Incoming> for Server {
     type Result = ();
 
-    fn handle(&mut self, msg: api::Incoming, _: &mut Self::Context) -> Self::Result {
-        for (id, address) in self.sessions.iter() {
-            if *id == msg.id {
-                continue;
-            }
-            address.do_send(api::Message {
-                content: format!("{}: {}", msg.id, msg.content),
-            });
-        }
+    fn handle(&mut self, _msg: api::Incoming, _: &mut Self::Context) -> Self::Result {
+        unimplemented!();
+        // for (id, address) in self.sessions.iter() {
+        //     if *id == msg.id {
+        //         continue;
+        //     }
+        //     address.do_send(api::Message {
+        //         content: format!("{}: {}", msg.id, msg.content),
+        //     });
+        // }
     }
 }

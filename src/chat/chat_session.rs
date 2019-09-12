@@ -34,8 +34,8 @@ impl Actor for ChatSession {
 
 impl Handler<api::Message> for ChatSession {
     type Result = ();
-    fn handle(&mut self, msg: api::Message, ctx: &mut Self::Context) {
-        ctx.text(msg.content);
+    fn handle(&mut self, _msg: api::Message, ctx: &mut Self::Context) {
+        unimplemented!();
     }
 }
 
@@ -56,15 +56,11 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for ChatSession {
 
                 let raw_data =
                     chat_proto::ClientSendData::decode_length_delimited(&mut buf).unwrap();
-                println!("id: {}", raw_data.id);
 
                 use chat_proto::client_send_data::Data;
 
                 if let Some(data) = raw_data.data {
                     match data {
-                        Data::Send(send) => {
-                            println!("content: {}", send.content);
-                        }
                         Data::RecentChat(recent_chat) => {
                             let response = super::get_recent_chat(self.id, &recent_chat);
                             let response = chat_proto::ServerSendData {
@@ -73,7 +69,6 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for ChatSession {
                                     response,
                                 )),
                             };
-                            println!("{:?}", response);
                             let mut buf: Vec<u8> = Vec::new();
                             match response.encode(&mut buf) {
                                 Err(_) => {
@@ -81,7 +76,6 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for ChatSession {
                                     ctx.stop();
                                 }
                                 Ok(()) => {
-                                    println!("{:?}", &buf);
                                     ctx.binary(buf);
                                 }
                             }

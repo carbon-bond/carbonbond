@@ -1,3 +1,5 @@
+// 本檔案定義 actor 之間溝通的接口
+
 use actix::prelude::*;
 
 #[derive(actix::Message)]

@@ -53,11 +53,11 @@ pub fn create_direct_message(
 }
 
 trait ChatError {
-    fn into_chat_error(&self) -> chat_proto::Error;
+    fn to_chat_error(&self) -> chat_proto::Error;
 }
 
 impl ChatError for custom_error::Error {
-    fn into_chat_error(&self) -> chat_proto::Error {
+    fn to_chat_error(&self) -> chat_proto::Error {
         match self {
             custom_error::Error::LogicError { msg, key: _ } => chat_proto::Error {
                 reason: msg.to_owned(),
@@ -111,7 +111,7 @@ pub fn get_recent_chat(
         use chat_proto::recent_chat_response::{ChatAbstract, ChatAbstracts};
         use chat_proto::recent_chat_response::chat_abstract::{DirectChat, Info};
 
-        println!("{:?}", chats);
+        // println!("{:?}", chats);
         let mut chat_abstracts = Vec::new();
         for chat in chats.iter() {
             let (direct_chat, direct_message) = chat;
@@ -127,7 +127,7 @@ pub fn get_recent_chat(
                     direct_chat_id: direct_chat.id,
                     name: otherone.name,
                     latest_message: Some(direct_message.to_proto_message()?),
-                    read_time: 0, // TODO: 在資料庫新增記錄讀取時間的表
+                    read_time: 0, // TODO: 在資料庫新增一個用來記錄讀取時間的表
                 })),
             })
         }
@@ -137,14 +137,12 @@ pub fn get_recent_chat(
         }))
     };
 
-    let data = get_data().unwrap_or_else(|err| Response::Error(err.into_chat_error()));
+    let data = get_data().unwrap_or_else(|err| Response::Error(err.to_chat_error()));
 
     chat_proto::RecentChatResponse {
         response: Some(data),
     }
 }
-
-// use prost::Message;
 
 pub fn ws(
     req: HttpRequest,
@@ -154,17 +152,17 @@ pub fn ws(
 ) -> Result<HttpResponse, actix_web::Error> {
     match session.get::<i64>("id") {
         Err(_) => Ok(HttpResponse::Unauthorized().finish()),
-        Ok(id) => {
+        Ok(None) => Ok(HttpResponse::Unauthorized().finish()),
+        Ok(Some(id)) => {
             let resp = ws::start(
                 ChatSession {
-                    id: id.unwrap(),
+                    id: id,
                     server_address: server_address.get_ref().clone(),
                 },
                 &req,
                 stream,
             );
-            println!("{:?}", resp);
-            println!("chat websocket connected: {}", id.unwrap());
+            println!("chat websocket connected: {}", id);
             resp
         }
     }

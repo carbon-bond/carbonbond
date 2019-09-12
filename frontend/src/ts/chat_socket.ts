@@ -27,6 +27,8 @@ class ChatSocket {
 				resolve();
 			};
 			this.socket.onerror = function (err) {
+				console.error('chat socket 連線失敗：');
+				console.error(err);
 				reject(err);
 			};
 			this.socket.binaryType = 'arraybuffer';

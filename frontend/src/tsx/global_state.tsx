@@ -342,6 +342,7 @@ function useAllChatState(): {
 	} {
 
 	let [all_chat, setAllChat] = useState<AllChat>(new AllChat({
+		// TODO: 刪掉假數據
 		group: Map({
 			'無限城': new GroupChatData({
 				name: '無限城',
@@ -374,33 +375,7 @@ function useAllChatState(): {
 				})
 			})
 		}),
-		// TODO: 刪掉假數據
-		direct: Map({
-			'玻璃碳': new DirectChatData({
-				id: 0,
-				name: '玻璃碳',
-				history: List([new Message({ sender_name: '金剛', content: '安安', time: new Date() })]),
-				read_time: new Date(2019, 3, 3)
-			}),
-			'石墨': new DirectChatData({
-				id: 0,
-				name: '石墨',
-				history: List([new Message({ sender_name: '石墨', content: '送出了一張貼圖', time: new Date(2019, 5, 12) })]),
-				read_time: new Date(2019, 3, 3)
-			}),
-			'六方': new DirectChatData({
-				id: 0,
-				name: '六方',
-				history: List([new Message({ sender_name: '六方', content: '幫幫窩', time: new Date(2018, 6) })]),
-				read_time: new Date(2019, 3, 3)
-			}),
-			'芙': new DirectChatData({
-				id: 0,
-				name: '芙',
-				history: List([new Message({ sender_name: '芙', content: '一直流鼻涕', time: new Date(2019, 6) })]),
-				read_time: new Date(2019, 6, 3)
-			}),
-		})
+		direct: Map({ })
 	}));
 
 
