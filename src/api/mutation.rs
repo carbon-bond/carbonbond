@@ -3,7 +3,7 @@ use juniper::ID;
 use regex::RegexSet;
 
 use crate::custom_error::{Fallible, Error};
-use crate::user::{email, signup, login};
+use crate::user::{email, signup, login, password};
 use crate::forum;
 use crate::party;
 use crate::config::CONFIG;
@@ -115,5 +115,36 @@ impl MutationFields for Mutation {
     ) -> Fallible<ID> {
         let id = forum::create_board(ex.context(), &party_name, &board_name)?;
         Ok(i64_to_id(id))
+    }
+    fn field_change_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        old_password: String,
+        new_password: String,
+    ) -> Fallible<bool> {
+        match ex.context().get_id() {
+            None => Err(Error::new_logic("尚未登入", 401)),
+            Some(id) => password::change_password(
+                &ex.context().get_pg_conn()?,
+                id,
+                old_password,
+                new_password,
+            ),
+        }
+    }
+    fn field_forget_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        name: String,
+    ) -> Fallible<bool> {
+        password::forget_password(&ex.context().get_pg_conn()?, name)
+    }
+    fn field_reset_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        code: String,
+        new_password: String,
+    ) -> Fallible<bool> {
+        password::reset_password(&ex.context().get_pg_conn()?, code, new_password)
     }
 }
