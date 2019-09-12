@@ -1,12 +1,9 @@
 use juniper_from_schema::graphql_schema_from_file;
 use juniper::ID;
 use regex::RegexSet;
-use rand::Rng;
-use diesel::prelude::*;
 
-use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error};
-use crate::user::{email, signup, login, find_user_by_id, find_user_by_name};
+use crate::user::{email, signup, login, password};
 use crate::forum;
 use crate::party;
 use crate::config::CONFIG;
@@ -127,35 +124,12 @@ impl MutationFields for Mutation {
     ) -> Fallible<bool> {
         match ex.context().get_id() {
             None => Err(Error::new_logic("尚未登入", 401)),
-            Some(id) => {
-                use db_schema::users;
-                let user = find_user_by_id(&ex.context().get_pg_conn()?, id)?;
-                let equal = argon2::verify_raw(
-                    old_password.as_bytes(),
-                    &user.salt,
-                    &user.password_hashed,
-                    &argon2::Config::default(),
-                )?;
-                match equal {
-                    true => {
-                        let salt = rand::thread_rng().gen::<[u8; 16]>();
-                        let hash = argon2::hash_raw(
-                            new_password.as_bytes(),
-                            &salt,
-                            &argon2::Config::default(),
-                        )
-                        .unwrap();
-                        diesel::update(users::table.find(id))
-                            .set(users::password_hashed.eq(hash))
-                            .execute(&ex.context().get_pg_conn()?)?;
-                        diesel::update(users::table.find(id))
-                            .set(users::salt.eq(salt.to_vec()))
-                            .execute(&ex.context().get_pg_conn()?)?;
-                        Ok(true)
-                    }
-                    false => Err(Error::new_logic("密碼錯誤", 401)),
-                }
-            }
+            Some(id) => password::change_password(
+                &ex.context().get_pg_conn()?,
+                id,
+                old_password,
+                new_password,
+            ),
         }
     }
     fn field_forget_password(
@@ -163,21 +137,7 @@ impl MutationFields for Mutation {
         ex: &juniper::Executor<'_, Context>,
         name: String,
     ) -> Fallible<bool> {
-        let user = find_user_by_name(&ex.context().get_pg_conn()?, &name)?;
-        use rand::distributions::Alphanumeric;
-        let code: String = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(32)
-            .collect();
-        let reset_password = db_models::NewResetPassword {
-            code: &code,
-            user_id: user.id,
-        };
-        diesel::insert_into(db_schema::reset_password::table)
-            .values(&reset_password)
-            .execute(&ex.context().get_pg_conn()?)?;
-        email::send_reset_password_email(&code, &user.email)?;
-        Ok(true)
+        password::forget_password(&ex.context().get_pg_conn()?, name)
     }
     fn field_reset_password(
         &self,
@@ -185,31 +145,6 @@ impl MutationFields for Mutation {
         code: String,
         new_password: String,
     ) -> Fallible<bool> {
-        use db_schema::{users, reset_password};
-        let reset_password = reset_password::table
-            .filter(reset_password::code.eq(code.to_owned()))
-            .first::<db_models::ResetPassword>(&ex.context().get_pg_conn()?)
-            .or(Err(Error::new_logic(format!("查無重設密碼代碼"), 404)))?;
-        match reset_password.is_used {
-            true => Err(Error::new_logic("代碼已用過", 403)),
-            false => {
-                let salt = rand::thread_rng().gen::<[u8; 16]>();
-                let hash =
-                    argon2::hash_raw(new_password.as_bytes(), &salt, &argon2::Config::default())
-                        .unwrap();
-                diesel::update(users::table.find(reset_password.user_id))
-                    .set(users::password_hashed.eq(hash))
-                    .execute(&ex.context().get_pg_conn()?)?;
-                diesel::update(users::table.find(reset_password.user_id))
-                    .set(users::salt.eq(salt.to_vec()))
-                    .execute(&ex.context().get_pg_conn()?)?;
-                diesel::update(
-                    reset_password::table.filter(reset_password::code.eq(code.to_owned())),
-                )
-                .set(reset_password::is_used.eq(true))
-                .execute(&ex.context().get_pg_conn()?)?;
-                Ok(true)
-            }
-        }
+        password::reset_password(&ex.context().get_pg_conn()?, code, new_password)
     }
 }
