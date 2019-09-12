@@ -95,11 +95,11 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 						{props.article.content}
 					</div>
 				</div>
-				{/* <div styleName="rightPart">
+				<div styleName="rightPart">
 					<div styleName="articlePic">
 						<img src="/img/test.jpg" alt="" />
 					</div>
-				</div> */}
+				</div>
 			</div>
 			<div styleName="articleFooter">
 				<div styleName="articleBtns">

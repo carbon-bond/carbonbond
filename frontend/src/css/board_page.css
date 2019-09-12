@@ -139,12 +139,12 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
-/* .rightPart {
+.rightPart {
     justify-content: flex-end;
     max-width: 30%;
     flex: 1;
     padding: 0 10px;
-} */
+}
 .articlePic {
     height: 112px;
     width: 200px;
