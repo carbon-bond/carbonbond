@@ -23,9 +23,13 @@ export function BoardSidebar(props: Props): JSX.Element {
 	}
 
 	return <>
-		<div styleName="rightSidebarItem">
-			{ user_state.login && <div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton">發表文章</div> }
-		</div>
+
+		{
+			user_state.login &&
+			<div styleName="rightSidebarItem">
+				<div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton">發表文章</div>
+			</div>
+		}
 		<div styleName="rightSidebarItem">
 			<div styleName="rightSidebarBlock">
 				<div styleName="header">看板簡介</div>
