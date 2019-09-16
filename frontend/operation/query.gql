@@ -2,6 +2,16 @@ query Me {
 	me { name }
 }
 
+query Invitation($code: ID!) {
+	invitation(code: $code) {
+		code,
+		inviterName,
+		inviteeEmail,
+		words,
+		isUsed
+	}
+}
+
 query CategoriesOfBoard($board_name: String!) {
 	board(name: $board_name) {
 		categories {
