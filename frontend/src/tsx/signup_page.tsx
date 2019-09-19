@@ -21,7 +21,7 @@ export function SignupPage(props: Props): JSX.Element {
 
 	async function signup_request(code: string, name: string, password: string): Promise<{}> {
 		try {
-			   await ajaxOperation.Signup({ code, name, password });
+			await ajaxOperation.Signup({ code, name, password });
 			props.history.push('/app/');
 			toast('註冊成功');
 
@@ -61,7 +61,7 @@ export function SignupPage(props: Props): JSX.Element {
 		if (invitation.isUsed){
 			return <div styleName="signupPage">
 				<div styleName="signupForm">
-					<div styleName="counter">抱歉 {invitation.inviteeEmail} 此信箱已經註冊過了</div>
+					<div styleName="counter">抱歉！ {invitation.inviteeEmail} 此信箱已經註冊過了</div>
 				</div>
 			</div>;
 		} else {
