@@ -18,6 +18,7 @@ pub struct User {
 pub struct NewUser<'a> {
     pub name: &'a str,
     pub email: &'a str,
+    pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,
     pub salt: Vec<u8>,
 }
@@ -26,15 +27,36 @@ pub struct NewUser<'a> {
 pub struct Invitation {
     pub id: i64,
     pub code: String,
+    pub inviter_name: String,
     pub email: String,
+    pub words: String,
     pub create_time: DateTime<Utc>,
+    pub is_used: bool,
 }
 
 #[derive(Insertable)]
 #[table_name = "invitations"]
 pub struct NewInvitation<'a> {
     pub code: &'a str,
+    pub inviter_name: &'a str,
     pub email: &'a str,
+    pub words: &'a str,
+}
+
+#[derive(Queryable)]
+pub struct ResetPassword {
+    pub id: i64,
+    pub code: String,
+    pub user_id: i64,
+    pub create_time: DateTime<Utc>,
+    pub is_used: bool,
+}
+
+#[derive(Insertable)]
+#[table_name = "reset_password"]
+pub struct NewResetPassword<'a> {
+    pub code: &'a str,
+    pub user_id: i64,
 }
 
 #[derive(Queryable)]

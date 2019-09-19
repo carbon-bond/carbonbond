@@ -8,12 +8,17 @@ fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallibl
     let mailgun_api_key: &str = &config.server.mailgun_api_key;
     let cmd = format!(
         "curl -s --user 'api:{}' \
-         https://api.mailgun.net/v3/mail.carbon-bond.com/messages \
-         -F from='碳鍵 <noreply@mail.carbon-bond.com>' \
+         https://api.mailgun.net/v3/{}/messages \
+         -F from='{}' \
          -F to='{}' \
          -F subject='{}' \
          --form-string html='{}'",
-        mailgun_api_key, recv_email, title, html_content
+        mailgun_api_key,
+        config.server.mail_domain,
+        config.server.mail_from,
+        recv_email,
+        title,
+        html_content
     );
 
     let output = Command::new("sh")
@@ -31,7 +36,9 @@ pub fn send_invite_email(
     sender_id: Option<i64>,
     invite_code: &str,
     recv_email: &str,
+    invitation_words: &str,
 ) -> Fallible<()> {
+    let config = CONFIG.get();
     use crate::db::schema::users;
 
     let inviter_name = {
@@ -42,18 +49,36 @@ pub fn send_invite_email(
                 .first::<String>(conn)
                 .or(Err(Error::new_logic(&format!("找不到使用者: {}", id), 401)))?
         } else {
-            "系統管理員".to_owned()
+            "".to_owned()
         }
     };
-    let url = format!("http://carbon-bond.com/app/register/{}", invite_code);
+    let mut invitation_words_html = format!("<p>{}</p>", invitation_words.replace("\n", "</p><p>"));
+    let style = r#"
+        margin: 20px 0px;
+        background-color: #eeeeee;
+        border-left: 5px solid #00aae1;
+        padding: 5px;
+        padding-left: 15px;
+        border-radius: 6px;
+    "#;
+    invitation_words_html = if invitation_words == "" {
+        "".to_owned()
+    } else {
+        format!(
+            "<blockquote style=\"{}\">{}</blockquote>",
+            style, invitation_words_html
+        )
+    };
+    let url = format!("{}/app/register/{}", config.server.base_url, invite_code);
     let welcome_title = format!("{} 邀請您加入碳鍵", inviter_name);
     let welcome_msg = format!(
         r#"<html>
          <h1>歡迎加入碳鍵！</h1>
          <p>點選以下連結，嘴爆那些笨蛋吧！</p>
          <a href="{}">{}</a> <br/>
+         {}
          </html>"#,
-        url, url
+        url, url, invitation_words_html
     );
 
     println!(
@@ -61,5 +86,23 @@ pub fn send_invite_email(
         send_html_email(recv_email, &welcome_title, &welcome_msg)?
     );
 
+    Ok(())
+}
+
+pub fn send_reset_password_email(code: &str, recv_email: &str) -> Fallible<()> {
+    let config = CONFIG.get();
+    let url = format!("{}/app/reset_password/{}", config.server.base_url, code);
+    let title = "重設碳鍵密碼";
+    let message = format!(
+        r#"<html>
+        <p>點選以下連結重設密碼。</p>
+        <a href="{}">{}</a>
+        </html>"#,
+        url, url
+    );
+    println!(
+        "重設密碼信回應 {}",
+        send_html_email(recv_email, &title, &message)?
+    );
     Ok(())
 }

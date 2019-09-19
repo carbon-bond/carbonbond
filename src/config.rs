@@ -28,6 +28,7 @@ pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
 pub struct RawConfig {
     pub server: RawServerConfig,
     pub database: RawDatabaseConfig,
+    pub user: RawUserConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,6 +36,9 @@ pub struct RawServerConfig {
     pub address: String,
     pub port: u64,
     pub mailgun_key_file: PathBuf,
+    pub base_url: String,
+    pub mail_domain: String,
+    pub mail_from: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,11 +46,18 @@ pub struct RawDatabaseConfig {
     pub url: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RawUserConfig {
+    pub invitation_credit: i32,
+    pub email_whitelist: Vec<String>,
+}
+
 #[derive(Debug)]
 pub struct Config {
     pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
+    pub user: UserConfig,
 }
 
 #[derive(Debug)]
@@ -54,6 +65,9 @@ pub struct ServerConfig {
     pub address: String,
     pub port: u64,
     pub mailgun_api_key: String,
+    pub base_url: String,
+    pub mail_domain: String,
+    pub mail_from: String,
 }
 
 #[derive(Debug)]
@@ -61,14 +75,24 @@ pub struct DatabaseConfig {
     pub url: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserConfig {
+    pub invitation_credit: i32,
+    pub email_whitelist: Vec<String>,
+}
+
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mailgun_api_key = load_file_content(&orig.mailgun_key_file)
+        let mut mailgun_api_key = load_file_content(&orig.mailgun_key_file)
             .map_err(|e| e.add_msg(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file)))?;
+        mailgun_api_key = mailgun_api_key.trim().to_owned();
         Ok(ServerConfig {
             address: orig.address,
             port: orig.port,
             mailgun_api_key,
+            base_url: orig.base_url,
+            mail_domain: orig.mail_domain,
+            mail_from: orig.mail_from,
         })
     }
 }
@@ -76,6 +100,15 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
 impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
     fn from(orig: RawDatabaseConfig) -> Fallible<DatabaseConfig> {
         Ok(DatabaseConfig { url: orig.url })
+    }
+}
+
+impl From<RawUserConfig> for Fallible<UserConfig> {
+    fn from(orig: RawUserConfig) -> Fallible<UserConfig> {
+        Ok(UserConfig {
+            invitation_credit: orig.invitation_credit,
+            email_whitelist: orig.email_whitelist,
+        })
     }
 }
 
@@ -123,6 +156,7 @@ pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
         mode,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
         database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
+        user: Fallible::<UserConfig>::from(raw_config.user)?,
     };
 
     Ok(config)

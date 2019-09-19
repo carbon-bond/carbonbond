@@ -7,12 +7,14 @@ use crate::db::{
     models::{NewUser, User, NewInvitation, Invitation},
 };
 use crate::custom_error::{Error, Fallible};
+use crate::config::CONFIG;
 
 // 回傳邀請碼
 pub fn create_invitation(
     conn: &PgConnection,
     sender: Option<i64>,
     email: &str,
+    words: &str,
 ) -> Fallible<String> {
     use rand::distributions::Alphanumeric;
 
@@ -20,11 +22,6 @@ pub fn create_invitation(
         .sample_iter(&Alphanumeric)
         .take(32)
         .collect();
-
-    let new_invitation = NewInvitation {
-        code: &invite_code,
-        email,
-    };
 
     match sender {
         Some(id) => {
@@ -35,6 +32,13 @@ pub fn create_invitation(
                     DBError::NotFound => Error::new_logic(format!("查無使用者: {}", id), 404),
                     _ => e.into(),
                 })?;
+
+            let new_invitation = NewInvitation {
+                code: &invite_code,
+                inviter_name: &user.name,
+                email,
+                words,
+            };
 
             if user.invitation_credit > 0 {
                 // XXX: 使用 transaction
@@ -52,6 +56,12 @@ pub fn create_invitation(
             }
         }
         None => {
+            let new_invitation = NewInvitation {
+                code: &invite_code,
+                inviter_name: "",
+                email,
+                words,
+            };
             diesel::insert_into(schema::invitations::table)
                 .values(&new_invitation)
                 .execute(conn)?;
@@ -71,13 +81,24 @@ pub fn create_user_by_invitation(
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
         .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
-
-    create_user(&conn, &invitation.email, name, password)
+    let mut invitation_credit = 0;
+    let config = CONFIG.get();
+    if invitation.inviter_name == "" {
+        invitation_credit = config.user.invitation_credit;
+    }
+    diesel::update(schema::invitations::table.filter(schema::invitations::code.eq(code)))
+        .set(schema::invitations::is_used.eq(true))
+        .execute(conn)?;
+    create_user(&conn, &invitation.email, name, password, invitation_credit)
 }
 
-// NOTE: 伺服器尚未用到該函式，是 db-tool 在用
-// TODO: 錯誤處理
-pub fn create_user(conn: &PgConnection, email: &str, name: &str, password: &str) -> Fallible<User> {
+pub fn create_user(
+    conn: &PgConnection,
+    email: &str,
+    name: &str,
+    password: &str,
+    invitation_credit: i32,
+) -> Fallible<User> {
     let salt = rand::thread_rng().gen::<[u8; 16]>();
 
     let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default()).unwrap();
@@ -85,6 +106,7 @@ pub fn create_user(conn: &PgConnection, email: &str, name: &str, password: &str)
     let new_user = NewUser {
         name,
         email,
+        invitation_credit,
         password_hashed: hash.to_vec(),
         salt: salt.to_vec(),
     };

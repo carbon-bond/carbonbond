@@ -1,10 +1,12 @@
 use juniper_from_schema::graphql_schema_from_file;
 use juniper::ID;
+use regex::RegexSet;
 
 use crate::custom_error::{Fallible, Error};
-use crate::user::{email, signup, login};
+use crate::user::{email, signup, login, password};
 use crate::forum;
 use crate::party;
+use crate::config::CONFIG;
 
 use super::{id_to_i64, i64_to_id, Context, ContextTrait, Reply};
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Mutation]);
@@ -34,17 +36,30 @@ impl MutationFields for Mutation {
         &self,
         ex: &juniper::Executor<'_, Context>,
         email: String,
-        _invitation_words: String,
+        invitation_words: String,
     ) -> Fallible<bool> {
         match ex.context().get_id() {
             None => Err(Error::new_logic("尚未登入", 401)),
             Some(id) => {
-                // TODO: 寫宏來處理類似邏輯
-                let conn = &ex.context().get_pg_conn()?;
-                let invite_code = signup::create_invitation(conn, Some(id), &email)?;
-                email::send_invite_email(conn, Some(id), &invite_code, &email)
+                let conf = CONFIG.get();
+                let set = RegexSet::new(conf.user.email_whitelist.clone()).unwrap();
+                let matches = set.matches(&email);
+                if !matches.matched_any() {
+                    Err(Error::new_logic("不支援的信箱", 403))
+                } else {
+                    let conn = &ex.context().get_pg_conn()?;
+                    let invite_code =
+                        signup::create_invitation(&conn, Some(id), &email, &invitation_words)?;
+                    email::send_invite_email(
+                        &conn,
+                        Some(id),
+                        &invite_code,
+                        &email,
+                        &invitation_words,
+                    )
                     .map(|_| true)
                     .map_err(|err| err)
+                }
             }
         }
     }
@@ -100,5 +115,36 @@ impl MutationFields for Mutation {
     ) -> Fallible<ID> {
         let id = forum::create_board(ex.context(), &party_name, &board_name)?;
         Ok(i64_to_id(id))
+    }
+    fn field_change_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        old_password: String,
+        new_password: String,
+    ) -> Fallible<bool> {
+        match ex.context().get_id() {
+            None => Err(Error::new_logic("尚未登入", 401)),
+            Some(id) => password::change_password(
+                &ex.context().get_pg_conn()?,
+                id,
+                old_password,
+                new_password,
+            ),
+        }
+    }
+    fn field_forget_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        name: String,
+    ) -> Fallible<bool> {
+        password::forget_password(&ex.context().get_pg_conn()?, name)
+    }
+    fn field_reset_password(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        code: String,
+        new_password: String,
+    ) -> Fallible<bool> {
+        password::reset_password(&ex.context().get_pg_conn()?, code, new_password)
     }
 }
