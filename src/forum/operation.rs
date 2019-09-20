@@ -31,8 +31,9 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Fallible<
     create_category(&conn, board.id, &default_categories)?;
 
     // 將執政黨加入該板
-    diesel::update(schema::parties::table.filter(schema::parties::dsl::id.eq(party_id)))
-        .set(schema::parties::dsl::board_id.eq(board.id))
+    use schema::parties;
+    diesel::update(parties::table.filter(parties::id.eq(party_id)))
+        .set(parties::board_id.eq(board.id))
         .execute(conn)?;
 
     Ok(board.id)
@@ -129,18 +130,18 @@ pub fn get_article_content(
     article_id: i64,
     category_id: i64,
 ) -> Fallible<Vec<String>> {
-    use schema::categories::dsl as c_dsl;
-    let category = c_dsl::categories
-        .filter(c_dsl::id.eq(category_id))
+    use schema::categories;
+    let category = categories::table
+        .filter(categories::id.eq(category_id))
         .first::<models::Category>(conn)
         .or(Err(Error::new_logic(
             format!("找不到分類: id={}", category_id),
             404,
         )))?;
     let c_body = CategoryBody::from_string(&category.body)?;
-    use schema::article_contents::dsl as ac_dsl;
-    let content = ac_dsl::article_contents
-        .filter(ac_dsl::article_id.eq(article_id))
+    use schema::article_contents;
+    let content = article_contents::table
+        .filter(article_contents::article_id.eq(article_id))
         .first::<models::ArticleContent>(conn)
         .or(Err(Error::new_logic(
             format!("找不到內文: article_id={}", article_id),
