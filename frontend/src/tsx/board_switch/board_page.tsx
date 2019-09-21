@@ -50,6 +50,7 @@ export function BoardPage(props: Props): JSX.Element {
 			});
 		}
 	}, [articles, board_name]);
+
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
@@ -57,9 +58,7 @@ export function BoardPage(props: Props): JSX.Element {
 		{
 			articles.map((article, idx) => (
 				<div styleName="articleWrapper" key={`article-${idx}`}>
-					<Link to={`/app/b/${board_name}/a/${article.id}`}>
-						<BoardItem article={article} />
-					</Link>
+					<BoardItem article={article} />
 				</div>
 			))
 		}
@@ -74,8 +73,7 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 	try {
 		userName = props.article.author.userName;
 		categoryName = JSON.parse(props.article.category.body).name;
-	}
-	catch (e) {
+	} catch {
 		userName = '未知';
 		categoryName = '未知';
 	}
@@ -83,37 +81,43 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 	return (
 		<div styleName="articleContainer">
 			<div styleName="articleHeader">
-				<div styleName="articleType">{categoryName}</div>
 				<div styleName="authorId">{userName}</div>
+				發佈於
+				<div styleName="articleBoard">{props.article.board.boardName}</div>
 				<div styleName="articleTime">{dateString}</div>
-				<div styleName="articleTag">標籤</div>
 			</div>
-			<div styleName="articleBody">
-				<div styleName="leftPart">
-					<div styleName="articleTitle">{props.article.title}</div>
-					<div styleName="articleContent">
-						{props.article.content}
+			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+				<div styleName="articleBody">
+					<div styleName="leftPart">
+						<div styleName="firstLine">
+							<span styleName="articleType">{categoryName}</span>
+							<span styleName="articleTitle">{props.article.title}</span>
+						</div>
+						<div styleName="articleContent">
+							{props.article.content}
+						</div>
 					</div>
 				</div>
-				<div styleName="rightPart">
-					<div styleName="articlePic">
-						<img src="/img/test.jpg" alt="" />
-					</div>
-				</div>
-			</div>
+			</Link>
 			<div styleName="articleFooter">
 				<div styleName="articleBtns">
 					<div styleName="articleBtnItem">
 						<i className="material-icons">
-							question_answer
+							flash_on
 						</i>
-						<span styleName="num">1,297</span>則留言
+						<span styleName="num">4218</span>鍵能
 					</div>
 					<div styleName="articleBtnItem">
 						<i className="material-icons">
-							share
+							question_answer
 						</i>
-						分享
+						<span styleName="num">1297</span>則留言
+					</div>
+					<div styleName="articleBtnItem">
+						<i className="material-icons">
+							forward
+						</i>
+						<span styleName="num">18</span>篇大回文
 					</div>
 					<div styleName="articleBtnItem">
 						<i className="material-icons">
@@ -123,23 +127,9 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 					</div>
 					<div styleName="articleBtnItem">
 						<i className="material-icons">
-							notifications
+							share
 						</i>
-						追蹤
-					</div>
-				</div>
-				<div styleName="articleData">
-					<div styleName="articleBtnItemPower">
-						<img src="/img/energy.png" alt="" />
-						{props.article.energy}
-					</div>
-					<div styleName="articleBtnItemFight">
-						<img src="/img/fight.png" alt="" />
-						500
-					</div>
-					<div styleName="articleBtnItemPush">
-						<img src="/img/push.png" alt="" />
-						775
+						分享
 					</div>
 				</div>
 			</div>
