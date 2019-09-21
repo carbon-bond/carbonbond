@@ -28,6 +28,7 @@ fragment ArticleMeta on Article {
 	energy
 	createTime
 	content
+	board { boardName }
 }
 
 query ArticleList($board_name: String!, $page_size: Int!, $offset: Int!, $show_hidden: Boolean) {
