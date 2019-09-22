@@ -3,7 +3,7 @@
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template-rows: 80px minmax(0, 1fr);
+    grid-template-rows: 60px minmax(0, 1fr);
     & .header {
         grid-row-start: 1;
         grid-row-end: 2;

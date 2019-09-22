@@ -110,7 +110,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			<div styleName="container">
 				<div styleName="leftSet">
 					<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
-						<img src="/img/icon.png" alt="" />
+						<img src="/img/icon_with_text.png" alt="" />
 					</div>
 					<div styleName="location">全站熱門</div>
 					<div styleName="searchPart" contentEditable={true} placeholder="搜尋全站">
