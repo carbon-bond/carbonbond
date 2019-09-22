@@ -84,6 +84,7 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 				<div styleName="authorId">{userName}</div>
 				發佈於
 				<div styleName="articleBoard">{props.article.board.boardName}</div>
+				<div styleName="seperationDot">•</div>
 				<div styleName="articleTime">{dateString}</div>
 			</div>
 			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
