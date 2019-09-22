@@ -7,7 +7,6 @@ import '../../css/board_page.css';
 type Props = RouteComponentProps<{ board_name: string }>;
 
 
-
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
@@ -47,18 +46,18 @@ export function BoardSidebar(props: Props): JSX.Element {
 					<div styleName="partyItem mainPartyItem">
 						<div styleName="partyTitle">執政黨</div>
 						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />87k</div>
+						<div styleName="partyScore">8.7 萬<i className="material-icons"> flash_on </i></div>
 					</div>
 
 					<div styleName="partyItem">
 						<div styleName="partyTitle">在野黨</div>
 						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />22k</div>
+						<div styleName="partyScore">2.2 萬<i className="material-icons"> flash_on </i></div>
 					</div>
 					<div styleName="partyItem">
 						<div styleName="partyTitle"></div>
 						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore"><img styleName="logo" src="/img/energy.png" alt="" />1k</div>
+						<div styleName="partyScore">1328<i className="material-icons"> flash_on </i></div>
 					</div>
 				</div>
 				<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>

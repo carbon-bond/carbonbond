@@ -31,7 +31,7 @@ export function BoardSwitch(): JSX.Element {
 							<div styleName="headerRight">
 								<div styleName="dataBox">
 									<div styleName="dataBoxItem">
-										<div styleName="number">1.2K</div>
+										<div styleName="number">143.2 萬</div>
 										<div styleName="text">追蹤人數</div>
 									</div>
 									<div styleName="dataBoxItem">
