@@ -72,7 +72,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="feature">🏯 我的個板</div>
 					<div styleName="feature">📜 我的卷宗</div>
 					<div styleName="feature" onClick={ () => props.history.push('/app/party') }>👥 我的政黨</div>
-					<div styleName="feature">🖅 寄發邀請信</div>
+					<div styleName="feature" onClick={ () => props.history.push('/app/invite') }>🖅 寄發邀請信</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
