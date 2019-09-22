@@ -76,18 +76,19 @@ type Query {
     checkPartyNameValid(name: String!): String @juniper(ownership: "owned")
     checkArticleContentValid(content: [String!]!boardName: String!categoryName: String!): [String]! @juniper(ownership: "owned")
 
-    # invitation(code: ID): Invitation
+    invitation(code: ID!): Invitation!  @juniper(ownership: "owned")
     # articleInTree(rootID: ID, pageSize: Int!, offset: Int!): [Article!]!
 }
 
 type Invitation {
-    code: ID
+    code: ID!
     # 邀請人的名稱
-    inviter_name: String
+    inviterName: String!
     # 受邀人的 email
-    invitee_email: String
+    inviteeEmail: String!
     # 邀請詞
-    words: String
+    words: String!
+    isUsed: Boolean!
 }
 
 input Reply {
@@ -117,9 +118,9 @@ type Mutation {
     inviteSignup(email: String!, invitationWords: String!): Boolean! @juniper(ownership: "owned")
 
     # 忘記密碼，會寄一封重設密碼的信到註冊時的信箱
-    # forgetPassword(id: String!): Boolean!
-    # resetPassword(code: String!, newPassword: String!): Boolean!
-    # changePassword(oldPassword: String!, newPassword: String!): Boolean
+    forgetPassword(name: String!): Boolean! @juniper(ownership: "owned")
+    resetPassword(code: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
+    changePassword(oldPassword: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
 
     # 政黨
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
