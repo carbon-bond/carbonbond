@@ -79,7 +79,7 @@
         text-decoration: underline;
     }
     & .articleBoard {
-        margin: 0px 6px;
+        margin-left: 6px;
         text-decoration: underline;
     }
     & .authorId:hover {
@@ -89,6 +89,9 @@
     & .articleBoard:hover {
         cursor: pointer;
         color: #0346a6;
+    }
+    & .seperationDot {
+        margin: 0px 4px;
     }
     & .articleTime { }
 }
@@ -108,9 +111,12 @@
     color: black;
     margin-bottom: 10px;
     & .articleType {
+        border: 1px solid;
+        padding: 2px 3px;
+        border-radius: 2px;
         font-weight: 800;
         font-size: 16px;
-        margin-right: 4px;
+        margin-right: 8px;
     }
     & .articleTitle {
         font-size: 20px;
