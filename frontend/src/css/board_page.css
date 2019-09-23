@@ -64,7 +64,7 @@
     width: 100%;
     max-width: 1150px;
     padding: 14px 20px;
-    color: #212529;
+    color: #616569;
 }
 .articleHeader {
     display: flex;
@@ -113,16 +113,17 @@
         border: 1px solid;
         padding: 1px 3px;
         border-radius: 2px;
-        font-weight: 800;
+        font-weight: bold;
         font-size: 16px;
         margin-right: 8px;
     }
     & .articleTitle {
         font-size: 20px;
+        font-weight: bold;
     }
 }
 .articleContent {
-    color: #212529;
+    color: #414549;
     font-size: 16px;
     overflow: hidden;
     /* text-overflow: ellipsis; */
@@ -141,7 +142,6 @@
 .articleBtnItem {
     display: flex;
     white-space: nowrap;
-    color: #616569;
     margin-right: 10px;
     cursor: pointer;
     padding: 3px;
