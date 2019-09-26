@@ -1,3 +1,47 @@
+.articleHeader {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-size: 14px;
+    & .authorId {
+        margin-right: 6px;
+        text-decoration: underline;
+    }
+    & .articleBoard {
+        margin-left: 6px;
+        text-decoration: underline;
+    }
+    & .authorId:hover {
+        cursor: pointer;
+        color: #0366d6;
+    }
+    & .articleBoard:hover {
+        cursor: pointer;
+        color: #0346a6;
+    }
+    & .seperationDot {
+        margin: 0px 4px;
+    }
+    & .articleTime { }
+}
+.articleLine {
+    color: black;
+    margin: 10px 0px;
+    & .articleType {
+        position: relative;
+        bottom: 1px;
+        border: 1px solid;
+        padding: 1px 3px;
+        border-radius: 2px;
+        font-weight: bold;
+        font-size: 16px;
+        margin-right: 8px;
+    }
+    & .articleTitle {
+        font-size: 20px;
+        font-weight: bold;
+    }
+}
 .articleMeta {
     display: flex;
     flex-direction: row;
@@ -28,12 +72,5 @@
                 text-decoration: underline;
             }
         }
-    }
-    & .numMeta {
-        width: 90px;
-        font-size: 18px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
     }
 }

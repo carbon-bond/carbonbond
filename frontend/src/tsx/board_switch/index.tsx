@@ -20,7 +20,7 @@ export function BoardSwitch(): JSX.Element {
 	return <>
 		<div className="switchHeader">
 			<Switch>
-				<Route exact path="/app/b/:board_name" render={props =>
+				<Route path="/app/b/:board_name" render={props =>
 					<div styleName="boardHeader">
 						<div>
 							<div styleName="headerLeft">
