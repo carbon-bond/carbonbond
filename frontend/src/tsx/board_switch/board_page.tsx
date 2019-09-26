@@ -6,8 +6,8 @@ import { MainScrollState } from '../global_state';
 
 import '../../css/board_page.css';
 import { ajaxOperation } from '../../ts/api';
-import { relativeDate } from '../../ts/date';
 import { ArticleMeta } from '.';
+import { ArticleHeader, ArticleLine } from './article_meta';
 
 const PAGE_SIZE: number = 10;
 
@@ -66,34 +66,25 @@ export function BoardPage(props: Props): JSX.Element {
 }
 
 function BoardItem(props: { article: ArticleMeta }): JSX.Element {
-	const dateString: string = relativeDate(new Date(props.article.createTime));
 
-	let userName = '';
-	let categoryName = '';
+	const date = new Date(props.article.createTime);
+	let user_name = '';
+	let category_name = '';
 	try {
-		userName = props.article.author.userName;
-		categoryName = JSON.parse(props.article.category.body).name;
+		user_name = props.article.author.userName;
+		category_name = JSON.parse(props.article.category.body).name;
 	} catch {
-		userName = '未知';
-		categoryName = '未知';
+		user_name = '未知';
+		category_name = '未知';
 	}
 
 	return (
 		<div styleName="articleContainer">
-			<div styleName="articleHeader">
-				<div styleName="authorId">{userName}</div>
-				發佈於
-				<div styleName="articleBoard">{props.article.board.boardName}</div>
-				<div styleName="seperationDot">•</div>
-				<div styleName="articleTime">{dateString}</div>
-			</div>
+			<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
 			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
 				<div styleName="articleBody">
 					<div styleName="leftPart">
-						<div styleName="firstLine">
-							<span styleName="articleType">{categoryName}</span>
-							<span styleName="articleTitle">{props.article.title}</span>
-						</div>
+						<ArticleLine category_name={category_name} title={props.article.title} />
 						<div styleName="articleContent">
 							{props.article.content}
 						</div>

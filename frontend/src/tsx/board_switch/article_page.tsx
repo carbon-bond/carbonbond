@@ -4,9 +4,9 @@ import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
 import '../../css/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
-import { ArticleMetaBlock } from './article_meta_block';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
+import { ArticleHeader, ArticleLine } from './article_meta';
 
 async function fetchArticleDetail(id: string): Promise<Article> {
 	let res = await ajaxOperation.ArticleDetail({ id });
@@ -24,6 +24,8 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 
 	const { editor_panel_data, openEditorPanel, addEdge }
 		= EditorPanelState.useContainer();
+
+	const category_name = JSON.parse(props.article.category.body).name;
 
 	function onReplyClick(transfuse: Transfuse): void {
 		if (editor_panel_data) {
@@ -52,12 +54,23 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 		}
 	}
 	return <div styleName="articlePage">
-		<ArticleMetaBlock article={article} />
-		<hr />
-		<div>
+		<ArticleHeader
+			user_name={article.author.userName}
+			board_name={article.board.boardName}
+			date={new Date(article.createTime)} />
+		<ArticleLine
+			category_name={category_name}
+			title={article.title} />
+		<div styleName="articleContent">
 			{
 				article.content.map((txt, i) => {
-					return <div key={i}>{txt}</div>;
+					return <div key={i}>
+						{txt.split('\n').map(line => {
+							return line.length == 0 ?
+								<br />
+								: <p key={line}>{line}</p>;
+						})}
+					</div>;
 				})
 			}
 		</div>
@@ -69,6 +82,7 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 }
 
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
+
 export function ArticlePage(props: Props): JSX.Element {
 	let article_id = props.match.params.article_id;
 	let board_name = props.match.params.board_name;
