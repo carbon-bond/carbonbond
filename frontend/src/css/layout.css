@@ -32,16 +32,16 @@
                     width: 100%;
                     display: flex;
                     flex-direction: row;
+                    justify-content: center;
                 }
                 
                 & .mainContent {
-                    width: 100%;
-                    max-width: calc(100% - 375px);
+                    width: 600px;
                 }
                 
                 & .rightSideBar {
                     padding: 10px 20px 10px 0px;
-                    width: 375px;
+                    width: 325px;
                 }
 
             }
