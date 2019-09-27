@@ -245,7 +245,7 @@ function EditorBody(props: { onPost: (id: string) => void }): JSX.Element {
 							createArticle(data).then(id => {
 								props.onPost(id);
 							}).catch(err => {
-								matchErrAndShow(err, ['BAD_OPERATION', '錯誤操作']);
+								matchErrAndShow(err);
 							});
 						}}>送出文章</button>
 						<button>儲存草稿</button>

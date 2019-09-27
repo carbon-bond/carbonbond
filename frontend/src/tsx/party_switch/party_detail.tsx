@@ -92,8 +92,7 @@ function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element
 					// FIXME: 跳轉到新創立的看板
 					props.rp.history.push(`/app/b/${board_name}`);
 				}).catch(err => {
-					matchErrAndShow(err, ['DUPLICATE', '與其它看板重名'],
-						['INVALID_ARGUMENT', '看板名含有不合法字元'], ['INVALID_LENGTH', '看板名長度有誤']);
+					matchErrAndShow(err);
 				});
 			}}>確認</button>
 		</div>

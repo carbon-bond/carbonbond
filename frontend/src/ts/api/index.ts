@@ -22,6 +22,12 @@ function extractErrKey(err: GQLError): string {
 function matchErrAndShow(err: GQLError | Error, ...map: [string, string][]): void {
 	if ('response' in err) {
 		let cur_key = extractErrKey(err);
+		let match = cur_key.match(/^BAD_OPERATION\((.+)\)$/);
+		if (match) {
+			// 直接把訊息打印出來
+			toast.error(`錯誤操作：${match[1]}`);
+			return;
+		}
 		map.push(['NEED_LOGIN', '尚未登入']);
 		for (let [key, msg] of map) {
 			if (cur_key.startsWith(key)) {

@@ -134,8 +134,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 				}).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
-					matchErrAndShow(err, ['DUPLICATE', '與其它政黨重名'],
-						['INVALID_ARGUMENT', '政黨名含有不合法字元'], ['INVALID_LENGTH', '政黨名長度有誤']);
+					matchErrAndShow(err);
 				});
 			}}>確認</button>
 		</div>
