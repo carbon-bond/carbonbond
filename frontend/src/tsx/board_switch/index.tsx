@@ -7,14 +7,13 @@ import {
 
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
-import { BoardSidebar } from './board_sidebar';
+import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { GQL } from '../../ts/api';
+
+import '../../css/board_switch/board_page.css';
 
 export type Article = GQL.ArticleDetailQuery['article'];
 export type ArticleMeta = GQL.ArticleMetaFragment;
-
-
-import '../../css/board_page.css';
 
 export function BoardSwitch(): JSX.Element {
 	return <>
@@ -61,6 +60,9 @@ export function BoardSwitch(): JSX.Element {
 				<Switch>
 					<Route exact path="/app/b/:board_name" render={props =>
 						<BoardSidebar {...props}/>
+					} />
+					<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
+						<ArticleSidebar  />
 					} />
 				</Switch>
 			</div>

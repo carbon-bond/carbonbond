@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { ajaxOperation, extractErrMsg } from '../../ts/api';
 import { toast } from 'react-toastify';
-import '../../css/article_page.css';
+import '../../css/board_switch/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';

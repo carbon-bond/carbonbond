@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../../css/article_meta.css';
+import '../../css/board_switch/article_meta.css';
 import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 

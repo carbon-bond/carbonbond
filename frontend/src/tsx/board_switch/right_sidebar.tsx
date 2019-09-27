@@ -2,10 +2,9 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { EditorPanelState, UserState } from '../global_state';
 
-import '../../css/board_page.css';
+import '../../css/board_switch/right_sidebar.css';
 
 type Props = RouteComponentProps<{ board_name: string }>;
-
 
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -61,6 +60,22 @@ export function BoardSidebar(props: Props): JSX.Element {
 					</div>
 				</div>
 				<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
+			</div>
+		</div>
+	</>;
+}
+
+export function ArticleSidebar(): JSX.Element {
+	return <>
+		<div styleName="rightSidebarItem">
+			<div styleName="rightSidebarBlock">
+				<div styleName="header">作者簡介</div>
+			</div>
+		</div>
+
+		<div styleName="rightSidebarItem">
+			<div styleName="rightSidebarBlock">
+				<div styleName="header">廣告</div>
 			</div>
 		</div>
 	</>;
