@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { MainScrollState } from '../global_state';
 
-import '../../css/board_page.css';
+import '../../css/board_switch/board_page.css';
 import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
 import { ArticleHeader, ArticleLine } from './article_meta';
