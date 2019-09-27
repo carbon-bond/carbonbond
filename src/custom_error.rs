@@ -21,24 +21,6 @@ pub enum DataType {
 }
 
 #[derive(Clone, Display, Debug)]
-pub enum BadOpType {
-    #[display(fmt = "NOT_EXILE")]
-    NotExile,
-    #[display(fmt = "NOT_ROOTABLE")]
-    NotRootable,
-    #[display(fmt = "NOT_TRANSFUSABLE")]
-    NotTransfusable,
-    #[display(fmt = "REPLY_TO_DIFFERENT_BOARD")]
-    ReplyToDifferentBoard,
-    #[display(fmt = "REPLY_TO_DIFFERENT_TOPIC")]
-    ReplyToDifferentTopic,
-    #[display(fmt = "CANT_REPLY_TO_CATEGORY")]
-    CantReplyToCategory,
-    #[display(fmt = "NO_INVITE_CREDIT")]
-    NoInviteCredit,
-}
-
-#[derive(Clone, Display, Debug)]
 pub enum ErrorKey {
     #[display(fmt = "INTERNAL")]
     Internal,
@@ -50,16 +32,10 @@ pub enum ErrorKey {
     NotFound(DataType, String),
     #[display(fmt = "PARSE_ID")]
     ParseID,
-    #[display(fmt = "INVALID_ARGUMENT({})", "_0")]
-    InvalidArgument(String),
-    #[display(fmt = "INVALID_LENGTH")]
-    InvalidLength,
     #[display(fmt = "BAD_OPERATION({})", "_0")]
-    BadOperation(BadOpType),
+    BadOperation(String),
     #[display(fmt = "PARSING_JSON")]
     ParsingJson,
-    #[display(fmt = "DUPLICATE")]
-    Duplicate,
 }
 
 fn build_field_err(key: ErrorKey) -> FieldError {
@@ -83,6 +59,11 @@ impl Error {
     pub fn new_op<S: AsRef<str>>(msg: S) -> Error {
         Error::OperationError {
             msg: msg.as_ref().to_owned(),
+        }
+    }
+    pub fn new_bad_op<S: AsRef<str>>(msg: S) -> Error {
+        Error::LogicError {
+            key: ErrorKey::BadOperation(msg.as_ref().to_owned()),
         }
     }
     pub fn new_logic(key: ErrorKey) -> Error {

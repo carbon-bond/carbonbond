@@ -228,7 +228,7 @@ impl QueryFields for Query {
         let category = forum::get_category(&ex.context().get_pg_conn()?, &category_name, board.id)?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         if c_body.structure.len() != content.len() {
-            Err(Error::new_logic(ErrorKey::InvalidLength))
+            Err(Error::new_bad_op("文章結構長度不符合分類規範"))
         } else {
             Ok(content
                 .into_iter()

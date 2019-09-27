@@ -6,7 +6,7 @@ use crate::db::{
     schema,
     models::{NewUser, User, NewInvitation, Invitation},
 };
-use crate::custom_error::{Error, Fallible, ErrorKey, DataType, BadOpType};
+use crate::custom_error::{Error, Fallible, DataType};
 use crate::config::CONFIG;
 
 // 回傳邀請碼
@@ -52,9 +52,7 @@ pub fn create_invitation(
                     .execute(conn)?;
                 Ok(invite_code)
             } else {
-                Err(Error::new_logic(ErrorKey::BadOperation(
-                    BadOpType::NoInviteCredit,
-                )))
+                Err(Error::new_bad_op("邀請額度不足"))
             }
         }
         None => {

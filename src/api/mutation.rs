@@ -45,7 +45,7 @@ impl MutationFields for Mutation {
                 let set = RegexSet::new(conf.user.email_whitelist.clone()).unwrap();
                 let matches = set.matches(&email);
                 if !matches.matched_any() {
-                    Err(Error::new_logic(ErrorKey::InvalidArgument(email)))
+                    Err(Error::new_bad_op(format!("`{}`非許可的信箱", email)))
                 } else {
                     let conn = &ex.context().get_pg_conn()?;
                     let invite_code =

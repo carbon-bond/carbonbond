@@ -2,7 +2,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use crate::db::models::User;
 use crate::db::schema;
-use crate::custom_error::{Error, Fallible, ErrorKey, DataType};
+use crate::custom_error::{Error, Fallible, DataType};
 
 pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> {
     use schema::users;
@@ -21,8 +21,6 @@ pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> 
 
     match equal {
         true => Ok(user),
-        false => Err(Error::new_logic(ErrorKey::InvalidArgument(
-            "password".to_owned(),
-        ))),
+        false => Err(Error::new_bad_op("密碼錯誤")),
     }
 }

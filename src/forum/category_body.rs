@@ -120,7 +120,7 @@ impl ColSchema {
         match self.col_type {
             ColType::Atom(AtomType::Line) => {
                 if content.contains('\n') {
-                    Err(CE::new_logic(ErrorKey::InvalidArgument(content)))
+                    Err(CE::new_bad_op("LINE 型別中含有換行"))
                 } else {
                     Ok(StringOrI32::Str(content))
                 }
@@ -133,7 +133,7 @@ impl ColSchema {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
-                    Err(CE::new_logic(ErrorKey::InvalidArgument(content)))
+                    Err(CE::new_bad_op("Int 型別解析失敗"))
                 }
             }
             ColType::Atom(AtomType::Rating(max)) => {
@@ -142,10 +142,13 @@ impl ColSchema {
                     if r <= max && r >= 1 {
                         Ok(StringOrI32::I32(r as i32))
                     } else {
-                        Err(CE::new_logic(ErrorKey::InvalidArgument(content)))
+                        Err(CE::new_bad_op(format!(
+                            "Rating 型別超出範圍：{}不屬於1~{}",
+                            r, max
+                        )))
                     }
                 } else {
-                    Err(CE::new_logic(ErrorKey::InvalidArgument(content)))
+                    Err(CE::new_bad_op("Rating 型別解析失敗"))
                 }
             }
             ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
@@ -171,7 +174,7 @@ impl CategoryBody {
     pub fn from_string(s: &str) -> Fallible<CategoryBody> {
         let t = serde_json::from_str::<Self>(s).or(Err(CE::new_logic(ErrorKey::ParsingJson)))?;
         if t.structure.len() > MAX_ARTICLE_COLUMN {
-            Err(CE::new_logic(ErrorKey::InvalidLength))
+            Err(CE::new_bad_op("分類結構長度超過上限"))
         } else {
             Ok(t)
         }
