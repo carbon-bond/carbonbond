@@ -6,7 +6,7 @@ import '../../css/board_switch/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
-import { ArticleHeader, ArticleLine } from './article_meta';
+import { ArticleHeader, ArticleLine, ArticleFooter } from './article_meta';
 
 async function fetchArticleDetail(id: string): Promise<Article> {
 	let res = await ajaxOperation.ArticleDetail({ id });
@@ -46,9 +46,9 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
 		let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
 		if (can_reply) {
-			return <div styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
+			return <span styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
 				{props.label}
-			</div>;
+			</span>;
 		} else {
 			return <div styleName="cantReply">{props.label}</div>;
 		}
@@ -74,9 +74,10 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 				})
 			}
 		</div>
+		<ArticleFooter />
+		<ReplyBtn label="戰" transfuse={-1} />
 		<ReplyBtn label="挺" transfuse={1} />
 		<ReplyBtn label="回" transfuse={0} />
-		<ReplyBtn label="戰" transfuse={-1} />
 	</div>;
 
 }

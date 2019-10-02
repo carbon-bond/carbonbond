@@ -7,7 +7,7 @@ import { MainScrollState } from '../global_state';
 import '../../css/board_switch/board_page.css';
 import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
-import { ArticleHeader, ArticleLine } from './article_meta';
+import { ArticleHeader, ArticleLine, ArticleFooter } from './article_meta';
 
 const PAGE_SIZE: number = 10;
 
@@ -91,40 +91,7 @@ function BoardItem(props: { article: ArticleMeta }): JSX.Element {
 					</div>
 				</div>
 			</Link>
-			<div styleName="articleFooter">
-				<div styleName="articleBtns">
-					<div styleName="articleBtnItem">
-						<i className="material-icons">
-							flash_on
-						</i>
-						<span styleName="num">4218</span>鍵能
-					</div>
-					<div styleName="articleBtnItem">
-						<i className="material-icons">
-							question_answer
-						</i>
-						<span styleName="num">1297</span>則留言
-					</div>
-					<div styleName="articleBtnItem">
-						<i className="material-icons">
-							forward
-						</i>
-						<span styleName="num">18</span>篇大回文
-					</div>
-					<div styleName="articleBtnItem">
-						<i className="material-icons">
-							star
-						</i>
-						收藏
-					</div>
-					<div styleName="articleBtnItem">
-						<i className="material-icons">
-							share
-						</i>
-						分享
-					</div>
-				</div>
-			</div>
+			<ArticleFooter />
 		</div>
 	);
 }
