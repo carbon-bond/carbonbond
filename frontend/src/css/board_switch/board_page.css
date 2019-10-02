@@ -64,7 +64,6 @@
     width: 100%;
     max-width: 1150px;
     padding: 14px 20px;
-    color: #616569;
 }
 .articleBody {
     display: flex;
@@ -87,33 +86,4 @@
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
-}
-.articleFooter {
-    width: 100%;
-    display: flex;
-}
-.articleBtns {
-    display: flex;
-}
-.articleBtnItem {
-    display: flex;
-    white-space: nowrap;
-    margin-right: 10px;
-    cursor: pointer;
-    padding: 3px;
-
-    align-items: center;
-    font-size: 14px;
-    border-radius: 4px;
-
-    & i {
-        margin-right: 3px;
-    }
-}
-.articleBtnItem:hover {
-    background-color: #d9d9d9;
-}
-
-.num {
-    margin-right: 2px;
 }
