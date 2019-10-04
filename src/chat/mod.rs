@@ -104,6 +104,7 @@ pub fn get_recent_chat(
                 direct_messages::table.on(direct_chats::id.eq(direct_messages::direct_chat_id)),
             )
             .filter(direct_messages::create_time.lt(Utc.timestamp_millis(request.before_time)))
+            .order((direct_chats::id, direct_messages::create_time.desc()))
             .distinct_on(direct_chats::id)
             .limit(request.number)
             .load::<(models::DirectChat, models::DirectMessage)>(&conn)?;
@@ -137,7 +138,10 @@ pub fn get_recent_chat(
         }))
     };
 
-    let data = get_data().unwrap_or_else(|err| Response::Error(err.to_chat_error()));
+    let data = get_data().unwrap_or_else(|err| {
+        println!("{:?}", err);
+        Response::Error(err.to_chat_error())
+    });
 
     chat_proto::RecentChatResponse {
         response: Some(data),
