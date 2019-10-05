@@ -52,12 +52,20 @@ mod simple_types {
     graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Reply, Me]);
 
     pub struct Me {
-        pub name: Option<String>,
+        pub name: String,
+        pub energy: i32,
+        pub invitation_credit: i32,
     }
 
     impl MeFields for Me {
-        fn field_name(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<String>> {
+        fn field_name(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
             Ok(&self.name)
+        }
+        fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+            Ok(&self.energy)
+        }
+        fn field_invitation_credit(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+            Ok(&self.invitation_credit)
         }
     }
 }

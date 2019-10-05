@@ -1,5 +1,9 @@
 mutation Login($name: String!, $password: String!) {
-	login(name: $name, password: $password)
+	login(name: $name, password: $password) {
+		name,
+		energy,
+		invitationCredit
+	}
 }
 mutation Logout {
 	logout

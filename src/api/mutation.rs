@@ -10,6 +10,7 @@ use crate::config::CONFIG;
 
 use super::{id_to_i64, i64_to_id, Context, ContextTrait, Reply};
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Mutation]);
+use crate::api::simple_types::Me;
 
 pub struct Mutation;
 
@@ -17,14 +18,19 @@ impl MutationFields for Mutation {
     fn field_login(
         &self,
         ex: &juniper::Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Me, juniper_from_schema::Walked>,
         name: String,
         password: String,
-    ) -> Fallible<bool> {
+    ) -> Fallible<Me> {
         match login(&ex.context().get_pg_conn()?, &name, &password) {
             Err(error) => Err(error),
             Ok(user) => {
                 ex.context().remember_id(user.id)?;
-                Ok(true)
+                Ok(Me {
+                    name: user.name,
+                    energy: user.energy,
+                    invitation_credit: user.invitation_credit,
+                })
             }
         }
     }

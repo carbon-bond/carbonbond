@@ -1,5 +1,9 @@
 query Me {
-	me { name }
+	me {
+		name,
+		energy,
+		invitationCredit
+	}
 }
 
 query Invitation($code: ID!) {
