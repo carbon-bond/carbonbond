@@ -25,6 +25,14 @@ CREATE TABLE invitations (
 
 CREATE INDEX invitations_create_time_index ON invitations(create_time);
 
+CREATE TABLE reset_password (
+  id BIGSERIAL PRIMARY KEY,
+  code VARCHAR(32) NOT NULL,
+  user_id BIGINT REFERENCES users(id) NOT NULL,
+  create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  is_used BOOLEAN NOT NULL DEFAULT FALSE
+);
+
 -- 看板
 CREATE TABLE boards (
   id BIGSERIAL PRIMARY KEY,

@@ -1,0 +1,89 @@
+.boardHeader {
+
+    height: 100%;
+    display: flex;
+    flex-direction: column;    
+    justify-content: flex-end;
+    padding: 10px;
+    position: relative;
+
+    & .headerLeft {
+        & .boardTitle {
+            padding: 10px;
+            font-size: 30px;
+        }
+        & .boardSubTitle {
+            padding: 10px;
+        }
+    }
+
+    & .headerRight {
+        padding: 10px;
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        
+        color: #4b4b4b;
+
+        & .dataBox {
+            display: flex;
+            
+            & .dataBoxItem {
+                padding: 0px 20px;
+
+                & .number {
+                    text-align: center;
+                    font-size: 24px;
+                    margin-bottom: 5px;
+                }
+
+                & .text {
+                    text-align: center;
+                }
+            }
+
+            & .dataBoxItem:not(:last-child) {
+                border-right: 2px #4b4b4b solid;
+            }
+        }
+    }
+}
+
+.articleWrapper {
+    padding: 20px 20px 10px 20px;
+    display: block;
+    position: relative;
+}
+.articleWrapper:not(:first-child) {
+    padding: 10px 20px 20px 20px;
+    
+}
+.articleContainer {
+    background-color: #fafafa;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1150px;
+    padding: 14px 20px;
+}
+.articleBody {
+    display: flex;
+    width: 100%;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+.leftPart {
+    display: block;
+    width: 100%;
+}
+.articleContent {
+    color: #414549;
+    font-size: 16px;
+    overflow: hidden;
+    /* text-overflow: ellipsis; */
+    /* white-space: nowrap; */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}

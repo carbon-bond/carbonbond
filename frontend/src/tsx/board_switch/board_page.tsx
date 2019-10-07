@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
-import { EditorPanelState, UserState, MainScrollState } from '../global_state';
 
-import '../../css/board_page.css';
+import { MainScrollState } from '../global_state';
+
+import '../../css/board_switch/board_page.css';
 import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
+import { ArticleHeader, ArticleLine, ArticleFooter } from './article_meta';
 
 const PAGE_SIZE: number = 10;
 
@@ -23,17 +25,7 @@ async function fetchArticles(
 }
 
 export function BoardPage(props: Props): JSX.Element {
-	let { user_state } = UserState.useContainer();
-	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
 	let board_name = props.match.params.board_name;
-
-	function onEditClick(): void {
-		if (editor_panel_data) {
-			alert('正在編輯其它文章');
-		} else {
-			openEditorPanel({ board_name });
-		}
-	}
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
@@ -58,29 +50,48 @@ export function BoardPage(props: Props): JSX.Element {
 			});
 		}
 	}, [articles, board_name]);
+
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
-	return <div styleName="boardContent">
-		<h1>{board_name}</h1>
+	return <>
 		{
-			(() => {
-				if (user_state.login) {
-					return <h5 onClick={() => onEditClick()}>發表文章</h5>;
-				}
-			})()
+			articles.map((article, idx) => (
+				<div styleName="articleWrapper" key={`article-${idx}`}>
+					<BoardItem article={article} />
+				</div>
+			))
 		}
+	</>;
+}
 
-		<ul>
-			{
-				articles.map((article, idx) => (
-					<Link to={`/app/b/${board_name}/a/${article.id}`} key={idx}>
-						<li styleName="articleTitle">
-							<p>{article.id} - {article.title}</p>
-						</li>
-					</Link>
-				))
-			}
-		</ul>
-	</div>;
+function BoardItem(props: { article: ArticleMeta }): JSX.Element {
+
+	const date = new Date(props.article.createTime);
+	let user_name = '';
+	let category_name = '';
+	try {
+		user_name = props.article.author.userName;
+		category_name = JSON.parse(props.article.category.body).name;
+	} catch {
+		user_name = '未知';
+		category_name = '未知';
+	}
+
+	return (
+		<div styleName="articleContainer">
+			<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
+			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+				<div styleName="articleBody">
+					<div styleName="leftPart">
+						<ArticleLine category_name={category_name} title={props.article.title} />
+						<div styleName="articleContent">
+							{props.article.content}
+						</div>
+					</div>
+				</div>
+			</Link>
+			<ArticleFooter />
+		</div>
+	);
 }

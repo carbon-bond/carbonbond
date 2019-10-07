@@ -133,6 +133,7 @@
                 font-size: 15px;
                 padding-top: 6px;
                 padding-bottom: 6px;
+                background-color: var(--main-color);
                 & .channelControl {
                     display: flex;
                     flex-direction: row;

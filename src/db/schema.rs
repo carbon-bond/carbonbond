@@ -143,6 +143,16 @@ table! {
 }
 
 table! {
+    reset_password (id) {
+        id -> Int8,
+        code -> Varchar,
+        user_id -> Int8,
+        create_time -> Timestamptz,
+        is_used -> Bool,
+    }
+}
+
+table! {
     users (id) {
         id -> Int8,
         name -> Text,
@@ -171,6 +181,7 @@ joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
+joinable!(reset_password -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     article_contents,
@@ -187,5 +198,6 @@ allow_tables_to_appear_in_same_query!(
     invitations,
     parties,
     party_members,
+    reset_password,
     users,
 );

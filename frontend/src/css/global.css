@@ -2,6 +2,8 @@
     margin: 0;
     padding: 0;
     text-decoration: none;
+    outline: none;
+    box-sizing: border-box;
 }
 h1 {
     margin: 0;
@@ -10,9 +12,9 @@ body {
     margin: 0;
     height: 100%;
     width: 100%;
-    background-color: #f5f5f5;
-    --bar-color: white;
-    --left-main-color: white;
-    --main-color: white;
-    --cname-color: #9fdde9;
+    background-color: #e0e0e0;
+    --bar-color: #fafafa;
+    --left-main-color: #fafafa;
+    --main-color: #fafafa;
+    --cname-color: #fafafa;
 }
