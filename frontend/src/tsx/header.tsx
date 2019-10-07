@@ -18,9 +18,13 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(name: string, password: string): Promise<{}> {
 		try {
-			await ajaxOperation.Login({ name, password });
+			const data = await ajaxOperation.Login({ name, password });
 			setLogining(false);
-			setLogin(name);
+			setLogin({
+				user_name: data.login.name,
+				energy: data.login.energy,
+				invitation_credit: data.login.invitationCredit
+			});
 			toast('登入成功');
 		} catch (err) {
 			toast.error(extractErrMsg(err));
@@ -92,7 +96,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div ref={ref} styleName="wrap">
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
 						<div styleName="image">💂️</div>
-						<div styleName="userName">{user_state.user_id}</div>
+						<div styleName="userName">{user_state.user_name}</div>
 						<div styleName="energy">⚡ 275</div>
 					</div>
 					<Dropdown />

@@ -127,7 +127,6 @@
                 top: 50px;
                 display: flex;
                 flex-direction: column;
-                background-color: var(--main-color);
                 z-index: 100;
                 & .triangle {
                     align-self: center;
@@ -146,6 +145,7 @@
                     border: #DDDDDD solid 1px;
                     display: flex;
                     flex-direction: column;
+                    background-color: var(--main-color);
                     & .feature:hover {
                         background-color: #F4F4F4;
                     }

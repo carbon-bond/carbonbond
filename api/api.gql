@@ -52,11 +52,13 @@ type Article {
 }
 
 type Me {
-    name: String
+    name: String!,
+    energy: Int!,
+    invitationCredit: Int!,
 }
 
 type Query {
-    me: Me! @juniper(ownership: "owned")
+    me: Me @juniper(ownership: "owned")
 
     myPartyList(boardName: String): [Party!]! @juniper(ownership: "owned")
     party(partyName: String!): Party! @juniper(ownership: "owned")
@@ -109,7 +111,7 @@ type Mutation {
     createBoard(boardName: String! partyName: String!): ID! @juniper(ownership: "owned")
 
     # 登入（會 set-cookie）
-    login(name: String!, password: String!): Boolean! @juniper(ownership: "owned")
+    login(name: String!, password: String!): Me! @juniper(ownership: "owned")
     # 登出（清除 cookie）
     logout: Boolean! @juniper(ownership: "owned")
     # 透過邀請信註冊（開放註冊後，會再有一個端點處理一般的註冊）
