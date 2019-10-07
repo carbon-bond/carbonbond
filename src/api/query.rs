@@ -18,18 +18,20 @@ impl QueryFields for Query {
         &self,
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Me, juniper_from_schema::Walked>,
-    ) -> Fallible<Me> {
+    ) -> Fallible<Option<Me>> {
         let me = match ex.context().get_id() {
-            None => Me { name: None },
+            None => None,
             Some(id) => {
                 use db_schema::users;
                 let user = users::table
                     .find(id)
                     .first::<db_models::User>(&ex.context().get_pg_conn()?)?;
 
-                Me {
-                    name: Some(user.name),
-                }
+                Some(Me {
+                    name: user.name,
+                    energy: user.energy,
+                    invitation_credit: user.invitation_credit,
+                })
             }
         };
         Ok(me)

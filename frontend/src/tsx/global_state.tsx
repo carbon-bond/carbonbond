@@ -13,15 +13,33 @@ const {
 	ServerSendData,
 } = chat_proto;
 
-type UserStateType = { login: false, fetching: boolean } | { login: true, user_id: string };
+type UserStateType = {
+	login: false, fetching: boolean
+} | {
+	login: true,
+	user_name: string,
+	invitation_credit: number,
+	energy: number
+};
 
-function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function } {
+interface LoginData {
+	user_name: string,
+	invitation_credit: number,
+	energy: number
+}
+
+function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<{}> {
 		const data = await ajaxOperation.Me();
-		if (data.me.name != null) {
-			setUserState({ login: true, user_id: data.me.name });
+		if (data.me != null) {
+			setUserState({
+				login: true,
+				user_name: data.me.name,
+				invitation_credit: data.me.invitationCredit,
+				energy: data.me.energy,
+			});
 		} else {
 			setUserState({ login: false, fetching: false });
 		}
@@ -32,13 +50,18 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 		getLoginState();
 	}, []);
 
-	function setLogin(user_id: string): void {
-		setUserState({ login: true, user_id: user_id });
+	function setLogin(data: LoginData): void {
+		setUserState({
+			login: true,
+			user_name: data.user_name,
+			invitation_credit: data.invitation_credit,
+			energy: data.energy,
+		});
 	}
 	function setLogout(): void {
 		setUserState({ login: false, fetching: false });
 	}
-	return { user_state, setLogin, setLogout };
+	return { user_state, setLogin, setLogout, getLoginState };
 }
 
 export type SimpleRoomData = {
