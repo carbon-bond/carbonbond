@@ -4,12 +4,9 @@ matrix:
       cache: cargo
       rust:
           - nightly
-      before_script:
-          - rustup component add rustfmt
       script:
           - cargo build --all
           - cargo test --all
-          - cargo fmt -- --check
     - language: node_js
       node_js:
         - "10"
