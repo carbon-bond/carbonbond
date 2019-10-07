@@ -2,10 +2,16 @@ import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
 import { ajaxOperation } from '../ts/api';
-import { produce, immerable } from 'immer';
+import { produce } from 'immer';
+import { Record, List, Map } from 'immutable';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
+import { chat_proto } from '../ts/protobuf/chat_proto.js';
+
+const {
+	ServerSendData,
+} = chat_proto;
 
 type UserStateType = {
 	login: false, fetching: boolean
@@ -250,188 +256,206 @@ function useEditorPanelState(): {
 	};
 }
 
+export class Message extends Record({ sender_name: '', content: '', time: new Date(0) }) {
+	static fromProtobuf(message: chat_proto.IMessage): Message {
+		return new Message({
+			sender_name: message.senderName!,
+			content: message.content!,
+			time: new Date(message.time!)
+		});
+	}
+}
 
-export type Dialog = {
-	who: string,
+export class DirectChatData extends Record({
+	history: List<Message>(),
+	name: '',
+	id: 0,
+	read_time: new Date(0)
+}) implements ChatData {
+	isUnread(): boolean {
+		const last_msg = this.history.last(undefined);
+		if (last_msg == undefined) {
+			return false;
+		} else {
+			return this.read_time < last_msg.time;
+		}
+	}
+	newestMessage(): Message | undefined {
+		const last_msg = this.history.last(undefined);
+		return last_msg;
+	}
+	addMessage(message: Message): DirectChatData {
+		let res = this.update('history', (history) => {
+			return history.push(message);
+		});
+		res = res.set('read_time', message.time);
+		return res;
+	}
+}
+
+// NOTE: 目前的 DirectChatData 與 ChannelData 完全相同
+// 但之後 ChannelData 會有自己的特殊屬性，如公開／私有
+class ChannelData extends DirectChatData {};
+
+export class GroupChatData extends Record({
+	name: '',
+	id: 0,
+	is_upgraded: false,
+	channels: Map<string, ChannelData>(),
+	read_time: new Date(0)
+}) {
+	isUnread(): boolean {
+		return !this.unreadChannels().isEmpty();
+	}
+	unreadChannels(): List<ChannelData> {
+		return this.channels.valueSeq().toList().filter(channel => channel.isUnread());
+	}
+	// TODO: 改名爲 newestMessage
+	newestMessage(): Message | undefined {
+		if (this.is_upgraded) {
+			return undefined;
+		} else {
+			return this.channels
+				.map(channel => channel.history.last(undefined))
+				.filter(x => x != undefined)
+				.sort((c1, c2) => Number(c1!.time) - Number(c2!.time)).first();
+		}
+	}
+}
+
+export interface IMessage {
+	sender_name: string,
 	content: string,
-	date: Date
+	time: Date
 };
 
 export interface ChatData {
 	name: string;
-	newestDialog(): Dialog
+	newestMessage(): IMessage | undefined
 	isUnread(): boolean
 };
 
-// TODO: 增加一個欄位表示最後閱讀的時間
-export class SimpleChatData implements ChatData {
-	name: string;
-	dialogs: Dialog[];
-	last_read: Date;
-	constructor(name: string, dialogs: Dialog[], last_read: Date) {
-		this.name = name;
-		this.dialogs = dialogs;
-		this.last_read = last_read;
+class AllChat extends Record({
+	group: Map<string, GroupChatData>(),
+	direct: Map<string, DirectChatData>(),
+}) {
+	addChat(name: string, chat: DirectChatData): AllChat {
+		return this.setIn(['direct', name], chat);
 	}
-	newestDialog(): Dialog {
-		return this.dialogs.slice(-1)[0];
+	addMessage(name: string, message: Message): AllChat {
+		return this.updateIn(['direct', name], direct => direct.addMessage(message));
 	}
-	isUnread(): boolean {
-		return this.last_read < this.newestDialog().date;
+	addChannelMessage(name: string, channel: string, message: Message): AllChat {
+		return this.updateIn(['group', name, 'channels', channel], c => c.addMessage(message));
 	}
-};
-
-// 爲了讓 immer 作用於 class ，但又繞不過 ts 的型別檢查
-// @ts-ignore
-SimpleChatData[immerable] = true;
-
-export class ChannelChatData implements ChatData {
-	name: string;
-	channels: SimpleChatData[];
-	constructor(name: string, channels: SimpleChatData[]) {
-		this.name = name;
-		this.channels = channels;
+	updateReadTime(name: string, time: Date): AllChat {
+		return this.updateIn(['direct', name], direct => direct.set('read_time', time));
 	}
-	newestChannel(): SimpleChatData {
-		return this.channels.reduce((prev, cur) => {
-			return Number(prev.newestDialog().date) > Number(cur.newestDialog().date) ? prev : cur;
-		});
+	updateChannelReadTime(name: string, channel: string, time: Date): AllChat {
+		return this.updateIn(['group', name, 'channels', channel], direct => direct.set('read_time', time));
 	}
-	newestDialog(): Dialog {
-		return this.newestChannel().newestDialog();
-	}
-	unreadChannels(): string[] {
-		return this.channels.filter(c => c.isUnread()).map(c => c.name);
-	}
-	isUnread(): boolean {
-		return this.unreadChannels().length > 0;
-	}
-};
-
-// @ts-ignore
-ChannelChatData[immerable] = true;
-
-type AllChat = {
-	party: ChannelChatData[],
-	two_people: SimpleChatData[]
-};
+}
 
 function useAllChatState(): {
 	all_chat: AllChat
-	addDialog: Function
-	addChannelDialog: Function
+	addMessage: Function
+	addChannelMessage: Function
 	updateLastRead: Function
 	updateLastReadChannel: Function
 	} {
 
-	let [all_chat, setAllChat] = useState<AllChat>({
-		party: [
-			new ChannelChatData('無限城',
-				[
-					new SimpleChatData(
-						'VOLTS 四天王',
-						[
-							{ who: '冬木士度', content: '那時我認爲他是個怪人', date: new Date(2019, 6, 14) },
-							{ who: '風鳥院花月', content: '我也是', date: new Date(2019, 6, 15) }
-						],
-						new Date(2019, 7, 13)
-					),
-					new SimpleChatData(
-						'主頻道',
-						[
-							{ who: '美堂蠻', content: '午餐要吃什麼？', date: new Date(2019, 1, 14) },
-							{ who: '馬克貝斯', content: '沒意見', date: new Date(2019, 1, 15) },
-							{ who: '天子峰', content: '都可', date: new Date(2019, 1, 16) }
-						],
-						new Date(2018, 7, 13)
-					),
-					new SimpleChatData(
-						'閃靈二人組',
-						[
-							{ who: '天野銀次', content: '肚子好餓', date: new Date(2018, 11, 4) },
-							{ who: '美堂蠻', content: '呿！', date: new Date(2019, 3, 27) }
-						],
-						new Date(2018, 6, 13)
-					)
-				],
-			)
-		],
+	let [all_chat, setAllChat] = useState<AllChat>(new AllChat({
 		// TODO: 刪掉假數據
-		two_people: [
-			new SimpleChatData('玻璃碳', [{ who: '金剛', content: '安安', date: new Date() }], new Date(2019, 3, 3)),
-			new SimpleChatData('石墨', [{ who: '石墨', content: '送出了一張貼圖', date: new Date(2019, 5, 12) }], new Date(2019, 3, 3)),
-			new SimpleChatData('六方', [{ who: '六方', content: '幫幫窩', date: new Date(2018, 6) }], new Date(2019, 3, 3)),
-			new SimpleChatData('芙', [{ who: '芙', content: '一直流鼻涕', date: new Date(2019, 6) }], new Date(2019, 6, 3)),
-		]
-	});
+		group: Map({
+			'無限城': new GroupChatData({
+				name: '無限城',
+				channels: Map({
+					'VOLTS 四天王': new ChannelData({
+						name: 'VOLTS 四天王',
+						history: List([
+							new Message({ sender_name: '冬木士度', content: '那時我認爲他是個怪人', time: new Date(2019, 6, 14) }),
+							new Message({ sender_name: '風鳥院花月', content: '我也是', time: new Date(2019, 6, 15) })
+						]),
+						read_time: new Date(2019, 7, 13)
+					}),
+					'主頻道': new ChannelData({
+						name: '主頻道',
+						history: List([
+							new Message({ sender_name: '美堂蠻', content: '午餐要吃什麼？', time: new Date(2019, 1, 14) }),
+							new Message({ sender_name: '馬克貝斯', content: '沒意見', time: new Date(2019, 1, 15) }),
+							new Message({ sender_name: '天子峰', content: '都可', time: new Date(2019, 1, 16) })
+						]),
+						read_time: new Date(2018, 7, 13)
+					}),
+					'閃靈二人組': new ChannelData({
+						name: '閃靈二人組',
+						history: List([
+							new Message({ sender_name: '天野銀次', content: '肚子好餓', time: new Date(2018, 11, 4) }),
+							new Message({ sender_name: '美堂蠻', content: '呿！', time: new Date(2019, 3, 27) })
+						]),
+						read_time: new Date(2018, 6, 13)
+					})
+				})
+			})
+		}),
+		direct: Map({ })
+	}));
 
-	// 只作用於雙人
-	function addDialog(name: string, dialog: Dialog): void {
-		let new_chat = produce(all_chat, draft => {
-			let chat = draft.two_people.find((d) => d.name == name);
-			if (chat != undefined) {
-				chat!.dialogs.push(dialog);
-				chat!.last_read = dialog.date;
-			} else {
-				console.error(`不存在雙人對話 ${name}`);
+
+	React.useEffect(() => {
+		const onmessage = (event: MessageEvent): void => {
+			const buf = new Uint8Array(event.data);
+			const data = ServerSendData.decode(buf);
+			switch (data.Data) {
+				case 'recentChatResponse': {
+					const recent_chats = data.recentChatResponse!.chats!.chats!;
+					let new_all_chat = all_chat;
+					for (let chat of recent_chats) {
+						if (chat.directChat) {
+							console.log(`direct chat id: ${chat.directChat.directChatId}`);
+							let direct_chat_data = new DirectChatData({
+								id: chat.directChat.directChatId!,
+								name: chat.directChat.name!,
+								history: List([Message.fromProtobuf(chat.directChat.latestMessage!)]),
+								read_time: new Date(chat.directChat.readTime!),
+							});
+							new_all_chat = new_all_chat.addChat(chat.directChat.name!, direct_chat_data);
+						}
+						// TODO: chat.groupChat, chat.upgradedGroupChat
+					}
+					setAllChat(new_all_chat);
+					break;
+				}
+				default: {
+					console.error('聊天 websocket 收到未識別的資料型別');
+				}
 			}
-		});
-		setAllChat(new_chat);
+			console.log(data.recentChatResponse);
+		};
+		window.chat_socket.setHandler(onmessage);
+	}, [all_chat]);
+
+	function addMessage(name: string, message: Message): void {
+		setAllChat(all_chat.addMessage(name, message));
+	}
+
+	function addChannelMessage(name: string, channel_name: string, message: Message): void {
+		setAllChat(all_chat.addChannelMessage(name, channel_name, message));
 	}
 
 	// 只作用於雙人
-	function addChannelDialog(name: string, channel_name: string, dialog: Dialog): void {
-		let new_chat = produce(all_chat, draft => {
-			const chat = draft.party.find((d) => d.name == name);
-			if (chat == undefined) {
-				console.error(`不存在政黨 ${name}`);
-				return;
-			}
-			const channel = chat.channels.find(c => c.name == channel_name);
-			if (channel == undefined) {
-				console.error(`不存在頻道 ${channel_name}`);
-				return;
-			}
-			channel.dialogs.push(dialog);
-			channel.last_read = dialog.date;
-		});
-		setAllChat(new_chat);
+	function updateLastRead(name: string, time: Date): void {
+		setAllChat(all_chat.updateReadTime(name, time));
 	}
 
-	// 只作用於雙人
-	function updateLastRead(name: string, date: Date): void {
-		let new_chat = produce(all_chat, draft => {
-			let chat = draft.two_people.find((d) => d.name == name);
-			if (chat == undefined) {
-				console.error(`不存在雙人對話 ${name}`);
-				return;
-			}
-			chat!.last_read = date;
-		});
-		setAllChat(new_chat);
-	}
-
-	function updateLastReadChannel(name: string, channel_name: string, date: Date): void {
-		let new_chat = produce(all_chat, draft => {
-			const chat = draft.party.find((d) => d.name == name);
-			if (chat == undefined) {
-				console.error(`不存在政黨 ${name}`);
-				return;
-			}
-			const channel = chat.channels.find(c => c.name == channel_name);
-			if (channel == undefined) {
-				console.error(`不存在頻道 ${channel_name}`);
-				return;
-			}
-			channel.last_read = date;
-		});
-		setAllChat(new_chat);
+	function updateLastReadChannel(name: string, channel_name: string, time: Date): void {
+		setAllChat(all_chat.updateChannelReadTime(name, channel_name, time));
 	}
 
 	return {
 		all_chat,
-		addDialog,
-		addChannelDialog,
+		addMessage,
+		addChannelMessage,
 		updateLastRead,
 		updateLastReadChannel
 	};

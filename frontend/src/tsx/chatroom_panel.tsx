@@ -3,11 +3,12 @@ import '../css/bottom_panel.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { useScrollBottom, useInputValue } from './utils';
+import { Message } from './global_state';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	BottomPanelState,
 	AllChatState,
-	Dialog,
+	IMessage,
 	RoomData,
 	SimpleRoomData,
 	ChannelRoomData,
@@ -22,46 +23,46 @@ const Picker = React.lazy(() => {
 		.then(({ Picker }) => ({ default: Picker }));
 });
 
-type AggDialog = {
+type AggMessage = {
 	who: string,
 	date: Date,
 	contents: string[]
 };
 
-function aggregateDiaglogs(dialogs: Dialog[]): AggDialog[] {
-	if (dialogs.length == 0) {
+function aggregateMessages(messages: IMessage[]): AggMessage[] {
+	if (messages.length == 0) {
 		return [];
 	}
 	let tmp = {
-		who: dialogs[0].who,
-		date: dialogs[0].date,
-		contents: [dialogs[0].content]
+		who: messages[0].sender_name,
+		date: messages[0].time,
+		contents: [messages[0].content]
 	};
-	if (dialogs.length == 1) {
+	if (messages.length == 1) {
 		return [tmp];
 	}
-	const ret: AggDialog[] = [];
+	const ret: AggMessage[] = [];
 	let cur_date = tmp.date;
-	for (let i = 1; i < dialogs.length; i++) {
+	for (let i = 1; i < messages.length; i++) {
 		// 如果作者相同、上下兩則訊息相距不到一分鐘，則在 UI 上合併
-		const dialog = dialogs[i];
-		if (tmp.who == dialog.who && differenceInMinutes(dialog.date, cur_date) < 1) {
-			tmp.contents.push(dialog.content);
+		const message = messages[i];
+		if (tmp.who == message.sender_name && differenceInMinutes(message.time, cur_date) < 1) {
+			tmp.contents.push(message.content);
 		} else {
 			ret.push(tmp);
 			tmp = {
-				who: dialog.who,
-				date: dialog.date,
-				contents: [dialog.content]
+				who: message.sender_name,
+				date: message.time,
+				contents: [message.content]
 			};
 		}
-		cur_date = dialog.date;
+		cur_date = message.time;
 	}
 	ret.push(tmp);
 	return ret;
 }
 
-function DialogShow(props: { content: string }): JSX.Element {
+function MessageShow(props: { content: string }): JSX.Element {
 	if (isEmojis(props.content)) {
 		return <div styleName="emojis">{props.content}</div>;
 	} else if (isImageLink(props.content)) {
@@ -79,19 +80,19 @@ function DialogShow(props: { content: string }): JSX.Element {
 	}
 }
 
-const DialogBlocks = React.memo((props: {dialogs: Dialog[]}): JSX.Element => {
-	const agg_dialogs = aggregateDiaglogs(props.dialogs);
+const MessageBlocks = React.memo((props: {messages: IMessage[]}): JSX.Element => {
+	const agg_messages = aggregateMessages(props.messages);
 	return <>
 	{
 		// XXX: key 要改成能表示時間順序的 id
-		agg_dialogs.map(dialog => <div key={Number(dialog.date)} styleName="dialogBlock">
+		agg_messages.map(message => <div key={Number(message.date)} styleName="messageBlock">
 			<div styleName="meta">
-				<span styleName="who">{dialog.who}</span>
-				<span styleName="date">{relativeDate(dialog.date)}</span>
+				<span styleName="who">{message.who}</span>
+				<span styleName="date">{relativeDate(message.date)}</span>
 			</div>
 			{
-				dialog.contents.map((content, index) => {
-					return <DialogShow content={content} key={index} />;
+				message.contents.map((content, index) => {
+					return <MessageShow content={content} key={index} />;
 				})
 			}
 		</div>)
@@ -186,28 +187,28 @@ function InputBar(props: InputBarProp): JSX.Element {
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
-	const { all_chat, addDialog: add_dialog, updateLastRead: update_last_read } = AllChatState.useContainer();
+	const { all_chat, addMessage, updateLastRead } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
-	const chat = all_chat.two_people.find(c => c.name == props.room.name);
+	const chat = all_chat.direct.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
 	React.useEffect(() => {
 		if (extended && chat!.isUnread()) {
-			update_last_read(props.room.name, new Date());
+			updateLastRead(props.room.name, new Date());
 		}
-	}, [extended, chat, update_last_read, props.room.name]);
+	}, [extended, chat, updateLastRead, props.room.name]);
 
 	if (extended) {
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				add_dialog(props.room.name, {
-					who: '金剛', // TODO: 換成 me
+				addMessage(props.room.name, new Message({
+					sender_name: '金剛', // TODO: 換成 me
 					content: input_props.value,
-					date: now,
-				});
+					time: now,
+				}));
 				setValue('');
 			}
 		}
@@ -221,8 +222,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div ref={scroll_bottom_ref} styleName="dialogs">
-				<DialogBlocks dialogs={chat!.dialogs}/>
+			<div ref={scroll_bottom_ref} styleName="messages">
+				<MessageBlocks messages={chat!.history.toJS()}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
@@ -241,12 +242,12 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const { deleteRoom, changeChannel } = BottomPanelState.useContainer();
-	const { all_chat, addChannelDialog, updateLastReadChannel: updateLastReadChannel } = AllChatState.useContainer();
+	const { all_chat, addChannelMessage, updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
 
-	const chat = all_chat.party.find(c => c.name == props.room.name);
+	const chat = all_chat.group.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
 	const channel = chat!.channels.find(c => c.name == props.room.channel);
 	if (channel == undefined) { console.error(`找不到頻道 ${props.room.channel}`); }
@@ -262,11 +263,12 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				addChannelDialog(props.room.name, props.room.channel, {
-					who: '金剛', // TODO: 換成 me
+				console.log(props.room.channel);
+				addChannelMessage(props.room.name, props.room.channel, new Message({
+					sender_name: '金剛', // TODO: 換成 me
 					content: input_props.value,
-					date: now,
-				});
+					time: now,
+				}));
 				setValue('');
 			}
 		}
@@ -274,14 +276,14 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function ChannelList(): JSX.Element {
 			return <div styleName="channelList">
 				{
-					chat!.channels.map(c => {
+					chat!.channels.valueSeq().map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `channel${is_current ? ' selected' : ''}`;
-						return <div styleName={channel_style} onClick={() => { changeChannel(chat!.name, c.name); }}>
+						return <div styleName={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
 							<span styleName="channelSymbol"># </span>
 							{c.name}
 						</div>;
-					})
+					}).toJS()
 				}
 			</div>;
 		}
@@ -304,8 +306,8 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<ChannelList />
 				</div>
 				<div>
-					<div ref={scroll_bottom_ref} styleName="dialogs">
-						<DialogBlocks dialogs={channel!.dialogs} />
+					<div ref={scroll_bottom_ref} styleName="messages">
+						<MessageBlocks messages={channel!.history.toJS()} />
 					</div>
 					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>

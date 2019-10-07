@@ -48,7 +48,7 @@ table! {
         chat_channel_id -> Int8,
         sender_id -> Int8,
         content -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -57,7 +57,7 @@ table! {
         id -> Int8,
         group_chat_id -> Int8,
         name -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -66,7 +66,7 @@ table! {
         id -> Int8,
         user_id_1 -> Int8,
         user_id_2 -> Int8,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -76,7 +76,7 @@ table! {
         direct_chat_id -> Int8,
         sender_id -> Int8,
         content -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -94,7 +94,7 @@ table! {
         id -> Int8,
         group_chat_id -> Int8,
         member_id -> Int8,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -103,7 +103,7 @@ table! {
         id -> Int8,
         name -> Text,
         upgraded -> Bool,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
