@@ -1,17 +1,42 @@
 import * as React from 'react';
 import '../css/invite_page.css';
 import { UserState } from './global_state';
+import { useInputValue } from './utils';
+import { toast } from 'react-toastify';
+import { extractErrMsg, ajaxOperation } from '../ts/api';
 
 function InvitePage(): JSX.Element {
-	const { user_state } = UserState.useContainer();
-	if (user_state.login) {
+	const { user_state, getLoginState } = UserState.useContainer();
+	const email = useInputValue('').input_props;
+	const invitation = useInputValue('').input_props;
+
+	async function sendInvitation(): Promise<{}> {
+		try {
+			await ajaxOperation.InviteSignup({
+				email: email.value,
+				invitation_words: invitation.value
+			});
+			toast('已送出邀請信');
+			await getLoginState();
+		} catch (err) {
+			toast.error(extractErrMsg(err));
+		}
+		return {};
+	}
+
+	if (user_state.login && user_state.invitation_credit > 0) {
 		return <div styleName="invitePage">
-			{/* TODO: 顯示目前還有幾封邀請信，若沒有邀請信了，不顯示表單 */}
 			<div styleName="inviteForm">
 				<div styleName="counter">您還有 {user_state.invitation_credit} 封邀請信</div>
-				<input styleName="email" type="email" placeholder="受邀者信箱" autoFocus />
-				<textarea styleName="invitation" placeholder="邀請詞（選填）" />
-				<button>寄出邀請信</button>
+				<input {...email} styleName="email" type="email" placeholder="受邀者信箱" autoFocus />
+				<textarea {...invitation} styleName="invitation" placeholder="邀請詞（選填）" />
+				<button onClick={ () => sendInvitation() }>寄出邀請信</button>
+			</div>
+		</div>;
+	} else if (user_state.login && user_state.invitation_credit == 0) {
+		return <div styleName="invitePage">
+			<div styleName="inviteForm">
+				您的邀請信已經用畢
 			</div>
 		</div>;
 	} else {

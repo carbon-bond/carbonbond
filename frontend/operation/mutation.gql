@@ -9,6 +9,10 @@ mutation Logout {
 	logout
 }
 
+mutation InviteSignup($email: String!, $invitation_words: String!) {
+	inviteSignup(email: $email, invitationWords: $invitation_words)
+}
+
 mutation PostArticle(
 	$board_name: String!,
 	$category_name: String!,

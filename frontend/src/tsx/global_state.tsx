@@ -22,7 +22,7 @@ interface LoginData {
 	energy: number
 }
 
-function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function } {
+function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<{}> {
@@ -55,7 +55,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	function setLogout(): void {
 		setUserState({ login: false, fetching: false });
 	}
-	return { user_state, setLogin, setLogout };
+	return { user_state, setLogin, setLogout, getLoginState };
 }
 
 export type SimpleRoomData = {
