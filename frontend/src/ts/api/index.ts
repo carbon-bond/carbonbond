@@ -1,6 +1,9 @@
 import { GraphQLClient } from 'graphql-request';
+import { toast } from 'react-toastify';
 
 import * as GQL from './gql';
+
+type GQLError = { response: { errors: { message: string }[] } };
 
 // eslint-disable-next-line
 async function gqlFetcher(query: string, variables?: Object): Promise<any> {
@@ -8,22 +11,30 @@ async function gqlFetcher(query: string, variables?: Object): Promise<any> {
 	return await client.request(query, variables);
 }
 
-function extractErrMsg(err: { response: { errors: { message: string }[] } } | Error): string {
+function extractErrKey(err: GQLError): string {
 	try {
-		if ('response' in err) {
-			return err.response.errors[0].message;
-		} else {
-			return err.message;
-		}
-	} catch (_e) {
+		return err.response.errors[0].message;
+	} catch {
 		return JSON.stringify(err);
+	}
+}
+
+function matchErrAndShow(err: GQLError | Error): void {
+	if ('response' in err) {
+		// Graphql 回傳的錯誤
+		const msg = extractErrKey(err);
+		toast.error(msg);
+	} else {
+		// 前端的錯誤操作，被直接拋出來
+		toast.error(err.message);
 	}
 }
 
 const ajaxOperation = new GQL.AjaxOperation(gqlFetcher);
 
 export {
-	extractErrMsg,
+	extractErrKey,
+	matchErrAndShow,
 	GQL,
 	ajaxOperation
 };

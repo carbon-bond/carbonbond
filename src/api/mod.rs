@@ -6,7 +6,7 @@ use actix_web::{HttpRequest, HttpResponse};
 use actix_web::web;
 use actix_session::{Session};
 
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, ErrorCode};
 use crate::config;
 
 pub(self) use crate::{Ctx as Context, Context as ContextTrait};
@@ -17,7 +17,7 @@ pub(self) fn i64_to_id(id: i64) -> ID {
 }
 pub(self) fn id_to_i64(id: &ID) -> Fallible<i64> {
     id.parse::<i64>()
-        .or(Err(Error::new_logic(format!("ID 不為整數: {:?}", id), 403)))
+        .or(Err(Error::new_logic(ErrorCode::ParseID)))
 }
 
 mod user;

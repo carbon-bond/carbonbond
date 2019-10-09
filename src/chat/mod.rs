@@ -59,8 +59,8 @@ trait ChatError {
 impl ChatError for custom_error::Error {
     fn to_chat_error(&self) -> chat_proto::Error {
         match self {
-            custom_error::Error::LogicError { msg, key: _ } => chat_proto::Error {
-                reason: msg.to_owned(),
+            custom_error::Error::LogicError { code } => chat_proto::Error {
+                reason: code.to_string(),
             },
             _ => chat_proto::Error {
                 reason: "內部錯誤".to_owned(),

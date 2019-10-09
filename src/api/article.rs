@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use chrono::{DateTime, offset::Utc};
 
 use crate::db::{models as db_models, schema as db_schema};
-use crate::custom_error::{Fallible, Error};
+use crate::custom_error::{Fallible, Error, DataType};
 use crate::user::find_user_by_id;
 use crate::forum;
 
@@ -61,7 +61,7 @@ impl ArticleFields for Article {
         let c = categories::table
             .filter(categories::id.eq(id_to_i64(&self.category_id)?))
             .first::<db_models::Category>(&ex.context().get_pg_conn()?)
-            .map_err(|_| Error::new_logic("找不到分類", 404))?;
+            .map_err(|_| Error::new_not_found(DataType::Category, &self.category_id))?;
         Ok(Category {
             id: i64_to_id(c.id),
             board_id: i64_to_id(c.board_id),
@@ -79,7 +79,7 @@ impl ArticleFields for Article {
         let b = boards::table
             .filter(boards::id.eq(id_to_i64(&self.board_id)?))
             .first::<db_models::Board>(&ex.context().get_pg_conn()?)
-            .map_err(|_| Error::new_logic("找不到看板", 404))?;
+            .map_err(|_| Error::new_not_found(DataType::Board, &self.board_id))?;
         Ok(Board {
             id: i64_to_id(b.id),
             detail: b.detail,

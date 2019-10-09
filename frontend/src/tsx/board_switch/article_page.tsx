@@ -1,17 +1,11 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
-import { ajaxOperation, extractErrMsg } from '../../ts/api';
-import { toast } from 'react-toastify';
+import { ajaxOperation, matchErrAndShow } from '../../ts/api';
 import '../../css/board_switch/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
 import { ArticleHeader, ArticleLine, ArticleFooter } from './article_meta';
-
-async function fetchArticleDetail(id: string): Promise<Article> {
-	let res = await ajaxOperation.ArticleDetail({ id });
-	return res.article;
-}
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
 	let { article, board_name } = props;
@@ -28,18 +22,18 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	const category_name = JSON.parse(props.article.category.body).name;
 
 	function onReplyClick(transfuse: Transfuse): void {
-		if (editor_panel_data) {
+		if (editor_panel_data) { // 有文章在編輯中
 			try {
 				addEdge(article, transfuse);
 			} catch (e) {
-				toast.error(extractErrMsg(e));
+				matchErrAndShow(e);
 			}
-		} else if (board_name && article) {
+		} else { // 發表新文章
 			openEditorPanel({
 				title: genReplyTitle(article.title),
 				board_name,
 				reply_to: { article, transfuse }
-			}).catch(e => toast.error(extractErrMsg(e)));
+			}).catch(e => matchErrAndShow(e));
 		}
 	}
 
@@ -92,11 +86,11 @@ export function ArticlePage(props: Props): JSX.Element {
 
 	React.useEffect(() => {
 		if (typeof article_id == 'string') {
-			fetchArticleDetail(article_id).then(a => {
-				setArticle(a);
+			ajaxOperation.ArticleDetail({ id: article_id }).then(res => {
+				setArticle(res.article);
 				setFetching(false);
 			}).catch(err => {
-				toast.error(extractErrMsg(err));
+				matchErrAndShow(err);
 				setFetching(false);
 			});
 		} else {

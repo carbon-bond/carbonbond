@@ -2,7 +2,7 @@ use juniper_from_schema::graphql_schema_from_file;
 use juniper::ID;
 use regex::RegexSet;
 
-use crate::custom_error::{Fallible, Error};
+use crate::custom_error::{Fallible, Error, ErrorCode};
 use crate::user::{email, signup, login, password};
 use crate::forum;
 use crate::party;
@@ -45,13 +45,13 @@ impl MutationFields for Mutation {
         invitation_words: String,
     ) -> Fallible<bool> {
         match ex.context().get_id() {
-            None => Err(Error::new_logic("尚未登入", 401)),
+            None => Err(Error::new_logic(ErrorCode::NeedLogin)),
             Some(id) => {
                 let conf = CONFIG.get();
                 let set = RegexSet::new(conf.user.email_whitelist.clone()).unwrap();
                 let matches = set.matches(&email);
                 if !matches.matched_any() {
-                    Err(Error::new_logic("不支援的信箱", 403))
+                    Err(Error::new_other(format!("`{}`非許可的信箱", email)))
                 } else {
                     let conn = &ex.context().get_pg_conn()?;
                     let invite_code =
@@ -129,7 +129,7 @@ impl MutationFields for Mutation {
         new_password: String,
     ) -> Fallible<bool> {
         match ex.context().get_id() {
-            None => Err(Error::new_logic("尚未登入", 401)),
+            None => Err(Error::new_logic(ErrorCode::NeedLogin)),
             Some(id) => password::change_password(
                 &ex.context().get_pg_conn()?,
                 id,

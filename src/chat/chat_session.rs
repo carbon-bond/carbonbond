@@ -34,7 +34,7 @@ impl Actor for ChatSession {
 
 impl Handler<api::Message> for ChatSession {
     type Result = ();
-    fn handle(&mut self, _msg: api::Message, ctx: &mut Self::Context) {
+    fn handle(&mut self, _msg: api::Message, _ctx: &mut Self::Context) {
         unimplemented!();
     }
 }

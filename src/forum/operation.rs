@@ -6,7 +6,7 @@ use diesel::prelude::*;
 
 use crate::MAX_ARTICLE_COLUMN;
 use crate::db::{models, schema};
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, DataType};
 
 use super::category_body;
 pub use category_body::{CategoryBody, ColSchema, StringOrI32, ColType, AtomType};
@@ -134,19 +134,13 @@ pub fn get_article_content(
     let category = categories::table
         .filter(categories::id.eq(category_id))
         .first::<models::Category>(conn)
-        .or(Err(Error::new_logic(
-            format!("找不到分類: id={}", category_id),
-            404,
-        )))?;
+        .or(Err(Error::new_not_found(DataType::Category, category_id)))?;
     let c_body = CategoryBody::from_string(&category.body)?;
     use schema::article_contents;
     let content = article_contents::table
         .filter(article_contents::article_id.eq(article_id))
         .first::<models::ArticleContent>(conn)
-        .or(Err(Error::new_logic(
-            format!("找不到內文: article_id={}", article_id),
-            404,
-        )))?;
+        .or(Err(Error::new_not_found(DataType::Content, article_id)))?;
     let res_vec: Vec<String> = c_body
         .structure
         .into_iter()

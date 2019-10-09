@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
 import { RouteComponentProps } from 'react-router';
-import { extractErrMsg, ajaxOperation, GQL } from '../ts/api';
+import { matchErrAndShow, ajaxOperation, GQL } from '../ts/api';
 import { useInputValue } from './utils';
 import '../css/signup_page.css';
 
@@ -24,9 +24,8 @@ export function SignupPage(props: Props): JSX.Element {
 			await ajaxOperation.Signup({ code, name, password });
 			props.history.push('/app/');
 			toast('註冊成功');
-
 		} catch (err) {
-			toast.error(extractErrMsg(err));
+			matchErrAndShow(err);
 		}
 		return {};
 	}

@@ -6,7 +6,7 @@ use crate::db::{
     schema,
     models::{NewUser, User, NewInvitation, Invitation},
 };
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, Fallible, DataType};
 use crate::config::CONFIG;
 
 // 回傳邀請碼
@@ -29,7 +29,7 @@ pub fn create_invitation(
                 .find(id)
                 .first::<User>(conn)
                 .map_err(|e| match e {
-                    DBError::NotFound => Error::new_logic(format!("查無使用者: {}", id), 404),
+                    DBError::NotFound => Error::new_not_found(DataType::User, id),
                     _ => e.into(),
                 })?;
 
@@ -52,7 +52,7 @@ pub fn create_invitation(
                     .execute(conn)?;
                 Ok(invite_code)
             } else {
-                Err(Error::new_logic("邀請點數不足", 403))
+                Err(Error::new_other("邀請額度不足"))
             }
         }
         None => {
@@ -80,7 +80,7 @@ pub fn create_user_by_invitation(
     let invitation = schema::invitations::table
         .filter(schema::invitations::code.eq(code))
         .first::<Invitation>(conn)
-        .or(Err(Error::new_logic(format!("查無邀請碼: {}", code), 404)))?;
+        .or(Err(Error::new_not_found(DataType::InviteCode, code)))?;
     let mut invitation_credit = 0;
     let config = CONFIG.get();
     if invitation.inviter_name == "" {

@@ -31,7 +31,7 @@ pub fn change_password(
                 .execute(conn)?;
             Ok(true)
         }
-        false => Err(Error::new_logic("密碼錯誤", 401)),
+        false => Err(Error::new_other("密碼錯誤")),
     }
 }
 
@@ -58,9 +58,9 @@ pub fn reset_password(conn: &PgConnection, code: String, new_password: String) -
     let reset_password = reset_password::table
         .filter(reset_password::code.eq(code.to_owned()))
         .first::<db_models::ResetPassword>(conn)
-        .or(Err(Error::new_logic(format!("查無重設密碼代碼"), 404)))?;
+        .or(Err(Error::new_other("查無重設密碼代碼")))?;
     match reset_password.is_used {
-        true => Err(Error::new_logic("代碼已用過", 403)),
+        true => Err(Error::new_other("代碼已用過")),
         false => {
             let salt = rand::thread_rng().gen::<[u8; 16]>();
             let hash = argon2::hash_raw(new_password.as_bytes(), &salt, &argon2::Config::default())

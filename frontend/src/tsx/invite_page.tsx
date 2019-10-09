@@ -3,7 +3,7 @@ import '../css/invite_page.css';
 import { UserState } from './global_state';
 import { useInputValue } from './utils';
 import { toast } from 'react-toastify';
-import { extractErrMsg, ajaxOperation } from '../ts/api';
+import { matchErrAndShow, ajaxOperation } from '../ts/api';
 
 function InvitePage(): JSX.Element {
 	const { user_state, getLoginState } = UserState.useContainer();
@@ -19,7 +19,7 @@ function InvitePage(): JSX.Element {
 			toast('已送出邀請信');
 			await getLoginState();
 		} catch (err) {
-			toast.error(extractErrMsg(err));
+			matchErrAndShow(err);
 		}
 		return {};
 	}
