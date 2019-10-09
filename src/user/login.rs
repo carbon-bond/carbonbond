@@ -21,6 +21,6 @@ pub fn login(conn: &PgConnection, name: &str, password: &str) -> Fallible<User> 
 
     match equal {
         true => Ok(user),
-        false => Err(Error::new_bad_op("密碼錯誤")),
+        false => Err(Error::new_other("密碼錯誤")),
     }
 }

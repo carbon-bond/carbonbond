@@ -75,7 +75,7 @@ export function ArticlePage(props: Props): JSX.Element {
 				setArticle(res.article);
 				setFetching(false);
 			}).catch(err => {
-				matchErrAndShow(err, ['NOT_FOUND', '找不到文章']);
+				matchErrAndShow(err);
 				setFetching(false);
 			});
 		} else {

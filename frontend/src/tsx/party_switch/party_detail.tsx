@@ -33,7 +33,7 @@ export function PartyDetail(props: Props): JSX.Element {
 				setParty(p);
 				setFetching(false);
 			}).catch(err => {
-				matchErrAndShow(err, ['NOT_FOUND', '找不到政黨']);
+				matchErrAndShow(err);
 			});
 		} else {
 			setFetching(false);

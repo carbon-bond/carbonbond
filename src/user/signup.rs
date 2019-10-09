@@ -52,7 +52,7 @@ pub fn create_invitation(
                     .execute(conn)?;
                 Ok(invite_code)
             } else {
-                Err(Error::new_bad_op("邀請額度不足"))
+                Err(Error::new_other("邀請額度不足"))
             }
         }
         None => {

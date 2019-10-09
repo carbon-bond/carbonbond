@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize, Deserializer, Serializer};
 use serde::de::{Visitor, Error};
 use regex::Regex;
 
-use crate::custom_error::{Error as CE, Fallible, ErrorKey};
+use crate::custom_error::{Error as CE, Fallible, ErrorCode};
 use crate::MAX_ARTICLE_COLUMN;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -120,7 +120,7 @@ impl ColSchema {
         match self.col_type {
             ColType::Atom(AtomType::Line) => {
                 if content.contains('\n') {
-                    Err(CE::new_bad_op("LINE 型別中含有換行"))
+                    Err(CE::new_other("LINE 型別中含有換行"))
                 } else {
                     Ok(StringOrI32::Str(content))
                 }
@@ -133,7 +133,7 @@ impl ColSchema {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
-                    Err(CE::new_bad_op("Int 型別解析失敗"))
+                    Err(CE::new_other("Int 型別解析失敗"))
                 }
             }
             ColType::Atom(AtomType::Rating(max)) => {
@@ -142,13 +142,13 @@ impl ColSchema {
                     if r <= max && r >= 1 {
                         Ok(StringOrI32::I32(r as i32))
                     } else {
-                        Err(CE::new_bad_op(format!(
+                        Err(CE::new_other(format!(
                             "Rating 型別超出範圍：{}不屬於1~{}",
                             r, max
                         )))
                     }
                 } else {
-                    Err(CE::new_bad_op("Rating 型別解析失敗"))
+                    Err(CE::new_other("Rating 型別解析失敗"))
                 }
             }
             ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
@@ -172,9 +172,9 @@ impl CategoryBody {
         serde_json::to_string(self).unwrap()
     }
     pub fn from_string(s: &str) -> Fallible<CategoryBody> {
-        let t = serde_json::from_str::<Self>(s).or(Err(CE::new_logic(ErrorKey::ParsingJson)))?;
+        let t = serde_json::from_str::<Self>(s).or(Err(CE::new_logic(ErrorCode::ParsingJson)))?;
         if t.structure.len() > MAX_ARTICLE_COLUMN {
-            Err(CE::new_bad_op("分類結構長度超過上限"))
+            Err(CE::new_other("分類結構長度超過上限"))
         } else {
             Ok(t)
         }

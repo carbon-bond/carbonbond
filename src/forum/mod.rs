@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 
 use crate::db::{models, schema};
-use crate::custom_error::{Error, Fallible, ErrorKey, DataType};
+use crate::custom_error::{Error, Fallible, ErrorCode, DataType};
 use crate::Context;
 use crate::party;
 
@@ -13,16 +13,16 @@ pub mod operation;
 /// 回傳剛創的板的 id
 pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallible<i64> {
     // TODO: 撞名檢查，權限檢查，等等
-    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
+    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
     ctx.use_pg_conn(|conn| {
         check_board_name_valid(&conn, name)?;
         let party = party::get_party_by_name(&conn, party_name)?;
         if party.board_id.is_some() {
-            Err(Error::new_bad_op("並非流亡政黨").into())
+            Err(Error::new_other("並非流亡政黨").into())
         } else {
             let position = party::get_member_position(&conn, user_id, party.id)?;
             if position != 3 {
-                Err(Error::new_logic(ErrorKey::PermissionDenied).into())
+                Err(Error::new_logic(ErrorCode::PermissionDenied).into())
             } else {
                 operation::create_board(&conn, party.id, name)
             }
@@ -47,7 +47,7 @@ pub fn create_article<C: Context>(
     title: &str,
     content: Vec<String>,
 ) -> Fallible<i64> {
-    let author_id = ctx.get_id().ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
+    let author_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
     let (board, category) = ctx.use_pg_conn(|conn| -> Fallible<_> {
         let b = get_board_by_name(&conn, &board_name)?;
         let c = get_category(&conn, category_name, b.id)?;
@@ -55,12 +55,12 @@ pub fn create_article<C: Context>(
     })?;
     let c_body = CategoryBody::from_string(&category.body)?;
     if !c_body.rootable && reply_to.len() == 0 {
-        return Err(Error::new_bad_op("分類不可為根").into());
+        return Err(Error::new_other("分類不可為根").into());
     }
     let mut node_ids = Vec::<i64>::with_capacity(reply_to.len());
     for &(id, transfuse) in reply_to {
         if !c_body.transfusable && transfuse != 0 {
-            return Err(Error::new_bad_op("分類不可輸能").into());
+            return Err(Error::new_other("分類不可輸能").into());
         }
         node_ids.push(id);
     }
@@ -68,15 +68,15 @@ pub fn create_article<C: Context>(
     let mut root_id: Option<i64> = None;
     for (article, category_of_article) in related_articles.iter() {
         if article.board_id != board.id {
-            return Err(Error::new_bad_op("不可回應他板文章").into());
+            return Err(Error::new_other("不可回應他板文章").into());
         } else if root_id.is_none() {
             root_id = Some(article.root_id);
         } else if root_id.unwrap() != article.root_id {
-            return Err(Error::new_bad_op("不可回應不同主題文章").into());
+            return Err(Error::new_other("不可回應不同主題文章").into());
         }
 
         if !c_body.can_attach_to(&category_of_article.category_name) {
-            return Err(Error::new_bad_op(format!(
+            return Err(Error::new_other(format!(
                 "分類`{}`不可回應分類`{}`",
                 c_body.name, category_of_article.category_name
             ))
@@ -148,7 +148,7 @@ pub fn parse_content(
     content: Vec<String>,
 ) -> Fallible<Vec<StringOrI32>> {
     if content.len() != col_struct.len() {
-        Err(Error::new_bad_op("文章結構長度不符合分類規範").into())
+        Err(Error::new_other("文章結構長度不符合分類規範").into())
     } else {
         let mut res: Vec<StringOrI32> = vec![];
         for (i, c) in content.into_iter().enumerate() {
@@ -160,14 +160,14 @@ pub fn parse_content(
 
 pub fn check_board_name_valid(conn: &PgConnection, name: &str) -> Fallible<()> {
     if name.len() == 0 {
-        Err(Error::new_bad_op("板名長度不可為零").into())
+        Err(Error::new_other("板名長度不可為零").into())
     } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
     {
         // TODO: 更多不合法字元
-        Err(Error::new_bad_op("看板名帶有不合法字元").into())
+        Err(Error::new_other("看板名帶有不合法字元").into())
     } else {
         if get_board_by_name(&conn, name).is_ok() {
-            Err(Error::new_bad_op("與其它看板重名").into())
+            Err(Error::new_other("與其它看板重名").into())
         } else {
             Ok(())
         }

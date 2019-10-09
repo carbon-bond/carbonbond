@@ -4,13 +4,13 @@ use diesel::result::Error as DBError;
 
 use crate::forum;
 use crate::db::{models, schema};
-use crate::custom_error::{Error, Fallible, ErrorKey, DataType};
+use crate::custom_error::{Error, Fallible, ErrorCode, DataType};
 use crate::Context;
 
 /// 回傳剛創的政黨 id
 pub fn create_party<C: Context>(ctx: &C, board_name: Option<&str>, name: &str) -> Fallible<i64> {
     // TODO: 鍵能之類的檢查
-    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
+    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
     ctx.use_pg_conn(|conn| {
         let board_id = match board_name {
             Some(name) => Some(forum::get_board_by_name(&conn, name)?.id),
@@ -89,13 +89,13 @@ pub fn get_member_position(conn: &PgConnection, user_id: i64, party_id: i64) -> 
 
 pub fn check_party_name_valid(conn: &PgConnection, name: &str) -> Fallible<()> {
     if name.len() == 0 {
-        Err(Error::new_bad_op("黨名長度不可為零").into())
+        Err(Error::new_other("黨名長度不可為零").into())
     } else if name.contains(' ') || name.contains('\n') || name.contains('"') || name.contains('\'')
     {
-        Err(Error::new_bad_op("政黨名帶有不合法字元").into())
+        Err(Error::new_other("政黨名帶有不合法字元").into())
     } else {
         if get_party_by_name(&conn, name).is_ok() {
-            Err(Error::new_bad_op("與其它政黨重名").into())
+            Err(Error::new_other("與其它政黨重名").into())
         } else {
             Ok(())
         }

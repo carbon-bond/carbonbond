@@ -23,7 +23,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			setLogin(name);
 			toast('登入成功');
 		} catch (err) {
-			matchErrAndShow(err, ['INVALID_ARGUMENT', '密碼錯誤'], ['NOT_FOUND', '無此帳號']);
+			matchErrAndShow(err);
 		}
 		return {};
 	}

@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use diesel::result::Error as DBError;
 
 use crate::db::{models as db_models, schema as db_schema};
-use crate::custom_error::{Fallible, Error, ErrorKey, DataType};
+use crate::custom_error::{Fallible, Error, ErrorCode, DataType};
 use crate::party;
 use crate::forum;
 
@@ -166,7 +166,7 @@ impl QueryFields for Query {
         let user_id = ex
             .context()
             .get_id()
-            .ok_or(Error::new_logic(ErrorKey::NeedLogin))?;
+            .ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
         // TODO 用 join?
         use db_schema::party_members;
         let conn = ex.context().get_pg_conn()?;
@@ -228,7 +228,7 @@ impl QueryFields for Query {
         let category = forum::get_category(&ex.context().get_pg_conn()?, &category_name, board.id)?;
         let c_body = forum::CategoryBody::from_string(&category.body).unwrap();
         if c_body.structure.len() != content.len() {
-            Err(Error::new_bad_op("文章結構長度不符合分類規範"))
+            Err(Error::new_other("文章結構長度不符合分類規範"))
         } else {
             Ok(content
                 .into_iter()

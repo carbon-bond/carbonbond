@@ -14,29 +14,18 @@ async function gqlFetcher(query: string, variables?: Object): Promise<any> {
 function extractErrKey(err: GQLError): string {
 	try {
 		return err.response.errors[0].message;
-	} catch (_e) {
+	} catch {
 		return JSON.stringify(err);
 	}
 }
 
-function matchErrAndShow(err: GQLError | Error, ...map: [string, string][]): void {
+function matchErrAndShow(err: GQLError | Error): void {
 	if ('response' in err) {
-		let cur_key = extractErrKey(err);
-		let match = cur_key.match(/^BAD_OPERATION\((.+)\)$/);
-		if (match) {
-			// 直接把訊息打印出來
-			toast.error(`錯誤操作：${match[1]}`);
-			return;
-		}
-		map.push(['NEED_LOGIN', '尚未登入']);
-		for (let [key, msg] of map) {
-			if (cur_key.startsWith(key)) {
-				toast.error(msg);
-				return;
-			}
-		}
-		toast.error('內部錯誤');
+		// Graphql 回傳的錯誤
+		const msg = extractErrKey(err);
+		toast.error(msg);
 	} else {
+		// 前端的錯誤操作，被直接拋出來
 		toast.error(err.message);
 	}
 }

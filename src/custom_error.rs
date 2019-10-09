@@ -4,42 +4,42 @@ use juniper::{FieldError, Value, IntoFieldError};
 
 #[derive(Clone, Display, Debug)]
 pub enum DataType {
-    #[display(fmt = "CATEGORY")]
+    #[display(fmt = "分類")]
     Category,
-    #[display(fmt = "CONTENT")]
+    #[display(fmt = "內容")]
     Content,
-    #[display(fmt = "BOARD")]
+    #[display(fmt = "看板")]
     Board,
-    #[display(fmt = "ARTICLE")]
+    #[display(fmt = "文章")]
     Article,
-    #[display(fmt = "PARTY")]
+    #[display(fmt = "政黨")]
     Party,
-    #[display(fmt = "USER")]
+    #[display(fmt = "使用者")]
     User,
-    #[display(fmt = "INVITE_CODE")]
+    #[display(fmt = "邀請碼")]
     InviteCode,
 }
 
 #[derive(Clone, Display, Debug)]
-pub enum ErrorKey {
-    #[display(fmt = "INTERNAL")]
+pub enum ErrorCode {
+    #[display(fmt = "內部錯誤")]
     Internal,
-    #[display(fmt = "NEED_LOGIN")]
+    #[display(fmt = "尚未登入")]
     NeedLogin,
-    #[display(fmt = "PERMISSION_DENIED")]
+    #[display(fmt = "權限不足")]
     PermissionDenied,
-    #[display(fmt = "NOT_FOUND({}, {})", "_0", "_1")]
+    #[display(fmt = "找不到{}： {}", "_0", "_1")]
     NotFound(DataType, String),
-    #[display(fmt = "PARSE_ID")]
+    #[display(fmt = "ID 解析錯誤")]
     ParseID,
-    #[display(fmt = "BAD_OPERATION({})", "_0")]
-    BadOperation(String),
-    #[display(fmt = "PARSING_JSON")]
+    #[display(fmt = "JSON 解析錯誤")]
     ParsingJson,
+    #[display(fmt = "{}", "_0")]
+    Other(String),
 }
 
-fn build_field_err(key: ErrorKey) -> FieldError {
-    FieldError::new(key, Value::null())
+fn build_field_err(code: ErrorCode) -> FieldError {
+    FieldError::new(code, Value::null())
 }
 
 #[derive(Debug)]
@@ -47,7 +47,7 @@ pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
     OperationError { msg: String },
     /// 此錯誤代表應拋給前端使用者的訊息
-    LogicError { key: ErrorKey },
+    LogicError { code: ErrorCode },
     /// 此錯誤代表其它無法預期的錯誤
     InternalError {
         msg: Option<String>,
@@ -61,16 +61,16 @@ impl Error {
             msg: msg.as_ref().to_owned(),
         }
     }
-    pub fn new_bad_op<S: AsRef<str>>(msg: S) -> Error {
+    pub fn new_other<S: AsRef<str>>(msg: S) -> Error {
         Error::LogicError {
-            key: ErrorKey::BadOperation(msg.as_ref().to_owned()),
+            code: ErrorCode::Other(msg.as_ref().to_owned()),
         }
     }
-    pub fn new_logic(key: ErrorKey) -> Error {
-        Error::LogicError { key }
+    pub fn new_logic(code: ErrorCode) -> Error {
+        Error::LogicError { code }
     }
     pub fn new_not_found<S: std::fmt::Debug>(err_type: DataType, target: S) -> Error {
-        Error::new_logic(ErrorKey::NotFound(err_type, format!("{:?}", target)))
+        Error::new_logic(ErrorCode::NotFound(err_type, format!("{:?}", target)))
     }
     /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
@@ -94,7 +94,7 @@ impl Error {
     pub fn add_msg<S: AsRef<str>>(self, more_msg: S) -> Error {
         let more_msg = more_msg.as_ref().to_owned();
         match self {
-            Error::LogicError { key } => Error::new_logic(key),
+            Error::LogicError { code } => Error::new_logic(code),
             Error::OperationError { msg } => Error::new_op(format!("{}\n{}", more_msg, msg)),
             Error::InternalError { msg, source } => {
                 let new_msg = if let Some(msg) = msg {
@@ -115,7 +115,7 @@ use std::fmt;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::LogicError { key } => write!(f, "邏輯錯誤，錯誤種類：{}", key),
+            Error::LogicError { code } => write!(f, "邏輯錯誤，錯誤種類：{}", code),
             Error::OperationError { msg } => write!(f, "操作錯誤：{}", msg),
             Error::InternalError { msg, source } => {
                 write!(f, "內部錯誤")?;
@@ -134,8 +134,8 @@ impl fmt::Display for Error {
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::LogicError { key } => build_field_err(key),
-            _ => build_field_err(ErrorKey::Internal),
+            Error::LogicError { code } => build_field_err(code),
+            _ => build_field_err(ErrorCode::Internal),
         }
     }
 }

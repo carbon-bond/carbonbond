@@ -6,7 +6,7 @@ use actix_web::{HttpRequest, HttpResponse};
 use actix_web::web;
 use actix_session::{Session};
 
-use crate::custom_error::{Error, Fallible, ErrorKey};
+use crate::custom_error::{Error, Fallible, ErrorCode};
 
 pub(self) use crate::{Ctx as Context, Context as ContextTrait};
 impl juniper::Context for Context {}
@@ -16,7 +16,7 @@ pub(self) fn i64_to_id(id: i64) -> ID {
 }
 pub(self) fn id_to_i64(id: &ID) -> Fallible<i64> {
     id.parse::<i64>()
-        .or(Err(Error::new_logic(ErrorKey::ParseID)))
+        .or(Err(Error::new_logic(ErrorCode::ParseID)))
 }
 
 mod user;
