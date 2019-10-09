@@ -5,7 +5,7 @@
     width: var(--room-width);
 }
 
-.dialogs {
+.messages {
     width: var(--room-width);
     height: 320px;
     padding: 4px;
@@ -49,7 +49,7 @@
     }
 }
 /* 在 chatContent 之中 */
-.dialogBlock {
+.messageBlock {
     & .meta {
         & .who {
             font-weight: bold;
@@ -133,6 +133,7 @@
                 font-size: 15px;
                 padding-top: 6px;
                 padding-bottom: 6px;
+                background-color: var(--main-color);
                 & .channelControl {
                     display: flex;
                     flex-direction: row;

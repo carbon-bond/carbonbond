@@ -1,5 +1,19 @@
 query Me {
-	me { name }
+	me {
+		name,
+		energy,
+		invitationCredit
+	}
+}
+
+query Invitation($code: ID!) {
+	invitation(code: $code) {
+		code,
+		inviterName,
+		inviteeEmail,
+		words,
+		isUsed
+	}
 }
 
 query CategoriesOfBoard($board_name: String!) {
@@ -27,6 +41,8 @@ fragment ArticleMeta on Article {
 	author { userName }
 	energy
 	createTime
+	content
+	board { boardName }
 }
 
 query ArticleList($board_name: String!, $page_size: Int!, $offset: Int!, $show_hidden: Boolean) {

@@ -9,20 +9,21 @@ import {
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css?global';
+import 'material-design-icons/iconfont/material-icons.css?global';
 import 'normalize.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
 import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
 import { MainContent } from './main_content';
-import { RegisterPage } from './register_page';
+import { SignupPage } from './signup_page';
+import { InvitePage } from './invite_page';
 import { PartySwitch } from './party_switch';
 import { BoardSwitch } from './board_switch';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { ArticlePage } from './board_switch/article_page';
-import { ChatSocket } from '../ts/chat_socket';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -33,7 +34,10 @@ function App(): JSX.Element {
 		return <div className="mainBody" ref={ref => setEmitter(ref)}>
 			<Switch>
 				<Route path="/app/register/:invite_code" render={props =>
-					<RegisterPage {...props} />
+					<SignupPage {...props} />
+				} />
+				<Route path="/app/invite" render={() =>
+					<InvitePage />
 				} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
@@ -85,6 +89,11 @@ function App(): JSX.Element {
 	);
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+declare global {
+    interface Window { chat_socket: ChatSocket; }
+}
 
-const _ = new ChatSocket();
+import { ChatSocket } from '../ts/chat_socket';
+window.chat_socket = new ChatSocket(1);
+
+ReactDOM.render(<App />, document.getElementById('root'));

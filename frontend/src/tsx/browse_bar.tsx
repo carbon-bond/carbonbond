@@ -35,7 +35,7 @@ export function BrowseBar(): JSX.Element {
 			setHotBoards(boards);
 			setFetching(false);
 		}).catch((err => {
-			matchErrAndShow(err); // 熱門板應該不會有什麼可預期的錯誤
+			matchErrAndShow(err);
 			setFetching(false);
 		}));
 	}, []);

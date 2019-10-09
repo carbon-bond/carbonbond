@@ -44,6 +44,22 @@ pub struct NewInvitation<'a> {
 }
 
 #[derive(Queryable)]
+pub struct ResetPassword {
+    pub id: i64,
+    pub code: String,
+    pub user_id: i64,
+    pub create_time: DateTime<Utc>,
+    pub is_used: bool,
+}
+
+#[derive(Insertable)]
+#[table_name = "reset_password"]
+pub struct NewResetPassword<'a> {
+    pub code: &'a str,
+    pub user_id: i64,
+}
+
+#[derive(Queryable)]
 pub struct Party {
     pub id: i64,
     pub board_id: Option<i64>,

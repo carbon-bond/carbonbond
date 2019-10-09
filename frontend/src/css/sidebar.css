@@ -1,6 +1,10 @@
+:root {
+    --menubar-width: 56px;
+}
+
 .menubar {
     background-color: var(--bar-color);
-    width: 56px;
+    width: var(--menubar-width);
     border-right-width: 1px;
     border-right-color: #DDDDDD;
     border-right-style: solid;
@@ -28,8 +32,17 @@
         }
     }
 }
+
+@media only screen and (max-width: 1200px) {
+    .sidebar {
+        left: var(--menubar-width);
+        position: fixed;
+    }
+}
+
 .sidebar {
     background-color: var(--left-main-color);
+    z-index: 100;
     width: 300px;
     border-right-width: 1px;
     border-right-color: #DDDDDD;

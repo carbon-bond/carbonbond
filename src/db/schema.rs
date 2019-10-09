@@ -48,7 +48,7 @@ table! {
         chat_channel_id -> Int8,
         sender_id -> Int8,
         content -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -57,7 +57,7 @@ table! {
         id -> Int8,
         group_chat_id -> Int8,
         name -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -66,7 +66,7 @@ table! {
         id -> Int8,
         user_id_1 -> Int8,
         user_id_2 -> Int8,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -76,7 +76,7 @@ table! {
         direct_chat_id -> Int8,
         sender_id -> Int8,
         content -> Text,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -94,7 +94,7 @@ table! {
         id -> Int8,
         group_chat_id -> Int8,
         member_id -> Int8,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -103,7 +103,7 @@ table! {
         id -> Int8,
         name -> Text,
         upgraded -> Bool,
-        create_time -> Timestamp,
+        create_time -> Timestamptz,
     }
 }
 
@@ -143,6 +143,16 @@ table! {
 }
 
 table! {
+    reset_password (id) {
+        id -> Int8,
+        code -> Varchar,
+        user_id -> Int8,
+        create_time -> Timestamptz,
+        is_used -> Bool,
+    }
+}
+
+table! {
     users (id) {
         id -> Int8,
         name -> Text,
@@ -171,6 +181,7 @@ joinable!(parties -> users (chairman_id));
 joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
+joinable!(reset_password -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     article_contents,
@@ -187,5 +198,6 @@ allow_tables_to_appear_in_same_query!(
     invitations,
     parties,
     party_members,
+    reset_password,
     users,
 );

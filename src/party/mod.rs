@@ -63,9 +63,9 @@ fn add_party_member(
 }
 
 pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Party> {
-    use schema::parties::dsl;
-    dsl::parties
-        .filter(dsl::party_name.eq(name))
+    use schema::parties;
+    parties::table
+        .filter(parties::party_name.eq(name))
         .first::<models::Party>(conn)
         .map_err(|e| match e {
             DBError::NotFound => Error::new_not_found(DataType::Party, name),
@@ -74,10 +74,10 @@ pub fn get_party_by_name(conn: &PgConnection, name: &str) -> Fallible<models::Pa
 }
 
 pub fn get_member_position(conn: &PgConnection, user_id: i64, party_id: i64) -> Fallible<i16> {
-    use schema::party_members::dsl;
-    let member = dsl::party_members
-        .filter(dsl::party_id.eq(party_id))
-        .filter(dsl::user_id.eq(user_id))
+    use schema::party_members;
+    let member = party_members::table
+        .filter(party_members::party_id.eq(party_id))
+        .filter(party_members::user_id.eq(user_id))
         .first::<models::PartyMember>(conn);
 
     match member {

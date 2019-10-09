@@ -7,6 +7,7 @@ use actix_web::web;
 use actix_session::{Session};
 
 use crate::custom_error::{Error, Fallible, ErrorCode};
+use crate::config;
 
 pub(self) use crate::{Ctx as Context, Context as ContextTrait};
 impl juniper::Context for Context {}
@@ -51,12 +52,20 @@ mod simple_types {
     graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Reply, Me]);
 
     pub struct Me {
-        pub name: Option<String>,
+        pub name: String,
+        pub energy: i32,
+        pub invitation_credit: i32,
     }
 
     impl MeFields for Me {
-        fn field_name(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&Option<String>> {
+        fn field_name(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
             Ok(&self.name)
+        }
+        fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+            Ok(&self.energy)
+        }
+        fn field_invitation_credit(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
+            Ok(&self.invitation_credit)
         }
     }
 }
@@ -75,7 +84,10 @@ pub fn api(gql: web::Json<GraphQLRequest>, session: Session) -> HttpResponse {
 }
 
 pub fn graphiql(_req: HttpRequest) -> HttpResponse {
-    let html = graphiql_source("http://localhost:8080/api");
+    let conf = config::CONFIG.get();
+    let url = format!("http://{}:{}/api", &conf.server.address, &conf.server.port);
+
+    let html = graphiql_source(&url);
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(html)

@@ -1,28 +1,46 @@
 import { chat_proto } from './protobuf/chat_proto.js';
 
 const {
-	ClientSendMeta,
-	Direction
+	ClientSendData,
 } = chat_proto;
 
 class ChatSocket {
 	socket: WebSocket;
-	constructor() {
+	id: number;
+	opened: Promise<void>;
+	constructor(id: number) {
 		const url = `ws://${window.location.hostname}:${window.location.port}/ws`;
+		this.id = id;
 		this.socket = new WebSocket(url);
-		this.socket.onopen = () => {
-			this.socket.send('hi');
-			const meta = ClientSendMeta.create({
-				id: 2,
-				direction: Direction.REQUEST,
-				type: ClientSendMeta.Type.SEND
-			});
-			const buffer = ClientSendMeta.encode(meta).finish();
-			this.socket.send(buffer);
-		};
-		this.socket.onmessage = (event) => {
-			console.log(`from server: ${event.data}`);
-		};
+		this.opened = new Promise((resolve, reject) => {
+			console.log('connecting');
+			this.socket.onopen = () => {
+				const data = ClientSendData.create({
+					id: 0,
+					recentChat: {
+						beforeTime: (new Date()).getTime(),
+						number: 20
+					}
+				});
+				const buf = ClientSendData.encodeDelimited(data).finish();
+				this.socket.send(buf);
+				resolve();
+			};
+			this.socket.onerror = function (err) {
+				console.error('chat socket 連線失敗：');
+				console.error(err);
+				reject(err);
+			};
+			this.socket.binaryType = 'arraybuffer';
+		});
+	}
+	setHandler(onmessage: (this: WebSocket, ev: MessageEvent) => void): void {
+		this.socket.onmessage = onmessage;
+	}
+	send(buf: Uint8Array): void {
+		this.opened.then(() => {
+			this.socket.send(buf);
+		});
 	}
 }
 

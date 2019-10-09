@@ -1,8 +1,16 @@
 mutation Login($name: String!, $password: String!) {
-	login(name: $name, password: $password)
+	login(name: $name, password: $password) {
+		name,
+		energy,
+		invitationCredit
+	}
 }
 mutation Logout {
 	logout
+}
+
+mutation InviteSignup($email: String!, $invitation_words: String!) {
+	inviteSignup(email: $email, invitationWords: $invitation_words)
 }
 
 mutation PostArticle(
@@ -27,4 +35,8 @@ mutation CreateParty($party_name: String!, $board_name: String) {
 
 mutation CreateBoard($party_name: String!, $board_name: String!) {
 	createBoard(partyName: $party_name, boardName: $board_name)
+}
+
+mutation Signup($code: String!, $name: String!, $password: String!) {
+	signupByInvitation(code: $code, name: $name, password: $password)
 }

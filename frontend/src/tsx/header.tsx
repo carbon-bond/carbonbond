@@ -18,9 +18,13 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(name: string, password: string): Promise<{}> {
 		try {
-			await ajaxOperation.Login({ name, password });
+			const data = await ajaxOperation.Login({ name, password });
 			setLogining(false);
-			setLogin(name);
+			setLogin({
+				user_name: data.login.name,
+				energy: data.login.energy,
+				invitation_credit: data.login.invitationCredit
+			});
 			toast('登入成功');
 		} catch (err) {
 			matchErrAndShow(err);
@@ -72,7 +76,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="feature">🏯 我的個板</div>
 					<div styleName="feature">📜 我的卷宗</div>
 					<div styleName="feature" onClick={ () => props.history.push('/app/party') }>👥 我的政黨</div>
-					<div styleName="feature">🖅 寄發邀請信</div>
+					<div styleName="feature" onClick={ () => props.history.push('/app/invite') }>🖅 寄發邀請信</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
@@ -92,7 +96,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div ref={ref} styleName="wrap">
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
 						<div styleName="image">💂️</div>
-						<div styleName="userName">{user_state.user_id}</div>
+						<div styleName="userName">{user_state.user_name}</div>
 						<div styleName="energy">⚡ 275</div>
 					</div>
 					<Dropdown />
@@ -107,18 +111,19 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
-			<div styleName="leftSet">
-				<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
-					<img src="/img/icon.png" alt="" />
-					碳鍵
+			<div styleName="container">
+				<div styleName="leftSet">
+					<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
+						<img src="/img/icon_with_text.png" alt="" />
+					</div>
+					<div styleName="location">全站熱門</div>
+					<div styleName="searchPart" contentEditable={true} placeholder="搜尋全站">
+					</div>
 				</div>
-				<div styleName="location">全站熱門</div>
-			</div>
-			<div styleName="middleSet">
-				<input type="text" placeholder="🔍 搜尋全站" />
-			</div>
-			<div styleName="rightSet">
-				{ UserStatus() }
+
+				<div styleName="rightSet">
+					{ UserStatus() }
+				</div>
 			</div>
 		</div>
 	);
