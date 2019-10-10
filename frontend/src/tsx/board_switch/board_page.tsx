@@ -18,9 +18,9 @@ type Props = RouteComponentProps<{ board_name: string }>;
 async function fetchArticles(
 	board_name: string,
 	page_size: number,
-	offset: number
+	before: string | null
 ): Promise<ArticleMeta[]> {
-	let res = await ajaxOperation.ArticleList({ board_name, page_size, offset });
+	let res = await ajaxOperation.ArticleList({ board_name, page_size, before, show_hidden: false });
 	return res.articleList;
 }
 
@@ -30,7 +30,7 @@ export function BoardPage(props: Props): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
 	React.useEffect(() => {
-		fetchArticles(board_name, PAGE_SIZE, 0).then(more_articles => {
+		fetchArticles(board_name, PAGE_SIZE, null).then(more_articles => {
 			console.log(more_articles);
 			setArticles(more_articles);
 		});
@@ -40,8 +40,8 @@ export function BoardPage(props: Props): JSX.Element {
 		// 第一次載入結束前不要動作
 		if (articles.length > 0) {
 			console.log('Touch End');
-			const length = articles.length;
-			fetchArticles(board_name, PAGE_SIZE, length).then(more_articles => {
+			const before = articles.slice(-1)[0].id;
+			fetchArticles(board_name, PAGE_SIZE, before).then(more_articles => {
 				// TODO: 載入到最早的文章就停
 				if (more_articles.length > 0) {
 					console.log(more_articles);

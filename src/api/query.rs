@@ -108,7 +108,7 @@ impl QueryFields for Query {
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Article, juniper_from_schema::Walked>,
         board_name: String,
-        offset: i32,
+        before: Option<ID>,
         page_size: i32,
         show_hidden: Option<bool>,
     ) -> Fallible<Vec<Article>> {
@@ -124,9 +124,12 @@ impl QueryFields for Query {
             query = query.filter(articles::show_in_list.eq(true));
         }
 
+        if let Some(before_id) = before {
+            query = query.filter(articles::id.lt(id_to_i64(&before_id)?));
+        }
+
         let article_vec = query
-            .order(articles::create_time.asc())
-            .offset(offset as i64)
+            .order(articles::create_time.desc())
             .limit(page_size as i64)
             .load::<db_models::Article>(&conn)?;
 
