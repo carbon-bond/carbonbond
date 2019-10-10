@@ -2,7 +2,6 @@ import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
 import { ajaxOperation } from '../ts/api';
-import { produce } from 'immer';
 import { Record, List, Map } from 'immutable';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
@@ -89,40 +88,36 @@ function useBottomPanelState(): {
 	changeChannel: Function,
 	deleteRoom: Function,
 	} {
-	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
+	let [chatrooms, setChatrooms] = useState<List<RoomData>>(List());
 
 	function addRoom(name: string): void {
 		// TODO: 調整聊天室添加順序
-		if (chatrooms.find(room => room.name == name) != undefined) {
+		let room = chatrooms.find(room => room.name == name);
+		if (room != undefined) {
 			// 若聊天室已經存在，將其排列到第一位
-			chatrooms = chatrooms.filter(room => room.name != name);
-			chatrooms = [{name}, ...chatrooms];
+			let new_chatrooms = chatrooms.filter(room => room.name != name);
+			setChatrooms(new_chatrooms.unshift(room));
 		} else {
-			chatrooms = [{name}, ...chatrooms];
+			setChatrooms(chatrooms.unshift({name}));
 		}
-		setChatrooms(chatrooms);
 	}
 
 	function addRoomWithChannel(name: string, channel: string): void {
 		// TODO: 調整聊天室添加順序
-		if (chatrooms.find(room => room.name == name) != undefined) {
+		let room = chatrooms.find(room => room.name == name);
+		if (room != undefined) {
 			// 若聊天室已經存在，將其排列到第一位
-			chatrooms = chatrooms.filter(room => room.name != name);
-			chatrooms = [{name, channel}, ...chatrooms];
+			let new_chatrooms = chatrooms.filter(room => room.name != name);
+			setChatrooms(new_chatrooms.unshift({ name, channel }));
 		} else {
-			chatrooms = [{name, channel}, ...chatrooms];
+			setChatrooms(chatrooms.unshift({ name, channel }));
 		}
-		setChatrooms(chatrooms);
 	}
 
 	function changeChannel(name: string, channel: string): void {
-		if (chatrooms.find(room => room.name == name) != undefined) {
-			// 若聊天室已經存在，將其排列到第一位
-			const new_rooms = produce(chatrooms, draft => {
-				const chatroom = draft.find(room => room.name == name);
-				(chatroom as ChannelRoomData).channel = channel;
-			});
-			setChatrooms(new_rooms);
+		let index = chatrooms.findIndex(room => room.name == name);
+		if (index != -1) {
+			setChatrooms(chatrooms.update(index, () => { return {name, channel}; }));
 		} else {
 			console.error(`聊天室 ${name} 不存在，無法切換頻道`);
 		}
@@ -132,7 +127,7 @@ function useBottomPanelState(): {
 		setChatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
+	return { chatrooms: chatrooms.toJS(), addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
 export type Transfuse = -1 | 0 | 1;

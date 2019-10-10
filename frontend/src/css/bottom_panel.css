@@ -88,6 +88,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-end;
+    z-index: 200;
     & .singlePanel {
         margin-right: 8px;
         border: 1px #DDDDDD solid;
