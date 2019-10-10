@@ -69,7 +69,7 @@ type Query {
     article(id: ID!): Article! @juniper(ownership: "owned")
     articleList(
         boardName: String!
-        offset: Int!
+        before: ID          # 若 before 爲空，代表要求最新的
         pageSize: Int!
         showHidden: Boolean
     ): [Article!]! @juniper(ownership: "owned")
