@@ -28,6 +28,7 @@ export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.match.params.board_name;
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
 		fetchArticles(board_name, PAGE_SIZE, null).then(more_articles => {
@@ -37,19 +38,21 @@ export function BoardPage(props: Props): JSX.Element {
 	}, [board_name]);
 
 	const scrollHandler = React.useCallback((): void => {
-		// 第一次載入結束前不要動作
-		if (articles.length > 0) {
-			console.log('Touch End');
-			const before = articles.slice(-1)[0].id;
-			fetchArticles(board_name, PAGE_SIZE, before).then(more_articles => {
-				// TODO: 載入到最早的文章就停
-				if (more_articles.length > 0) {
-					console.log(more_articles);
-					setArticles([...articles, ...more_articles]);
-				}
-			});
+		// 第一次載入結束前 or 已經載到最早的文章了，不要動作
+		if (articles.length == 0 || is_end) {
+			return;
 		}
-	}, [articles, board_name]);
+		console.log('Touch End');
+		const before = articles.slice(-1)[0].id;
+		fetchArticles(board_name, PAGE_SIZE, before).then(more_articles => {
+			if (more_articles.length > 0) {
+				console.log(more_articles);
+				setArticles([...articles, ...more_articles]);
+			} else {
+				set_is_end(true);
+			}
+		});
+	}, [articles, board_name, is_end]);
 
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
