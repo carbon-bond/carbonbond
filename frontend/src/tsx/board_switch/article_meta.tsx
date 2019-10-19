@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom';
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	return <div styleName="articleHeader">
-		<div styleName="authorId">{props.user_name}</div>
+		<Link to={`/app/user/${props.user_name}`}>
+			<div styleName="authorId">{props.user_name}</div>
+		</Link>
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
 			<div styleName="articleBoard">{props.board_name}</div>

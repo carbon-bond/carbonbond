@@ -5,6 +5,7 @@
     width: 100%;
     font-size: 14px;
     & .authorId {
+        color: #616569;
         margin-right: 6px;
         text-decoration: underline;
     }
