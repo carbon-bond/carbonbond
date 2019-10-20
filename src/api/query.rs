@@ -7,6 +7,7 @@ use crate::db::{models as db_models, schema as db_schema};
 use crate::custom_error::{Fallible, Error, ErrorCode, DataType};
 use crate::party;
 use crate::forum;
+use crate::user;
 
 use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party, Invitation};
 
@@ -107,7 +108,8 @@ impl QueryFields for Query {
         &self,
         ex: &juniper::Executor<'_, Context>,
         _trail: &QueryTrail<'_, Article, juniper_from_schema::Walked>,
-        board_name: String,
+        board_name: Option<String>,
+        author_name: Option<String>,
         before: Option<ID>,
         page_size: i32,
         show_hidden: Option<bool>,
@@ -115,11 +117,17 @@ impl QueryFields for Query {
         let conn = ex.context().get_pg_conn()?;
         use db_schema::articles;
         let show_hidden = show_hidden.unwrap_or(false);
-        let board = forum::get_board_by_name(&conn, &board_name)?;
 
-        let mut query = articles::table
-            .filter(articles::board_id.eq(board.id))
-            .into_boxed();
+        let mut query = articles::table.into_boxed();
+
+        if let Some(name) = board_name {
+            let board = forum::get_board_by_name(&conn, &name)?;
+            query = query.filter(articles::board_id.eq(board.id));
+        }
+        if let Some(name) = author_name {
+            let author = user::find_user_by_name(&conn, &name)?;
+            query = query.filter(articles::author_id.eq(author.id));
+        }
         if !show_hidden {
             query = query.filter(articles::show_in_list.eq(true));
         }

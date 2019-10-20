@@ -45,9 +45,10 @@ fragment ArticleMeta on Article {
 	board { boardName }
 }
 
-query ArticleList($board_name: String!, $page_size: Int!, $before: ID, $show_hidden: Boolean) {
+query ArticleList($board_name: String, $author_name: String, $page_size: Int!, $before: ID, $show_hidden: Boolean) {
 	articleList(
 		boardName: $board_name,
+		authorName: $author_name,
 		pageSize: $page_size,
 		before: $before,
 		showHidden: $show_hidden

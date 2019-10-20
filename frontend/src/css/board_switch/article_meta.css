@@ -108,3 +108,33 @@
 .num {
     margin-right: 2px;
 }
+
+.articleContainer {
+    background-color: #fafafa;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1150px;
+    padding: 14px 20px;
+}
+.articleBody {
+    display: flex;
+    width: 100%;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+.leftPart {
+    display: block;
+    width: 100%;
+}
+.articleContent {
+    color: #414549;
+    font-size: 16px;
+    overflow: hidden;
+    /* text-overflow: ellipsis; */
+    /* white-space: nowrap; */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}

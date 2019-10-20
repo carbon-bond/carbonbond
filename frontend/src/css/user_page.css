@@ -1,0 +1,81 @@
+.up {
+    background: var(--main-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    & .avatar {
+        margin: 30px 20px;
+        height: 144px;
+        width: 144px;
+        background-color: gray;
+    }
+    & .abstract {
+        width: 30%;
+        margin: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        & .username {
+            font-size: 32px;
+        }
+        & .sentence {
+            font-size: 20px;
+        }
+        & .data {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            font-size: 16px;
+            & .energy { }
+            & .trace { }
+            & .hate { }
+        }
+    }
+    & .links {
+        display: flex;
+        flex-direction: column;
+        margin: 30px 20px;
+        font-size: 20px;
+        & > * {
+            margin-bottom: 10px;
+        }
+        & .relation {}
+    }
+}
+
+.down {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    & > div {
+        margin: 20px 0px;
+    }
+    & .works {
+        width: 65%;
+        & .articleWrapper {
+            padding: 0px 20px 10px 20px;
+        }
+        & .articleWrapper:not(:first-child) {
+            padding: 10px 20px 20px 20px;
+        }
+    }
+    & .detail {
+        
+        & > div:not(:first-child) {
+            border-top: 1px solid #cccccc;
+        }
+        & > div {
+            padding: 10px 0px;
+        }
+        width: 300px;
+        padding: 10px;
+        background: var(--main-color);
+        font-size: 16px;
+        font-size: 16px;
+        & .intro {}
+        & .info {}
+        & .achivement {}
+    
+    }
+}

@@ -68,7 +68,8 @@ type Query {
 
     article(id: ID!): Article! @juniper(ownership: "owned")
     articleList(
-        boardName: String!
+        boardName: String   # 看板名、作者名爲篩選條件，可僅挑選一個篩選或都不篩選
+        authorName: String
         before: ID          # 若 before 爲空，代表要求最新的
         pageSize: Int!
         showHidden: Boolean
