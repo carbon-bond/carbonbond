@@ -4,6 +4,9 @@ CREATE TABLE users (
   name TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   energy INT NOT NULL DEFAULT 0,
+
+  avatar BYTEA,
+
   invitation_credit INT NOT NULL DEFAULT 3,
   password_hashed BYTEA NOT NULL,
   salt BYTEA NOT NULL,

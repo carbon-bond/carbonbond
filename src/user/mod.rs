@@ -8,3 +8,5 @@ mod login;
 pub use login::login;
 
 pub mod password;
+
+pub mod profile;

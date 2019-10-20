@@ -158,6 +158,7 @@ table! {
         name -> Text,
         email -> Text,
         energy -> Int4,
+        avatar -> Nullable<Bytea>,
         invitation_credit -> Int4,
         password_hashed -> Bytea,
         salt -> Bytea,

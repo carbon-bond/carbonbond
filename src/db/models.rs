@@ -7,6 +7,9 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub energy: i32,
+
+    pub avatar: Option<Vec<u8>>,
+
     pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,
     pub salt: Vec<u8>,

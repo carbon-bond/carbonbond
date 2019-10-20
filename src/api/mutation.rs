@@ -3,7 +3,7 @@ use juniper::ID;
 use regex::RegexSet;
 
 use crate::custom_error::{Fallible, Error, ErrorCode};
-use crate::user::{email, signup, login, password};
+use crate::user::{email, signup, login, password, profile};
 use crate::forum;
 use crate::party;
 use crate::config::CONFIG;
@@ -152,5 +152,21 @@ impl MutationFields for Mutation {
         new_password: String,
     ) -> Fallible<bool> {
         password::reset_password(&ex.context().get_pg_conn()?, code, new_password)
+    }
+    fn field_update_profile(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        avatar: Option<String>,
+    ) -> Fallible<bool> {
+        match ex.context().get_id() {
+            None => Err(Error::new_logic(ErrorCode::NeedLogin)),
+            Some(id) => {
+                if let Some(a) = avatar {
+                    profile::update_profile(&ex.context().get_pg_conn()?, id, a)
+                } else {
+                    Ok(true)
+                }
+            }
+        }
     }
 }

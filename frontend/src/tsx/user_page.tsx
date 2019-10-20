@@ -2,6 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard, ArticleMeta } from './article_meta';
 import { ajaxOperation } from '../ts/api';
+import { UserState } from './global_state';
 
 import '../css/user_page.css';
 
@@ -20,6 +21,7 @@ type Props = RouteComponentProps<{ user_name: string }>;
 
 function UserPage(props: Props): JSX.Element {
 	const user_name = props.match.params.user_name;
+	const { user_state } = UserState.useContainer();
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	// TODO: 分頁
@@ -34,7 +36,9 @@ function UserPage(props: Props): JSX.Element {
 
 	return <div>
 		<div styleName="up">
-			<div styleName="avatar"></div>
+			<div styleName="avatar">
+				<img src={`/avatar/${user_name}`} alt={`${user_name}的大頭貼`}/>
+			</div>
 			<div styleName="abstract">
 				<div styleName="username">{user_name}</div>
 				<div styleName="sentence">那一天我二十一歲，在我一生的黃金時代。</div>
@@ -44,13 +48,24 @@ function UserPage(props: Props): JSX.Element {
 					<div styleName="hate">17 仇視</div>
 				</div>
 			</div>
-			<div styleName="links">
-				<div styleName="relation">
-					<button>追蹤</button>
-					<button>仇視</button>
+			<div styleName="operation">
+				<div styleName="links">
+					{
+						user_state.login && user_state.user_name == user_name ?
+							<></> :
+							<div styleName="relation">
+								<button>追蹤</button>
+								<button>仇視</button>
+							</div>
+					}
+					<a href={`/app/user_board/${user_name}`}>個板</a>
+					<a>私訊</a>
 				</div>
-				<a href={`/app/user_board/${user_name}`}>個板</a>
-				<a>私訊</a>
+				{
+					user_state.login && user_state.user_name == user_name ?
+						<button onClick={ () => props.history.push('/app/edit-profile') }>編輯</button> :
+						<></>
+				}
 			</div>
 		</div>
 		<div styleName="down">
@@ -64,14 +79,15 @@ function UserPage(props: Props): JSX.Element {
 				}
 			</div>
 			<div styleName="detail">
-				<div styleName="intro">
+				<div styleName="introduction">
 					我討厭胡蘿蔔
 				</div>
 				<div styleName="info">
 					現居 高雄
 				</div>
 				<div styleName="achivement">
-					曾獲 193 次收藏
+					<div>獲得 193 次收藏</div>
+					<div>獲選 2019 碳鍵最佳新人</div>
 				</div>
 			</div>
 		</div>

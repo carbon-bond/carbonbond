@@ -125,6 +125,10 @@ type Mutation {
     resetPassword(code: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
     changePassword(oldPassword: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
 
+    # 更新個人資料
+    # 大頭貼以 base64 編碼後上傳
+    updateProfile(avatar: String): Boolean! @juniper(ownership: "owned")
+
     # 政黨
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。
     #createParty(partyName: String!, boardName: String): ID
