@@ -25,3 +25,4 @@ DROP TABLE chat_channels;
 DROP TABLE group_chats;
 
 DROP TABLE users;
+DROP TABLE images;

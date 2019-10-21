@@ -65,7 +65,7 @@ fn main() -> Fallible<()> {
                     }))
                     .route(web::post().to(api::api)),
             )
-            .route("/avatar/{user_name}", web::get().to(image::avatar))
+            .route("/avatar/{user_name}", web::get().to(image::get_avatar))
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
             .route("/app/{tail:.*}", web::get().to(index))

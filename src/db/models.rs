@@ -2,13 +2,25 @@ use super::schema::*;
 use chrono::{DateTime, offset::Utc};
 
 #[derive(Queryable)]
+pub struct Image {
+    pub id: i64,
+    pub raw_data: Vec<u8>,
+}
+
+#[derive(Insertable)]
+#[table_name = "images"]
+pub struct NewImage {
+    pub raw_data: Vec<u8>,
+}
+
+#[derive(Queryable)]
 pub struct User {
     pub id: i64,
     pub name: String,
     pub email: String,
     pub energy: i32,
 
-    pub avatar: Option<Vec<u8>>,
+    pub avatar: Option<i64>,
 
     pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,

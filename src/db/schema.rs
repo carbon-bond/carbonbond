@@ -108,6 +108,13 @@ table! {
 }
 
 table! {
+    images (id) {
+        id -> Int8,
+        raw_data -> Bytea,
+    }
+}
+
+table! {
     invitations (id) {
         id -> Int8,
         code -> Varchar,
@@ -158,7 +165,7 @@ table! {
         name -> Text,
         email -> Text,
         energy -> Int4,
-        avatar -> Nullable<Bytea>,
+        avatar -> Nullable<Int8>,
         invitation_credit -> Int4,
         password_hashed -> Bytea,
         salt -> Bytea,
@@ -183,6 +190,7 @@ joinable!(party_members -> boards (board_id));
 joinable!(party_members -> parties (party_id));
 joinable!(party_members -> users (user_id));
 joinable!(reset_password -> users (user_id));
+joinable!(users -> images (avatar));
 
 allow_tables_to_appear_in_same_query!(
     article_contents,
@@ -196,6 +204,7 @@ allow_tables_to_appear_in_same_query!(
     edges,
     group_chat_members,
     group_chats,
+    images,
     invitations,
     parties,
     party_members,
