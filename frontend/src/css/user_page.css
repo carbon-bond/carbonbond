@@ -40,6 +40,19 @@
         }
         & .sentence {
             font-size: 20px;
+            & button {
+                margin-left: 15px;
+                font-size: 14px;
+            }
+        }
+        & .noSentence {
+            font-size: 20px;
+            font-style: italic;
+            color: #999999;
+            & button {
+                margin-left: 15px;
+                font-size: 14px;
+            }
         }
         & .data {
             display: flex;

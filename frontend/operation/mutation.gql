@@ -41,6 +41,6 @@ mutation Signup($code: String!, $name: String!, $password: String!) {
 	signupByInvitation(code: $code, name: $name, password: $password)
 }
 
-mutation UpdateProfile($avatar: String) {
-	updateProfile(avatar: $avatar)
+mutation UpdateProfile($avatar: String, $sentence: String) {
+	updateProfile(avatar: $avatar, sentence: $sentence)
 }

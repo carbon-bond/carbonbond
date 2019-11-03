@@ -11,6 +11,7 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   energy INT NOT NULL DEFAULT 0,
 
+  sentence TEXT NOT NULL DEFAULT '',
   avatar BIGINT REFERENCES images(id) NULL,
 
   invitation_credit INT NOT NULL DEFAULT 3,

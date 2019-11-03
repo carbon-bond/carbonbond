@@ -20,6 +20,7 @@ pub struct User {
     pub email: String,
     pub energy: i32,
 
+    pub sentence: String,
     pub avatar: Option<i64>,
 
     pub invitation_credit: i32,

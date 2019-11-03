@@ -157,15 +157,18 @@ impl MutationFields for Mutation {
         &self,
         ex: &juniper::Executor<'_, Context>,
         avatar: Option<String>,
+        sentence: Option<String>,
     ) -> Fallible<bool> {
         match ex.context().get_id() {
             None => Err(Error::new_logic(ErrorCode::NeedLogin)),
             Some(id) => {
                 if let Some(a) = avatar {
-                    profile::update_profile(&ex.context().get_pg_conn()?, id, a)
-                } else {
-                    Ok(true)
+                    profile::update_profile(&ex.context().get_pg_conn()?, id, a)?;
                 }
+                if let Some(s) = sentence {
+                    profile::update_sentence(&ex.context().get_pg_conn()?, id, s)?;
+                }
+                Ok(true)
             }
         }
     }

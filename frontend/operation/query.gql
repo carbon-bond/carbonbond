@@ -6,6 +6,13 @@ query Me {
 	}
 }
 
+query User($name: String!) {
+	user(name: $name) {
+		energy,
+		sentence
+	}
+}
+
 query Invitation($code: ID!) {
 	invitation(code: $code) {
 		code,

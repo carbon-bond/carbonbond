@@ -9,7 +9,7 @@ use crate::party;
 use crate::forum;
 use crate::user;
 
-use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party, Invitation};
+use super::{id_to_i64, i64_to_id, Context, ContextTrait, Board, Article, Me, Party, Invitation, User};
 
 graphql_schema_from_file!("api/api.gql", error_type: Error, with_idents: [Query]);
 
@@ -37,6 +37,20 @@ impl QueryFields for Query {
             }
         };
         Ok(me)
+    }
+    fn field_user(
+        &self,
+        ex: &juniper::Executor<'_, Context>,
+        _trail: &QueryTrail<'_, User, juniper_from_schema::Walked>,
+        name: String,
+    ) -> Fallible<User> {
+        let user = user::find_user_by_name(&ex.context().get_pg_conn()?, &name)?;
+        Ok(User {
+            id: i64_to_id(user.id),
+            user_name: user.name,
+            energy: user.energy,
+            sentence: user.sentence,
+        })
     }
     fn field_board(
         &self,

@@ -26,3 +26,13 @@ pub fn update_profile(conn: &PgConnection, user_id: i64, avatar: String) -> Fall
 
     Ok(true)
 }
+
+pub fn update_sentence(conn: &PgConnection, user_id: i64, sentence: String) -> Fallible<bool> {
+    use schema::users;
+
+    diesel::update(users::table.find(user_id))
+        .set(users::sentence.eq(sentence))
+        .execute(conn)?;
+
+    Ok(true)
+}

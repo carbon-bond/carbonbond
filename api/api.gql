@@ -36,6 +36,7 @@ type Party {
 type User {
     userName: String!
     energy: Int!
+    sentence: String!
 }
 
 type Article {
@@ -59,6 +60,8 @@ type Me {
 
 type Query {
     me: Me @juniper(ownership: "owned")
+
+    user(name: String!): User! @juniper(ownership: "owned")
 
     myPartyList(boardName: String): [Party!]! @juniper(ownership: "owned")
     party(partyName: String!): Party! @juniper(ownership: "owned")
@@ -127,7 +130,7 @@ type Mutation {
 
     # 更新個人資料
     # 大頭貼以 base64 編碼後上傳
-    updateProfile(avatar: String): Boolean! @juniper(ownership: "owned")
+    updateProfile(avatar: String, sentence: String): Boolean! @juniper(ownership: "owned")
 
     # 政黨
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。

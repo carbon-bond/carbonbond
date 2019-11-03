@@ -11,6 +11,7 @@ pub struct User {
     pub id: ID,
     pub user_name: String,
     pub energy: i32,
+    pub sentence: String,
 }
 
 impl UserFields for User {
@@ -19,5 +20,8 @@ impl UserFields for User {
     }
     fn field_energy(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&i32> {
         Ok(&self.energy)
+    }
+    fn field_sentence(&self, _ex: &juniper::Executor<'_, Context>) -> Fallible<&String> {
+        Ok(&self.sentence)
     }
 }

@@ -165,6 +165,7 @@ table! {
         name -> Text,
         email -> Text,
         energy -> Int4,
+        sentence -> Text,
         avatar -> Nullable<Int8>,
         invitation_credit -> Int4,
         password_hashed -> Bytea,

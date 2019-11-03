@@ -50,6 +50,7 @@ impl ArticleFields for Article {
             user_name: user.name,
             energy: 0,
             id: self.author_id.clone(),
+            sentence: user.sentence,
         })
     }
     fn field_category(
