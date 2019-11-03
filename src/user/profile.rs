@@ -14,7 +14,7 @@ pub fn update_profile(conn: &PgConnection, user_id: i64, avatar: String) -> Fall
             diesel::update(images::table.find(image_id))
                 .set(images::raw_data.eq(base64::decode(&avatar)?))
                 .execute(conn)?;
-        },
+        }
         None => {
             let image_id = save_image(conn, &avatar)?;
 
@@ -23,7 +23,6 @@ pub fn update_profile(conn: &PgConnection, user_id: i64, avatar: String) -> Fall
                 .execute(conn)?;
         }
     }
-
 
     Ok(true)
 }

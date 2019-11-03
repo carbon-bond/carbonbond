@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
 import { ajaxOperation, matchErrAndShow } from '../../ts/api';
-import { Option, Select } from '../components';
+import { Option, Select } from '../components/select';
 import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';

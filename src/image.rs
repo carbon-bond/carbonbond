@@ -9,12 +9,9 @@ use crate::custom_error::{Fallible};
 use base64;
 use diesel::prelude::*;
 
-pub fn save_image(
-    conn: &PgConnection,
-    data: &str
-) -> Fallible<i64> {
+pub fn save_image(conn: &PgConnection, data: &str) -> Fallible<i64> {
     let new_image = models::NewImage {
-        raw_data: base64::decode(data)?
+        raw_data: base64::decode(data)?,
     };
     let image: models::Image = diesel::insert_into(schema::images::table)
         .values(&new_image)
@@ -28,13 +25,11 @@ pub fn no_avatar() -> HttpResponse {
         Ok(mut f) => {
             let mut data = Vec::new();
             match f.read_to_end(&mut data) {
-                Ok(_) => {
-                    HttpResponse::Found().body(Body::from_slice(&data))
-                },
-                Err(_) => HttpResponse::InternalServerError().finish()
+                Ok(_) => HttpResponse::Found().body(Body::from_slice(&data)),
+                Err(_) => HttpResponse::InternalServerError().finish(),
             }
-        },
-        Err(_) => HttpResponse::InternalServerError().finish()
+        }
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
@@ -59,14 +54,13 @@ pub fn get_avatar(path: web::Path<(String,)>) -> HttpResponse {
             if let Some(image_id) = u.avatar {
                 // 有使用者，有頭貼
                 use schema::{images};
-                let avatar = images::table
-                    .find(image_id)
-                    .first::<models::Image>(&conn);
+                let avatar = images::table.find(image_id).first::<models::Image>(&conn);
 
                 match avatar {
                     Err(_) => {
                         return HttpResponse::InternalServerError().finish();
-                    } Ok(avatar) => {
+                    }
+                    Ok(avatar) => {
                         return HttpResponse::Found().body(Body::from_slice(&avatar.raw_data));
                     }
                 }

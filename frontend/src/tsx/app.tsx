@@ -18,8 +18,7 @@ import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScroll
 import { MainContent } from './main_content';
 import { SignupPage } from './signup_page';
 import { InvitePage } from './invite_page';
-import { UserPage } from './user_page';
-import { EditProfilePage } from './edit_profile_page';
+import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
 import { BoardSwitch } from './board_switch';
 import { Header } from './header';
@@ -43,9 +42,6 @@ function App(): JSX.Element {
 				} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
-				} />
-				<Route path="/app/edit-profile" render={() =>
-					<EditProfilePage />
 				} />
 				<Route path="/app/user/:user_name" render={props =>
 					<UserPage {...props}/>

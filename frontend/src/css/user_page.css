@@ -5,9 +5,28 @@
     justify-content: center;
     & .avatar {
         margin: 30px 20px;
+        position: relative;
         & img {
             height: 144px;
             width: 144px;
+        }
+        & .editPrompt {
+            color: white;
+            font-size: 14px;
+            background: black;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+        }
+    }
+    & .avatar.isMine {
+        & * {
+            cursor: pointer;
+        }
+        & input {
+            display: none;
         }
     }
     & .abstract {
@@ -67,20 +86,32 @@
         }
     }
     & .detail {
-        
-        & > div:not(:first-child) {
+        display: flex;
+        flex-direction: column;
+        & > div > div:not(:first-child) {
             border-top: 1px solid #cccccc;
         }
-        & > div {
+        & > div > div {
             padding: 6px 0px;
         }
         width: 300px;
         padding: 10px;
         background: var(--main-color);
         font-size: 14px;
+        & .editButton {
+           align-self: center; 
+           cursor: pointer;
+        }
         & .introduction {}
         & .info {}
         & .achivement {}
     
+    }
+}
+
+.buttonSet {
+    margin-top: 10px;
+    & button {
+        margin-right: 5px;
     }
 }

@@ -1,8 +1,7 @@
-// 手刻組件庫
 import * as React from 'react';
 import useOnClickOutside from 'use-onclickoutside';
 
-import '../css/components.css';
+import '../../css/components/select.css';
 
 type Mode = 'able' | 'warn' | 'disable';
 
