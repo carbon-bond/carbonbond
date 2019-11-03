@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ChatBar } from './chatbar';
-import { BrowseBar } from './browse_bar';
+import { BrowseBar } from './browsebar';
 import '../css/sidebar.css';
 
 enum Option {
