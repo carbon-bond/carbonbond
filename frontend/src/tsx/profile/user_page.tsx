@@ -268,14 +268,10 @@ function UserPage(props: Props): JSX.Element {
 				}
 				<div>
 					<div styleName="introduction">
-						我討厭胡蘿蔔
+						自我介紹（TODO）
 					</div>
 					<div styleName="info">
-						現居 高雄
-					</div>
-					<div styleName="achivement">
-						<div>獲得 193 次收藏</div>
-						<div>獲選 2019 碳鍵最佳新人</div>
+						性別、職業、居住城市...等（TODO）
 					</div>
 				</div>
 			</div>
