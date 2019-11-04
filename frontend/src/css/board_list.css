@@ -1,0 +1,21 @@
+.boardList {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    & > div {
+        background-color: var(--main-color);
+        & .boardBlock {
+            width: 350px;
+            padding: 5px;
+            & .name {
+                color: black;
+                font-size: 16px;
+            }
+            & .title {
+                color: black;
+                font-size: 12px;
+            }
+        }
+    }
+}
