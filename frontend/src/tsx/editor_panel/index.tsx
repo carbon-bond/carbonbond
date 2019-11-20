@@ -6,7 +6,7 @@ import '../../css/bottom_panel.css';
 import { EditorPanelState, EditorPanelData } from '../global_state';
 import { ajaxOperation, matchErrAndShow } from '../../ts/api';
 import { Option, Select } from '../components/select';
-import { CategoryBody, checkCanAttach } from '../../ts/forum_util';
+import { CategoryBody, checkCanAttach, FieldType } from '../../ts/forum_util';
 import { isInteger } from '../../ts/regex_util';
 import { EdgeEditor } from './edge_editor';
 
@@ -25,7 +25,7 @@ async function createArticle(data: EditorPanelData | null): Promise<string> {
 	throw new Error('尚未開始發文');
 }
 
-function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
+function _EditorPanel(props: RouteComponentProps): JSX.Element | null {
 	const { open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
 		= EditorPanelState.useContainer();
 	function onTitleClick(): void {
@@ -74,11 +74,9 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element|null {
 				</div>
 			</div>
 			{
-				(() => {
-					if (open) {
-						return <EditorBody onPost={id => onPost(id)} />;
-					}
-				})()
+				open ?
+					<EditorBody onPost={id => onPost(id)} /> :
+					<></>
 			}
 		</div>;
 	} else if (open) {
@@ -133,17 +131,17 @@ function CategorySelector(): JSX.Element {
 	}
 }
 
-function SingleColInput(props: {
-	col: CategoryBody['structure'][0]
+function SingleFieldInput(props: {
+	field: CategoryBody['structure'][0]
 	value: string,
 	onChange: (s: string) => void,
-	single?: boolean
+	onlyOne?: boolean
 }): JSX.Element {
-	let { col, value, onChange, single } = props;
+	let { field, value, onChange, onlyOne } = props;
 	function isValid(): boolean {
-		if (col.col_type == 'Int') {
+		if (field.type == FieldType.Int) {
 			return isInteger(value);
-		} else if (col.col_type.startsWith('Rating')) {
+		} else if (field.type == FieldType.Rating) {
 			throw '尚未實作對 Rating 的檢查';
 		} else {
 			return true;
@@ -151,34 +149,36 @@ function SingleColInput(props: {
 	}
 	return <>
 		{
-			single ? null : <p styleName="colLabel">
-				{col.col_name} ({col.col_type})
-			</p>
+			onlyOne ?
+				null :
+				<p styleName="colLabel"> {field.name} ({field.type}) </p>
 		}
 		{
 			(() => {
-				if (col.col_type == 'Text') {
-					return <textarea
-						onChange={evt => onChange(evt.target.value)}
-						value={value}
-						styleName="textInput"
-						placeholder={single ? col.col_name : ''}
-					/>;
-				} else if (col.col_type == 'Line'
-					|| col.col_type == 'Int'
-					|| col.col_type.startsWith('Rating')
-				) {
-					return <input
-						onChange={evt => onChange(evt.target.value)}
-						value={value}
-						placeholder={single ? col.col_name : ''}
-						styleName={
-							[
-								'oneLineInput',
-								isValid() ? '' : 'inValid'
-							].join(' ')
-						}
-					/>;
+				switch (field.type) {
+					case FieldType.Text:
+						return <textarea
+							onChange={evt => onChange(evt.target.value)}
+							value={value}
+							styleName="textInput"
+							placeholder={onlyOne ? field.name : ''}
+						/>;
+					case FieldType.Line:
+					case FieldType.Int:
+					case FieldType.Rating:
+						return <input
+							onChange={evt => onChange(evt.target.value)}
+							value={value}
+							placeholder={onlyOne ? field.name : ''}
+							styleName={
+								[
+									'oneLineInput',
+									isValid() ? '' : 'inValid'
+								].join(' ')
+							}
+						/>;
+					default:
+						return <div>不支援型別：{field.type}</div>;
 				}
 			})()
 		}
@@ -201,7 +201,7 @@ function InputsForStructure(): JSX.Element | null {
 		return <>
 			{
 				data.cur_category.structure.map((col, i) => (
-					<SingleColInput key={i} single={single} col={col}
+					<SingleFieldInput key={i} onlyOne={single} field={col}
 						value={data.content[i]} onChange={s => onChange(s, i)} />
 				))
 			}

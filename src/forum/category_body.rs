@@ -3,7 +3,7 @@ use serde::de::{Visitor, Error};
 use regex::Regex;
 
 use crate::custom_error::{Error as CE, Fallible, ErrorCode};
-use crate::MAX_ARTICLE_COLUMN;
+use crate::MAX_ARTICLE_FIELD;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Threshold {
@@ -50,15 +50,15 @@ fn atom_type_to_str(t: &AtomType) -> String {
 }
 
 #[derive(Debug)]
-pub enum ColType {
+pub enum FieldType {
     Arr(AtomType, usize),
     Atom(AtomType),
 }
 
 use std::fmt;
-struct ColTypeVisitor;
-impl<'de> Visitor<'de> for ColTypeVisitor {
-    type Value = ColType;
+struct FieldTypeVisitor;
+impl<'de> Visitor<'de> for FieldTypeVisitor {
+    type Value = FieldType;
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("欄位結構")
     }
@@ -68,35 +68,35 @@ impl<'de> Visitor<'de> for ColTypeVisitor {
             Some(cap_vec) => {
                 let atom = str_to_atom_type(&cap_vec[1])?;
                 if let Ok(size_res) = cap_vec[2].parse::<usize>() {
-                    Ok(ColType::Arr(atom, size_res))
+                    Ok(FieldType::Arr(atom, size_res))
                 } else {
                     Err(E::custom(format!("解析陣列長度失敗: {}", value)))
                 }
             }
             None => {
                 let atom = str_to_atom_type(value)?;
-                Ok(ColType::Atom(atom))
+                Ok(FieldType::Atom(atom))
             }
         }
     }
 }
-impl<'de> Deserialize<'de> for ColType {
-    fn deserialize<D>(deserializer: D) -> Result<ColType, D::Error>
+impl<'de> Deserialize<'de> for FieldType {
+    fn deserialize<D>(deserializer: D) -> Result<FieldType, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_str(ColTypeVisitor)
+        deserializer.deserialize_str(FieldTypeVisitor)
     }
 }
-impl Serialize for ColType {
+impl Serialize for FieldType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         let s = {
             match self {
-                ColType::Arr(a_type, size) => format!("[{};{}]", atom_type_to_str(a_type), size),
-                ColType::Atom(a_type) => atom_type_to_str(a_type),
+                FieldType::Arr(a_type, size) => format!("[{};{}]", atom_type_to_str(a_type), size),
+                FieldType::Atom(a_type) => atom_type_to_str(a_type),
             }
         };
         serializer.serialize_str(&s)
@@ -104,9 +104,9 @@ impl Serialize for ColType {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ColSchema {
-    pub col_name: String,
-    pub col_type: ColType,
+pub struct FieldSchema {
+    pub name: String,
+    pub r#type: FieldType,
     pub restriction: String,
 }
 
@@ -115,28 +115,28 @@ pub enum StringOrI32 {
     I32(i32),
 }
 
-impl ColSchema {
+impl FieldSchema {
     pub fn parse_content(&self, content: String) -> Fallible<StringOrI32> {
-        match self.col_type {
-            ColType::Atom(AtomType::Line) => {
+        match self.r#type {
+            FieldType::Atom(AtomType::Line) => {
                 if content.contains('\n') {
                     Err(CE::new_other("LINE 型別中含有換行"))
                 } else {
                     Ok(StringOrI32::Str(content))
                 }
             }
-            ColType::Atom(AtomType::Text) => {
+            FieldType::Atom(AtomType::Text) => {
                 Ok(StringOrI32::Str(content))
                 // TODO: 檢查正則表達式
             }
-            ColType::Atom(AtomType::Int) => {
+            FieldType::Atom(AtomType::Int) => {
                 if let Ok(t) = content.parse::<i32>() {
                     Ok(StringOrI32::I32(t))
                 } else {
                     Err(CE::new_other("Int 型別解析失敗"))
                 }
             }
-            ColType::Atom(AtomType::Rating(max)) => {
+            FieldType::Atom(AtomType::Rating(max)) => {
                 if let Ok(r) = content.parse::<u16>() {
                     // 1 ~ max 之中的某個正整數
                     if r <= max && r >= 1 {
@@ -151,7 +151,7 @@ impl ColSchema {
                     Err(CE::new_other("Rating 型別解析失敗"))
                 }
             }
-            ColType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
+            FieldType::Arr(_, _) => unimplemented!("陣列型別尚未實作"),
         }
     }
 }
@@ -165,7 +165,7 @@ pub struct CategoryBody {
     pub rootable: bool,
     pub threshold_to_post: Threshold,
     pub attached_to: Vec<String>,
-    pub structure: Vec<ColSchema>,
+    pub structure: Vec<FieldSchema>,
 }
 impl CategoryBody {
     pub fn to_string(&self) -> String {
@@ -173,7 +173,7 @@ impl CategoryBody {
     }
     pub fn from_string(s: &str) -> Fallible<CategoryBody> {
         let t = serde_json::from_str::<Self>(s).or(Err(CE::new_logic(ErrorCode::ParsingJson)))?;
-        if t.structure.len() > MAX_ARTICLE_COLUMN {
+        if t.structure.len() > MAX_ARTICLE_FIELD {
             Err(CE::new_other("分類結構長度超過上限"))
         } else {
             Ok(t)
