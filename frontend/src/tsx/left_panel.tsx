@@ -8,7 +8,7 @@ enum Option {
 	Search,
 	Chat,
 	DiscoverFriend,
-	Rocket,
+	Draft,
 	PluginStore,
 	None            // 側欄關閉
 }
@@ -23,8 +23,8 @@ function PanelMain(option: Option): JSX.Element {
 			return <div styleName="sidebar"><ChatBar /></div>;
 		case Option.DiscoverFriend:
 			return <div styleName="sidebar">交友</div>;
-		case Option.Rocket:
-			return <div styleName="sidebar">火箭</div>;
+		case Option.Draft:
+			return <div styleName="sidebar">草稿匣</div>;
 		case Option.PluginStore:
 			return <div styleName="sidebar">市集</div>;
 		case Option.None:
@@ -53,7 +53,7 @@ function LeftPanel(): JSX.Element {
 					<div styleName="icon" onClick={toggleOption(Option.Search)}>🔍</div>
 					<div styleName="icon" onClick={toggleOption(Option.Chat)}>🗨️</div>
 					<div styleName="icon" onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
-					<div styleName="icon" onClick={toggleOption(Option.Rocket)}>🚀</div>
+					<div styleName="icon" onClick={toggleOption(Option.Draft)}>稿</div>
 				</div>
 				<div styleName="bottomSet">
 					<div styleName="icon" onClick={toggleOption(Option.PluginStore)}>🛍</div>
