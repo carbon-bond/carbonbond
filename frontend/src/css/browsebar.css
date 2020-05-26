@@ -20,7 +20,7 @@
     padding: 2px;
     cursor: pointer;
     margin-bottom: 1px;
-    text-align: center;
+    padding-left: 5%;
 }
 .boardBlock {
     height: 40px;

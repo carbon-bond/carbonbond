@@ -105,7 +105,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	return <Link to={`/app/b/${board.boardName}`}>
 		<div styleName="boardBlock">
 			<div>
-				<div styleName="boardName">{board.boardName}</div>
+				<div styleName="boardName">😈 {board.boardName}</div>
 				<div styleName="boardHeat">🔥 0</div>
 				<div styleName="boardTitle">{board.title}</div>
 			</div>

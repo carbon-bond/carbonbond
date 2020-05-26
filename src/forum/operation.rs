@@ -16,7 +16,7 @@ pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Fallible<
     let new_board = models::NewBoard {
         board_name: name,
         ruling_party_id: party_id,
-        title: "TODO: 讓創板者自行填入",
+        title: "讓創板者自行填入",
         detail: "",
     };
 
