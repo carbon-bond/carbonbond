@@ -40,3 +40,7 @@ mutation CreateBoard($party_name: String!, $board_name: String!) {
 mutation Signup($code: String!, $name: String!, $password: String!) {
 	signupByInvitation(code: $code, name: $name, password: $password)
 }
+
+mutation UpdateProfile($avatar: String, $sentence: String) {
+	updateProfile(avatar: $avatar, sentence: $sentence)
+}

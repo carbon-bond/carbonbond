@@ -2,6 +2,13 @@ import { ajaxOperation } from './api';
 import { EditorPanelData, Transfuse } from '../tsx/global_state';
 import { Article, ArticleMeta } from '../tsx/board_switch';
 
+export enum FieldType {
+	Text = 'Text',
+	Line = 'Line',
+	Int = 'Int',
+	Rating = 'Rating'
+}
+
 export type CategoryBody = {
 	name: string,
 	transfusable: boolean,
@@ -13,10 +20,12 @@ export type CategoryBody = {
 		position: number
 	},
 	attached_to: string[],
-	structure: { col_name: string, col_type: string, restriction: string }[],
+	structure: { name: string, type: string, restriction: string }[],
 };
 
 export function getArticleCategory(article: Article | ArticleMeta): CategoryBody {
+	// console.log('getArticleCategory');
+	// console.log(JSON.parse(article.category.body));
 	return JSON.parse(article.category.body);
 }
 

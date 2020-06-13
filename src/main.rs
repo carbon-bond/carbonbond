@@ -12,8 +12,10 @@ use std::path::PathBuf;
 use actix_files::{Files, NamedFile};
 use actix_web::{middleware::Logger, web, HttpServer, App, HttpRequest, Result as ActixResult};
 use actix_session::CookieSession;
-use carbonbond::{api, chat, db, config, custom_error::Fallible};
+use carbonbond::{api, chat, db, config, image, custom_error::Fallible};
 use actix::Actor;
+use juniper::http::GraphQLRequest;
+use crate::actix_web::FromRequest;
 
 fn index(_req: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open("./frontend/static/index.html")?)
@@ -55,7 +57,15 @@ fn main() -> Fallible<()> {
         App::new()
             .wrap(Logger::new(log_format))
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
-            .route("/api", web::post().to(api::api))
+            .service(
+                web::resource("/api")
+                    .data(web::Json::<GraphQLRequest>::configure(|cfg| {
+                        // 將一個 GraphqlRequest 的數據量上限調整至 256 KB
+                        cfg.limit(256 * 1024)
+                    }))
+                    .route(web::post().to(api::api)),
+            )
+            .route("/avatar/{user_name}", web::get().to(image::get_avatar))
             .route("/graphiql", web::get().to(api::graphiql))
             .route("/app", web::get().to(index))
             .route("/app/{tail:.*}", web::get().to(index))

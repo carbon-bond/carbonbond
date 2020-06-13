@@ -1,9 +1,19 @@
+-- 圖片
+CREATE TABLE images (
+  id BIGSERIAL PRIMARY KEY,
+  raw_data BYTEA NOT NULL
+);
+
 -- 使用者
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   energy INT NOT NULL DEFAULT 0,
+
+  sentence TEXT NOT NULL DEFAULT '',
+  avatar BIGINT REFERENCES images(id) NULL,
+
   invitation_credit INT NOT NULL DEFAULT 3,
   password_hashed BYTEA NOT NULL,
   salt BYTEA NOT NULL,

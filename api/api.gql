@@ -36,6 +36,7 @@ type Party {
 type User {
     userName: String!
     energy: Int!
+    sentence: String!
 }
 
 type Article {
@@ -60,6 +61,8 @@ type Me {
 type Query {
     me: Me @juniper(ownership: "owned")
 
+    user(name: String!): User! @juniper(ownership: "owned")
+
     myPartyList(boardName: String): [Party!]! @juniper(ownership: "owned")
     party(partyName: String!): Party! @juniper(ownership: "owned")
 
@@ -68,7 +71,8 @@ type Query {
 
     article(id: ID!): Article! @juniper(ownership: "owned")
     articleList(
-        boardName: String!
+        boardName: String   # 看板名、作者名爲篩選條件，可僅挑選一個篩選或都不篩選
+        authorName: String
         before: ID          # 若 before 爲空，代表要求最新的
         pageSize: Int!
         showHidden: Boolean
@@ -123,6 +127,10 @@ type Mutation {
     forgetPassword(name: String!): Boolean! @juniper(ownership: "owned")
     resetPassword(code: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
     changePassword(oldPassword: String!, newPassword: String!): Boolean! @juniper(ownership: "owned")
+
+    # 更新個人資料
+    # 大頭貼以 base64 編碼後上傳
+    updateProfile(avatar: String, sentence: String): Boolean! @juniper(ownership: "owned")
 
     # 政黨
     ## 創建政黨，若 boardName 無值則為流亡政黨。創建者即黨主席。

@@ -16,7 +16,7 @@ export type Article = GQL.ArticleDetailQuery['article'];
 export type ArticleMeta = GQL.ArticleMetaFragment;
 
 export function BoardSwitch(): JSX.Element {
-	return <>
+	return <div className="forumBody">
 		<div className="switchHeader">
 			<Switch>
 				<Route path="/app/b/:board_name" render={props =>
@@ -67,7 +67,7 @@ export function BoardSwitch(): JSX.Element {
 				</Switch>
 			</div>
 		</div>
-	</>;
+	</div>;
 }
 
 export type Board = {

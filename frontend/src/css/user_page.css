@@ -1,0 +1,129 @@
+.up {
+    background: var(--main-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    & .avatar {
+        margin: 30px 20px;
+        position: relative;
+        & img {
+            height: 144px;
+            width: 144px;
+        }
+        & .editPrompt {
+            color: white;
+            font-size: 14px;
+            background: black;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+        }
+    }
+    & .avatar.isMine {
+        & * {
+            cursor: pointer;
+        }
+        & input {
+            display: none;
+        }
+    }
+    & .abstract {
+        width: 30%;
+        margin: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        & .username {
+            font-size: 32px;
+        }
+        & .sentence {
+            font-size: 20px;
+            & button {
+                margin-left: 15px;
+                font-size: 14px;
+            }
+        }
+        & .noSentence {
+            font-size: 20px;
+            font-style: italic;
+            color: #999999;
+            & button {
+                margin-left: 15px;
+                font-size: 14px;
+            }
+        }
+        & .data {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            font-size: 16px;
+            & .energy { }
+            & .trace { }
+            & .hate { }
+        }
+    }
+    & .operation {
+        display: flex;
+        flex-direction: column;
+        margin: 30px 20px;
+        font-size: 20px;
+        justify-content: space-between;
+        & .links {
+            display: flex;
+            flex-direction: column;
+            & > * {
+                margin-bottom: 10px;
+            }
+        }
+        & .relation {}
+    }
+}
+
+.down {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    & > div {
+        margin: 20px 0px;
+    }
+    & .works {
+        width: 65%;
+        & .articleWrapper {
+            padding: 0px 20px 10px 20px;
+        }
+        & .articleWrapper:not(:first-child) {
+            padding: 10px 20px 20px 20px;
+        }
+    }
+    & .detail {
+        display: flex;
+        flex-direction: column;
+        & > div > div:not(:first-child) {
+            border-top: 1px solid #cccccc;
+        }
+        & > div > div {
+            padding: 6px 0px;
+        }
+        width: 300px;
+        padding: 10px;
+        background: var(--main-color);
+        font-size: 14px;
+        & .editButton {
+           align-self: center; 
+           cursor: pointer;
+        }
+        & .introduction {}
+        & .info {}
+    
+    }
+}
+
+.buttonSet {
+    margin-top: 10px;
+    & button {
+        margin-right: 5px;
+    }
+}

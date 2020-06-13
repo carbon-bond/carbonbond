@@ -17,8 +17,8 @@
         ],
         "structure": [
             {
-                "col_name": "內文",
-                "col_type": "Text",
+                "name": "內文",
+                "type": "Text",
                 "restriction": ""
             }
         ],
@@ -37,8 +37,8 @@
         "attached_to": [],
         "structure": [
             {
-                "col_name": "內文",
-                "col_type": "Text",
+                "name": "內文",
+                "type": "Text",
                 "restriction": ""
             }
         ],
@@ -59,8 +59,8 @@
         ],
         "structure": [
             {
-                "col_name": "內文",
-                "col_type": "Text",
+                "name": "內文",
+                "type": "Text",
                 "restriction": ""
             }
         ],
@@ -84,8 +84,8 @@
         ],
         "structure": [
             {
-                "col_name": "內文",
-                "col_type": "Text",
+                "name": "內文",
+                "type": "Text",
                 "restriction": ""
             }
         ],
@@ -104,8 +104,33 @@
         "attached_to": [],
         "structure": [
             {
-                "col_name": "內文",
-                "col_type": "Text",
+                "name": "內文",
+                "type": "Text",
+                "restriction": ""
+            }
+        ],
+        "version": 0
+    },
+    {
+        "name": "申訴",
+        "transfusable": false,
+        "is_question": false,
+        "show_in_list": true,
+        "rootable": true,
+        "threshold_to_post": {
+            "bond_energy": 0,
+            "position": 0
+        },
+        "attached_to": [],
+        "structure": [
+            {
+                "name": "被告 id",
+                "type": "Line",
+                "restriction": ""
+            },
+            {
+                "name": "理由",
+                "type": "Text",
                 "restriction": ""
             }
         ],

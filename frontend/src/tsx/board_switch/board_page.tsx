@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
 
 import { MainScrollState } from '../global_state';
 
 import '../../css/board_switch/board_page.css';
 import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
-import { ArticleHeader, ArticleLine, ArticleFooter } from './article_meta';
+import { ArticleCard } from '../article_meta';
 
 const PAGE_SIZE: number = 10;
 
@@ -61,40 +60,9 @@ export function BoardPage(props: Props): JSX.Element {
 		{
 			articles.map((article, idx) => (
 				<div styleName="articleWrapper" key={`article-${idx}`}>
-					<BoardItem article={article} />
+					<ArticleCard article={article} />
 				</div>
 			))
 		}
 	</>;
-}
-
-function BoardItem(props: { article: ArticleMeta }): JSX.Element {
-
-	const date = new Date(props.article.createTime);
-	let user_name = '';
-	let category_name = '';
-	try {
-		user_name = props.article.author.userName;
-		category_name = JSON.parse(props.article.category.body).name;
-	} catch {
-		user_name = '未知';
-		category_name = '未知';
-	}
-
-	return (
-		<div styleName="articleContainer">
-			<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
-			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
-				<div styleName="articleBody">
-					<div styleName="leftPart">
-						<ArticleLine category_name={category_name} title={props.article.title} />
-						<div styleName="articleContent">
-							{props.article.content}
-						</div>
-					</div>
-				</div>
-			</Link>
-			<ArticleFooter />
-		</div>
-	);
 }

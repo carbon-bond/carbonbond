@@ -110,11 +110,12 @@
                 display: flex;
                 align-self: center;
                 align-items: center;
-                & .image {
-                    font-size: 40px;
+                & img {
+                    height: 48px;
+                    width: 48px;
                 }
                 & .userName {
-                    margin-left: 5px;
+                    margin-left: 10px;
                     color: brown;
                 }
                 & .energy {

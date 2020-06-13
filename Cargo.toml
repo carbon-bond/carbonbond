@@ -30,6 +30,7 @@ prost = "0.5.0"
 actix-web-actors = "1.0.2"
 juniper-from-schema = { git = "https://github.com/carbon-bond/juniper-from-schema", branch = "feature-split-definition" }
 rustyline = "5.0.2"
+base64 = "0.10.1"
 
 [build-dependencies]
 prost-build = { version = "0.5.0" }

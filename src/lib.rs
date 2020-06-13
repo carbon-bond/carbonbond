@@ -6,8 +6,9 @@ pub mod forum;
 pub mod db;
 pub mod party;
 pub mod config;
+pub mod image;
 
-pub const MAX_ARTICLE_COLUMN: usize = 15;
+pub const MAX_ARTICLE_FIELD: usize = 15;
 
 #[macro_use]
 extern crate diesel;

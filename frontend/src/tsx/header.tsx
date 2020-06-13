@@ -69,12 +69,12 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	}
 
 	function Dropdown(): JSX.Element {
-		if (extended) {
+		if (extended && user_state.login) {
 			return <div styleName="dropdown">
 				<div styleName="triangle"> </div>
 				<div styleName="features">
 					<div styleName="feature">🏯 我的個板</div>
-					<div styleName="feature">📜 我的卷宗</div>
+					<div styleName="feature" onClick={ () => props.history.push(`/app/user/${user_state.user_name}`) }>📜 我的卷宗</div>
 					<div styleName="feature" onClick={ () => props.history.push('/app/party') }>👥 我的政黨</div>
 					<div styleName="feature" onClick={ () => props.history.push('/app/invite') }>🖅 寄發邀請信</div>
 					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
@@ -95,7 +95,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div styleName="icon">🗞️</div>
 				<div ref={ref} styleName="wrap">
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
-						<div styleName="image">💂️</div>
+						<img src={`/avatar/${user_state.user_name}`}/>
 						<div styleName="userName">{user_state.user_name}</div>
 						<div styleName="energy">⚡ 275</div>
 					</div>

@@ -47,7 +47,7 @@ export function BrowseBar(): JSX.Element {
 		localStorage[STORAGE_NAME.browsebar_expand] = JSON.stringify(new_expand);
 	}
 	function genGridTemplate(): string {
-		let g1 = expand[0] ? '25px 60px' : '25px 0px';
+		let g1 = expand[0] ? '25px 80px' : '25px 0px';
 		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
 		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
 		if (user_state.login) {
@@ -66,10 +66,10 @@ export function BrowseBar(): JSX.Element {
 				expand={expand[0]}
 				onClick={() => onTitleClick(0)}
 			>
-				<div>
-					<div>我的首頁</div>
-					<div>全站熱門</div>
-					<div>所有看板</div>
+				<div styleName="special">
+					<div>📰 我的訂閱</div>
+					<div>🔥 全站熱門</div>
+					<div>🛹 所有看板</div>
 				</div>
 			</ShrinkableBlock>
 			<ShrinkableBlock
@@ -105,7 +105,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	return <Link to={`/app/b/${board.boardName}`}>
 		<div styleName="boardBlock">
 			<div>
-				<div styleName="boardName">{board.boardName}</div>
+				<div styleName="boardName">😈 {board.boardName}</div>
 				<div styleName="boardHeat">🔥 0</div>
 				<div styleName="boardTitle">{board.title}</div>
 			</div>
@@ -121,7 +121,7 @@ function ShrinkableBlock(props: {
 }): JSX.Element {
 	return <>
 		<div styleName="title" onClick={() => props.onClick()}>
-			{props.expand ? ' ▼' : ' ▸'}{props.title}
+			{props.expand ? ' ▼' : ' ▸'} {props.title}
 		</div>
 		<div style={{
 			overflowY: props.expand ? 'auto' : 'hidden',

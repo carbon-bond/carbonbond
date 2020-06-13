@@ -15,9 +15,10 @@ import '../css/layout.css?global';
 import '../css/global.css?global';
 
 import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
-import { MainContent } from './main_content';
+import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { InvitePage } from './invite_page';
+import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
 import { BoardSwitch } from './board_switch';
 import { Header } from './header';
@@ -33,6 +34,9 @@ function App(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
 		return <div className="mainBody" ref={ref => setEmitter(ref)}>
 			<Switch>
+				<Route exact path="/app" render={() => (
+					<BoardList></BoardList>
+				)} />
 				<Route path="/app/register/:invite_code" render={props =>
 					<SignupPage {...props} />
 				} />
@@ -42,21 +46,17 @@ function App(): JSX.Element {
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
 				} />
+				<Route path="/app/user/:user_name" render={props =>
+					<UserPage {...props}/>
+				} />
 				<Route path="/app/a/:article_id" render={props =>
 					<ArticlePage {...props} />
 				} />
+				<Route path="/app/b/:board_name" render={() =>
+					<BoardSwitch />
+				} />
 				<Route path="*" render={() =>
-					<div className="forumBody">
-						<Switch>
-							<Route exact path="/app" render={() => (
-								<MainContent></MainContent>
-							)} />
-							<Route path="/app/b/:board_name" render={() =>
-								<BoardSwitch />
-							} />
-							<Redirect to="/app" />
-						</Switch>
-					</div>
+					<Redirect to="/app" />
 				} />
 			</Switch>
 		</div>;

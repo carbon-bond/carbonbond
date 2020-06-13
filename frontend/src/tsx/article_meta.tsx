@@ -1,12 +1,17 @@
 import * as React from 'react';
-import '../../css/board_switch/article_meta.css';
-import { relativeDate } from '../../ts/date';
+import '../css/board_switch/article_meta.css';
+import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
+import { GQL } from '../ts/api';
+
+export type ArticleMeta = GQL.ArticleMetaFragment;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	return <div styleName="articleHeader">
-		<div styleName="authorId">{props.user_name}</div>
+		<Link to={`/app/user/${props.user_name}`}>
+			<div styleName="authorId">{props.user_name}</div>
+		</Link>
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
 			<div styleName="articleBoard">{props.board_name}</div>
@@ -60,3 +65,38 @@ export function ArticleFooter(): JSX.Element {
 		</div>
 	</div>;
 }
+
+function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+
+	const date = new Date(props.article.createTime);
+	let user_name = '';
+	let category_name = '';
+	try {
+		user_name = props.article.author.userName;
+		category_name = JSON.parse(props.article.category.body).name;
+	} catch {
+		user_name = '未知';
+		category_name = '未知';
+	}
+
+	return (
+		<div styleName="articleContainer">
+			<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
+			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+				<div styleName="articleBody">
+					<div styleName="leftPart">
+						<ArticleLine category_name={category_name} title={props.article.title} />
+						<div styleName="articleContent">
+							{props.article.content}
+						</div>
+					</div>
+				</div>
+			</Link>
+			<ArticleFooter />
+		</div>
+	);
+}
+
+export {
+	ArticleCard
+};

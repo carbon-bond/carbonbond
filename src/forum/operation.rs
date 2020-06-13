@@ -4,19 +4,19 @@ extern crate serde_json;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
-use crate::MAX_ARTICLE_COLUMN;
+use crate::MAX_ARTICLE_FIELD;
 use crate::db::{models, schema};
 use crate::custom_error::{Error, Fallible, DataType};
 
 use super::category_body;
-pub use category_body::{CategoryBody, ColSchema, StringOrI32, ColType, AtomType};
+pub use category_body::{CategoryBody, FieldSchema, StringOrI32, FieldType, AtomType};
 
 /// 回傳剛創的板的 id
 pub fn create_board(conn: &PgConnection, party_id: i64, name: &str) -> Fallible<i64> {
     let new_board = models::NewBoard {
         board_name: name,
         ruling_party_id: party_id,
-        title: "TODO: 讓創板者自行填入",
+        title: "讓創板者自行填入",
         detail: "",
     };
 
@@ -86,8 +86,8 @@ pub fn create_article(
             .set(root_id.eq(article.id))
             .execute(conn)?;
     }
-    let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_COLUMN];
-    let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_COLUMN];
+    let mut str_content: Vec<String> = vec!["".to_owned(); MAX_ARTICLE_FIELD];
+    let mut int_content: Vec<i32> = vec![0; MAX_ARTICLE_FIELD];
     for (i, c) in content.into_iter().enumerate() {
         match c {
             StringOrI32::I32(t) => int_content[i] = t,
@@ -145,12 +145,12 @@ pub fn get_article_content(
         .structure
         .into_iter()
         .enumerate()
-        .map(|(i, col_struct)| match col_struct.col_type {
-            ColType::Atom(AtomType::Int) => content.int_content[i].to_string(),
-            ColType::Atom(AtomType::Rating(_)) => content.int_content[i].to_string(),
-            ColType::Atom(AtomType::Text) => content.str_content[i].clone(),
-            ColType::Atom(AtomType::Line) => content.str_content[i].clone(),
-            ColType::Arr(_, _) => content.str_content[i].clone(),
+        .map(|(i, field)| match field.r#type {
+            FieldType::Atom(AtomType::Int) => content.int_content[i].to_string(),
+            FieldType::Atom(AtomType::Rating(_)) => content.int_content[i].to_string(),
+            FieldType::Atom(AtomType::Text) => content.str_content[i].clone(),
+            FieldType::Atom(AtomType::Line) => content.str_content[i].clone(),
+            FieldType::Arr(_, _) => content.str_content[i].clone(),
         })
         .collect();
     Ok(res_vec)

@@ -6,7 +6,7 @@ use crate::Context;
 use crate::party;
 
 mod category_body;
-pub use category_body::{ColSchema, CategoryBody, StringOrI32};
+pub use category_body::{FieldSchema, CategoryBody, StringOrI32};
 
 pub mod operation;
 
@@ -144,7 +144,7 @@ pub fn get_category(
 }
 
 pub fn parse_content(
-    col_struct: &Vec<ColSchema>,
+    col_struct: &Vec<FieldSchema>,
     content: Vec<String>,
 ) -> Fallible<Vec<StringOrI32>> {
     if content.len() != col_struct.len() {
