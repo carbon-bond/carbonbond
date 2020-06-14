@@ -8,7 +8,6 @@ defaults:
     shell: bash
     working-directory: ./frontend
 
-
 on:
   push:
     branches: [ master, develop ]
@@ -18,29 +17,14 @@ on:
 jobs:
   frontend-build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
     - uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
-    - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: install
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: lint
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: build
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: check-ts
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: check-css
+        node-version: '14.x'
+    - run: yarn install
+    - run: yarn lint
+    - run: yarn build
+    - run: yarn check-ts
+    - run: yarn check-css
+
