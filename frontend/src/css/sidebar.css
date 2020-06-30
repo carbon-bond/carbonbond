@@ -6,21 +6,26 @@
     background-color: var(--bar-color);
     width: var(--menubar-width);
     border-right-width: 1px;
-    border-right-color: #DDDDDD;
+    border-right-color: var(--border-color);
     border-right-style: solid;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    color: #777777;
     & .topSet {
+        width: 100%;
         & .icon {
-            text-align: center;
-            margin-top: 12px;
-            height: 43px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: var(--menubar-width);
             font-size: 28px;
             cursor: pointer;
         }
+    }
+    & .topSet > .icon:hover {
+        background-color: var(--hover-background-color);
     }
     & .bottomSet {
         & .icon {
@@ -41,11 +46,11 @@
 }
 
 .sidebar {
-    background-color: var(--left-main-color);
+    background-color: var(--background-color);
     z-index: 100;
     width: 300px;
     border-right-width: 1px;
-    border-right-color: #DDDDDD;
+    border-right-color: var(--border-color);
     border-right-style: solid;
     height: 100%;
 }

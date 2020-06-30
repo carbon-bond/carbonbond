@@ -1,0 +1,30 @@
+body {
+    --deep-gray: #212429;
+    --gray: #616569;
+    --lighter-gray: #aaaaaa;
+    --light-gray: #e4e4e4;
+    --white: #fafafa;
+    --blue: #0366d6;
+    --red: #e51a30;
+    --orange: #f5aa30;
+    --pink: #FFDDAA;
+
+    --theme-color: var(--red);
+    --sub-theme-color: var(--orange);
+    --third-theme-color: var(--pink);
+
+    --font-color: var(--deep-gray);
+    --light-font-color: var(--gray);
+
+    --disabled-color: var(--lighter-gray);
+
+    --border-color: var(--light-gray);
+
+    --link-color: var(--blue);
+
+    --lower-background-color: var(--light-gray);
+    --bar-color: var(--white);
+    --header-color: var(--white);
+    --background-color: var(--white);
+    --hover-background-color: var(--third-theme-color);
+}
