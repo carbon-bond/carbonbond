@@ -43,7 +43,10 @@ module.exports = {
 							plugins: [
 								[
 									'react-css-modules',
-									{ generateScopedName: '[local]-[hash:base64:10]' }
+									{
+										generateScopedName: '[local]-[hash:base64:10]',
+										autoResolveMultipleImports: true
+									}
 								]
 							]
 						}

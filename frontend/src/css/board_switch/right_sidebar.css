@@ -21,8 +21,8 @@
 }
 
 .showPartyButton {
-    border: 2px var(--hover-background-color) solid;
-    color: var(--hover-background-color);
+    border: 2px var(--border-color) solid;
+    color: var(--light-font-color);
 }
 
 .rightSidebarBlock {

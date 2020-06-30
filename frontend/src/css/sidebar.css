@@ -28,13 +28,19 @@
         background-color: var(--hover-background-color);
     }
     & .bottomSet {
+        width: 100%;
         & .icon {
-            text-align: center;
-            margin-top: 12px;
-            height: 43px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: var(--menubar-width);
             font-size: 28px;
             cursor: pointer;
         }
+    }
+    & .bottomSet > .icon:hover {
+        background-color: var(--hover-background-color);
     }
 }
 

@@ -3,10 +3,11 @@ import { RouteComponentProps } from 'react-router';
 
 import { MainScrollState } from '../global_state';
 
+import '../../css/article_wrapper.css';
 import '../../css/board_switch/board_page.css';
 import { ajaxOperation } from '../../ts/api';
 import { ArticleMeta } from '.';
-import { ArticleCard } from '../article_meta';
+import { ArticleCard } from '../article_card';
 
 const PAGE_SIZE: number = 10;
 

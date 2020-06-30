@@ -53,8 +53,7 @@
             position: relative;
 
             &:empty:before{
-                content: '搜尋全站';   /* element attribute*/
-                /*content: 'this is content';*/
+                content: '搜尋全站';
                 height: 100%;
                 width: 100%;
                 background-image: url(/img/search.png);
@@ -71,7 +70,7 @@
             }
 
             &:focus:before{
-                content:none;
+                content: none;
             }
         }
 
@@ -81,8 +80,7 @@
         justify-content: flex-end;
         align-items: center;
         height: 100%;
-        Width: 100%;
-
+        width: 100%;
         & .icon {
             cursor: pointer;
             padding: 5px;
@@ -98,15 +96,16 @@
             align-self: center;
             position: relative;
             justify-content: center;
+            height: 100%;
             & .userInfo:hover {
                 background-color: var(--hover-background-color);
             }
             & .userInfo {
                 margin-left: 20px;
-                margin-right: 10px;
+                padding-left: 10px;
+                padding-right: 10px;
                 cursor: pointer;
-                width: 160px;
-                height: 80%;
+                height: 100%;
                 display: flex;
                 align-self: center;
                 align-items: center;
@@ -125,7 +124,7 @@
             & .dropdown {
                 width: 85%;
                 position: absolute;
-                top: 50px;
+                top: 60px;
                 display: flex;
                 flex-direction: column;
                 z-index: 100;
@@ -139,8 +138,6 @@
                     border-color: transparent transparent var(--third-theme-color) transparent;
                 }
                 & .features {
-                    /* padding-left: 15px;
-                    padding-right: 15px; */
                     padding: 2px 0px;
                     align-items: center;
                     border: var(--border-color) solid 1px;
@@ -162,6 +159,8 @@
                 cursor: pointer;
                 font-size: 120%;
                 text-align: center;
+                align-items: center;
+                display: flex;
                 padding-left: 20px;
                 padding-right: 20px;
             }

@@ -86,19 +86,11 @@
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    & > div {
-        margin: 20px 0px;
-    }
     & .works {
-        width: 65%;
-        & .articleWrapper {
-            padding: 0px 20px 10px 20px;
-        }
-        & .articleWrapper:not(:first-child) {
-            padding: 10px 20px 20px 20px;
-        }
+        width: 67%;
     }
     & .detail {
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         & > div > div:not(:first-child) {
