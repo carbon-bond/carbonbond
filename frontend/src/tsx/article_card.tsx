@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../css/board_switch/article_meta.css';
+import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { GQL } from '../ts/api';
@@ -80,9 +80,9 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	}
 
 	return (
-		<div styleName="articleContainer">
-			<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
-			<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+		<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+			<div styleName="articleContainer">
+				<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
 				<div styleName="articleBody">
 					<div styleName="leftPart">
 						<ArticleLine category_name={category_name} title={props.article.title} />
@@ -91,9 +91,9 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 						</div>
 					</div>
 				</div>
-			</Link>
-			<ArticleFooter />
-		</div>
+				<ArticleFooter />
+			</div>
+		</Link >
 	);
 }
 

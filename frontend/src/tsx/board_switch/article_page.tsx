@@ -5,7 +5,7 @@ import '../../css/board_switch/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
-import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_meta';
+import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
 	let { article, board_name } = props;

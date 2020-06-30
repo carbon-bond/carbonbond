@@ -1,13 +1,13 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
 import { RouteComponentProps } from 'react-router';
-import { ArticleCard, ArticleMeta } from '../article_meta';
+import { ArticleCard, ArticleMeta } from '../article_card';
 import { UserState } from '../global_state';
 import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
 
+import '../../css/article_wrapper.css';
 import '../../css/user_page.css';
-
 
 // TODO: 可剪裁非正方形的圖片
 function EditAvatar(props: { name: string }): JSX.Element {
