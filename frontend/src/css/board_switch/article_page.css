@@ -1,5 +1,5 @@
 .articlePage {
-    background-color: var(--main-color);
+    background-color: var(--background-color);
     padding: 20px;
     margin: 20px;
     margin-top: 20px;
@@ -9,12 +9,12 @@
         margin: 20px 0px 20px 0px;
         line-height: 1.5;
         font-size: 16px;
-        color: #212429;
+        color: var(--font-color);
     }
     & .reply {
         cursor: pointer;
     }
     & .cantReply {
-        color: gray;
+        color: var(--disabled-color);
     }
 }

@@ -6,17 +6,16 @@
         & div {
             padding: 4px 5%;
             font-size: 16px;
-            /* margin: 5px 0; */
             cursor: pointer;
         }
         & div:hover {
-            background-color: #F4F4F4;
+            background-color: var(--hover-background-color);
         }
     }
 }
 .title {
-    background-color: rgb(180, 180, 180);
-    color: white;
+    background-color: var(--sub-theme-color);
+    color: var(--font-color);
     padding: 2px;
     cursor: pointer;
     margin-bottom: 1px;
@@ -26,7 +25,7 @@
     height: 40px;
     display: inline-block;
     width: 100%;
-    color: gray;
+    color: var(--font-color);
     & .boardName {
         margin-top: 2px;
         margin-left: 5%;
@@ -46,5 +45,5 @@
     }
 }
 .boardBlock:hover {
-    background-color: #F4F4F4;
+    background-color: var(--hover-background-color);
 }

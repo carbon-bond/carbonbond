@@ -4,7 +4,10 @@
     align-items: center;
     justify-content: center;
     & > div {
-        background-color: var(--main-color);
+        background-color: var(--background-color);
+        & .boardBlock:hover {
+            background: var(--hover-background-color)
+        }
         & .boardBlock {
             width: 350px;
             padding: 5px;

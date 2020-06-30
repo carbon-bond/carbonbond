@@ -94,7 +94,7 @@
         border: 1px #DDDDDD solid;
     }
     & .title {
-        background: cadetblue;
+        background-color: var(--sub-theme-color);
         border: 1px #DDDDDD solid;
         height: 30px;
         cursor: pointer;
@@ -134,7 +134,7 @@
                 font-size: 15px;
                 padding-top: 6px;
                 padding-bottom: 6px;
-                background-color: var(--main-color);
+                background-color: var(--background-color);
                 & .channelControl {
                     display: flex;
                     flex-direction: row;

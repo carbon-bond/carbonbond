@@ -1,26 +1,26 @@
 .articleHeader {
-    color: #616569;
+    color: var(--light-font-color);
     display: flex;
     align-items: center;
     width: 100%;
     font-size: 14px;
     & .authorId {
-        color: #616569;
+        color: var(--light-font-color);
         margin-right: 6px;
         text-decoration: underline;
     }
     & .articleBoard {
-        color: #616569;
+        color: var(--light-font-color);
         margin-left: 6px;
         text-decoration: underline;
     }
     & .authorId:hover {
         cursor: pointer;
-        color: #0366d6;
+        color: var(--link-color);
     }
     & .articleBoard:hover {
         cursor: pointer;
-        color: #0346a6;
+        color: var(--link-color);
     }
     & .seperationDot {
         margin: 0px 4px;
@@ -45,38 +45,6 @@
         font-weight: bold;
     }
 }
-.articleMeta {
-    display: flex;
-    flex-direction: row;
-    & .txtMeta {
-        flex: 1;
-        & .cName {
-            background-color: var(--cname-color);
-            display: inline-block;
-            padding: 2px;
-            border-radius: 2px;
-            font-weight: bold;
-        }
-        & .title {
-            font-weight: 500;
-            font-size: 25px;
-            height: 40px;
-        }
-        & .titleLong {
-            font-size: 17px;
-            height: 40px;
-        }
-        & .authorDate {
-            margin-left: 10px;
-            display: inline-block;
-            color: #aaa;
-            & .author {
-                color: #aaa;
-                text-decoration: underline;
-            }
-        }
-    }
-}
 
 .articleFooter {
     width: 100%;
@@ -87,7 +55,7 @@
 }
 .articleBtnItem {
     display: flex;
-    color: #616569;
+    color: var(--light-font-color);
     white-space: nowrap;
     margin-right: 10px;
     cursor: pointer;
@@ -102,7 +70,7 @@
     }
 }
 .articleBtnItem:hover {
-    background-color: #d9d9d9;
+    background-color: var(--hover-background-color);
 }
 
 .num {
@@ -110,7 +78,7 @@
 }
 
 .articleContainer {
-    background-color: #fafafa;
+    background-color: var(--background-color);
     overflow: hidden;
     width: 100%;
     max-width: 1150px;
@@ -129,11 +97,9 @@
     width: 100%;
 }
 .articleContent {
-    color: #414549;
+    color: var(--font-color);
     font-size: 16px;
     overflow: hidden;
-    /* text-overflow: ellipsis; */
-    /* white-space: nowrap; */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;

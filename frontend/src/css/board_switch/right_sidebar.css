@@ -10,26 +10,25 @@
 }
 
 .postArticleButton {
-    background-color: #e51a30;
+    background-color: var(--theme-color);
     color: #fafafa;
 }
 
 .trackBoardButton {
-    border: 2px #e51a30 solid;
-    color: #e51a30;
+    border: 2px var(--theme-color) solid;
+    color: var(--theme-color);
 
 }
 
 .showPartyButton {
-    border: 2px #9e9e9e solid;
-    color: #9e9e9e;
-
+    border: 2px var(--hover-background-color) solid;
+    color: var(--hover-background-color);
 }
 
 .rightSidebarBlock {
-    background-color: #fafafa;
+    background-color: var(--background-color);
     padding: 15px;
-    color: #333;
+    color: var(--font-color);
 
     & .header {
         font-size: 24px;
@@ -52,7 +51,7 @@
 
             & .partyScore {
                 flex: 1;
-                color: #e59b1a;
+                color: var(--sub-theme-color);
                 font-weight: 300;
                 display: flex;
                 align-items: center;
@@ -66,7 +65,7 @@
         }
 
         & .mainPartyItem {
-            color: #e51a30;
+            color: var(--theme-color);
             font-weight: bold;
         }
     }

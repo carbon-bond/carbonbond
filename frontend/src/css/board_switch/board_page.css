@@ -23,7 +23,7 @@
         bottom: 0px;
         right: 0px;
         
-        color: #4b4b4b;
+        color: var(--font-color);
 
         & .dataBox {
             display: flex;
@@ -43,7 +43,7 @@
             }
 
             & .dataBoxItem:not(:last-child) {
-                border-right: 2px #4b4b4b solid;
+                border-right: 2px var(--font-color) solid;
             }
         }
     }

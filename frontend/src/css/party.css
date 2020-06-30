@@ -1,26 +1,26 @@
 .ruling {
     margin-left: 5px;
     width: 20px;
-    color: gray;
+    color: var(--light-color-color);
 }
 .partyLabel {
     display: flex;
     flex: 1;
-    color: gray;
+    color: var(--light-font-color);
 }
 .boardPartyBlock {
     margin-bottom: 0;
     margin-top: 20px;
 }
 .boardName {
-    color: #ddd;
+    color: var(--font-color);
 }
 .partyColumn {
     display: flex;
     flex-direction: row;
 }
 .partyColumn:hover {
-    background-color: #F4F4F4;
+    background-color: var(--hover-background-color);
 }
 .listBody {
     display: flex;
@@ -31,7 +31,7 @@
     margin-right: auto;
 }
 .createParty {
-    color: gray;
+    color: var(--light-font-color);
     text-align: right;
     cursor: pointer;
 }
