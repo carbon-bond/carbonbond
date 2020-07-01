@@ -9,15 +9,18 @@
     cursor: pointer;
 }
 
+.rightSidebarButton:hover {
+    filter: brightness(120%);
+}
+
 .postArticleButton {
     background-color: var(--theme-color);
-    color: #fafafa;
+    color: var(--background-color);
 }
 
 .trackBoardButton {
     border: 2px var(--theme-color) solid;
     color: var(--theme-color);
-
 }
 
 .showPartyButton {
