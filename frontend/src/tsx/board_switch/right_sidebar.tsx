@@ -68,15 +68,11 @@ export function BoardSidebar(props: Props): JSX.Element {
 export function ArticleSidebar(): JSX.Element {
 	return <>
 		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">作者簡介</div>
-			</div>
+			<div styleName="rightSidebarBlock"> 關於作者 </div>
 		</div>
 
 		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">廣告</div>
-			</div>
+			<div styleName="rightSidebarBlock"> 廣告 </div>
 		</div>
 	</>;
 }

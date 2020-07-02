@@ -32,6 +32,7 @@
     background-color: var(--background-color);
     padding: 15px;
     color: var(--font-color);
+    border: 1px var(--lighter-gray) solid;
 
     & .header {
         font-size: 24px;
