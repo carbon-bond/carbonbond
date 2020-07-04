@@ -33,33 +33,23 @@ export function ArticleFooter(): JSX.Element {
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					flash_on
-				</i>
+				<i> ☘ </i>
 				<span styleName="num">4218</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					question_answer
-				</i>
+				<i> 🗯 </i>
 				<span styleName="num">1297</span>則留言
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					forward
-				</i>
+				<i> ⮕ </i>
 				<span styleName="num">18</span>篇大回文
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					star
-				</i>
+				<i> ★ </i>
 				收藏
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					share
-				</i>
+				<i> 📎 </i>
 				分享
 			</div>
 		</div>

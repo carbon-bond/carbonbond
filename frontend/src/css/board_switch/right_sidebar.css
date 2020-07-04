@@ -60,10 +60,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
-
-                & .logo {
-                    height: 1em;
-                    padding: 0px 5px;
+                & i {
+                    margin-left: 5px;
                 }
             }
         }
