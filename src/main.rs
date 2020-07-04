@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use actix_files::{Files, NamedFile};
 use actix_web::{middleware::Logger, web, HttpServer, App, HttpRequest, Result as ActixResult};
 use actix_session::CookieSession;
-use carbonbond::{api, chat, db, config, image, custom_error::Fallible};
+use carbonbond::{chat, db, config, image, custom_error::Fallible};
 use actix::Actor;
 use juniper::http::GraphQLRequest;
 use crate::actix_web::FromRequest;
@@ -46,39 +46,39 @@ fn main() -> Fallible<()> {
     // 啓動聊天伺服器 actor
     let chat_server_addr = chat::server::Server::default().start();
 
-    HttpServer::new(move || {
-        let log_format = "
-                        '%r' %s
-                        Referer: %{Referer}i
-                        User-Agent: %{User-Agent}i
-                        IP: %a
-                        處理時間: %T 秒";
+    // HttpServer::new(move || {
+    //     let log_format = "
+    //                     '%r' %s
+    //                     Referer: %{Referer}i
+    //                     User-Agent: %{User-Agent}i
+    //                     IP: %a
+    //                     處理時間: %T 秒";
 
-        App::new()
-            .wrap(Logger::new(log_format))
-            .wrap(CookieSession::signed(&[0; 32]).secure(false))
-            .service(
-                web::resource("/api")
-                    .data(web::Json::<GraphQLRequest>::configure(|cfg| {
-                        // 將一個 GraphqlRequest 的數據量上限調整至 256 KB
-                        cfg.limit(256 * 1024)
-                    }))
-                    .route(web::post().to(api::api)),
-            )
-            .route("/avatar/{user_name}", web::get().to(image::get_avatar))
-            .route("/graphiql", web::get().to(api::graphiql))
-            .route("/app", web::get().to(index))
-            .route("/app/{tail:.*}", web::get().to(index))
-            .route("/", web::get().to(index))
-            .service(
-                web::scope("/ws")
-                    .data(chat_server_addr.clone())
-                    .route("", web::get().to(chat::ws)),
-            )
-            .default_service(Files::new("", "./frontend/static"))
-    })
-    .bind(&address)?
-    .start();
+    //     App::new()
+    //         .wrap(Logger::new(log_format))
+    //         .wrap(CookieSession::signed(&[0; 32]).secure(false))
+    //         .service(
+    //             web::resource("/api")
+    //                 .data(web::Json::<GraphQLRequest>::configure(|cfg| {
+    //                     // 將一個 GraphqlRequest 的數據量上限調整至 256 KB
+    //                     cfg.limit(256 * 1024)
+    //                 }))
+    //                 .route(web::post().to(api::api)),
+    //         )
+    //         .route("/avatar/{user_name}", web::get().to(image::get_avatar))
+    //         .route("/graphiql", web::get().to(api::graphiql))
+    //         .route("/app", web::get().to(index))
+    //         .route("/app/{tail:.*}", web::get().to(index))
+    //         .route("/", web::get().to(index))
+    //         .service(
+    //             web::scope("/ws")
+    //                 .data(chat_server_addr.clone())
+    //                 .route("", web::get().to(chat::ws)),
+    //         )
+    //         .default_service(Files::new("", "./frontend/static"))
+    // })
+    // .bind(&address)?
+    // .start();
 
     sys.run().map_err(|err| err.into())
 }

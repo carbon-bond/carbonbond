@@ -1,4 +1,3 @@
-pub mod api;
 pub mod chat;
 pub mod custom_error;
 pub mod user;
@@ -7,6 +6,7 @@ pub mod db;
 pub mod party;
 pub mod config;
 pub mod image;
+pub mod api;
 
 pub const MAX_ARTICLE_FIELD: usize = 15;
 
