@@ -18,10 +18,12 @@ pub enum UserQuery {
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::Article>")]
-    QueryArticles { count: usize, board_name: String },
+    QueryArticleList { count: usize, board_name: String },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum BoardQuery {
-    #[chitin(request, response = "Vec<super::model::Article>")]
-    QueryBoards { count: usize },
+    #[chitin(request, response = "Vec<super::model::Board>")]
+    QueryBoardList { count: usize },
+    #[chitin(request, response = "super::model::Board")]
+    QueryBoard { name: String },
 }

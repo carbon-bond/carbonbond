@@ -16,6 +16,7 @@ fn main() -> std::io::Result<()> {
     server_file.write_all(
         RootQuery::codegen(&CodegenOption::Server {
             error: "crate::custom_error::Error",
+            context: "&crate::Ctx",
         })
         .as_bytes(),
     )?;
@@ -33,13 +34,6 @@ fn main() -> std::io::Result<()> {
     client_file.write_all(model::gen_typescript().as_bytes())?;
     client_file
         .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
-
-    // build protobuf
-    let mut config = prost_build::Config::default();
-    config.out_dir("src/chat");
-    config
-        .compile_protos(&["api/protobuf/chat.proto"], &["api/protobuf/"])
-        .unwrap();
 
     Ok(())
 }
