@@ -1,8 +1,8 @@
 use std::error::Error as StdError;
-
+use serde::{Deserialize, Serialize};
 use juniper::{FieldError, Value, IntoFieldError};
 
-#[derive(Clone, Display, Debug)]
+#[derive(Serialize, Deserialize, Clone, Display, Debug)]
 pub enum DataType {
     #[display(fmt = "分類")]
     Category,
@@ -20,7 +20,7 @@ pub enum DataType {
     InviteCode,
 }
 
-#[derive(Clone, Display, Debug)]
+#[derive(Serialize, Deserialize, Clone, Display, Debug)]
 pub enum ErrorCode {
     #[display(fmt = "內部錯誤")]
     Internal,
@@ -34,23 +34,24 @@ pub enum ErrorCode {
     ParseID,
     #[display(fmt = "JSON 解析錯誤")]
     ParsingJson,
-    #[display(fmt = "{}", "_0")]
-    Other(String),
+    #[display(fmt = "其它")]
+    Other,
 }
 
 fn build_field_err(code: ErrorCode) -> FieldError {
     FieldError::new(code, Value::null())
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
     OperationError { msg: String },
     /// 此錯誤代表應拋給前端使用者的訊息
-    LogicError { code: ErrorCode },
+    LogicError { msg: String, code: ErrorCode },
     /// 此錯誤代表其它無法預期的錯誤
     InternalError {
         msg: Option<String>,
+        #[serde(skip_serializing)]
         source: Option<Box<dyn StdError + Sync + Send + 'static>>,
     },
 }
@@ -63,14 +64,18 @@ impl Error {
     }
     pub fn new_other<S: AsRef<str>>(msg: S) -> Error {
         Error::LogicError {
-            code: ErrorCode::Other(msg.as_ref().to_owned()),
+            msg: msg.as_ref().to_string(),
+            code: ErrorCode::Other,
         }
     }
-    pub fn new_logic(code: ErrorCode) -> Error {
-        Error::LogicError { code }
+    pub fn new_logic<S: AsRef<str>>(code: ErrorCode, msg: S) -> Error {
+        Error::LogicError {
+            msg: msg.as_ref().to_string(),
+            code,
+        }
     }
     pub fn new_not_found<S: std::fmt::Debug>(err_type: DataType, target: S) -> Error {
-        Error::new_logic(ErrorCode::NotFound(err_type, format!("{:?}", target)))
+        Error::new_logic(ErrorCode::NotFound(err_type, format!("{:?}", target)), "")
     }
     /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
@@ -94,7 +99,10 @@ impl Error {
     pub fn add_msg<S: AsRef<str>>(self, more_msg: S) -> Error {
         let more_msg = more_msg.as_ref().to_owned();
         match self {
-            Error::LogicError { code } => Error::new_logic(code),
+            Error::LogicError { msg, code } => Error::LogicError {
+                code,
+                msg: format!("{}\n{}", more_msg, msg),
+            },
             Error::OperationError { msg } => Error::new_op(format!("{}\n{}", more_msg, msg)),
             Error::InternalError { msg, source } => {
                 let new_msg = if let Some(msg) = msg {
@@ -115,7 +123,7 @@ use std::fmt;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::LogicError { code } => write!(f, "邏輯錯誤，錯誤種類：{}", code),
+            Error::LogicError { msg, code } => write!(f, "邏輯錯誤，錯誤種類：{} {}", code, msg),
             Error::OperationError { msg } => write!(f, "操作錯誤：{}", msg),
             Error::InternalError { msg, source } => {
                 write!(f, "內部錯誤")?;
@@ -134,7 +142,7 @@ impl fmt::Display for Error {
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::LogicError { code } => build_field_err(code),
+            Error::LogicError { code, .. } => build_field_err(code),
             _ => build_field_err(ErrorCode::Internal),
         }
     }

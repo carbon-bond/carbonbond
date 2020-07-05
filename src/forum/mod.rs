@@ -13,7 +13,9 @@ pub mod operation;
 /// 回傳剛創的板的 id
 pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallible<i64> {
     // TODO: 撞名檢查，權限檢查，等等
-    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
+    let user_id = ctx
+        .get_id()
+        .ok_or(Error::new_logic(ErrorCode::NeedLogin, ""))?;
     ctx.use_pg_conn(|conn| {
         check_board_name_valid(&conn, name)?;
         let party = party::get_party_by_name(&conn, party_name)?;
@@ -22,7 +24,7 @@ pub fn create_board<C: Context>(ctx: &C, party_name: &str, name: &str) -> Fallib
         } else {
             let position = party::get_member_position(&conn, user_id, party.id)?;
             if position != 3 {
-                Err(Error::new_logic(ErrorCode::PermissionDenied).into())
+                Err(Error::new_logic(ErrorCode::PermissionDenied, "").into())
             } else {
                 operation::create_board(&conn, party.id, name)
             }
@@ -47,7 +49,9 @@ pub fn create_article<C: Context>(
     title: &str,
     content: Vec<String>,
 ) -> Fallible<i64> {
-    let author_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
+    let author_id = ctx
+        .get_id()
+        .ok_or(Error::new_logic(ErrorCode::NeedLogin, ""))?;
     let (board, category) = ctx.use_pg_conn(|conn| -> Fallible<_> {
         let b = get_board_by_name(&conn, &board_name)?;
         let c = get_category(&conn, category_name, b.id)?;

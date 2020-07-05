@@ -1,6 +1,7 @@
-use chitin::chitin_model;
+use chitin::*;
 #[chitin_model]
 mod model {
+    use chitin::chitin_util;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
@@ -14,20 +15,18 @@ mod model {
         detail: String,
         ruling_party_id: u64,
     }
-
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct User {
         user_name: String,
         energy: i32,
         sentence: String,
     }
-
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         id: u64,
         title: String,
         energy: i32,
-        // create_time: DateTime<Utc>,
+        create_time: DateTime<Utc>,
         root_id: u64,
         author_id: u64,
         content: Vec<String>,

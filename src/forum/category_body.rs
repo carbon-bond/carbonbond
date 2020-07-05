@@ -172,7 +172,8 @@ impl CategoryBody {
         serde_json::to_string(self).unwrap()
     }
     pub fn from_string(s: &str) -> Fallible<CategoryBody> {
-        let t = serde_json::from_str::<Self>(s).or(Err(CE::new_logic(ErrorCode::ParsingJson)))?;
+        let t = serde_json::from_str::<Self>(s)
+            .map_err(|e| CE::new_logic(ErrorCode::ParsingJson, e.to_string()))?;
         if t.structure.len() > MAX_ARTICLE_FIELD {
             Err(CE::new_other("分類結構長度超過上限"))
         } else {

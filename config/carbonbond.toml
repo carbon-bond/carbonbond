@@ -1,7 +1,7 @@
 # 若本地環境與此設定檔有出入，請勿直接修改本檔案，應另創建一份 carbonbond.dev.toml 設定檔
 
 [server]
-address = "localhost"
+address = "127.0.0.1"
 port = 8080
 # mailgun_key_file 為一個檔案位置
 mailgun_key_file = "config/secret/MAILGUN_KEY.example"
