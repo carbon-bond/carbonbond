@@ -2,15 +2,17 @@
 extern crate clap;
 extern crate rustyline;
 
-use std::{fs, path::PathBuf};
-use diesel::PgConnection;
-use rustyline::{Editor, error::ReadlineError, config::Config as RustyLineConfig};
 use carbonbond::{
-    user::{email, signup, find_user_by_name, find_user_by_id},
+    chat,
+    config::{get_config, initialize_config, Mode},
     custom_error::{Error, Fallible},
-    config::{CONFIG, initialize_config, Mode},
-    Context, forum, party, chat, db,
+    db, forum, party,
+    user::{email, find_user_by_id, find_user_by_name, signup},
+    Context,
 };
+use diesel::PgConnection;
+use rustyline::{config::Config as RustyLineConfig, error::ReadlineError, Editor};
+use std::{fs, path::PathBuf};
 
 static COMMAND_HISTORY_FILE: &'static str = ".db_tool_history";
 static HELP_MSG: &'static str = "
@@ -154,7 +156,7 @@ fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
     if args.len() != 3 {
         return Err(Error::new_op("add user 參數數量錯誤"));
     }
-    let conf = CONFIG.get();
+    let conf = get_config();
     let (email, name, password) = (&args[0], &args[1], &args[2]);
     // TODO: create_user 內部要做錯誤處理
     ctx.use_pg_conn(|conn| {
@@ -240,7 +242,7 @@ fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
 }
 
 fn reset_database(ctx: &mut DBToolCtx) -> Fallible<()> {
-    let conf = CONFIG.get();
+    let conf = get_config();
     if let Mode::Release = conf.mode {
         println!("危險操作！請輸入 carbonbond 以繼續");
 
@@ -337,7 +339,7 @@ fn main() -> Fallible<()> {
         .value_of("config_file")
         .map(|p| PathBuf::from(p));
     initialize_config(&config_file);
-    let conf = CONFIG.get();
+    let conf = get_config();
 
     // 初始化資料庫
     db::init_db(&conf.database.url);

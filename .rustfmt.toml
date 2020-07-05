@@ -1,6 +1,0 @@
-ignore = [
-	"src/db/schema.rs",
-	"src/chat/chat_proto.rs"
-]
-reorder_imports = false
-reorder_modules = false

@@ -1,6 +1,5 @@
-use std::error::Error as StdError;
 use serde::{Deserialize, Serialize};
-use juniper::{FieldError, Value, IntoFieldError};
+use std::error::Error as StdError;
 
 #[derive(Serialize, Deserialize, Clone, Display, Debug)]
 pub enum DataType {
@@ -37,11 +36,6 @@ pub enum ErrorCode {
     #[display(fmt = "其它")]
     Other,
 }
-
-fn build_field_err(code: ErrorCode) -> FieldError {
-    FieldError::new(code, Value::null())
-}
-
 #[derive(Serialize, Debug)]
 pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
@@ -57,20 +51,20 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn new_op<S: AsRef<str>>(msg: S) -> Error {
+    pub fn new_op<S: ToString>(msg: S) -> Error {
         Error::OperationError {
-            msg: msg.as_ref().to_owned(),
+            msg: msg.to_string(),
         }
     }
-    pub fn new_other<S: AsRef<str>>(msg: S) -> Error {
+    pub fn new_other<S: ToString>(msg: S) -> Error {
         Error::LogicError {
-            msg: msg.as_ref().to_string(),
+            msg: msg.to_string(),
             code: ErrorCode::Other,
         }
     }
-    pub fn new_logic<S: AsRef<str>>(code: ErrorCode, msg: S) -> Error {
+    pub fn new_logic<S: ToString>(code: ErrorCode, msg: S) -> Error {
         Error::LogicError {
-            msg: msg.as_ref().to_string(),
+            msg: msg.to_string(),
             code,
         }
     }
@@ -80,24 +74,24 @@ impl Error {
     /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
     where
-        S: AsRef<str>,
+        S: ToString,
         E: StdError + Sync + Send + 'static,
     {
         Error::InternalError {
-            msg: Some(msg.as_ref().to_owned()),
+            msg: Some(msg.to_string()),
             source: Some(Box::new(source)),
         }
     }
     /// 原始錯誤無法被正確封裝才應使用本函式
-    pub fn new_internal_without_source<S: AsRef<str>>(msg: S) -> Error {
+    pub fn new_internal_without_source<S: ToString>(msg: S) -> Error {
         Error::InternalError {
-            msg: Some(msg.as_ref().to_owned()),
+            msg: Some(msg.to_string()),
             source: None,
         }
     }
 
-    pub fn add_msg<S: AsRef<str>>(self, more_msg: S) -> Error {
-        let more_msg = more_msg.as_ref().to_owned();
+    pub fn add_msg<S: ToString>(self, more_msg: S) -> Error {
+        let more_msg = more_msg.to_string();
         match self {
             Error::LogicError { msg, code } => Error::LogicError {
                 code,
@@ -135,15 +129,6 @@ impl fmt::Display for Error {
                 }
                 Ok(())
             }
-        }
-    }
-}
-
-impl IntoFieldError for Error {
-    fn into_field_error(self) -> FieldError {
-        match self {
-            Error::LogicError { code, .. } => build_field_err(code),
-            _ => build_field_err(ErrorCode::Internal),
         }
     }
 }

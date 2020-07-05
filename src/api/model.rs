@@ -7,6 +7,12 @@ mod model {
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct User {
+        user_name: String,
+        energy: i32,
+        sentence: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
         id: u64,
         board_name: String,
@@ -14,12 +20,6 @@ mod model {
         title: String,
         detail: String,
         ruling_party_id: u64,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct User {
-        user_name: String,
-        energy: i32,
-        sentence: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {

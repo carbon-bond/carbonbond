@@ -1,6 +1,7 @@
 use super::api_trait;
-use async_trait::async_trait;
+use super::model;
 use crate::custom_error::{Error, Fallible};
+use async_trait::async_trait;
 
 #[derive(Default)]
 pub struct RootQueryRouter {
@@ -28,11 +29,12 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
 pub struct ArticleQueryRouter {}
 #[async_trait]
 impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
-    async fn query_articles(
+    async fn query_article_list(
         &self,
+        context: &crate::Ctx,
         board_name: String,
         count: usize,
-    ) -> Fallible<Vec<super::model::Article>> {
+    ) -> Fallible<Vec<model::Article>> {
         Ok(vec![])
     }
 }
@@ -41,8 +43,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
 pub struct BoardQueryRouter {}
 #[async_trait]
 impl api_trait::BoardQueryRouter for BoardQueryRouter {
-    async fn query_boards(&self, count: usize) -> Fallible<Vec<super::model::Article>> {
+    async fn query_board_list(
+        &self,
+        context: &crate::Ctx,
+        count: usize,
+    ) -> Fallible<Vec<model::Board>> {
         Ok(vec![])
+    }
+    async fn query_board(&self, context: &crate::Ctx, name: String) -> Fallible<model::Board> {
+        unimplemented!()
     }
 }
 
@@ -50,7 +59,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
 pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
-    async fn query_me(&self) -> Fallible<Option<super::model::User>> {
-        Ok(None)
+    async fn query_me(&self, context: &crate::Ctx) -> Fallible<Option<model::User>> {
+        unimplemented!()
     }
 }

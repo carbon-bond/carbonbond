@@ -1,8 +1,8 @@
+use serde::{Deserialize, Serialize};
+use state::LocalStorage;
+use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-use std::fs::File;
-use serde::{Serialize, Deserialize};
-use state::LocalStorage;
 
 use crate::custom_error::{Error, Fallible};
 
@@ -22,7 +22,7 @@ pub fn get_mode() -> Mode {
     }
 }
 
-pub static CONFIG: LocalStorage<Config> = LocalStorage::new();
+static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
@@ -170,4 +170,8 @@ pub fn initialize_config<P: 'static + AsRef<Path>>(path: &Option<P>) {
         CONFIG.set(move || load_config(&path_owned).unwrap()),
         "initialize_config() is called twice",
     );
+}
+
+pub fn get_config() -> &'static Config {
+    CONFIG.get()
 }
