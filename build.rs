@@ -11,9 +11,14 @@ fn main() -> std::io::Result<()> {
     // build server chitin
     let mut server_file = File::create("src/api/api_trait.rs")?;
     server_file.write_all(b"use async_trait::async_trait;\n")?;
-    server_file.write_all(b"use crate::query::*;\n")?;
+    server_file.write_all(b"use crate::api::query::*;\n")?;
     server_file.write_all(b"use serde_json::error::Error;\n")?;
-    server_file.write_all(RootQuery::codegen(&CodegenOption::Server).as_bytes())?;
+    server_file.write_all(
+        RootQuery::codegen(&CodegenOption::Server {
+            error: "crate::custom_error::Error",
+        })
+        .as_bytes(),
+    )?;
 
     // build frontend chitin
     let mut client_file = File::create("frontend/src/ts/api/api_trait.ts")?;
@@ -26,7 +31,8 @@ fn main() -> std::io::Result<()> {
 };\n",
     )?;
     client_file.write_all(model::gen_typescript().as_bytes())?;
-    client_file.write_all(RootQuery::codegen(&CodegenOption::Client).as_bytes())?;
+    client_file
+        .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
 
     // build protobuf
     let mut config = prost_build::Config::default();

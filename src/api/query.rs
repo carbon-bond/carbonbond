@@ -3,8 +3,25 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum RootQuery {
-    #[chitin(request, response = "Vec<crate::model::Article>")]
-    AskArticles { count: usize },
-    // #[chitin(router)]
-    // User(UserQuery), // 注意：假如這裡打錯成 `User(i32)` 或其它不是 `ChitinCodegen` 的東西，會報出很難解的錯誤
+    #[chitin(router)]
+    User(UserQuery),
+    #[chitin(router)]
+    Article(ArticleQuery),
+    #[chitin(router)]
+    Board(BoardQuery),
+}
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+pub enum UserQuery {
+    #[chitin(request, response = "Option<super::model::User>")]
+    QueryMe {},
+}
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+pub enum ArticleQuery {
+    #[chitin(request, response = "Vec<super::model::Article>")]
+    QueryArticles { count: usize, board_name: String },
+}
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+pub enum BoardQuery {
+    #[chitin(request, response = "Vec<super::model::Article>")]
+    QueryBoards { count: usize },
 }

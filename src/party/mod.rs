@@ -10,7 +10,9 @@ use crate::Context;
 /// 回傳剛創的政黨 id
 pub fn create_party<C: Context>(ctx: &C, board_name: Option<&str>, name: &str) -> Fallible<i64> {
     // TODO: 鍵能之類的檢查
-    let user_id = ctx.get_id().ok_or(Error::new_logic(ErrorCode::NeedLogin))?;
+    let user_id = ctx
+        .get_id()
+        .ok_or(Error::new_logic(ErrorCode::NeedLogin, ""))?;
     ctx.use_pg_conn(|conn| {
         let board_id = match board_name {
             Some(name) => Some(forum::get_board_by_name(&conn, name)?.id),
