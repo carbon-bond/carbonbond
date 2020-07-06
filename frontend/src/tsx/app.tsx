@@ -9,9 +9,8 @@ import {
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css?global';
-import 'material-design-icons/iconfont/material-icons.css?global';
 import 'normalize.css?global';
-import '../css/color.css?global';
+import '../css/variable.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 

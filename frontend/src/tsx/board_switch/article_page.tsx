@@ -1,11 +1,60 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { ajaxOperation, matchErrAndShow } from '../../ts/api';
-import '../../css/board_switch/article_page.css';
 import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
 import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { Article } from '.';
 import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
+import '../../css/board_switch/article_page.css';
+
+function ReplyOptions(): JSX.Element {
+	return <></>;
+}
+
+function BigReply(): JSX.Element {
+	// TODO: 從上層傳遞
+	type Article = {
+		title: string,
+		category_name: string,
+		energy: number,
+		create_time: Date,
+		bond_name: string,
+		bond_type: number,
+		user_name: string,
+		board_name: string
+	};
+	let articles: Article[] = [
+		{
+			title: '開越多，文青咖啡店就倒越多',
+			category_name: '回答',
+			energy: 271,
+			create_time: new Date(),
+			bond_name: '戰',
+			bond_type: -1,
+			user_name: '臥龍生',
+			board_name: '八卦'
+		}
+	];
+	return <div styleName="replyCard">
+		{
+			articles.map(article =>
+				<div>
+					<ArticleLine
+						title={article.title}
+						category_name={article.category_name} />
+					<ArticleHeader
+						user_name={article.user_name}
+						board_name={article.board_name}
+						date={article.create_time} />
+				</div>
+			)
+		}
+	</div>;
+}
+
+function Comments(): JSX.Element {
+	return <></>;
+}
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
 	let { article, board_name } = props;
@@ -37,7 +86,7 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 		}
 	}
 
-	function ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
+	function _ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
 		let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
 		if (can_reply) {
 			return <span styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
@@ -69,11 +118,13 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 			}
 		</div>
 		<ArticleFooter />
-		<ReplyBtn label="戰" transfuse={-1} />
+		<ReplyOptions />
+		<BigReply />
+		<Comments />
+		{/* <ReplyBtn label="戰" transfuse={-1} />
 		<ReplyBtn label="挺" transfuse={1} />
-		<ReplyBtn label="回" transfuse={0} />
+		<ReplyBtn label="回" transfuse={0} /> */}
 	</div>;
-
 }
 
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
