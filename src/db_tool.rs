@@ -1,7 +1,3 @@
-#[macro_use]
-extern crate clap;
-extern crate rustyline;
-
 use carbonbond::{
     chat,
     config::{get_config, initialize_config, Mode},
