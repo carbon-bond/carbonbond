@@ -1,5 +1,3 @@
-![Build Status](https://travis-ci.org/carbon-bond/carbonbond.svg?branch=master)
-
 # 碳鍵
 碳鍵是一個次世代的論壇。它在文章之間的交互作用、筆戰過程中劍拔弩張的感受、板塊統治集團的鬥爭功能上進行了史無前例的大幅強化。
 
