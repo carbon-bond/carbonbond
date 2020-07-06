@@ -89,11 +89,11 @@ function App(): JSX.Element {
 	);
 }
 
-declare global {
-    interface Window { chat_socket: ChatSocket; }
-}
+// declare global {
+//     interface Window { chat_socket: ChatSocket; }
+// }
 
-import { ChatSocket } from '../ts/chat_socket';
-window.chat_socket = new ChatSocket(1);
+// import { ChatSocket } from '../ts/chat_socket';
+// window.chat_socket = new ChatSocket(1);
 
 ReactDOM.render(<App />, document.getElementById('root'));

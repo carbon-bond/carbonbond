@@ -398,7 +398,7 @@ function useAllChatState(): {
 
 
 	React.useEffect(() => {
-		const onmessage = (event: MessageEvent): void => {
+		const _onmessage = (event: MessageEvent): void => {
 			const buf = new Uint8Array(event.data);
 			const data = ServerSendData.decode(buf);
 			switch (data.Data) {
@@ -427,7 +427,7 @@ function useAllChatState(): {
 			}
 			console.log(data.recentChatResponse);
 		};
-		window.chat_socket.setHandler(onmessage);
+		// window.chat_socket.setHandler(onmessage);
 	}, [all_chat]);
 
 	function addMessage(name: string, message: Message): void {
