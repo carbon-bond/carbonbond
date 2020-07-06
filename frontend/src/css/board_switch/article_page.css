@@ -19,3 +19,11 @@
         color: var(--disabled-color);
     }
 }
+
+.replyCard {
+    border: 1px var(--lighter-gray) solid;
+    padding: 10px;
+    & .articleTitle {
+        font-size: 12px;
+    }
+}
