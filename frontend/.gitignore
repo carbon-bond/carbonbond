@@ -12,3 +12,6 @@ src/ts/api/gql.ts
 
 # protobuf
 src/ts/protobuf/
+
+# chitin-codegen
+src/ts/api/api_trait.ts
