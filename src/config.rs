@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::custom_error::{Error, Fallible};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Mode {
     Release,
     Dev,
@@ -52,15 +52,16 @@ pub struct RawUserConfig {
     pub email_whitelist: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
+    pub file_name: String,
     pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub user: UserConfig,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ServerConfig {
     pub address: String,
     pub port: u64,
@@ -70,12 +71,12 @@ pub struct ServerConfig {
     pub mail_from: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DatabaseConfig {
     pub url: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserConfig {
     pub invitation_credit: i32,
     pub email_whitelist: Vec<String>,
@@ -119,41 +120,38 @@ fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
     Ok(content)
 }
 
-fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
+fn load_content_with_prior(paths: &[&str]) -> Fallible<(String, String)> {
     if paths.len() == 0 {
         return Err(Error::new_op("未指定設定檔"));
     }
     for p in paths.iter() {
         if let Ok(content) = load_file_content(p) {
-            return Ok(content);
+            return Ok((p.to_string(), content));
         }
     }
-    let paths: Vec<PathBuf> = paths.into_iter().map(|p| p.as_ref().to_owned()).collect();
     return Err(Error::new_op(format!("找不到任何設定檔: {:?}", paths)));
 }
 
 /// 載入設定檔，回傳一個設定檔物件
-/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
+/// * `path` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     // 載入設定檔
     let mode = get_mode();
-    let content = if let Some(path) = path {
-        load_content_with_prior(&vec![path])?
+    let (file_name, content) = if let Some(path) = path {
+        load_content_with_prior(&[&*path])?
     } else {
         let local_file = match get_mode() {
             Mode::Release => "config/carbonbond.release.toml",
             Mode::Dev => "config/carbonbond.dev.toml",
             Mode::Test => "config/carbonbond.test.toml",
         };
-        load_content_with_prior(&vec![
-            PathBuf::from(local_file),
-            PathBuf::from("config/carbonbond.toml"),
-        ])?
+        load_content_with_prior(&[local_file, "config/carbonbond.toml"])?
     };
 
     let raw_config: RawConfig = toml::from_str(&content)?;
     let config = Config {
         mode,
+        file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
         database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
         user: Fallible::<UserConfig>::from(raw_config.user)?,
@@ -164,10 +162,11 @@ pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
 
 /// 載入設定檔，將設定檔物件儲存於全域狀態
 /// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn initialize_config<P: 'static + AsRef<Path>>(path: &Option<P>) {
-    let path_owned: Option<PathBuf> = path.as_ref().map(|p| p.as_ref().to_owned());
+pub fn initialize_config(path: Option<String>) {
+    let config = load_config(&path).unwrap();
+    log::info!("初始化設定檔：{}", config.file_name);
     assert!(
-        CONFIG.set(move || load_config(&path_owned).unwrap()),
+        CONFIG.set(move || config.clone()),
         "initialize_config() is called twice",
     );
 }

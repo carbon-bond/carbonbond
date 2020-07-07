@@ -9,7 +9,6 @@ use carbonbond::{
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
-use std::path::PathBuf;
 
 static mut INDEX: String = String::new();
 fn index() -> &'static str {
@@ -67,10 +66,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // 載入設定
     let args_config = clap::load_yaml!("args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
-    let config_file = arg_matches
-        .value_of("config_file")
-        .map(|p| PathBuf::from(p));
-    config::initialize_config(&config_file);
+    let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
+    config::initialize_config(config_file);
     let conf = config::get_config();
     // TODO: 初始化資料庫連線池？
     log::info!("資料庫位置：{}", &conf.database.url);

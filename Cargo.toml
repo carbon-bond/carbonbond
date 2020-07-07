@@ -22,7 +22,9 @@ derive_more = "0.15.0"
 chrono = { version = "0.4.7", features = ["serde"] }
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }
 async-trait = "0.1.31"
-rustyline = "5.0.2"
+refinery = { version = "0.3", features = ["postgres"] }
+structopt = "0.3"
+rustyline = "6.2.0"
 
 [build-dependencies]
 chitin = { git = "https://github.com/carbon-bond/chitin" }
@@ -34,9 +36,9 @@ typescript-definitions = { git = "https://github.com/carbon-bond/typescript-defi
 name = "server"
 path = "src/main.rs"
 
-# [[bin]]
-# name = "db-tool"
-# path = "src/db_tool.rs"
+[[bin]]
+name = "dbtool"
+path = "src/db_tool.rs"
 
 [lib]
 doctest = false
