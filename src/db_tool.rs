@@ -35,7 +35,7 @@ enum Root {
     #[structopt(about = "洗掉資料庫")]
     Reset,
     #[structopt(about = "資料庫遷移", alias = "m")]
-    Migrate { version: Option<String> },
+    Migrate,
     #[structopt(about = "往資料庫塞點什麼", alias = "a")]
     Add(Add),
 }
@@ -88,7 +88,8 @@ fn main() {
         initialize_config(None);
     }
     let mut rl = Editor::<()>::new();
-    loop {
+    let mut quit = false;
+    while !quit {
         let mut args = vec!["#"];
         let line = rl
             .readline(&format!("{}> ", login_name.clone().unwrap_or_default()))
@@ -100,7 +101,10 @@ fn main() {
         rl.add_history_entry(line.as_str());
         match Root::from_iter_safe(args) {
             Ok(root) => match handle_root(root, &mut login_name) {
-                Ok(true) => break,
+                Ok(true) => {
+                    quit = true;
+                    break;
+                }
                 Err(err) => println!("{}", err),
                 _ => (),
             },
@@ -124,12 +128,19 @@ fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
         Root::Init => {
             init_db()?;
             start_db()?;
+            create_db()?;
         }
         Root::Quit => return Ok(true),
         Root::Add(add) => handle_add(add.subcmd, login_name)?,
-        Root::Migrate { version } => {
-            let version = version.unwrap_or_else(|| "最高版本".to_string());
-            println!("遷移至 {}", version);
+        Root::Migrate => {
+            let conf = &get_config().database;
+            let mut ref_conf = Config::new(ConfigDbType::Postgres)
+                .set_db_host(&conf.host)
+                .set_db_port(&conf.port.to_string())
+                .set_db_user(&conf.username)
+                .set_db_name(&conf.dbname)
+                .set_db_pass(&conf.password);
+            embedded::migrations::runner().run(&mut ref_conf)?;
         }
         _ => println!("尚未實作"),
     }
@@ -150,6 +161,7 @@ fn start_db() -> Fallible<()> {
             "-l",
             "./postgres.log",
         ],
+        &[],
     )
     .map_err(|e| match e {
         Error::OperationError { msg } => Error::new_op(format!(
@@ -161,7 +173,7 @@ fn start_db() -> Fallible<()> {
 }
 fn stop_db() -> Fallible<()> {
     let conf = &get_config().database;
-    run_cmd("pg_ctl", &["-D", &conf.data_path, "stop"])
+    run_cmd("pg_ctl", &["-D", &conf.data_path, "stop"], &[])
 }
 fn init_db() -> Fallible<()> {
     use std::io::Write;
@@ -181,6 +193,24 @@ fn init_db() -> Fallible<()> {
             "UTF-8",
             &format!("--pwfile={}", pass_file.path().to_str().unwrap_or("")),
         ],
+        &[],
+    )
+}
+fn create_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd(
+        "psql",
+        &[
+            "-p",
+            &conf.port.to_string(),
+            "-U",
+            &conf.username,
+            "-d",
+            "postgres",
+            "-c",
+            &format!("CREATE DATABASE {} ENCODING 'utf8';", conf.dbname),
+        ],
+        &[("PGPASSWORD", &conf.password)],
     )
 }
 fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Fallible<()> {
@@ -201,19 +231,23 @@ fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Fallibl
     }
     Ok(())
 }
-fn run_cmd(cmd: &str, args: &[&str]) -> Fallible<()> {
-    log::info!("執行命令行指令：{} {:?}", cmd, args);
-    let mut child = Command::new(cmd)
-        .args(args)
+fn run_cmd(program: &str, args: &[&str], env: &[(&str, &str)]) -> Fallible<()> {
+    log::info!("執行命令行指令：{} {:?}", program, args);
+    let mut cmd = Command::new(program);
+    cmd.args(args);
+    for (key, value) in env.iter() {
+        cmd.env(key, value);
+    }
+    let mut child = cmd
         .spawn()
-        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", cmd), e))?;
+        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", program), e))?;
     let status = child.wait()?;
     if status.success() {
         Ok(())
     } else {
         Err(Error::new_op(format!(
             "{} 指令異常退出，狀態碼 = {:?}",
-            cmd,
+            program,
             status.code().unwrap_or(0)
         )))
     }
