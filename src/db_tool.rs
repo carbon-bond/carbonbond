@@ -4,7 +4,7 @@ use carbonbond::{
 };
 use refinery::config::{Config, ConfigDbType};
 use rustyline::Editor;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use structopt::StructOpt;
 
 mod embedded {
@@ -22,7 +22,7 @@ struct ArgRoot {
 }
 #[derive(StructOpt, Debug)]
 enum Root {
-    #[structopt(about = "登入", alias = "q")]
+    #[structopt(about = "登入", alias = "l")]
     Login { user_name: String },
     #[structopt(about = "初始化資料庫，如果資料庫非空則退出。")]
     Init,
@@ -36,6 +36,8 @@ enum Root {
     Reset,
     #[structopt(about = "資料庫遷移", alias = "m")]
     Migrate,
+    #[structopt(about = "列出資料庫")]
+    List,
     #[structopt(about = "往資料庫塞點什麼", alias = "a")]
     Add(Add),
 }
@@ -77,7 +79,6 @@ fn main() {
                     handle_root(cmd, &mut login_name).unwrap();
                     return;
                 }
-                // handle_root(root, &mut login_name);
             }
             Err(err) => {
                 println!("{}", err);
@@ -90,25 +91,32 @@ fn main() {
     let mut rl = Editor::<()>::new();
     let mut quit = false;
     while !quit {
-        let mut args = vec!["#"];
         let line = rl
             .readline(&format!("{}> ", login_name.clone().unwrap_or_default()))
             .unwrap();
-        args.extend(line.split(" ").filter(|s| s.len() != 0));
-        if args.len() == 1 {
+        let words: Vec<_> = line
+            .split("&&")
+            .map(|s| s.trim())
+            .filter(|s| s.len() != 0)
+            .collect();
+        if words.len() == 0 {
             continue;
         }
-        rl.add_history_entry(line.as_str());
-        match Root::from_iter_safe(args) {
-            Ok(root) => match handle_root(root, &mut login_name) {
-                Ok(true) => {
-                    quit = true;
-                    break;
-                }
+        rl.add_history_entry(&line);
+        for word in words {
+            let mut args = vec!["#"];
+            args.extend(word.split(" ").filter(|s| s.len() != 0));
+            match Root::from_iter_safe(args) {
+                Ok(root) => match handle_root(root, &mut login_name) {
+                    Ok(true) => {
+                        quit = true;
+                        break;
+                    }
+                    Err(err) => println!("{}", err),
+                    _ => (),
+                },
                 Err(err) => println!("{}", err),
-                _ => (),
-            },
-            Err(err) => println!("{}", err),
+            }
         }
     }
 }
@@ -140,13 +148,36 @@ fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
                 .set_db_user(&conf.username)
                 .set_db_name(&conf.dbname)
                 .set_db_pass(&conf.password);
-            embedded::migrations::runner().run(&mut ref_conf)?;
+            let report = embedded::migrations::runner().run(&mut ref_conf)?;
+            let migrations = report.applied_migrations();
+            println!("執行了 {} 次遷移", migrations.len());
+            for m in migrations.iter() {
+                println!("執行遷移：{} - {}", m.version(), m.name());
+            }
         }
+        Root::List => list_db()?,
         _ => println!("尚未實作"),
     }
     Ok(false)
 }
 
+fn list_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd(
+        "psql",
+        &[
+            "-p",
+            &conf.port.to_string(),
+            "-U",
+            &conf.username,
+            "-d",
+            "postgres",
+            "-c",
+            "COPY (SELECT datname from pg_database where datistemplate=false) TO STDOUT",
+        ],
+        &[("PGPASSWORD", &conf.password)],
+    )
+}
 fn start_db() -> Fallible<()> {
     let conf = &get_config().database;
     run_cmd(
@@ -227,7 +258,10 @@ fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Fallibl
             let login_name = check_login(login_name)?;
             ()
         }
-        _ => (),
+        AddSubCommand::Party { board_name, name } => {
+            let login_name = check_login(login_name)?;
+            ()
+        }
     }
     Ok(())
 }
