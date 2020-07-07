@@ -1,7 +1,7 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { ajaxOperation } from '../ts/api';
+import { API_FETCHER } from '../ts/api/api';
 import { Record, List, Map } from 'immutable';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
@@ -30,19 +30,24 @@ interface LoginData {
 function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
-	async function getLoginState(): Promise<{}> {
-		const data = await ajaxOperation.Me();
-		if (data.me != null) {
+	async function getLoginState(): Promise<void> {
+		const data = await API_FETCHER.queryMe();
+		console.log(data);
+		if ('Ok' in data && data.Ok) {
 			setUserState({
 				login: true,
-				user_name: data.me.name,
-				invitation_credit: data.me.invitationCredit,
-				energy: data.me.energy,
+				user_name: data.Ok.user_name,
+				invitation_credit: data.Ok.invitation_credit,
+				energy: data.Ok.energy,
 			});
+		} else if ('Ok' in data) {
+			setUserState({ login: false, fetching: false });
 		} else {
+			// NOTE: 打印 Err 是一個常見需求，應包裝以避免重複程式碼
+			console.log(data.Err);
 			setUserState({ login: false, fetching: false });
 		}
-		return {};
+		return;
 	}
 
 	React.useEffect(() => {

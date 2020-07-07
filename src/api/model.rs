@@ -8,9 +8,10 @@ mod model {
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct User {
-        user_name: String,
-        energy: i32,
-        sentence: String,
+        pub user_name: String,
+        pub energy: i32,
+        pub sentence: String,
+        pub invitation_credit: u64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {

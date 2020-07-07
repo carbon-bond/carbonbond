@@ -15,3 +15,6 @@ src/ts/protobuf/
 
 # chitin-codegen
 src/ts/api/api_trait.ts
+
+# eslint
+.eslintcache

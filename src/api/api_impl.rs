@@ -60,6 +60,11 @@ pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &crate::Ctx) -> Fallible<Option<model::User>> {
-        unimplemented!()
+        Ok(Some(model::User {
+            user_name: "宋江".to_string(),
+            sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_string(),
+            energy: 789,
+            invitation_credit: 20,
+        }))
     }
 }

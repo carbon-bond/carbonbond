@@ -97,7 +97,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
 						<img src={`/avatar/${user_state.user_name}`}/>
 						<div styleName="userName">{user_state.user_name}</div>
-						<div styleName="energy">☘ 275</div>
+						<div styleName="energy">☘ {user_state.energy}</div>
 					</div>
 					<Dropdown />
 				</div>
