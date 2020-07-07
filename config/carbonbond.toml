@@ -11,7 +11,13 @@ mail_from = "碳鍵 <noreply@mail.carbon-bond.com>"
 
 [database]
 # url 的格式為 "postgres://[用戶名]:[密碼]@[資料庫位址]:[埠口]/[資料庫名]"
-url = "postgres://postgres@localhost:5432/carbonbond"
+# url = "postgres://postgres@localhost:5432/carbonbond"
+dbname = "carbonbond"
+username = "postgres"
+password = ""
+port = 5432
+host = "localhost"
+data_path = "data"
 
 [user]
 invitation_credit = 20

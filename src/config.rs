@@ -27,7 +27,7 @@ static CONFIG: LocalStorage<Config> = LocalStorage::new();
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub database: RawDatabaseConfig,
+    pub database: DatabaseConfig,
     pub user: RawUserConfig,
 }
 
@@ -39,11 +39,6 @@ pub struct RawServerConfig {
     pub base_url: String,
     pub mail_domain: String,
     pub mail_from: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RawDatabaseConfig {
-    pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -61,6 +56,15 @@ pub struct Config {
     pub user: UserConfig,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DatabaseConfig {
+    pub dbname: String,
+    pub username: String,
+    pub password: String,
+    pub port: u32,
+    pub host: String,
+    pub data_path: String,
+}
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
     pub address: String,
@@ -69,11 +73,6 @@ pub struct ServerConfig {
     pub base_url: String,
     pub mail_domain: String,
     pub mail_from: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct DatabaseConfig {
-    pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -95,12 +94,6 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
             mail_domain: orig.mail_domain,
             mail_from: orig.mail_from,
         })
-    }
-}
-
-impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
-    fn from(orig: RawDatabaseConfig) -> Fallible<DatabaseConfig> {
-        Ok(DatabaseConfig { url: orig.url })
     }
 }
 
@@ -153,7 +146,7 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         mode,
         file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
+        database: raw_config.database,
         user: Fallible::<UserConfig>::from(raw_config.user)?,
     };
 

@@ -1,6 +1,10 @@
-use carbonbond::config::{get_config, initialize_config};
+use carbonbond::{
+    config::{get_config, initialize_config},
+    custom_error::{Error, ErrorCode, Fallible},
+};
 use refinery::config::{Config, ConfigDbType};
 use rustyline::Editor;
+use std::process::{Command, Stdio};
 use structopt::StructOpt;
 
 mod embedded {
@@ -20,8 +24,12 @@ struct ArgRoot {
 enum Root {
     #[structopt(about = "登入", alias = "q")]
     Login { user_name: String },
+    #[structopt(about = "初始化資料庫，如果資料庫非空則退出。")]
+    Init,
     #[structopt(about = "打開資料庫")]
     Start,
+    #[structopt(about = "關閉資料庫")]
+    Stop,
     #[structopt(about = "離開", alias = "q")]
     Quit,
     #[structopt(about = "洗掉資料庫")]
@@ -66,7 +74,7 @@ fn main() {
                 login_name = root.user;
                 initialize_config(root.config);
                 if let Some(cmd) = root.subcmd {
-                    handle_root(cmd, &mut login_name);
+                    handle_root(cmd, &mut login_name).unwrap();
                     return;
                 }
                 // handle_root(root, &mut login_name);
@@ -91,43 +99,91 @@ fn main() {
         }
         rl.add_history_entry(line.as_str());
         match Root::from_iter_safe(args) {
-            Ok(root) => {
-                let abort = handle_root(root, &mut login_name);
-                if abort {
-                    break;
-                }
-            }
+            Ok(root) => match handle_root(root, &mut login_name) {
+                Ok(true) => break,
+                Err(err) => println!("{}", err),
+                _ => (),
+            },
             Err(err) => println!("{}", err),
         }
     }
 }
 
-fn check_login(login_name: &Option<String>) -> Result<&String, String> {
+fn check_login(login_name: &Option<String>) -> Fallible<&String> {
     match login_name {
         Some(name) => Ok(name),
-        _ => Err("尚未登入".to_owned()),
+        _ => Err(Error::new_logic(ErrorCode::NeedLogin, "")),
     }
 }
 
-fn handle_root(root: Root, login_name: &mut Option<String>) -> bool {
+fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
     match root {
         Root::Login { user_name } => *login_name = Some(user_name),
-        Root::Start => println!("打開！"),
-        Root::Quit => return true,
-        Root::Add(add) => match handle_add(add.subcmd, login_name) {
-            Err(err) => println!("{}", err),
-            _ => (),
-        },
+        Root::Start => start_db()?,
+        Root::Stop => stop_db()?,
+        Root::Init => {
+            init_db()?;
+            start_db()?;
+        }
+        Root::Quit => return Ok(true),
+        Root::Add(add) => handle_add(add.subcmd, login_name)?,
         Root::Migrate { version } => {
             let version = version.unwrap_or_else(|| "最高版本".to_string());
             println!("遷移至 {}", version);
         }
         _ => println!("尚未實作"),
     }
-    false
+    Ok(false)
 }
 
-fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Result<(), String> {
+fn start_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd(
+        "pg_ctl",
+        &[
+            "-o",
+            &format!("\"-p{}\"", conf.port),
+            "start",
+            "-w",
+            "-D",
+            &conf.data_path,
+            "-l",
+            "./postgres.log",
+        ],
+    )
+    .map_err(|e| match e {
+        Error::OperationError { msg } => Error::new_op(format!(
+            "{}\n若排除其它問題仍無法開啟資料庫，建議執行：\n   sudo service postgresql restart",
+            msg
+        )),
+        _ => e,
+    })
+}
+fn stop_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd("pg_ctl", &["-D", &conf.data_path, "stop"])
+}
+fn init_db() -> Fallible<()> {
+    use std::io::Write;
+    let conf = &get_config().database;
+    let mut pass_file = tempfile::NamedTempFile::new_in(".")?;
+    writeln!(pass_file, "{}", conf.password)?;
+    run_cmd(
+        "initdb",
+        &[
+            "-D",
+            &conf.data_path,
+            "-A",
+            "password",
+            "-U",
+            &conf.username,
+            "-E",
+            "UTF-8",
+            &format!("--pwfile={}", pass_file.path().to_str().unwrap_or("")),
+        ],
+    )
+}
+fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Fallible<()> {
     match subcmd {
         AddSubCommand::User {
             name,
@@ -144,4 +200,21 @@ fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Result<
         _ => (),
     }
     Ok(())
+}
+fn run_cmd(cmd: &str, args: &[&str]) -> Fallible<()> {
+    log::info!("執行命令行指令：{} {:?}", cmd, args);
+    let mut child = Command::new(cmd)
+        .args(args)
+        .spawn()
+        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", cmd), e))?;
+    let status = child.wait()?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(Error::new_op(format!(
+            "{} 指令異常退出，狀態碼 = {:?}",
+            cmd,
+            status.code().unwrap_or(0)
+        )))
+    }
 }

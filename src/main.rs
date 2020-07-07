@@ -70,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     config::initialize_config(config_file);
     let conf = config::get_config();
     // TODO: 初始化資料庫連線池？
-    log::info!("資料庫位置：{}", &conf.database.url);
+    // log::info!("資料庫位置：{}", &conf.database.url);
     // 載入前端資源
     let static_files = Static::new("./frontend/static");
     // 載入首頁
