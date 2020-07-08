@@ -16,4 +16,12 @@ export class ApiFetcher extends api_trait.RootQueryFetcher {
 	}
 }
 
+export function unwrap<T, E>(result: api_trait.Result<T, E>): T {
+	if ('Ok' in result) {
+		return result.Ok;
+	} else {
+		throw result.Err;
+	}
+}
+
 export const API_FETCHER = new ApiFetcher();
