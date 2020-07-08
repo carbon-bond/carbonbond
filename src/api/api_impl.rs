@@ -50,7 +50,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
                 create_time: Utc::now(),
                 category: "問題".to_owned(),
             },model::Article {
-                id: 1,
+                id: 2,
                 title: "這高鐵也太晃了".to_owned(),
                 content: vec![
                     "我問：那個男的是你前男友，對嗎？".to_owned(),
@@ -74,6 +74,53 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
                 create_time: Utc::now(),
                 category: "問題".to_owned(),
             }])
+    }
+    async fn query_article(
+        &self,
+        context: &crate::Ctx,
+        id: u64,
+    ) -> Result<model::Article, crate::custom_error::Error> {
+        if id == 1 {
+            Ok(model::Article {
+                id: 1,
+                title: "公子獻頭".to_owned(),
+                content: vec!["荊軻，亦作荊柯，喜好讀書擊劍，為人慷慨俠義。後遊歷到燕國，被稱為「荊卿」，隨之由燕國的田光推薦給太子丹，拜為上卿。\n 秦滅趙國後，兵鋒直指燕國南界，太子丹震懼，與田光密謀，決定派荊軻入秦行刺秦王。荊軻獻計給太子丹，擬以秦國叛將樊於期之頭及燕督亢(今河北涿縣、易縣、固安一帶，是一塊肥沃的土地)地圖進獻秦王，伺機行刺。太子丹不忍殺樊於期，荊軻隻好私見樊於期，告以實情，樊於期為成全荊軻而自刎。".to_owned()],
+                author_id: 1,
+                author_name: "賈詡".to_owned(),
+                root_id: 1,
+                board_id: 1,
+                board_name: "國士無雙".to_owned(),
+                energy: 17,
+                create_time: Utc::now(),
+                category: "問題".to_owned(),
+            })
+        } else {
+            Ok(model::Article {
+                id: 2,
+                title: "這高鐵也太晃了".to_owned(),
+                content: vec![
+                    "我問：那個男的是你前男友，對嗎？".to_owned(),
+                    "她點頭。".to_owned(),
+                    "我問：你們昨天晚上睡一起是嗎？".to_owned(),
+                    "她點頭。".to_owned(),
+                    "我問：上床了，對嗎？".to_owned(),
+                    "她猶豫。".to_owned(),
+                    "我說不要緊的承認吧。".to_owned(),
+                    "她點頭。".to_owned(),
+                    "我說：昨天晚上我打電話的時候，你們正忙吧。".to_owned(),
+                    "她不說話。".to_owned(),
+                    "我感到天旋地轉，媽的，這高鐵也太晃了。".to_owned(),
+                ],
+                author_id: 2,
+                author_name: "賤人".to_owned(),
+                root_id: 1,
+                board_id: 1,
+                board_name: "綠帽文學".to_owned(),
+                energy: 17,
+                create_time: Utc::now(),
+                category: "問題".to_owned(),
+            })
+        }
     }
 }
 

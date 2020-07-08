@@ -23,6 +23,8 @@ pub enum ArticleQuery {
         board_name: Option<String>,
         author_name: Option<String>,
     },
+    #[chitin(request, response = "super::model::Article")]
+    QueryArticle { id: u64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum BoardQuery {

@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
-import { ajaxOperation, matchErrAndShow } from '../../ts/api';
-import { MainScrollState, EditorPanelState, Transfuse } from '../global_state';
-import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
-import { Article } from '.';
+import { MainScrollState } from '../global_state';
+// import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 import '../../css/board_switch/article_page.css';
+import { Article } from '../../ts/api/api_trait';
+import { toast } from 'react-toastify';
 
 function ReplyOptions(): JSX.Element {
 	return <></>;
@@ -57,7 +58,8 @@ function Comments(): JSX.Element {
 }
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
-	let { article, board_name } = props;
+	// let { article, board_name } = props;
+	let { article } = props;
 
 	let scrollHandler = React.useCallback(() => {
 		console.log('成功!!');
@@ -65,42 +67,42 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
-	const { editor_panel_data, openEditorPanel, addEdge }
-		= EditorPanelState.useContainer();
+	// const { editor_panel_data, openEditorPanel, addEdge }
+	// 	= EditorPanelState.useContainer();
 
-	const category_name = JSON.parse(props.article.category.body).name;
+	const category_name = props.article.category;
 
-	function onReplyClick(transfuse: Transfuse): void {
-		if (editor_panel_data) { // 有文章在編輯中
-			try {
-				addEdge(article, transfuse);
-			} catch (e) {
-				matchErrAndShow(e);
-			}
-		} else { // 發表新文章
-			openEditorPanel({
-				title: genReplyTitle(article.title),
-				board_name,
-				reply_to: { article, transfuse }
-			}).catch(e => matchErrAndShow(e));
-		}
-	}
+	// function onReplyClick(transfuse: Transfuse): void {
+	// 	if (editor_panel_data) { // 有文章在編輯中
+	// 		try {
+	// 			addEdge(article, transfuse);
+	// 		} catch (e) {
+	// 			matchErrAndShow(e);
+	// 		}
+	// 	} else { // 發表新文章
+	// 		openEditorPanel({
+	// 			title: genReplyTitle(article.title),
+	// 			board_name,
+	// 			reply_to: { article, transfuse }
+	// 		}).catch(e => matchErrAndShow(e));
+	// 	}
+	// }
 
-	function _ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
-		let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
-		if (can_reply) {
-			return <span styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
-				{props.label}
-			</span>;
-		} else {
-			return <div styleName="cantReply">{props.label}</div>;
-		}
-	}
+	// function _ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
+	// 	let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
+	// 	if (can_reply) {
+	// 		return <span styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
+	// 			{props.label}
+	// 		</span>;
+	// 	} else {
+	// 		return <div styleName="cantReply">{props.label}</div>;
+	// 	}
+	// }
 	return <div styleName="articlePage">
 		<ArticleHeader
-			user_name={article.author.userName}
-			board_name={article.board.boardName}
-			date={new Date(article.createTime)} />
+			user_name={article.author_name}
+			board_name={article.board_name}
+			date={new Date(article.create_time)} />
 		<ArticleLine
 			category_name={category_name}
 			title={article.title} />
@@ -130,31 +132,28 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
 
 export function ArticlePage(props: Props): JSX.Element {
-	let article_id = props.match.params.article_id;
+	let article_id = parseInt(props.match.params.article_id!);
 	let board_name = props.match.params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
 
 	React.useEffect(() => {
-		if (typeof article_id == 'string') {
-			ajaxOperation.ArticleDetail({ id: article_id }).then(res => {
-				setArticle(res.article);
-				setFetching(false);
-			}).catch(err => {
-				matchErrAndShow(err);
-				setFetching(false);
-			});
-		} else {
+		API_FETCHER.queryArticle(article_id).then(data => {
+			setArticle(unwrap(data));
 			setFetching(false);
-		}
+		}).catch(err => {
+			toast.error(err);
+			setFetching(false);
+		});
 	}, [article_id, board_name, props.history]);
+
 	if (fetching) {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
 			return <ArticleDisplayPage article={article} board_name={board_name}/>;
 		} else {
-			return <Redirect to={`/app/b/${article.board.boardName}/a/${article.id}`} />;
+			return <Redirect to={`/app/b/${article.board_name}/a/${article.id}`} />;
 		}
 	} else {
 		return <div>找不到文章QQ</div>;
