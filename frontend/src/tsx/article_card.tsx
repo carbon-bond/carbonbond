@@ -3,6 +3,7 @@ import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { GQL } from '../ts/api';
+import { Article } from '../ts/api/api_trait';
 
 export type ArticleMeta = GQL.ArticleMetaFragment;
 
@@ -56,23 +57,23 @@ export function ArticleFooter(): JSX.Element {
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+function ArticleCard(props: { article: Article }): JSX.Element {
 
-	const date = new Date(props.article.createTime);
+	const date = new Date(props.article.create_time);
 	let user_name = '';
 	let category_name = '';
 	try {
-		user_name = props.article.author.userName;
-		category_name = JSON.parse(props.article.category.body).name;
+		user_name = props.article.author_name;
+		category_name = props.article.category;
 	} catch {
 		user_name = '未知';
 		category_name = '未知';
 	}
 
 	return (
-		<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+		<Link to={`/app/b/${props.article.board_name}/a/${props.article.id}`}>
 			<div styleName="articleContainer">
-				<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
+				<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
 				<div styleName="articleBody">
 					<div styleName="leftPart">
 						<ArticleLine category_name={category_name} title={props.article.title} />

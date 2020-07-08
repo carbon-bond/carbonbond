@@ -18,7 +18,11 @@ pub enum UserQuery {
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::Article>")]
-    QueryArticleList { count: usize, board_name: String },
+    QueryArticleList {
+        count: usize,
+        board_name: Option<String>,
+        author_name: Option<String>,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum BoardQuery {

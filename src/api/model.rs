@@ -25,14 +25,16 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         pub id: u64,
+        pub category: String, // XXX: ??
         pub title: String,
         pub energy: i32,
         pub create_time: DateTime<Utc>,
         pub root_id: u64,
         pub author_id: u64,
+        pub author_name: String,
         pub content: Vec<String>,
-        pub category: String, // XXX: ??
         pub board_id: u64,
+        pub board_name: String,
     }
 }
 
