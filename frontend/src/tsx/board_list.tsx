@@ -1,19 +1,17 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { ajaxOperation, GQL } from '../ts/api';
+import { API_FETCHER, unwrap_or } from '../ts/api/api';
+import { Board } from '../ts/api/api_trait';
 
 import '../css/board_list.css';
 
-type Board = GQL.BoardMetaFragment;
-
 async function fetchBoardList(): Promise<Board[]> {
-	let res = await ajaxOperation.BoardList();
-	return res.boardList;
+	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
 }
 
-function BoardBlock(props: { board: { boardName: string, title: string }}): JSX.Element {
-	const name = props.board.boardName;
+function BoardBlock(props: { board: { board_name: string, title: string }}): JSX.Element {
+	const name = props.board.board_name;
 	const title = props.board.title;
 	return <Link to={`/app/b/${name}`}>
 		<div>

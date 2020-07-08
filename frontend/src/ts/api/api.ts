@@ -1,4 +1,5 @@
 import * as api_trait from './api_trait';
+import { toast } from 'react-toastify';
 
 export class ApiFetcher extends api_trait.RootQueryFetcher {
 	async fetchResult(query: Object): Promise<string> {
@@ -21,6 +22,16 @@ export function unwrap<T, E>(result: api_trait.Result<T, E>): T {
 		return result.Ok;
 	} else {
 		throw result.Err;
+	}
+}
+
+// 打印錯誤並回傳預設資料
+export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
+	if ('Ok' in result) {
+		return result.Ok;
+	} else {
+		toast.error(result.Err);
+		return alt;
 	}
 }
 

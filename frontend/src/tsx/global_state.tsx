@@ -7,6 +7,7 @@ import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticl
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
 import { chat_proto } from '../ts/protobuf/chat_proto.js';
+import { toast } from 'react-toastify';
 
 const {
 	ServerSendData,
@@ -44,7 +45,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 				setUserState({ login: false, fetching: false });
 			}
 		} catch (err) {
-			console.log(err);
+			toast.error(err);
 		}
 		return;
 	}
