@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
 
     // build frontend chitin
     let mut client_file = File::create("frontend/src/ts/api/api_trait.ts")?;
-    client_file.write_all(b"export type Option<T> = T | undefined | null;\n")?;
+    client_file.write_all(b"export type Option<T> = T | null;\n")?;
     client_file.write_all(
         b"export type Result<T, E> = {
     'Ok': T
