@@ -9,7 +9,6 @@ use carbonbond::{
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
-use redis;
 use std::path::PathBuf;
 
 static mut INDEX: String = String::new();

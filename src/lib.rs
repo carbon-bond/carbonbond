@@ -12,7 +12,8 @@ use crate::custom_error::Fallible;
 use cookie::Cookie;
 use hyper::header;
 use hyper::header::HeaderValue;
-use hyper::{Body, HeaderMap, Response};
+use hyper::{HeaderMap, Response};
+use std::str::FromStr;
 
 pub trait Context {
     fn remember_id(&mut self, id: i64) -> Fallible<()>;
@@ -25,22 +26,37 @@ pub struct Ctx {
     pub resp: Response<String>,
 }
 
-impl Ctx {}
-impl Context for Ctx {
-    fn remember_id(&mut self, id: i64) -> Fallible<()> {
+// XXX: 明碼傳輸，先頂着用，上線前必須處理安全問題
+impl Ctx {
+    fn set_session<T: ToString>(&mut self, key: &str, value: T) -> Fallible<()> {
         self.resp.headers_mut().insert(
             header::SET_COOKIE,
-            HeaderValue::from_str(&Cookie::build("id", id.to_string()).finish().to_string())?,
+            HeaderValue::from_str(&Cookie::build(key, &value.to_string()).finish().to_string())?,
         );
         Ok(())
     }
-
-    fn forget_id(&mut self) -> Fallible<()> {
+    fn get_session<T: FromStr>(&mut self, key: &str) -> Option<T> {
+        self.headers
+            .get(header::COOKIE)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| {
+                for kv in s.split(' ') {
+                    if let Ok(cookie) = Cookie::parse(kv) {
+                        let (k, v) = cookie.name_value();
+                        if k == key {
+                            return v.parse::<T>().ok();
+                        }
+                    }
+                }
+                None
+            })
+    }
+    fn forget_session(&mut self, key: &str) -> Fallible<()> {
         use time::OffsetDateTime;
         self.resp.headers_mut().insert(
             header::SET_COOKIE,
             HeaderValue::from_str(
-                &Cookie::build("id", "")
+                &Cookie::build(key, "")
                     .expires(OffsetDateTime::now_utc())
                     .finish()
                     .to_string(),
@@ -48,22 +64,17 @@ impl Context for Ctx {
         );
         Ok(())
     }
+}
+impl Context for Ctx {
+    fn remember_id(&mut self, id: i64) -> Fallible<()> {
+        self.set_session("id", id)
+    }
+
+    fn forget_id(&mut self) -> Fallible<()> {
+        self.forget_session("id")
+    }
 
     fn get_id(&mut self) -> Option<i64> {
-        self.headers
-            .get(header::COOKIE)
-            .and_then(|v| v.to_str().ok())
-            .and_then(|s| {
-                log::info!("cookie: {}", s);
-                for kv in s.split(' ') {
-                    if let Ok(cookie) = Cookie::parse(kv) {
-                        let (key, value) = cookie.name_value();
-                        if key == "id" {
-                            return value.parse::<i64>().ok();
-                        }
-                    }
-                }
-                None
-            })
+        self.get_session("id")
     }
 }
