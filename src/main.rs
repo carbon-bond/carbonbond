@@ -9,6 +9,7 @@ use carbonbond::{
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
+use redis;
 use std::path::PathBuf;
 
 static mut INDEX: String = String::new();
@@ -35,14 +36,25 @@ async fn on_request(
 async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<Response<Body>> {
     match (req.method(), req.uri().path()) {
         (&Method::POST, "/api") => {
-            let body = hyper::body::to_bytes(req.into_body()).await?;
+            let (parts, body) = req.into_parts();
+
+            let body = hyper::body::to_bytes(body).await?;
             log::trace!("原始請求： {:#?}", body);
+
             let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
                 .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
             log::info!("請求： {:#?}", query);
+
             let root: api_impl::RootQueryRouter = Default::default();
-            let ret = root.handle(&Ctx {}, query).await?;
-            Ok(Response::new(Body::from(ret)))
+
+            let mut context = Ctx {
+                headers: parts.headers,
+                resp: Response::new(String::new()),
+            };
+
+            let ret = root.handle(&mut context, query).await?;
+            context.resp.body_mut().push_str(&ret);
+            Ok(context.resp.map(|s| Body::from(s)))
         }
         (&Method::GET, _) => {
             if req.uri().path().starts_with("/app") {

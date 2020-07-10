@@ -6,7 +6,7 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import '../css/header.css';
 
-import { matchErrAndShow, ajaxOperation } from '../ts/api';
+import { API_FETCHER, unwrap } from '../ts/api/api';
 
 import { useInputValue } from './utils';
 import { UserState } from './global_state';
@@ -16,29 +16,33 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
 
-	async function login_request(name: string, password: string): Promise<{}> {
+	async function login_request(name: string, password: string): Promise<void> {
 		try {
-			const data = await ajaxOperation.Login({ name, password });
+			let user = unwrap(await API_FETCHER.login(password, name));
 			setLogining(false);
-			setLogin({
-				user_name: data.login.name,
-				energy: data.login.energy,
-				invitation_credit: data.login.invitationCredit
-			});
-			toast('登入成功');
+			if (user) {
+				setLogin({
+					user_name: user.user_name,
+					energy: user.energy,
+					invitation_credit: user.invitation_credit
+				});
+				toast('登入成功');
+			} else {
+				toast('帳號或密碼錯誤');
+			}
 		} catch (err) {
-			matchErrAndShow(err);
+			toast.error(err);
 		}
-		return {};
+		return;
 	}
 	async function logout_request(): Promise<{}> {
 		try {
-			await ajaxOperation.Logout();
+			unwrap(await API_FETCHER.logout());
 			setLogout();
 			setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			matchErrAndShow(err);
+			toast.error(err);
 		}
 		return {};
 	}

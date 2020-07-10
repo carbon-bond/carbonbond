@@ -14,6 +14,10 @@ pub enum RootQuery {
 pub enum UserQuery {
     #[chitin(request, response = "Option<super::model::User>")]
     QueryMe {},
+    #[chitin(request, response = "Option<super::model::User>")]
+    Login { user_name: String, password: String },
+    #[chitin(request, response = "()")]
+    Logout {},
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {

@@ -16,7 +16,7 @@ fn main() -> std::io::Result<()> {
     server_file.write_all(
         RootQuery::codegen(&CodegenOption::Server {
             error: "crate::custom_error::Error",
-            context: "&crate::Ctx",
+            context: "&mut crate::Ctx",
         })
         .as_bytes(),
     )?;

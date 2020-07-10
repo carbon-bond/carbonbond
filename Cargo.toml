@@ -23,6 +23,9 @@ chrono = { version = "0.4.7", features = ["serde"] }
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }
 async-trait = "0.1.31"
 rustyline = "5.0.2"
+redis = "0.16.0"
+cookie = { version = "0.14.1", features= ["secure", "percent-encode"] }
+time = "0.2.16"
 
 [build-dependencies]
 chitin = { git = "https://github.com/carbon-bond/chitin" }

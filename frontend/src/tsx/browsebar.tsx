@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { matchErrAndShow } from '../ts/api';
 import { UserState } from './global_state';
 import { STORAGE_NAME } from '../ts/constants';
 import { Board } from '../ts/api/api_trait';
@@ -34,10 +33,7 @@ export function BrowseBar(): JSX.Element {
 		fetchHotBoards().then(boards => {
 			setHotBoards(boards);
 			setFetching(false);
-		}).catch((err => {
-			matchErrAndShow(err);
-			setFetching(false);
-		}));
+		});
 	}, []);
 
 	function onTitleClick(index: number): void {

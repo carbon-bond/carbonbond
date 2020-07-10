@@ -1,6 +1,7 @@
 use super::api_trait;
 use super::model;
 use crate::custom_error::{Error, Fallible};
+use crate::Context;
 use async_trait::async_trait;
 use chrono::Utc;
 
@@ -32,7 +33,7 @@ pub struct ArticleQueryRouter {}
 impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_article_list(
         &self,
-        context: &crate::Ctx,
+        context: &mut crate::Ctx,
         board_name: Option<String>,
         author_name: Option<String>,
         count: usize,
@@ -77,7 +78,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     }
     async fn query_article(
         &self,
-        context: &crate::Ctx,
+        context: &mut crate::Ctx,
         id: u64,
     ) -> Result<model::Article, crate::custom_error::Error> {
         if id == 1 {
@@ -130,7 +131,7 @@ pub struct BoardQueryRouter {}
 impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_board_list(
         &self,
-        context: &crate::Ctx,
+        context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
         Ok(vec![
@@ -152,7 +153,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
             },
         ])
     }
-    async fn query_board(&self, context: &crate::Ctx, name: String) -> Fallible<model::Board> {
+    async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
         unimplemented!()
     }
 }
@@ -161,12 +162,32 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
 pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
-    async fn query_me(&self, context: &crate::Ctx) -> Fallible<Option<model::User>> {
+    async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
+        Ok(context.get_id().and_then(|id| {
+            Some(model::User {
+                user_name: id.to_string(),
+                sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
+                energy: 789,
+                invitation_credit: 20,
+            })
+        }))
+    }
+    async fn login(
+        &self,
+        context: &mut crate::Ctx,
+        password: String,
+        user_name: String,
+    ) -> Fallible<Option<model::User>> {
+        context.remember_id(user_name.parse::<i64>()?)?;
         Ok(Some(model::User {
-            user_name: "宋江".to_owned(),
+            user_name: user_name,
             sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
             energy: 789,
             invitation_credit: 20,
         }))
+    }
+    async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {
+        context.forget_id()?;
+        Ok(())
     }
 }
