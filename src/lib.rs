@@ -65,6 +65,7 @@ impl Ctx {
         Ok(())
     }
 }
+impl Ctx {}
 impl Context for Ctx {
     fn remember_id(&mut self, id: u64) -> Fallible<()> {
         self.set_session("id", id)
