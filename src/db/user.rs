@@ -30,11 +30,12 @@ pub async fn get_by_name(name: &str) -> Fallible<User> {
 pub async fn create(user: User) -> Fallible<i64> {
     let pool = get_pool();
     let res = sqlx::query!(
-        "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
         user.name,
         user.password_hashed,
         user.salt,
-        user.email
+        user.email,
+        user.sentence
     )
     .fetch_one(pool)
     .await?;

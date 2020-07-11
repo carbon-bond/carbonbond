@@ -1,5 +1,5 @@
 use carbonbond::{
-    config::{get_config, initialize_config},
+    config::{get_config, init},
     custom_error::{Error, ErrorCode, Fallible},
 };
 use refinery::config::{Config, ConfigDbType};
@@ -80,7 +80,7 @@ fn main() {
         match ArgRoot::from_iter_safe(args) {
             Ok(root) => {
                 login_name = root.user;
-                initialize_config(root.config);
+                init(root.config);
                 if let Some(cmd) = root.subcmd {
                     handle_root(cmd, &mut login_name).unwrap();
                     return;
@@ -92,7 +92,7 @@ fn main() {
             }
         }
     } else {
-        initialize_config(None);
+        init(None);
     }
     let mut rl = Editor::<()>::new();
     let mut quit = false;

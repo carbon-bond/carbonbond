@@ -77,7 +77,7 @@ CREATE TABLE articles (
   category_id BIGINT REFERENCES categories(id) NOT NULL,
   title TEXT NOT NULL,
   author_id BIGINT REFERENCES users(id) NOT NULL,
-  show_in_list BOOLEAN NOT NULL,
+  show_in_list BOOLEAN NOT NULL DEFAULT true,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

@@ -68,7 +68,7 @@ async fn main() -> Fallible<()> {
     let args_config = clap::load_yaml!("args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
-    config::initialize_config(config_file);
+    config::init(config_file);
     let conf = config::get_config();
     // TODO: 初始化資料庫連線池
     log::info!("資料庫位置：{}", &conf.database.get_url());

@@ -13,11 +13,15 @@ pub enum Mode {
 }
 
 pub fn get_mode() -> Mode {
-    match std::env::var("MODE").as_ref().map(|s| &**s) {
-        Ok("release") => Mode::Release,
-        Ok("dev") => Mode::Dev,
-        Ok("test") => Mode::Test,
-        _ => Mode::Dev,
+    if cfg!(test) {
+        Mode::Test
+    } else {
+        match std::env::var("MODE").as_ref().map(|s| &**s) {
+            Ok("release") => Mode::Release,
+            Ok("dev") => Mode::Dev,
+            Ok("test") => Mode::Test,
+            _ => Mode::Dev,
+        }
     }
 }
 
