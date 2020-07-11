@@ -290,7 +290,7 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 [[package]]
 name = "chitin"
 version = "0.1.0"
-source = "git+https://github.com/carbon-bond/chitin#2d261efac2947b3d7e6acbc95f1ec5e9c694e772"
+source = "git+https://github.com/carbon-bond/chitin#817b47a42f49aeed3508c138d57e130e11a87dc5"
 dependencies = [
  "chitin_core",
  "chitin_derive",
@@ -300,7 +300,7 @@ dependencies = [
 [[package]]
 name = "chitin_core"
 version = "0.1.0"
-source = "git+https://github.com/carbon-bond/chitin#2d261efac2947b3d7e6acbc95f1ec5e9c694e772"
+source = "git+https://github.com/carbon-bond/chitin#817b47a42f49aeed3508c138d57e130e11a87dc5"
 dependencies = [
  "Inflector",
  "proc-macro2 1.0.18",
@@ -311,7 +311,7 @@ dependencies = [
 [[package]]
 name = "chitin_derive"
 version = "0.1.0"
-source = "git+https://github.com/carbon-bond/chitin#2d261efac2947b3d7e6acbc95f1ec5e9c694e772"
+source = "git+https://github.com/carbon-bond/chitin#817b47a42f49aeed3508c138d57e130e11a87dc5"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",
@@ -322,7 +322,7 @@ dependencies = [
 [[package]]
 name = "chitin_model"
 version = "0.1.0"
-source = "git+https://github.com/carbon-bond/chitin#2d261efac2947b3d7e6acbc95f1ec5e9c694e772"
+source = "git+https://github.com/carbon-bond/chitin#817b47a42f49aeed3508c138d57e130e11a87dc5"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",

@@ -17,12 +17,14 @@ type UserStateType = {
 	login: false, fetching: boolean
 } | {
 	login: true,
+	id: number,
 	user_name: string,
 	invitation_credit: number,
 	energy: number
 };
 
 interface LoginData {
+	id: number,
 	user_name: string,
 	invitation_credit: number,
 	energy: number
@@ -33,13 +35,14 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 
 	async function getLoginState(): Promise<void> {
 		try {
-			const data = unwrap(await API_FETCHER.queryMe());
-			if (data) {
+			const user = unwrap(await API_FETCHER.queryMe());
+			if (user) {
 				setUserState({
 					login: true,
-					user_name: data.user_name,
-					invitation_credit: data.invitation_credit,
-					energy: data.energy,
+					user_name: user.user_name,
+					id: user.id,
+					invitation_credit: user.invitation_credit,
+					energy: user.energy,
 				});
 			} else {
 				setUserState({ login: false, fetching: false });
@@ -57,6 +60,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	function setLogin(data: LoginData): void {
 		setUserState({
 			login: true,
+			id: data.id,
 			user_name: data.user_name,
 			invitation_credit: data.invitation_credit,
 			energy: data.energy,

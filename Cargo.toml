@@ -7,6 +7,7 @@ default-run = "server"
 
 [dependencies]
 chitin = { git = "https://github.com/carbon-bond/chitin" }
+# chitin = { path = "../chitin/chitin" }
 tokio = { version = "0.2", features = ["full"] }
 hyper-staticfile = "0.5.3"
 hyper = "0.13.6"
@@ -28,6 +29,7 @@ time = "0.2.16"
 
 [build-dependencies]
 chitin = { git = "https://github.com/carbon-bond/chitin" }
+# chitin = { path = "../chitin/chitin" }
 chrono = { version = "0.4.7", features = ["serde"] }
 serde = { version = "1.0.98", features = ["derive"] }
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }

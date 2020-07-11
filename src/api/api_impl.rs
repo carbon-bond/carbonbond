@@ -10,14 +10,19 @@ pub struct RootQueryRouter {
     article_router: ArticleQueryRouter,
     board_router: BoardQueryRouter,
     user_router: UserQueryRouter,
+    party_router: PartyQueryRouter,
 }
 #[async_trait]
 impl api_trait::RootQueryRouter for RootQueryRouter {
     type ArticleQueryRouter = ArticleQueryRouter;
     type BoardQueryRouter = BoardQueryRouter;
     type UserQueryRouter = UserQueryRouter;
+    type PartyQueryRouter = PartyQueryRouter;
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
+    }
+    fn party_router(&self) -> &Self::PartyQueryRouter {
+        &self.party_router
     }
     fn board_router(&self) -> &Self::BoardQueryRouter {
         &self.board_router
@@ -126,6 +131,39 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
 }
 
 #[derive(Default)]
+pub struct PartyQueryRouter {}
+#[async_trait]
+impl api_trait::PartyQueryRouter for PartyQueryRouter {
+    async fn query_party(&self, context: &mut crate::Ctx, id: u64) -> Fallible<model::Party> {
+        Ok(if id == 1 {
+            model::Party {
+                id: 1,
+                board_id: None,
+                party_name: "東林黨".to_owned(),
+                energy: 2949,
+                ruling: false,
+            }
+        } else if id == 2 {
+            model::Party {
+                id: 2,
+                board_id: Some(1),
+                party_name: "天地會".to_owned(),
+                energy: 14790,
+                ruling: true,
+            }
+        } else {
+            model::Party {
+                id: 3,
+                board_id: Some(2),
+                party_name: "玉皇朝".to_owned(),
+                energy: 56783,
+                ruling: false,
+            }
+        })
+    }
+}
+
+#[derive(Default)]
 pub struct BoardQueryRouter {}
 #[async_trait]
 impl api_trait::BoardQueryRouter for BoardQueryRouter {
@@ -165,6 +203,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
         Ok(context.get_id().and_then(|id| {
             Some(model::User {
+                id: id as u64,
                 user_name: id.to_string(),
                 sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
                 energy: 789,
@@ -172,14 +211,40 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
             })
         }))
     }
+    async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
+        Ok(vec![
+            model::Party {
+                id: 1,
+                board_id: None,
+                party_name: "東林黨".to_owned(),
+                energy: 2949,
+                ruling: false,
+            },
+            model::Party {
+                id: 2,
+                board_id: Some(1),
+                party_name: "天地會".to_owned(),
+                energy: 14790,
+                ruling: true,
+            },
+            model::Party {
+                id: 3,
+                board_id: Some(2),
+                party_name: "玉皇朝".to_owned(),
+                energy: 56783,
+                ruling: false,
+            },
+        ])
+    }
     async fn login(
         &self,
         context: &mut crate::Ctx,
         password: String,
         user_name: String,
     ) -> Fallible<Option<model::User>> {
-        context.remember_id(user_name.parse::<i64>()?)?;
+        context.remember_id(user_name.parse::<u64>()?)?;
         Ok(Some(model::User {
+            id: user_name.parse::<u64>()?,
             user_name: user_name,
             sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
             energy: 789,

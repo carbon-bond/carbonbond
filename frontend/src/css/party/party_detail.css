@@ -1,0 +1,18 @@
+.partyDetail {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    & .partyName {
+        font-size: 24px;
+        color: var(--font-color);
+    }
+    & .boardName {
+        font-size: 16px;
+        color: var(--light-font-color);
+        margin-left: 20px;
+    }
+    & .createBoardBlock {
+        margin-top: 20px;
+    }
+}

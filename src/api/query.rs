@@ -6,6 +6,8 @@ pub enum RootQuery {
     #[chitin(router)]
     User(UserQuery),
     #[chitin(router)]
+    Party(PartyQuery),
+    #[chitin(router)]
     Article(ArticleQuery),
     #[chitin(router)]
     Board(BoardQuery),
@@ -14,10 +16,17 @@ pub enum RootQuery {
 pub enum UserQuery {
     #[chitin(request, response = "Option<super::model::User>")]
     QueryMe {},
+    #[chitin(request, response = "Vec<super::model::Party>")]
+    QueryMyPartyList {},
     #[chitin(request, response = "Option<super::model::User>")]
     Login { user_name: String, password: String },
     #[chitin(request, response = "()")]
     Logout {},
+}
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+pub enum PartyQuery {
+    #[chitin(request, response = "super::model::Party")]
+    QueryParty { id: u64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {

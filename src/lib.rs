@@ -16,9 +16,9 @@ use hyper::{HeaderMap, Response};
 use std::str::FromStr;
 
 pub trait Context {
-    fn remember_id(&mut self, id: i64) -> Fallible<()>;
+    fn remember_id(&mut self, id: u64) -> Fallible<()>;
     fn forget_id(&mut self) -> Fallible<()>;
-    fn get_id(&mut self) -> Option<i64>;
+    fn get_id(&mut self) -> Option<u64>;
 }
 
 pub struct Ctx {
@@ -66,7 +66,7 @@ impl Ctx {
     }
 }
 impl Context for Ctx {
-    fn remember_id(&mut self, id: i64) -> Fallible<()> {
+    fn remember_id(&mut self, id: u64) -> Fallible<()> {
         self.set_session("id", id)
     }
 
@@ -74,7 +74,7 @@ impl Context for Ctx {
         self.forget_session("id")
     }
 
-    fn get_id(&mut self) -> Option<i64> {
+    fn get_id(&mut self) -> Option<u64> {
         self.get_session("id")
     }
 }
