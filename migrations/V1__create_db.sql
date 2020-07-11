@@ -47,8 +47,8 @@ CREATE TABLE reset_password (
 CREATE TABLE boards (
   id BIGSERIAL PRIMARY KEY,
   board_name TEXT NOT NULL UNIQUE,
-  title TEXT NOT NULL,
-  detail TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  detail TEXT NOT NULL DEFAULT '',
   ruling_party_id BIGINT NOT NULL,       -- 等 parties 表建立後設定爲 foreign key
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

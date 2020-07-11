@@ -18,6 +18,7 @@ password = "carbonbond"
 port = 5432
 host = "localhost"
 data_path = "data"
+max_conn = 10
 
 [user]
 invitation_credit = 20

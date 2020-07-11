@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use state::LocalStorage;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -21,8 +20,6 @@ pub fn get_mode() -> Mode {
         _ => Mode::Dev,
     }
 }
-
-static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
@@ -64,6 +61,15 @@ pub struct DatabaseConfig {
     pub port: u32,
     pub host: String,
     pub data_path: String,
+    pub max_conn: u32,
+}
+impl DatabaseConfig {
+    pub fn get_url(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            self.username, self.password, self.host, self.port, self.dbname
+        )
+    }
 }
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
@@ -151,19 +157,4 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     };
 
     Ok(config)
-}
-
-/// 載入設定檔，將設定檔物件儲存於全域狀態
-/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn initialize_config(path: Option<String>) {
-    let config = load_config(&path).unwrap();
-    log::info!("初始化設定檔：{}", config.file_name);
-    assert!(
-        CONFIG.set(move || config.clone()),
-        "initialize_config() is called twice",
-    );
-}
-
-pub fn get_config() -> &'static Config {
-    CONFIG.get()
 }

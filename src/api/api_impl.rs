@@ -1,6 +1,6 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::Fallible;
 use async_trait::async_trait;
 
 #[derive(Default)]

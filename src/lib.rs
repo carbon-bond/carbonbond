@@ -4,6 +4,7 @@ extern crate derive_more;
 pub mod api;
 pub mod config;
 pub mod custom_error;
+pub mod db;
 
 pub const MAX_ARTICLE_FIELD: usize = 15;
 

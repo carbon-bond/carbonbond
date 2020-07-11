@@ -4,15 +4,16 @@ use carbonbond::{
     api::query,
     config,
     custom_error::{Error, ErrorCode, Fallible},
-    Ctx,
+    db, Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
+use state::Storage;
 
-static mut INDEX: String = String::new();
+static INDEX: Storage<String> = Storage::new();
 fn index() -> &'static str {
-    unsafe { &INDEX }
+    INDEX.get()
 }
 
 async fn on_request(
@@ -60,7 +61,7 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
     }
 }
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn main() -> Fallible<()> {
     // 初始化紀錄器
     env_logger::init();
     // 載入設定
@@ -69,16 +70,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
     config::initialize_config(config_file);
     let conf = config::get_config();
-    // TODO: 初始化資料庫連線池？
-    // log::info!("資料庫位置：{}", &conf.database.url);
+    // TODO: 初始化資料庫連線池
+    log::info!("資料庫位置：{}", &conf.database.get_url());
+    db::init().await.unwrap();
     // 載入前端資源
     let static_files = Static::new("./frontend/static");
     // 載入首頁
-    unsafe {
-        let content =
-            std::fs::read_to_string("./frontend/static/index.html").expect("讀取首頁失敗");
-        INDEX = content;
-    }
+    let content = std::fs::read_to_string("./frontend/static/index.html").expect("讀取首頁失敗");
+    INDEX.set(content);
+
     // 打開伺服器
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
