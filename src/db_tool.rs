@@ -23,7 +23,7 @@ struct ArgRoot {
 }
 #[derive(StructOpt, Debug)]
 enum Root {
-    #[structopt(about = "登入", alias = "l")]
+    #[structopt(about = "登入")]
     Login { user_name: String },
     #[structopt(about = "初始化資料庫，如果資料庫非空則退出。")]
     Init,
@@ -37,7 +37,7 @@ enum Root {
     Reset(Reset),
     #[structopt(about = "資料庫遷移", alias = "m")]
     Migrate,
-    #[structopt(about = "列出資料庫")]
+    #[structopt(about = "列出資料庫", alias = "l")]
     List,
     #[structopt(about = "往資料庫塞點什麼", alias = "a")]
     Add(Add),
@@ -146,13 +146,13 @@ fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
             create_db()?;
         }
         Root::Reset(reset) => {
-            let exist_index = list_db()?.iter().position(|s| s == db_name);
-            if exist_index.is_none() {
-                println!("找不到 {}，創建之", db_name);
-                create_db()?;
-            } else {
+            let exist = list_db()?.contains(db_name);
+            if exist {
                 println!("{} 已存在，清空之", db_name);
                 clean_db()?;
+            } else {
+                println!("找不到 {}，創建之", db_name);
+                create_db()?;
             }
             if !reset.no_migrate {
                 migrate()?;
@@ -169,7 +169,6 @@ fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
                 println!("{}{}", prefix, db);
             }
         }
-        _ => println!("尚未實作"),
     }
     Ok(false)
 }

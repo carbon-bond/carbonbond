@@ -8,6 +8,8 @@ async fn setup() {
     std::env::set_var("MODE", "test");
     let mut child = std::process::Command::new("target/debug/dbtool")
         .args(&["reset"])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .spawn()
         .unwrap();
     child.wait().unwrap();
