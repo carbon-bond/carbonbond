@@ -27,7 +27,7 @@ pub async fn get_by_name(name: &str) -> Fallible<User> {
     Ok(user)
 }
 
-pub async fn create(user: User) -> Fallible<i64> {
+pub async fn create(user: &User) -> Fallible<i64> {
     let pool = get_pool();
     let res = sqlx::query!(
         "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",

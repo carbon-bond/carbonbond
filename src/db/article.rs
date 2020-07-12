@@ -1,16 +1,16 @@
-use super::{get_pool, DBObject, ToFallible};
+use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::custom_error::{DataType, Fallible};
 
 #[derive(Debug, Default)]
 pub struct Article {
-    id: i64,
-    board_id: i64,
-    root_id: i64,
-    category_id: i64,
-    title: String,
-    author_id: i64,
-    show_in_list: bool,
-    create_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub id: i64,
+    pub board_id: i64,
+    pub root_id: i64,
+    pub category_id: i64,
+    pub title: String,
+    pub author_id: i64,
+    pub show_in_list: bool,
+    pub create_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 impl DBObject for Article {
     const TYPE: DataType = DataType::Article;
@@ -38,9 +38,14 @@ pub async fn get_by_board_id(board_id: i64, offset: i64, limit: i64) -> Fallible
     Ok(articles)
 }
 
-pub async fn create(article: Article) -> Fallible<i64> {
+pub async fn create(
+    article: &Article,
+    str_content: Vec<String>,
+    int_content: Vec<i32>,
+) -> Fallible<i64> {
+    // TODO: 交易？
     let pool = get_pool();
-    let res = sqlx::query!(
+    let article_id = sqlx::query!(
         "
         INSERT INTO articles (board_id, root_id, title, category_id, author_id)
         VALUES ($1, $2, $3, $4, $5) RETURNING id
@@ -52,6 +57,13 @@ pub async fn create(article: Article) -> Fallible<i64> {
         article.author_id,
     )
     .fetch_one(pool)
+    .await?
+    .id;
+    article_content::create(&article_content::ArticleContent {
+        article_id,
+        str_content,
+        int_content,
+    })
     .await?;
-    Ok(res.id)
+    Ok(article_id)
 }

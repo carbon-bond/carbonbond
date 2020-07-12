@@ -4,7 +4,9 @@ use sqlx::postgres::PgPool;
 use state::Storage;
 
 pub mod article;
+pub mod article_content;
 pub mod board;
+pub mod party;
 pub mod user;
 
 static POOL: Storage<PgPool> = Storage::new();

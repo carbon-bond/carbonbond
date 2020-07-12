@@ -20,7 +20,7 @@ async fn setup() {
 #[tokio::test]
 async fn user_test() -> Fallible<()> {
     setup().await;
-    let user_id = db::user::create(db::user::User {
+    let user_id = db::user::create(&db::user::User {
         name: "測試人".to_string(),
         email: "test_email@test.com".to_string(),
         sentence: "一句話".to_string(),
