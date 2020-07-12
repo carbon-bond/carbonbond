@@ -22,4 +22,4 @@ node_modules/
 .db_tool_history
 
 # chitin-codegen
-api_trait.*
+api_trait.rs
