@@ -42,7 +42,7 @@
     }
     & .articleTitle {
         font-size: 20px;
-        font-weight: bold;
+        /* font-weight: bold; */
     }
 }
 
@@ -66,7 +66,8 @@
     border-radius: 4px;
 
     & i {
-        margin-right: 3px;
+        font-size: 150%;
+        margin-right: 4px;
     }
 }
 .articleBtnItem:hover {
@@ -78,6 +79,7 @@
 }
 
 .articleContainer {
+    border: 1px var(--lighter-gray) solid;
     background-color: var(--background-color);
     overflow: hidden;
     width: 100%;

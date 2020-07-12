@@ -1,7 +1,9 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
+import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
-import { ArticleCard, ArticleMeta } from '../article_card';
+import { ArticleCard } from '../article_card';
+import { Article } from '../../ts/api/api_trait';
 import { UserState } from '../global_state';
 import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
@@ -187,13 +189,12 @@ async function fetchUserProfile(
 	return res.user;
 }
 
+// TODO: 分頁
 async function fetchArticles(
 	author_name: string,
 	page_size: number,
-	before: string | null
-): Promise<ArticleMeta[]> {
-	let res = await ajaxOperation.ArticleList({ author_name, page_size, before, show_hidden: false });
-	return res.articleList;
+): Promise<Article[]> {
+	return unwrap_or(await API_FETCHER.queryArticleList(author_name, null, page_size), []);
 }
 
 type Props = RouteComponentProps<{ user_name: string }>;
@@ -202,13 +203,13 @@ function UserPage(props: Props): JSX.Element {
 	const user_name = props.match.params.user_name;
 	const { user_state } = UserState.useContainer();
 
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [profile, setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		fetchArticles(user_name, PAGE_SIZE, null).then(more_articles => {
+		fetchArticles(user_name, PAGE_SIZE).then(more_articles => {
 			setArticles(more_articles);
 		});
 	}, [user_name]);

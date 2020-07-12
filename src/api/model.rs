@@ -8,30 +8,42 @@ mod model {
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct User {
-        user_name: String,
-        energy: i32,
-        sentence: String,
+        pub id: u64,
+        pub user_name: String,
+        pub energy: i32,
+        pub sentence: String,
+        pub invitation_credit: u64,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Party {
+        pub id: u64,
+        pub party_name: String,
+        pub board_id: Option<u64>,
+        pub energy: i32,
+        pub ruling: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
-        id: u64,
-        board_name: String,
-        create_time: DateTime<Utc>,
-        title: String,
-        detail: String,
-        ruling_party_id: u64,
+        pub id: u64,
+        pub board_name: String,
+        pub create_time: DateTime<Utc>,
+        pub title: String,
+        pub detail: String,
+        pub ruling_party_id: u64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
-        id: u64,
-        title: String,
-        energy: i32,
-        create_time: DateTime<Utc>,
-        root_id: u64,
-        author_id: u64,
-        content: Vec<String>,
-        category: String, // XXX: ??
-        board_id: u64,
+        pub id: u64,
+        pub category: String, // XXX: ??
+        pub title: String,
+        pub energy: i32,
+        pub create_time: DateTime<Utc>,
+        pub root_id: u64,
+        pub author_id: u64,
+        pub author_name: String,
+        pub content: Vec<String>,
+        pub board_id: u64,
+        pub board_name: String,
     }
 }
 

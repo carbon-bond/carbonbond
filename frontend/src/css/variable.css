@@ -1,4 +1,4 @@
-body {
+:root {
     --deep-gray: #212429;
     --gray: #616569;
     --lighter-gray: #aaaaaa;
@@ -22,7 +22,7 @@ body {
 
     --link-color: var(--blue);
 
-    --lower-background-color: var(--light-gray);
+    --lower-background-color: var(--white);
     --bar-color: var(--white);
     --header-color: var(--white);
     --background-color: var(--white);

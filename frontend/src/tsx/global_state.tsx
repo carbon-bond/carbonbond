@@ -1,12 +1,13 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { ajaxOperation } from '../ts/api';
+import { API_FETCHER, unwrap } from '../ts/api/api';
 import { Record, List, Map } from 'immutable';
 import { CategoryBody, fetchCategories, checkCanAttach, checkCanReply, getArticleCategory } from '../ts/forum_util';
 import { Article } from './board_switch';
 import { useScrollState } from './utils';
 import { chat_proto } from '../ts/protobuf/chat_proto.js';
+import { toast } from 'react-toastify';
 
 const {
 	ServerSendData,
@@ -16,12 +17,14 @@ type UserStateType = {
 	login: false, fetching: boolean
 } | {
 	login: true,
+	id: number,
 	user_name: string,
 	invitation_credit: number,
 	energy: number
 };
 
 interface LoginData {
+	id: number,
 	user_name: string,
 	invitation_credit: number,
 	energy: number
@@ -30,19 +33,24 @@ interface LoginData {
 function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
-	async function getLoginState(): Promise<{}> {
-		const data = await ajaxOperation.Me();
-		if (data.me != null) {
-			setUserState({
-				login: true,
-				user_name: data.me.name,
-				invitation_credit: data.me.invitationCredit,
-				energy: data.me.energy,
-			});
-		} else {
-			setUserState({ login: false, fetching: false });
+	async function getLoginState(): Promise<void> {
+		try {
+			const user = unwrap(await API_FETCHER.queryMe());
+			if (user) {
+				setUserState({
+					login: true,
+					user_name: user.user_name,
+					id: user.id,
+					invitation_credit: user.invitation_credit,
+					energy: user.energy,
+				});
+			} else {
+				setUserState({ login: false, fetching: false });
+			}
+		} catch (err) {
+			toast.error(err);
 		}
-		return {};
+		return;
 	}
 
 	React.useEffect(() => {
@@ -52,6 +60,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 	function setLogin(data: LoginData): void {
 		setUserState({
 			login: true,
+			id: data.id,
 			user_name: data.user_name,
 			invitation_credit: data.invitation_credit,
 			energy: data.energy,
@@ -398,7 +407,7 @@ function useAllChatState(): {
 
 
 	React.useEffect(() => {
-		const onmessage = (event: MessageEvent): void => {
+		const _onmessage = (event: MessageEvent): void => {
 			const buf = new Uint8Array(event.data);
 			const data = ServerSendData.decode(buf);
 			switch (data.Data) {
@@ -427,7 +436,7 @@ function useAllChatState(): {
 			}
 			console.log(data.recentChatResponse);
 		};
-		window.chat_socket.setHandler(onmessage);
+		// window.chat_socket.setHandler(onmessage);
 	}, [all_chat]);
 
 	function addMessage(name: string, message: Message): void {
