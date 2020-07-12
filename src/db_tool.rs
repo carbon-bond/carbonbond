@@ -1,12 +1,18 @@
 use carbonbond::{
-    config::{get_config, init},
+    config::{get_config, init as init_config},
     custom_error::{Error, ErrorCode, Fallible},
+    db::{self, user::User},
 };
 use refinery::config::{Config, ConfigDbType};
 use rustyline::Editor;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 use structopt::StructOpt;
+use tokio::runtime::Runtime;
+
+fn block_on<F: std::future::Future>(future: F) -> F::Output {
+    Runtime::new().unwrap().block_on(future)
+}
 
 mod embedded {
     refinery::embed_migrations!("migrations");
@@ -74,15 +80,18 @@ enum AddSubCommand {
 
 fn main() {
     env_logger::init();
-    let mut login_name: Option<String> = None;
+    let mut user: Option<User> = None;
     let args = std::env::args();
     if args.len() != 1 {
         match ArgRoot::from_iter_safe(args) {
             Ok(root) => {
-                login_name = root.user;
-                init(root.config);
+                init_config(root.config);
+                block_on(db::init()).unwrap();
+                if let Some(name) = &root.user {
+                    login(&mut user, name).unwrap();
+                }
                 if let Some(cmd) = root.subcmd {
-                    handle_root(cmd, &mut login_name).unwrap();
+                    handle_root(cmd, &mut user).unwrap();
                     return;
                 }
             }
@@ -92,14 +101,14 @@ fn main() {
             }
         }
     } else {
-        init(None);
+        init_config(None);
+        block_on(db::init()).unwrap();
     }
     let mut rl = Editor::<()>::new();
     let mut quit = false;
     while !quit {
-        let line = rl
-            .readline(&format!("{}> ", login_name.clone().unwrap_or_default()))
-            .unwrap();
+        let name = user.as_ref().map_or("", |u| &u.name);
+        let line = rl.readline(&format!("{}> ", name)).unwrap();
         let words: Vec<_> = line
             .split("&&")
             .map(|s| s.trim())
@@ -113,7 +122,7 @@ fn main() {
             let mut args = vec!["#"];
             args.extend(word.split(" ").filter(|s| s.len() != 0));
             match Root::from_iter_safe(args) {
-                Ok(root) => match handle_root(root, &mut login_name) {
+                Ok(root) => match handle_root(root, &mut user) {
                     Ok(true) => {
                         quit = true;
                         break;
@@ -127,17 +136,22 @@ fn main() {
     }
 }
 
-fn check_login(login_name: &Option<String>) -> Fallible<&String> {
-    match login_name {
-        Some(name) => Ok(name),
+fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
+    let user_found = block_on(db::user::get_by_name(name))?;
+    *user = Some(user_found);
+    Ok(())
+}
+fn check_login(user: &Option<User>) -> Fallible<&User> {
+    match user {
+        Some(u) => Ok(u),
         _ => Err(Error::new_logic(ErrorCode::NeedLogin, "")),
     }
 }
 
-fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
+fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
     let db_name = &get_config().database.dbname;
     match root {
-        Root::Login { user_name } => *login_name = Some(user_name),
+        Root::Login { user_name } => login(user, &user_name)?,
         Root::Start => start_db()?,
         Root::Stop => stop_db()?,
         Root::Init => {
@@ -159,7 +173,7 @@ fn handle_root(root: Root, login_name: &mut Option<String>) -> Fallible<bool> {
             }
         }
         Root::Quit => return Ok(true),
-        Root::Add(add) => handle_add(add.subcmd, login_name)?,
+        Root::Add(add) => handle_add(add.subcmd, user)?,
         Root::Migrate => {
             migrate()?;
         }
@@ -308,23 +322,30 @@ END $$;";
     )?;
     Ok(())
 }
-fn handle_add(subcmd: AddSubCommand, login_name: &mut Option<String>) -> Fallible<()> {
+fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
     match subcmd {
         AddSubCommand::User {
             name,
             email,
             password,
-        } => *login_name = Some(name),
+        } => {
+            unimplemented!("創建用戶還缺雜湊功能");
+            // db::user::create(&db::user::User {
+            //     name,
+            //     email,
+            //     password_hashed: vec![1, 2, 3],
+            //     salt: vec![4, 5, 6],
+            //     ..Default::default()
+            // });
+        }
         AddSubCommand::Board {
             board_name,
             party_name,
         } => {
-            let login_name = check_login(login_name)?;
-            ()
+            let user = check_login(user)?;
         }
         AddSubCommand::Party { board_name, name } => {
-            let login_name = check_login(login_name)?;
-            ()
+            let user = check_login(user)?;
         }
     }
     Ok(())
