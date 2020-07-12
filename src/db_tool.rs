@@ -1,359 +1,399 @@
 use carbonbond::{
-    chat,
-    config::{get_config, initialize_config, Mode},
-    custom_error::{Error, Fallible},
-    db, forum, party,
-    user::{email, find_user_by_id, find_user_by_name, signup},
-    Context,
+    config::{get_config, init as init_config},
+    custom_error::{Error, ErrorCode, Fallible},
+    db::{self, user::User},
 };
-use diesel::PgConnection;
-use rustyline::{config::Config as RustyLineConfig, error::ReadlineError, Editor};
-use std::{fs, path::PathBuf};
+use refinery::config::{Config, ConfigDbType};
+use rustyline::Editor;
+use std::io::{BufRead, BufReader, Write};
+use std::process::{Command, Stdio};
+use structopt::StructOpt;
+use tokio::runtime::Runtime;
 
-static COMMAND_HISTORY_FILE: &'static str = ".db_tool_history";
-static HELP_MSG: &'static str = "
-<> 表示必填， [] 表示選填
-
-run 子命令：
-    run [指令集檔案位置]
-        執行檔案中的命令，預設為 config/test_data.txt
-add 子命令：
-    add user <信箱地址> <使用者名稱> <密碼>
-    add party <政黨名> [看板名]
-        如果不填看板名，會建立流亡政黨
-        如果填入已存在的看板名，會建立該板的在野黨
-    add board <流亡政黨名> <看板名>
-        如果找不到流亡政黨，會直接建立政黨及看板
-    add direct_chat <使用者名稱 1> <使用者名稱 2>
-    add direct_msg <直接對話 id> <訊息內容>
-as 子命令：
-    as <使用者名稱>
-        db-tool 會記住你的身份，在執行創黨/發文等等功能時自動填入
-invite 子命令：
-    invite <信箱地址> [邀請詞]
-reset
-    清除資料庫並重建
-exit
-    離開程式
-";
-
-enum CommandResult {
-    Success,
-    Eof,
+fn block_on<F: std::future::Future>(future: F) -> F::Output {
+    Runtime::new().unwrap().block_on(future)
 }
 
-struct DBToolCtx {
-    id: Option<i64>,
-    line_editor: Editor<()>,
+mod embedded {
+    refinery::embed_migrations!("migrations");
 }
 
-impl DBToolCtx {
-    fn new() -> DBToolCtx {
-        let editor_config = RustyLineConfig::builder()
-            .max_history_size(100000)
-            .history_ignore_dups(true)
-            .history_ignore_space(true)
-            .auto_add_history(true)
-            .build();
-        let mut line_editor = Editor::<()>::with_config(editor_config);
-        line_editor.load_history(COMMAND_HISTORY_FILE).ok();
+#[derive(StructOpt, Debug)]
+struct ArgRoot {
+    #[structopt(short, long)]
+    user: Option<String>,
+    #[structopt(short, long)]
+    config: Option<String>,
+    #[structopt(subcommand)]
+    subcmd: Option<Root>,
+}
+#[derive(StructOpt, Debug)]
+enum Root {
+    #[structopt(about = "登入")]
+    Login { user_name: String },
+    #[structopt(about = "初始化資料庫，如果資料庫非空則退出。")]
+    Init,
+    #[structopt(about = "打開資料庫")]
+    Start,
+    #[structopt(about = "關閉資料庫")]
+    Stop,
+    #[structopt(about = "離開", alias = "q")]
+    Quit,
+    #[structopt(about = "重置資料庫。若資料庫不存在則創建之。")]
+    Reset(Reset),
+    #[structopt(about = "資料庫遷移", alias = "m")]
+    Migrate,
+    #[structopt(about = "列出資料庫", alias = "l")]
+    List,
+    #[structopt(about = "往資料庫塞點什麼", alias = "a")]
+    Add(Add),
+}
+#[derive(StructOpt, Debug)]
+struct Reset {
+    #[structopt(short, long, help = "不進行資料庫遷移")]
+    no_migrate: bool,
+}
+#[derive(StructOpt, Debug)]
+struct Add {
+    #[structopt(subcommand)]
+    subcmd: AddSubCommand,
+}
+#[derive(StructOpt, Debug)]
+enum AddSubCommand {
+    #[structopt(alias = "u")]
+    User {
+        name: String,
+        password: String,
+        email: String,
+    },
+    #[structopt(alias = "b")]
+    Board {
+        board_name: String,
+        party_name: String,
+    },
+    #[structopt(alias = "p")]
+    Party {
+        name: String,
+        board_name: Option<String>,
+    },
+}
 
-        DBToolCtx {
-            id: None,
-            line_editor,
-        }
-    }
-
-    fn get_user(&self) -> Fallible<Option<db::models::User>> {
-        match self.id {
-            Some(id) => {
-                let user = self.use_pg_conn(|conn| find_user_by_id(&conn, id))?;
-                Ok(Some(user))
+fn main() {
+    env_logger::init();
+    let mut user: Option<User> = None;
+    let args = std::env::args();
+    if args.len() != 1 {
+        match ArgRoot::from_iter_safe(args) {
+            Ok(root) => {
+                init_config(root.config);
+                block_on(db::init()).unwrap();
+                if let Some(name) = &root.user {
+                    login(&mut user, name).unwrap();
+                }
+                if let Some(cmd) = root.subcmd {
+                    handle_root(cmd, &mut user).unwrap();
+                    return;
+                }
             }
-            None => Ok(None),
-        }
-    }
-}
-
-impl Context for DBToolCtx {
-    fn use_pg_conn<T, F>(&self, callback: F) -> Fallible<T>
-    where
-        F: FnOnce(PgConnection) -> Fallible<T>,
-    {
-        let ret = callback(db::connect_db()?)?;
-        Ok(ret)
-    }
-
-    fn remember_id(&self, id: i64) -> Fallible<()> {
-        let _s = self as *const Self as *mut Self;
-        unsafe {
-            (*_s).id = Some(id);
-        }
-        Ok(())
-    }
-
-    fn forget_id(&self) -> Fallible<()> {
-        unimplemented!();
-    }
-
-    fn get_id(&self) -> Option<i64> {
-        self.id.clone()
-    }
-}
-
-fn match_subcommand(ctx: &mut DBToolCtx) -> Fallible<Option<(String, Vec<String>)>> {
-    let prompt = match ctx.get_user()? {
-        Some(user) => format!("{} > ", user.name),
-        None => "> ".to_owned(),
-    };
-
-    let command = loop {
-        let line = match ctx.line_editor.readline(&prompt) {
-            Ok(line) => Ok(line),
-            Err(ReadlineError::Eof) => {
-                print!("^D");
-                return Ok(None);
+            Err(err) => {
+                println!("{}", err);
+                return;
             }
-            Err(ReadlineError::Interrupted) => {
-                print!("^C");
-                continue;
-            }
-            Err(error) => Err(error),
-        }?;
-
-        let words: Vec<String> = line.split_whitespace().map(|w| w.to_owned()).collect();
+        }
+    } else {
+        init_config(None);
+        block_on(db::init()).unwrap();
+    }
+    let mut rl = Editor::<()>::new();
+    let mut quit = false;
+    while !quit {
+        let name = user.as_ref().map_or("", |u| &u.name);
+        let line = rl.readline(&format!("{}> ", name)).unwrap();
+        let words: Vec<_> = line
+            .split("&&")
+            .map(|s| s.trim())
+            .filter(|s| s.len() != 0)
+            .collect();
         if words.len() == 0 {
             continue;
         }
-
-        break (words[0].clone(), words[1..].to_vec());
-    };
-
-    return Ok(Some(command));
-}
-
-fn add_something(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() < 2 {
-        return Err(Error::new_op("add 參數數量錯誤"));
-    }
-    let something = args[0].clone();
-    let sub_args = args[1..].to_vec();
-    match something.as_ref() {
-        "user" => add_user(ctx, &sub_args),
-        "party" => add_party(ctx, &sub_args),
-        "board" => add_board(ctx, &sub_args),
-        "direct_chat" => add_direct_chat(ctx, &sub_args),
-        "direct_msg" => add_direct_message(ctx, &sub_args),
-        other => Err(Error::new_op(format!("無法 add {}", other))),
+        rl.add_history_entry(&line);
+        for word in words {
+            let mut args = vec!["#"];
+            args.extend(word.split(" ").filter(|s| s.len() != 0));
+            match Root::from_iter_safe(args) {
+                Ok(root) => match handle_root(root, &mut user) {
+                    Ok(true) => {
+                        quit = true;
+                        break;
+                    }
+                    Err(err) => println!("{}", err),
+                    _ => (),
+                },
+                Err(err) => println!("{}", err),
+            }
+        }
     }
 }
 
-fn add_user(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() != 3 {
-        return Err(Error::new_op("add user 參數數量錯誤"));
+fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
+    let user_found = block_on(db::user::get_by_name(name))?;
+    *user = Some(user_found);
+    Ok(())
+}
+fn check_login(user: &Option<User>) -> Fallible<&User> {
+    match user {
+        Some(u) => Ok(u),
+        _ => Err(Error::new_logic(ErrorCode::NeedLogin, "")),
     }
-    let conf = get_config();
-    let (email, name, password) = (&args[0], &args[1], &args[2]);
-    // TODO: create_user 內部要做錯誤處理
-    ctx.use_pg_conn(|conn| {
-        signup::create_user(&conn, email, name, password, conf.user.invitation_credit)
+}
+
+fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
+    let db_name = &get_config().database.dbname;
+    match root {
+        Root::Login { user_name } => login(user, &user_name)?,
+        Root::Start => start_db()?,
+        Root::Stop => stop_db()?,
+        Root::Init => {
+            init_db()?;
+            start_db()?;
+            create_db()?;
+        }
+        Root::Reset(reset) => {
+            let exist = list_db()?.contains(db_name);
+            if exist {
+                println!("{} 已存在，清空之", db_name);
+                clean_db()?;
+            } else {
+                println!("找不到 {}，創建之", db_name);
+                create_db()?;
+            }
+            if !reset.no_migrate {
+                migrate()?;
+            }
+        }
+        Root::Quit => return Ok(true),
+        Root::Add(add) => handle_add(add.subcmd, user)?,
+        Root::Migrate => {
+            migrate()?;
+        }
+        Root::List => {
+            for db in list_db()? {
+                let prefix = if &db == db_name { "* " } else { "" };
+                println!("{}{}", prefix, db);
+            }
+        }
+    }
+    Ok(false)
+}
+
+fn migrate() -> Fallible<()> {
+    let conf = &get_config().database;
+    let mut ref_conf = Config::new(ConfigDbType::Postgres)
+        .set_db_host(&conf.host)
+        .set_db_port(&conf.port.to_string())
+        .set_db_user(&conf.username)
+        .set_db_name(&conf.dbname)
+        .set_db_pass(&conf.password);
+    let report = embedded::migrations::runner().run(&mut ref_conf)?;
+    let migrations = report.applied_migrations();
+    println!("執行了 {} 次遷移", migrations.len());
+    for m in migrations.iter() {
+        println!("執行遷移：{} - {}", m.version(), m.name());
+    }
+    Ok(())
+}
+fn list_db() -> Fallible<Vec<String>> {
+    let conf = &get_config().database;
+    let db_list = run_cmd(
+        "psql",
+        &[
+            "-p",
+            &conf.port.to_string(),
+            "-U",
+            &conf.username,
+            "-d",
+            "postgres",
+            "-c",
+            "COPY (SELECT datname from pg_database where datistemplate=false) TO STDOUT",
+        ],
+        &[("PGPASSWORD", &conf.password)],
+        true,
+    )?;
+    Ok(db_list)
+}
+fn start_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd(
+        "pg_ctl",
+        &[
+            "-o",
+            &format!("\"-p{}\"", conf.port),
+            "start",
+            "-w",
+            "-D",
+            &conf.data_path,
+            "-l",
+            "./postgres.log",
+        ],
+        &[],
+        false,
+    )
+    .map_err(|e| match e {
+        Error::OperationError { msg } => Error::new_op(format!(
+            "{}\n若排除其它問題仍無法開啟資料庫，建議執行：\n   sudo service postgresql restart",
+            msg
+        )),
+        _ => e,
     })?;
     Ok(())
 }
-
-fn add_party(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() == 1 {
-        let party_name = &args[0];
-        let id = party::create_party(ctx, None, party_name)?;
-        println!("成功建立政黨，id = {}", id);
-        Ok(())
-    } else if args.len() == 2 {
-        let (party_name, board) = (&args[0], &args[1]);
-        let id = party::create_party(ctx, Some(board), party_name)?;
-        println!("成功建立政黨，id = {}", id);
-        Ok(())
-    } else {
-        Err(Error::new_op("add party 參數數量錯誤"))
-    }
-}
-
-fn add_board(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() != 2 {
-        return Err(Error::new_op("add board 參數數量錯誤"));
-    }
-    let (party_name, board_name) = (&args[0], &args[1]);
-    let find_party = ctx.use_pg_conn(|conn| party::get_party_by_name(&conn, party_name));
-    if find_party.is_err() {
-        let id = party::create_party(ctx, None, party_name)?;
-        println!("建立政黨 {}, id = {}", party_name, id);
-    }
-    let id = forum::create_board(ctx, party_name, board_name)?;
-    println!("成功建立看板，id = {}", id);
+fn stop_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd("pg_ctl", &["-D", &conf.data_path, "stop"], &[], false)?;
     Ok(())
 }
+fn init_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    let mut pass_file = tempfile::NamedTempFile::new_in(".")?;
+    writeln!(pass_file, "{}", conf.password)?;
+    run_cmd(
+        "initdb",
+        &[
+            "-D",
+            &conf.data_path,
+            "-A",
+            "password",
+            "-U",
+            &conf.username,
+            "-E",
+            "UTF-8",
+            &format!("--pwfile={}", pass_file.path().to_str().unwrap_or("")),
+        ],
+        &[],
+        false,
+    )?;
+    Ok(())
+}
+fn create_db() -> Fallible<()> {
+    let conf = &get_config().database;
+    run_cmd(
+        "psql",
+        &[
+            "-p",
+            &conf.port.to_string(),
+            "-U",
+            &conf.username,
+            "-d",
+            "postgres",
+            "-c",
+            &format!("CREATE DATABASE {} ENCODING 'utf8';", conf.dbname),
+        ],
+        &[("PGPASSWORD", &conf.password)],
+        false,
+    )?;
+    Ok(())
+}
+fn clean_db() -> Fallible<()> {
+    let command = "
+DO $$ DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
+    EXECUTE 'DROP TABLE ' || quote_ident(r.tablename) || ' CASCADE';
+  END LOOP;
+END $$;";
 
-fn add_direct_chat(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() != 2 {
-        return Err(Error::new_op("add direct_chat 參數數量錯誤"));
+    let conf = &get_config().database;
+    run_cmd(
+        "psql",
+        &[
+            "-p",
+            &conf.port.to_string(),
+            "-U",
+            &conf.username,
+            "-d",
+            &conf.dbname,
+            "-c",
+            command,
+        ],
+        &[("PGPASSWORD", &conf.password)],
+        false,
+    )?;
+    Ok(())
+}
+fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
+    match subcmd {
+        AddSubCommand::User {
+            name,
+            email,
+            password,
+        } => {
+            unimplemented!("創建用戶還缺雜湊功能");
+            // db::user::create(&db::user::User {
+            //     name,
+            //     email,
+            //     password_hashed: vec![1, 2, 3],
+            //     salt: vec![4, 5, 6],
+            //     ..Default::default()
+            // });
+        }
+        AddSubCommand::Board {
+            board_name,
+            party_name,
+        } => {
+            let user = check_login(user)?;
+        }
+        AddSubCommand::Party { board_name, name } => {
+            let user = check_login(user)?;
+        }
     }
-    let (user_id_1, user_id_2) = (args[0].parse().unwrap(), args[1].parse().unwrap());
-    let chat_id = ctx.use_pg_conn(|conn| chat::create_direct_chat(&conn, user_id_1, user_id_2))?;
-    println!("創建直接對話，id = {}", chat_id);
     Ok(())
 }
-
-fn add_direct_message(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    if args.len() != 2 {
-        return Err(Error::new_op("add direct_msg 參數數量錯誤"));
+fn run_cmd(
+    program: &str,
+    args: &[&str],
+    env: &[(&str, &str)],
+    mute: bool,
+) -> Fallible<Vec<String>> {
+    log::info!("執行命令行指令：{} {:?}", program, args);
+    let mut cmd = Command::new(program);
+    cmd.args(args);
+    for (key, value) in env.iter() {
+        cmd.env(key, value);
     }
-    let (chat_id, content) = (args[0].parse().unwrap(), args[1].to_owned());
-    ctx.use_pg_conn(|conn| {
-        chat::create_direct_message(&conn, chat_id, ctx.get_id().unwrap(), content)
-    })?;
-    Ok(())
-}
+    let mut child = cmd
+        .stdout(Stdio::piped())
+        .spawn()
+        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", program), e))?;
 
-fn invite(ctx: &DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let invitation_words = if args.len() == 1 { "" } else { &args[1] };
-    ctx.use_pg_conn(|conn| {
-        let invite_code =
-            signup::create_invitation(&conn, ctx.get_id(), &args[0], invitation_words)?;
-        email::send_invite_email(
-            &conn,
-            ctx.get_id(),
-            &invite_code,
-            &args[0],
-            invitation_words,
-        )?;
-        Ok(())
-    })?;
-    Ok(())
-}
-
-fn as_user(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let name = &args[0];
-    let user = ctx.use_pg_conn(|conn| find_user_by_name(&conn, name))?;
-    ctx.remember_id(user.id)?;
-    Ok(())
-}
-
-fn reset_database(ctx: &mut DBToolCtx) -> Fallible<()> {
-    let conf = get_config();
-    if let Mode::Release = conf.mode {
-        println!("危險操作！請輸入 carbonbond 以繼續");
-
-        let prompt = match ctx.get_user()? {
-            Some(user) => format!("{} (reset)> ", user.name),
-            None => "(reset)> ".to_owned(),
-        };
-        let line = loop {
-            use ReadlineError::*;
-
-            let line = match ctx.line_editor.readline(&prompt) {
-                Ok(line) => Ok(line),
-                Err(Interrupted) | Err(Eof) => {
-                    println!("操作取消");
-                    return Ok(());
+    if let Some(stdout) = &mut child.stdout {
+        let mut out_str = vec![];
+        let reader = BufReader::new(stdout);
+        reader
+            .lines()
+            .filter_map(|line| line.ok())
+            .for_each(|line| {
+                if !mute {
+                    println!("  ==> {}", line);
                 }
-                Err(error) => Err(error),
-            }?;
+                out_str.push(line);
+            });
 
-            break line;
-        };
-
-        if &line != "carbonbond\n" {
-            println!("操作取消");
-            return Ok(());
+        let status = child.wait()?;
+        if status.success() {
+            Ok(out_str)
+        } else {
+            Err(Error::new_op(format!(
+                "{} 指令異常退出，狀態碼 = {:?}",
+                program,
+                status.code().unwrap_or(0)
+            )))
         }
-    }
-
-    let out = std::process::Command::new("diesel")
-        .arg("database")
-        .arg("reset")
-        .arg("--database-url")
-        .arg(&conf.database.url)
-        .output()?
-        .stdout;
-    println!("{}", String::from_utf8_lossy(&out));
-    Ok(())
-}
-
-fn run_batch_command(ctx: &mut DBToolCtx, args: &Vec<String>) -> Fallible<()> {
-    let file_path = if args.len() == 0 {
-        "config/test_data.txt"
     } else {
-        &args[0]
-    };
-    let txt = fs::read_to_string(file_path).expect("讀取檔案失敗");
-    for cmd in txt.split("\n").into_iter() {
-        match ctx.get_user()? {
-            Some(user) => println!("{} > {}", user.name, cmd),
-            _ => println!("> {}", cmd),
-        }
-
-        let vec_cmd: Vec<String> = cmd.split(" ").map(|s| s.to_owned()).collect();
-        if let Err(e) = dispatch_command(ctx, &vec_cmd[0], &vec_cmd[1..].to_vec()) {
-            println!("{:?}", e);
-        }
+        return Err(Error::new_internal_without_source(format!(
+            "無法取得 {} 之標準輸出",
+            program
+        )));
     }
-    Ok(())
-}
-
-fn exec_command(ctx: &mut DBToolCtx) -> Fallible<CommandResult> {
-    let (subcommand, args) = match match_subcommand(ctx)? {
-        Some(command) => command,
-        None => return Ok(CommandResult::Eof),
-    };
-
-    dispatch_command(ctx, &subcommand, &args)
-}
-
-fn dispatch_command(
-    ctx: &mut DBToolCtx,
-    subcommand: &str,
-    args: &Vec<String>,
-) -> Fallible<CommandResult> {
-    match subcommand {
-        "help" => println!("{}", HELP_MSG),
-        "h" => println!("{}", HELP_MSG),
-        "run" => run_batch_command(ctx, &args)?,
-        "add" => add_something(ctx, &args)?,
-        "as" => as_user(ctx, &args)?,
-        "invite" => invite(ctx, &args)?,
-        "reset" => reset_database(ctx)?,
-        "exit" => return Ok(CommandResult::Eof),
-        other => println!("無 {} 指令", other),
-    }
-    Ok(CommandResult::Success)
-}
-
-fn main() -> Fallible<()> {
-    // 載入設定
-    let args_config = load_yaml!("db_tool_args.yaml");
-    let arg_matches = clap::App::from_yaml(args_config).get_matches();
-    let config_file = arg_matches
-        .value_of("config_file")
-        .map(|p| PathBuf::from(p));
-    initialize_config(&config_file);
-    let conf = get_config();
-
-    // 初始化資料庫
-    db::init_db(&conf.database.url);
-
-    println!("碳鍵 - 資料庫管理介面\n使用 help 查詢指令");
-    let mut ctx = DBToolCtx::new();
-    loop {
-        match exec_command(&mut ctx) {
-            Ok(CommandResult::Success) => {}
-            Ok(CommandResult::Eof) => {
-                ctx.line_editor.save_history(COMMAND_HISTORY_FILE)?;
-                break;
-            }
-            Err(error) => {
-                println!("執行失敗： {}", error);
-            }
-        }
-    }
-
-    Ok(())
 }

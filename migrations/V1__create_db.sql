@@ -47,8 +47,8 @@ CREATE TABLE reset_password (
 CREATE TABLE boards (
   id BIGSERIAL PRIMARY KEY,
   board_name TEXT NOT NULL UNIQUE,
-  title TEXT NOT NULL,
-  detail TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  detail TEXT NOT NULL DEFAULT '',
   ruling_party_id BIGINT NOT NULL,       -- 等 parties 表建立後設定爲 foreign key
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -77,7 +77,7 @@ CREATE TABLE articles (
   category_id BIGINT REFERENCES categories(id) NOT NULL,
   title TEXT NOT NULL,
   author_id BIGINT REFERENCES users(id) NOT NULL,
-  show_in_list BOOLEAN NOT NULL,
+  show_in_list BOOLEAN NOT NULL DEFAULT true,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

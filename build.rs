@@ -1,6 +1,13 @@
+#[macro_use]
+extern crate derive_more;
+
+#[path = "src/config/config.rs"]
+mod config;
+#[path = "src/custom_error.rs"]
+mod custom_error;
 #[path = "src/api/model.rs"]
 mod model;
-#[path = "src/api//query.rs"]
+#[path = "src/api/query.rs"]
 mod query;
 use chitin::{ChitinCodegen, CodegenOption};
 use query::RootQuery;
@@ -35,6 +42,9 @@ fn main() -> std::io::Result<()> {
     client_file.write_all(model::gen_typescript().as_bytes())?;
     client_file
         .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
+    // set database url
+    let conf = config::load_config(&None).unwrap();
+    println!("cargo:rustc-env=DATABASE_URL={}", conf.database.get_url());
 
     Ok(())
 }

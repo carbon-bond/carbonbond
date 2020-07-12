@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
-use state::LocalStorage;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use crate::custom_error::{Error, Fallible};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Mode {
     Release,
     Dev,
@@ -14,20 +13,22 @@ pub enum Mode {
 }
 
 pub fn get_mode() -> Mode {
-    match std::env::var("MODE").as_ref().map(|s| &**s) {
-        Ok("release") => Mode::Release,
-        Ok("dev") => Mode::Dev,
-        Ok("test") => Mode::Test,
-        _ => Mode::Dev,
+    if cfg!(test) {
+        Mode::Test
+    } else {
+        match std::env::var("MODE").as_ref().map(|s| &**s) {
+            Ok("release") => Mode::Release,
+            Ok("dev") => Mode::Dev,
+            Ok("test") => Mode::Test,
+            _ => Mode::Dev,
+        }
     }
 }
-
-static CONFIG: LocalStorage<Config> = LocalStorage::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub database: RawDatabaseConfig,
+    pub database: DatabaseConfig,
     pub user: RawUserConfig,
 }
 
@@ -42,25 +43,39 @@ pub struct RawServerConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RawDatabaseConfig {
-    pub url: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct RawUserConfig {
     pub invitation_credit: i32,
     pub email_whitelist: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
+    pub file_name: String,
     pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub user: UserConfig,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DatabaseConfig {
+    pub dbname: String,
+    pub username: String,
+    pub password: String,
+    pub port: u32,
+    pub host: String,
+    pub data_path: String,
+    pub max_conn: u32,
+}
+impl DatabaseConfig {
+    pub fn get_url(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            self.username, self.password, self.host, self.port, self.dbname
+        )
+    }
+}
+#[derive(Debug, Clone)]
 pub struct ServerConfig {
     pub address: String,
     pub port: u64,
@@ -70,12 +85,7 @@ pub struct ServerConfig {
     pub mail_from: String,
 }
 
-#[derive(Debug)]
-pub struct DatabaseConfig {
-    pub url: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserConfig {
     pub invitation_credit: i32,
     pub email_whitelist: Vec<String>,
@@ -97,12 +107,6 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
     }
 }
 
-impl From<RawDatabaseConfig> for Fallible<DatabaseConfig> {
-    fn from(orig: RawDatabaseConfig) -> Fallible<DatabaseConfig> {
-        Ok(DatabaseConfig { url: orig.url })
-    }
-}
-
 impl From<RawUserConfig> for Fallible<UserConfig> {
     fn from(orig: RawUserConfig) -> Fallible<UserConfig> {
         Ok(UserConfig {
@@ -119,59 +123,42 @@ fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
     Ok(content)
 }
 
-fn load_content_with_prior<P: AsRef<Path>>(paths: &Vec<P>) -> Fallible<String> {
+fn load_content_with_prior(paths: &[&str]) -> Fallible<(String, String)> {
     if paths.len() == 0 {
         return Err(Error::new_op("未指定設定檔"));
     }
     for p in paths.iter() {
         if let Ok(content) = load_file_content(p) {
-            return Ok(content);
+            return Ok((p.to_string(), content));
         }
     }
-    let paths: Vec<PathBuf> = paths.into_iter().map(|p| p.as_ref().to_owned()).collect();
     return Err(Error::new_op(format!("找不到任何設定檔: {:?}", paths)));
 }
 
 /// 載入設定檔，回傳一個設定檔物件
-/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn load_config<P: AsRef<Path>>(path: &Option<P>) -> Fallible<Config> {
+/// * `path` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
+pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     // 載入設定檔
     let mode = get_mode();
-    let content = if let Some(path) = path {
-        load_content_with_prior(&vec![path])?
+    let (file_name, content) = if let Some(path) = path {
+        load_content_with_prior(&[&*path])?
     } else {
         let local_file = match get_mode() {
             Mode::Release => "config/carbonbond.release.toml",
             Mode::Dev => "config/carbonbond.dev.toml",
             Mode::Test => "config/carbonbond.test.toml",
         };
-        load_content_with_prior(&vec![
-            PathBuf::from(local_file),
-            PathBuf::from("config/carbonbond.toml"),
-        ])?
+        load_content_with_prior(&[local_file, "config/carbonbond.toml"])?
     };
 
     let raw_config: RawConfig = toml::from_str(&content)?;
     let config = Config {
         mode,
+        file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        database: Fallible::<DatabaseConfig>::from(raw_config.database)?,
+        database: raw_config.database,
         user: Fallible::<UserConfig>::from(raw_config.user)?,
     };
 
     Ok(config)
-}
-
-/// 載入設定檔，將設定檔物件儲存於全域狀態
-/// * `paths` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-pub fn initialize_config<P: 'static + AsRef<Path>>(path: &Option<P>) {
-    let path_owned: Option<PathBuf> = path.as_ref().map(|p| p.as_ref().to_owned());
-    assert!(
-        CONFIG.set(move || load_config(&path_owned).unwrap()),
-        "initialize_config() is called twice",
-    );
-}
-
-pub fn get_config() -> &'static Config {
-    CONFIG.get()
 }

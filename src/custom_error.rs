@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
 
-#[derive(Serialize, Deserialize, Clone, Display, Debug)]
+#[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq)]
 pub enum DataType {
     #[display(fmt = "分類")]
     Category,
@@ -19,7 +19,7 @@ pub enum DataType {
     InviteCode,
 }
 
-#[derive(Serialize, Deserialize, Clone, Display, Debug)]
+#[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq)]
 pub enum ErrorCode {
     #[display(fmt = "內部錯誤")]
     Internal,
@@ -66,6 +66,12 @@ impl Error {
         Error::LogicError {
             msg: msg.to_string(),
             code,
+        }
+    }
+    pub fn code(&self) -> Option<ErrorCode> {
+        match self {
+            Error::LogicError { code, .. } => Some(code.clone()),
+            _ => None,
         }
     }
     pub fn new_not_found<S: std::fmt::Debug>(err_type: DataType, target: S) -> Error {
