@@ -24,8 +24,9 @@ pub async fn get_by_name(name: &str) -> Fallible<Board> {
 }
 
 pub async fn create(board: &Board) -> Fallible<i64> {
+    // TODO: 交易？
     let pool = get_pool();
-    let res = sqlx::query!(
+    let board_id= sqlx::query!(
         "INSERT INTO boards (board_name, detail, title, ruling_party_id) VALUES ($1, $2, $3, $4) RETURNING id",
         board.board_name,
         board.detail,
@@ -33,6 +34,8 @@ pub async fn create(board: &Board) -> Fallible<i64> {
         board.ruling_party_id
     )
     .fetch_one(pool)
-    .await?;
-    Ok(res.id)
+    .await?
+    .id;
+    super::party::change_board(board.ruling_party_id, board_id).await?;
+    Ok(board_id)
 }

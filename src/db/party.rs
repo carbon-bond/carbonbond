@@ -38,3 +38,15 @@ pub async fn create(party: &Party) -> Fallible<i64> {
     .await?;
     Ok(res.id)
 }
+
+pub async fn change_board(party_id: i64, board_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "UPDATE parties SET board_id = $1 where id = $2",
+        board_id,
+        party_id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}

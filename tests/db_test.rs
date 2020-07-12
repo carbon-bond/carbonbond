@@ -17,9 +17,7 @@ async fn setup() {
     db::init().await.unwrap();
 }
 
-#[tokio::test]
-async fn user_test() -> Fallible<()> {
-    setup().await;
+async fn user_test() -> Fallible<i64> {
     let user_id = db::user::create(&db::user::User {
         name: "測試人".to_string(),
         email: "test_email@test.com".to_string(),
@@ -46,5 +44,32 @@ async fn user_test() -> Fallible<()> {
         code,
         ErrorCode::NotFound(DataType::User, "測試人2".to_owned())
     );
+    Ok(user_id)
+}
+async fn party_test(chairman_id: i64) -> Fallible<i64> {
+    db::party::create(&db::party::Party {
+        party_name: "測試無法黨".to_string(),
+        chairman_id,
+        ..Default::default()
+    })
+    .await
+}
+async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
+    db::board::create(&db::board::Board {
+        board_name: "測試板".to_string(),
+        title: "整合測試測起來！".to_string(),
+        detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
+        ruling_party_id,
+        ..Default::default()
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_db() -> Fallible<()> {
+    setup().await;
+    let user = user_test().await?;
+    let party = party_test(user).await?;
+    let _board = board_test(party).await?;
     Ok(())
 }
