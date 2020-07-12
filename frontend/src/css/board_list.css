@@ -5,10 +5,14 @@
     justify-content: center;
     & > div {
         background-color: var(--background-color);
+        & .boardBlock:first-child {
+            border-bottom: 0px;
+        }
         & .boardBlock:hover {
             background: var(--hover-background-color)
         }
         & .boardBlock {
+            border: 1px var(--lighter-gray) solid;
             width: 350px;
             padding: 5px;
             & .name {

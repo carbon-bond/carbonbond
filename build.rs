@@ -23,14 +23,15 @@ fn main() -> std::io::Result<()> {
     server_file.write_all(
         RootQuery::codegen(&CodegenOption::Server {
             error: "crate::custom_error::Error",
-            context: "&crate::Ctx",
+            context: "&mut crate::Ctx",
         })
         .as_bytes(),
     )?;
 
     // build frontend chitin
     let mut client_file = File::create("frontend/src/ts/api/api_trait.ts")?;
-    client_file.write_all(b"export type Option<T> = T | undefined | null;\n")?;
+    client_file.write_all(b"/*eslint-disable*/\n")?;
+    client_file.write_all(b"export type Option<T> = T | null;\n")?;
     client_file.write_all(
         b"export type Result<T, E> = {
     'Ok': T

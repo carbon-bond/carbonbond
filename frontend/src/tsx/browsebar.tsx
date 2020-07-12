@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import '../css/browsebar.css';
-import { matchErrAndShow, ajaxOperation, GQL } from '../ts/api';
+import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { UserState } from './global_state';
 import { STORAGE_NAME } from '../ts/constants';
+import { Board } from '../ts/api/api_trait';
 
-type Board = GQL.BoardMetaFragment;
+import '../css/browsebar.css';
 
 async function fetchHotBoards(): Promise<Board[]> {
-	let res = await ajaxOperation.BoardList();
-	return res.boardList;
+	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
 }
 
 // TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request
@@ -34,10 +33,7 @@ export function BrowseBar(): JSX.Element {
 		fetchHotBoards().then(boards => {
 			setHotBoards(boards);
 			setFetching(false);
-		}).catch((err => {
-			matchErrAndShow(err);
-			setFetching(false);
-		}));
+		});
 	}, []);
 
 	function onTitleClick(index: number): void {
@@ -102,10 +98,10 @@ export function BrowseBar(): JSX.Element {
 
 function BoardBlock(props: { board: Board }): JSX.Element {
 	let board = props.board;
-	return <Link to={`/app/b/${board.boardName}`}>
+	return <Link to={`/app/b/${board.board_name}`}>
 		<div styleName="boardBlock">
 			<div>
-				<div styleName="boardName">😈 {board.boardName}</div>
+				<div styleName="boardName">😈 {board.board_name}</div>
 				<div styleName="boardHeat">🔥 0</div>
 				<div styleName="boardTitle">{board.title}</div>
 			</div>

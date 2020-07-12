@@ -26,7 +26,7 @@ pub async fn get_by_article_id(id: i64) -> Fallible<ArticleContent> {
 
 pub(super) async fn create(content: &ArticleContent) -> Fallible<()> {
     let pool = get_pool();
-    let res = sqlx::query!(
+    sqlx::query!(
         "
         INSERT INTO article_contents (article_id, str_content, int_content)
         VALUES ($1, $2, $3) RETURNING id

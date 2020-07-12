@@ -4,53 +4,29 @@ import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
 import { GQL, matchErrAndShow, ajaxOperation } from '../../ts/api';
-import '../../css/party.css';
+import '../../css/party/my_party_list.css';
+import { API_FETCHER, unwrap_or } from '../../ts/api/api';
+import { Party } from '../../ts/api/api_trait';
 
 import { EXILED_PARTY_NAME } from './index';
 
 type Board = GQL.BoardMetaFragment;
-type Party = GQL.PartyMetaFragment;
-type PartyTree = { [board_name: string]: (Party & { ruling: boolean })[] };
+// type Party = GQL.PartyMetaFragment;
 
-async function fetchPartyTree(): Promise<PartyTree> {
-	let tree: PartyTree = {};
-	let b_name_id_table: { [id: string]: Board | null } = {};
-	let res = await ajaxOperation.MyPartyList();
-	let party_list = res.myPartyList;
-	for (let party of party_list) {
-		if (party.boardId) {
-			b_name_id_table[party.boardId] = null;
-		} else {
-			tree[EXILED_PARTY_NAME] = [];
-		}
-	}
-	let res2 = await ajaxOperation.BoardList({ ids: Object.keys(b_name_id_table) });
-	let board_list = res2.boardList;
-	for (let board of board_list) {
-		b_name_id_table[board.id] = board;
-		tree[`b/${board.boardName}`] = [];
-	}
-	for (let party of party_list) {
-		if (party.boardId) {
-			let board = b_name_id_table[party.boardId];
-			if (board) {
-				tree[`b/${board.boardName}`].push({ ...party, ruling: party.id == board.rulingPartyId });
-			}
-		} else {
-			tree[EXILED_PARTY_NAME].push({ ...party, ruling: false });
-		}
-	}
-	return tree;
+async function fetchPartyList(): Promise<Party[]> {
+	let party_list = unwrap_or(await API_FETCHER.queryMyPartyList(), []);
+	return party_list;
 }
 
+// TODO: 再發一個請求取得看板資訊
 export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	let [fetching, setFetching] = React.useState(true);
-	let [party_tree, setPartyTree] = React.useState<PartyTree>({});
+	let [party_list, setPartyList] = React.useState<Party[]>([]);
 
 	React.useEffect(() => {
-		fetchPartyTree().then(tree => {
-			setPartyTree(tree);
+		fetchPartyList().then(tree => {
+			setPartyList(tree);
 			setFetching(false);
 		}).catch(err => matchErrAndShow(err));
 	}, []);
@@ -63,37 +39,33 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 		return <div styleName="listBody">
 			<CreatePartyBlock {...props} />
 			{
-				Object.keys(party_tree).map(b_name => {
-					return <div key={b_name} styleName="boardPartyBlock">
+				party_list.map(party => {
+					return <div key={party.id} styleName="boardPartyBlock">
 						{
 							(() => {
-								if (b_name == EXILED_PARTY_NAME) {
-									return <div styleName="boardName">{b_name}</div>;
+								if (party.board_id == null) {
+									return <div styleName="boardName">{EXILED_PARTY_NAME}</div>;
 								} else {
-									let href = `/app/${b_name}`;
+									// XXX: 補看板名
+									let href = `/app/board/${party.board_id}`;
 									return <Link to={href} styleName="boardName">
-										<div styleName="boardName">{b_name}</div>
+										<div styleName="boardName">{party.board_id}</div>
 									</Link>;
 								}
 							})()
 						}
-						{
-							party_tree[b_name].map(party => {
-								return (
-									<Link
-										to={`/app/party/${party.partyName}`}
-										key={party.id}
-										styleName="partyColumn"
-									>
-										<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
-										<div styleName="partyLabel">{party.partyName}</div>
-										<div styleName="partyLabel">⚡{party.energy}</div>
-										<div styleName="partyLabel">👑{party.chairmanId}</div>
-										<div styleName="partyLabel">📊 10%</div>
-									</Link>
-								);
-							})
-						}
+						<Link
+							// 改成以黨名當 URL?
+							to={`/app/party/${party.id}`}
+							key={party.id}
+							styleName="partyColumn"
+						>
+							<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
+							<div styleName="partyLabel">{party.party_name}</div>
+							<div styleName="partyLabel">☘ {party.energy}</div>
+							{/* <div styleName="partyLabel">👑{party.chairmanId}</div> */}
+							<div styleName="partyLabel">📊 10%</div>
+						</Link>
 					</div>;
 				})
 			}

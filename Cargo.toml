@@ -10,6 +10,7 @@ async-trait = "0.1.31"
 chitin = { git = "https://github.com/carbon-bond/chitin" }
 chrono = { version = "0.4.7", features = ["serde"] }
 clap = {version = "2.33.0", features = ["yaml"]}
+cookie = { version = "0.14.1", features= ["secure", "percent-encode"] }
 derive_more = "0.15.0"
 env_logger = "0.6.2"
 hyper = "0.13.6"
@@ -24,6 +25,7 @@ sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio"
 state = { version = "0.4.1", features = ["const_fn", "tls"] }
 structopt = "0.3"
 tempfile = "3"
+time = "0.2.16"
 tokio = { version = "0.2", features = ["full"] }
 toml = "0.5.1"
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }

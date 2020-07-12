@@ -3,6 +3,7 @@ import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { GQL } from '../ts/api';
+import { Article } from '../ts/api/api_trait';
 
 export type ArticleMeta = GQL.ArticleMetaFragment;
 
@@ -33,56 +34,46 @@ export function ArticleFooter(): JSX.Element {
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					flash_on
-				</i>
+				<i> ☘ </i>
 				<span styleName="num">4218</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					question_answer
-				</i>
+				<i> 🗯 </i>
 				<span styleName="num">1297</span>則留言
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					forward
-				</i>
+				<i> ⮕ </i>
 				<span styleName="num">18</span>篇大回文
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					star
-				</i>
+				<i> ★ </i>
 				收藏
 			</div>
 			<div styleName="articleBtnItem">
-				<i className="material-icons">
-					share
-				</i>
+				<i> 📎 </i>
 				分享
 			</div>
 		</div>
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+function ArticleCard(props: { article: Article }): JSX.Element {
 
-	const date = new Date(props.article.createTime);
+	const date = new Date(props.article.create_time);
 	let user_name = '';
 	let category_name = '';
 	try {
-		user_name = props.article.author.userName;
-		category_name = JSON.parse(props.article.category.body).name;
+		user_name = props.article.author_name;
+		category_name = props.article.category;
 	} catch {
 		user_name = '未知';
 		category_name = '未知';
 	}
 
 	return (
-		<Link to={`/app/b/${props.article.board.boardName}/a/${props.article.id}`}>
+		<Link to={`/app/b/${props.article.board_name}/a/${props.article.id}`}>
 			<div styleName="articleContainer">
-				<ArticleHeader user_name={user_name} board_name={props.article.board.boardName} date={date} />
+				<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
 				<div styleName="articleBody">
 					<div styleName="leftPart">
 						<ArticleLine category_name={category_name} title={props.article.title} />

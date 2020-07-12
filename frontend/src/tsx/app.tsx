@@ -9,9 +9,8 @@ import {
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css?global';
-import 'material-design-icons/iconfont/material-icons.css?global';
 import 'normalize.css?global';
-import '../css/color.css?global';
+import '../css/variable.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
@@ -90,11 +89,11 @@ function App(): JSX.Element {
 	);
 }
 
-declare global {
-    interface Window { chat_socket: ChatSocket; }
-}
+// declare global {
+//     interface Window { chat_socket: ChatSocket; }
+// }
 
-import { ChatSocket } from '../ts/chat_socket';
-window.chat_socket = new ChatSocket(1);
+// import { ChatSocket } from '../ts/chat_socket';
+// window.chat_socket = new ChatSocket(1);
 
 ReactDOM.render(<App />, document.getElementById('root'));
