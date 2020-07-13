@@ -21,16 +21,12 @@ pub enum DataType {
 
 #[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq)]
 pub enum ErrorCode {
-    #[display(fmt = "內部錯誤")]
-    Internal,
     #[display(fmt = "尚未登入")]
     NeedLogin,
     #[display(fmt = "權限不足")]
     PermissionDenied,
     #[display(fmt = "找不到{}： {}", "_0", "_1")]
     NotFound(DataType, String),
-    #[display(fmt = "ID 解析錯誤")]
-    ParseID,
     #[display(fmt = "JSON 解析錯誤")]
     ParsingJson,
     #[display(fmt = "其它")]
@@ -39,12 +35,12 @@ pub enum ErrorCode {
 #[derive(Serialize, Debug)]
 pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
-    OperationError { msg: String },
+    OperationError { msg: Vec<String> },
     /// 此錯誤代表應拋給前端使用者的訊息
-    LogicError { msg: String, code: ErrorCode },
+    LogicError { msg: Vec<String>, code: ErrorCode },
     /// 此錯誤代表其它無法預期的錯誤
     InternalError {
-        msg: Option<String>,
+        msg: Vec<String>,
         #[serde(skip_serializing)]
         source: Option<Box<dyn StdError + Sync + Send + 'static>>,
     },
@@ -53,29 +49,23 @@ pub enum Error {
 impl Error {
     pub fn new_op<S: ToString>(msg: S) -> Error {
         Error::OperationError {
-            msg: msg.to_string(),
+            msg: vec![msg.to_string()],
         }
     }
     pub fn new_other<S: ToString>(msg: S) -> Error {
         Error::LogicError {
-            msg: msg.to_string(),
+            msg: vec![msg.to_string()],
             code: ErrorCode::Other,
         }
     }
-    pub fn new_logic<S: ToString>(code: ErrorCode, msg: S) -> Error {
-        Error::LogicError {
-            msg: msg.to_string(),
-            code,
-        }
+    pub fn new_logic(code: ErrorCode) -> Error {
+        Error::LogicError { msg: vec![], code }
     }
     pub fn code(&self) -> Option<ErrorCode> {
         match self {
             Error::LogicError { code, .. } => Some(code.clone()),
             _ => None,
         }
-    }
-    pub fn new_not_found<S: std::fmt::Debug>(err_type: DataType, target: S) -> Error {
-        Error::new_logic(ErrorCode::NotFound(err_type, format!("{:?}", target)), "")
     }
     /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
     pub fn new_internal<S, E>(msg: S, source: E) -> Error
@@ -84,56 +74,47 @@ impl Error {
         E: StdError + Sync + Send + 'static,
     {
         Error::InternalError {
-            msg: Some(msg.to_string()),
+            msg: vec![msg.to_string()],
             source: Some(Box::new(source)),
         }
     }
     /// 原始錯誤無法被正確封裝才應使用本函式
     pub fn new_internal_without_source<S: ToString>(msg: S) -> Error {
         Error::InternalError {
-            msg: Some(msg.to_string()),
+            msg: vec![msg.to_string()],
             source: None,
-        }
-    }
-
-    pub fn add_msg<S: ToString>(self, more_msg: S) -> Error {
-        let more_msg = more_msg.to_string();
-        match self {
-            Error::LogicError { msg, code } => Error::LogicError {
-                code,
-                msg: format!("{}\n{}", more_msg, msg),
-            },
-            Error::OperationError { msg } => Error::new_op(format!("{}\n{}", more_msg, msg)),
-            Error::InternalError { msg, source } => {
-                let new_msg = if let Some(msg) = msg {
-                    format!("{}\n{}", more_msg, msg)
-                } else {
-                    more_msg
-                };
-                Error::InternalError {
-                    msg: Some(new_msg),
-                    source,
-                }
-            }
         }
     }
 }
 
+fn fmt_msg(msg: &[String], f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    if msg.len() != 0 {
+        write!(f, "額外訊息：\n")?;
+        for s in msg {
+            write!(f, "    {}\n", s)?;
+        }
+    }
+    Ok(())
+}
 use std::fmt;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::LogicError { msg, code } => write!(f, "邏輯錯誤，錯誤種類：{} {}", code, msg),
-            Error::OperationError { msg } => write!(f, "操作錯誤：{}", msg),
+            Error::LogicError { msg, code } => {
+                write!(f, "邏輯錯誤，錯誤種類：{}。", code)?;
+                fmt_msg(msg, f)
+            }
+            Error::OperationError { msg } => {
+                write!(f, "操作錯誤。")?;
+                fmt_msg(msg, f)
+            }
             Error::InternalError { msg, source } => {
-                write!(f, "內部錯誤")?;
-                if let Some(msg) = msg {
-                    write!(f, "：{}", msg)?;
-                }
                 if let Some(source) = source {
-                    write!(f, "，原始錯誤為：{:?}", source)?;
+                    write!(f, "內部錯誤，原始錯誤為：{}。", source)?;
+                } else {
+                    write!(f, "內部錯誤。")?;
                 }
-                Ok(())
+                fmt_msg(msg, f)
             }
         }
     }
@@ -142,10 +123,33 @@ impl fmt::Display for Error {
 impl<E: StdError + Sync + Send + 'static> From<E> for Error {
     fn from(err: E) -> Error {
         Error::InternalError {
-            msg: None,
+            msg: vec![],
             source: Some(Box::new(err)),
         }
     }
 }
 
 pub type Fallible<T> = Result<T, Error>;
+
+pub trait Contextable {
+    fn context<S: ToString>(self, msg: S) -> Self;
+}
+impl Contextable for Error {
+    fn context<S: ToString>(mut self, context: S) -> Self {
+        match &mut self {
+            Error::LogicError { msg, .. } => msg.push(context.to_string()),
+            Error::InternalError { msg, .. } => msg.push(context.to_string()),
+            Error::OperationError { msg, .. } => msg.push(context.to_string()),
+        }
+        return self;
+    }
+}
+
+impl<T> Contextable for Fallible<T> {
+    fn context<S: ToString>(self, context: S) -> Self {
+        match self {
+            Err(err) => Err(err.context(context)),
+            Ok(_) => self,
+        }
+    }
+}

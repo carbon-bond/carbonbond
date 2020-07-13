@@ -1,6 +1,6 @@
 use carbonbond::{
     config::{get_config, init as init_config},
-    custom_error::{Error, ErrorCode, Fallible},
+    custom_error::{Contextable, Error, ErrorCode, Fallible},
     db::{self, user::User},
 };
 use refinery::config::{Config, ConfigDbType};
@@ -144,7 +144,7 @@ fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
 fn check_login(user: &Option<User>) -> Fallible<&User> {
     match user {
         Some(u) => Ok(u),
-        _ => Err(Error::new_logic(ErrorCode::NeedLogin, "")),
+        _ => Err(Error::new_logic(ErrorCode::NeedLogin)),
     }
 }
 
@@ -240,10 +240,9 @@ fn start_db() -> Fallible<()> {
         false,
     )
     .map_err(|e| match e {
-        Error::OperationError { msg } => Error::new_op(format!(
-            "{}\n若排除其它問題仍無法開啟資料庫，建議執行：\n   sudo service postgresql restart",
-            msg
-        )),
+        Error::OperationError { .. } => {
+            e.context("若排除其它問題仍無法開啟資料庫，建議執行： sudo service postgresql restart")
+        }
         _ => e,
     })?;
     Ok(())
