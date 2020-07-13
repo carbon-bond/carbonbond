@@ -3,7 +3,7 @@ use carbonbond::{
     api::api_trait::RootQueryRouter,
     api::query,
     config,
-    custom_error::{Contextable, Error, ErrorCode, Fallible},
+    custom_error::{Error, ErrorCode, Fallible},
     db, Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
@@ -41,7 +41,7 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
             log::trace!("原始請求： {:#?}", body);
 
             let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
-                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson).context(&e))?;
+                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
             log::info!("請求： {:#?}", query);
 
             let root: api_impl::RootQueryRouter = Default::default();

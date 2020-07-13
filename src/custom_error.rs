@@ -52,14 +52,11 @@ impl Error {
             msg: vec![msg.to_string()],
         }
     }
-    pub fn new_other<S: ToString>(msg: S) -> Error {
+    pub fn new_logic<S: ToString>(code: ErrorCode, msg: S) -> Error {
         Error::LogicError {
             msg: vec![msg.to_string()],
-            code: ErrorCode::Other,
+            code,
         }
-    }
-    pub fn new_logic(code: ErrorCode) -> Error {
-        Error::LogicError { msg: vec![], code }
     }
     pub fn code(&self) -> Option<ErrorCode> {
         match self {
@@ -84,6 +81,15 @@ impl Error {
             msg: vec![msg.to_string()],
             source: None,
         }
+    }
+    pub fn context<S: ToString>(mut self, context: S) -> Error {
+        let msg = match &mut self {
+            Error::LogicError { msg, .. } => msg,
+            Error::InternalError { msg, .. } => msg,
+            Error::OperationError { msg, .. } => msg,
+        };
+        msg.push(context.to_string());
+        self
     }
 }
 
@@ -120,6 +126,12 @@ impl fmt::Display for Error {
     }
 }
 
+impl From<ErrorCode> for Error {
+    fn from(code: ErrorCode) -> Error {
+        Error::LogicError { msg: vec![], code }
+    }
+}
+
 impl<E: StdError + Sync + Send + 'static> From<E> for Error {
     fn from(err: E) -> Error {
         Error::InternalError {
@@ -131,25 +143,26 @@ impl<E: StdError + Sync + Send + 'static> From<E> for Error {
 
 pub type Fallible<T> = Result<T, Error>;
 
-pub trait Contextable {
-    fn context<S: ToString>(self, msg: S) -> Self;
+pub trait Contextable<T> {
+    fn context<S: ToString>(self, msg: S) -> Fallible<T>;
 }
-impl Contextable for Error {
-    fn context<S: ToString>(mut self, context: S) -> Self {
-        match &mut self {
-            Error::LogicError { msg, .. } => msg.push(context.to_string()),
-            Error::InternalError { msg, .. } => msg.push(context.to_string()),
-            Error::OperationError { msg, .. } => msg.push(context.to_string()),
+impl<T> Contextable<T> for Fallible<T> {
+    fn context<S: ToString>(self, context: S) -> Fallible<T> {
+        match self {
+            Ok(t) => Ok(t),
+            Err(err) => Err(err.context(context)),
         }
-        return self;
     }
 }
 
-impl<T> Contextable for Fallible<T> {
-    fn context<S: ToString>(self, context: S) -> Self {
+impl<T, E: StdError + Send + Sync + 'static> Contextable<T> for Result<T, E> {
+    fn context<S: ToString>(self, context: S) -> Fallible<T> {
         match self {
-            Err(err) => Err(err.context(context)),
-            Ok(_) => self,
+            Err(err) => {
+                let err: Error = err.into();
+                Err(err).context(context)
+            }
+            Ok(t) => Ok(t),
         }
     }
 }

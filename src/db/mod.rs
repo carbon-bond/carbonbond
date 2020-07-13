@@ -1,5 +1,5 @@
 use crate::config::get_config;
-use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
+use crate::custom_error::{DataType, ErrorCode, Fallible};
 use sqlx::postgres::PgPool;
 use state::Storage;
 
@@ -35,10 +35,9 @@ impl<T: DBObject> ToFallible<T> for Result<T, sqlx::Error> {
     fn to_fallible(self, target: &str) -> Fallible<T> {
         match self {
             Ok(t) => Ok(t),
-            Err(sqlx::Error::RowNotFound) => Err(Error::new_logic(ErrorCode::NotFound(
-                T::TYPE,
-                target.to_string(),
-            ))),
+            Err(sqlx::Error::RowNotFound) => {
+                Err(ErrorCode::NotFound(T::TYPE, target.to_string()).into())
+            }
             Err(err) => Err(err.into()),
         }
     }

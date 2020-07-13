@@ -144,7 +144,7 @@ fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
 fn check_login(user: &Option<User>) -> Fallible<&User> {
     match user {
         Some(u) => Ok(u),
-        _ => Err(Error::new_logic(ErrorCode::NeedLogin)),
+        _ => Err(ErrorCode::NeedLogin.into()),
     }
 }
 
