@@ -1,8 +1,11 @@
 const path = require('path');
+const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
+const smp = new SpeedMeasurePlugin();
 
-module.exports = {
+module.exports = smp.wrap({
 	entry: {
-		index: './src/tsx/app.tsx'
+		index: './src/tsx/app.tsx',
+		vendor: ['react'],
 	},
 	resolve: {
 		mainFields: ['browser', 'main', 'module'],
@@ -13,6 +16,7 @@ module.exports = {
 		path: path.resolve(__dirname, 'static/dist'),
 		filename: 'bundle.js',
 		publicPath: '/dist/',
+		library: '[name]-[hash]',
 		chunkFilename: '[name].bundle.js',
 	},
 	module: {
@@ -20,6 +24,7 @@ module.exports = {
 			{
 				test: /\.ts$/,
 				use: [
+					'cache-loader',
 					{
 						loader: 'babel-loader',
 						options: {
@@ -33,6 +38,7 @@ module.exports = {
 			{
 				test: /\.tsx$/,
 				use: [
+					'cache-loader',
 					{
 						loader: 'babel-loader',
 						options: {
@@ -59,10 +65,10 @@ module.exports = {
 					{
 						// import 時，後綴 ?global 代表 css 作用到全域
 						resourceQuery: /^\?global$/,
-						use: ['style-loader', 'css-loader', 'postcss-loader']
+						use: ['style-loader', 'cache-loader', 'css-loader', 'postcss-loader']
 					},
 					{
-						use: ['style-loader', 'css-loader?modules&localIdentName=[local]-[hash:base64:10]', 'postcss-loader']
+						use: ['style-loader', 'cache-loader', 'css-loader?modules&localIdentName=[local]-[hash:base64:10]', 'postcss-loader']
 					}
 				]
 			},
@@ -81,4 +87,4 @@ module.exports = {
 		]
 	},
 	mode: 'development'
-};
+});
