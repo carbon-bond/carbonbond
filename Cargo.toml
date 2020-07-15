@@ -29,6 +29,8 @@ time = "0.2.16"
 tokio = { version = "0.2", features = ["full"] }
 toml = "0.5.1"
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }
+rand = "0.7.3"
+rust-argon2 = "0.8.2"
 
 [build-dependencies]
 chitin = { git = "https://github.com/carbon-bond/chitin" }

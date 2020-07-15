@@ -1,6 +1,7 @@
 use super::api_trait;
 use super::model;
 use crate::custom_error::{Error, Fallible};
+use crate::db;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -84,7 +85,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_article(
         &self,
         context: &mut crate::Ctx,
-        id: u64,
+        id: i64,
     ) -> Result<model::Article, crate::custom_error::Error> {
         if id == 1 {
             Ok(model::Article {
@@ -134,7 +135,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
 pub struct PartyQueryRouter {}
 #[async_trait]
 impl api_trait::PartyQueryRouter for PartyQueryRouter {
-    async fn query_party(&self, context: &mut crate::Ctx, id: u64) -> Fallible<model::Party> {
+    async fn query_party(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Party> {
         Ok(if id == 1 {
             model::Party {
                 id: 1,
@@ -203,7 +204,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
         Ok(context.get_id().and_then(|id| {
             Some(model::User {
-                id: id as u64,
+                id: id,
                 user_name: id.to_string(),
                 sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
                 energy: 789,
@@ -242,13 +243,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         password: String,
         user_name: String,
     ) -> Fallible<Option<model::User>> {
-        context.remember_id(user_name.parse::<u64>()?)?;
+        let user = db::user::login(&user_name, &password).await?;
+        context.remember_id(user.id)?;
         Ok(Some(model::User {
-            id: user_name.parse::<u64>()?,
+            id: user.id,
             user_name: user_name,
-            sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
-            energy: 789,
-            invitation_credit: 20,
+            sentence: user.sentence,
+            energy: user.energy,
+            invitation_credit: user.invitation_credit,
         }))
     }
     async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {

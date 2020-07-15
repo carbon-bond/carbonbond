@@ -26,7 +26,7 @@ pub enum UserQuery {
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum PartyQuery {
     #[chitin(request, response = "super::model::Party")]
-    QueryParty { id: u64 },
+    QueryParty { id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {
@@ -37,7 +37,7 @@ pub enum ArticleQuery {
         author_name: Option<String>,
     },
     #[chitin(request, response = "super::model::Article")]
-    QueryArticle { id: u64 },
+    QueryArticle { id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum BoardQuery {
