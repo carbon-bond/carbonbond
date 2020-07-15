@@ -5,7 +5,6 @@ const smp = new SpeedMeasurePlugin();
 module.exports = smp.wrap({
 	entry: {
 		index: './src/tsx/app.tsx',
-		vendor: ['react'],
 	},
 	resolve: {
 		mainFields: ['browser', 'main', 'module'],
@@ -16,7 +15,6 @@ module.exports = smp.wrap({
 		path: path.resolve(__dirname, 'static/dist'),
 		filename: 'bundle.js',
 		publicPath: '/dist/',
-		library: '[name]-[hash]',
 		chunkFilename: '[name].bundle.js',
 	},
 	module: {
