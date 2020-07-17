@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::custom_error::{DataType, Fallible};
+use crate::custom_error::{DataType, Error, Fallible, ErrorCode};
 
 #[derive(Debug, Default)]
 pub struct User {
@@ -40,4 +40,37 @@ pub async fn create(user: &User) -> Fallible<i64> {
     .fetch_one(pool)
     .await?;
     Ok(res.id)
+}
+
+pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
+    use rand::Rng;
+    let salt = rand::thread_rng().gen::<[u8; 16]>();
+
+    let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default())?;
+    let pool = get_pool();
+    let res = sqlx::query!(
+        "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+        name,
+        hash,
+        salt.to_vec(),
+        email,
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(res.id)
+}
+
+pub async fn login(name: &str, password: &str) -> Fallible<User> {
+    let user = get_by_name(name).await?;
+    let equal = argon2::verify_raw(
+        password.as_bytes(),
+        &user.salt,
+        &user.password_hashed,
+        &argon2::Config::default(),
+    )?;
+    if equal {
+        Ok(user)
+    } else {
+        Err(Error::new_logic(ErrorCode::PermissionDenied, "密碼錯誤"))
+    }
 }

@@ -21,7 +21,7 @@ export function unwrap<T, E>(result: api_trait.Result<T, E>): T {
 	if ('Ok' in result) {
 		return result.Ok;
 	} else {
-		throw result.Err;
+		throw JSON.stringify(result.Err);
 	}
 }
 
@@ -30,7 +30,7 @@ export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
 	if ('Ok' in result) {
 		return result.Ok;
 	} else {
-		toast.error(result.Err);
+		toast.error(JSON.stringify(result.Err));
 		return alt;
 	}
 }

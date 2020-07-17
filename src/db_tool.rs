@@ -328,14 +328,7 @@ fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
             email,
             password,
         } => {
-            unimplemented!("創建用戶還缺雜湊功能");
-            // db::user::create(&db::user::User {
-            //     name,
-            //     email,
-            //     password_hashed: vec![1, 2, 3],
-            //     salt: vec![4, 5, 6],
-            //     ..Default::default()
-            // });
+            block_on(db::user::signup(&name, &email, &password))?;
         }
         AddSubCommand::Board {
             board_name,

@@ -8,15 +8,15 @@ mod model {
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct User {
-        pub id: u64,
+        pub id: i64,
         pub user_name: String,
         pub energy: i32,
         pub sentence: String,
-        pub invitation_credit: u64,
+        pub invitation_credit: i32,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {
-        pub id: u64,
+        pub id: i64,
         pub party_name: String,
         pub board_id: Option<u64>,
         pub energy: i32,
@@ -24,7 +24,7 @@ mod model {
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
-        pub id: u64,
+        pub id: i64,
         pub board_name: String,
         pub create_time: DateTime<Utc>,
         pub title: String,
@@ -33,7 +33,7 @@ mod model {
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
-        pub id: u64,
+        pub id: i64,
         pub category: String, // XXX: ??
         pub title: String,
         pub energy: i32,
