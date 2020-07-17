@@ -19,6 +19,7 @@ mod model {
         pub id: i64,
         pub party_name: String,
         pub board_id: Option<i64>,
+        pub board_name: Option<String>,
         pub energy: i32,
         pub ruling: bool,
         pub create_time: DateTime<Utc>,
@@ -30,7 +31,14 @@ mod model {
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
-        pub ruling_party_id: u64,
+        pub ruling_party_id: i64,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct NewBoard {
+        pub board_name: String,
+        pub title: String,
+        pub detail: String,
+        pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {

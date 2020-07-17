@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::custom_error::{DataType, Error, Fallible, ErrorCode};
+use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 
 #[derive(Debug, Default)]
 pub struct User {

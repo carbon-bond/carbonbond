@@ -44,20 +44,19 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 									return <div styleName="boardName">{EXILED_PARTY_NAME}</div>;
 								} else {
 									// XXX: 補看板名
-									let href = `/app/board/${party.board_id}`;
+									let href = `/app/board/${party.board_name}`;
 									return <Link to={href} styleName="boardName">
-										<div styleName="boardName">{party.board_id}</div>
+										<div styleName="boardName">{party.board_name}</div>
 									</Link>;
 								}
 							})()
 						}
 						<Link
-							// 改成以黨名當 URL?
-							to={`/app/party/${party.id}`}
+							to={`/app/party/${party.party_name}`}
 							key={party.id}
 							styleName="partyColumn"
 						>
-							<div styleName="ruling">{party.ruling ? '☆ ' : ''}</div>
+							<div styleName="ruling">{party.ruling ? '執政 ' : ''}</div>
 							<div styleName="partyLabel">{party.party_name}</div>
 							<div styleName="partyLabel">☘ {party.energy}</div>
 							{/* <div styleName="partyLabel">👑{party.chairmanId}</div> */}

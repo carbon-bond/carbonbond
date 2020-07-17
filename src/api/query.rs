@@ -26,7 +26,7 @@ pub enum UserQuery {
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum PartyQuery {
     #[chitin(request, response = "super::model::Party")]
-    QueryParty { id: i64 },
+    QueryParty { party_name: String },
     #[chitin(request, response = "()")]
     CreateParty {
         party_name: String,
@@ -50,4 +50,8 @@ pub enum BoardQuery {
     QueryBoardList { count: usize },
     #[chitin(request, response = "super::model::Board")]
     QueryBoard { name: String },
+    #[chitin(request, response = "super::model::Board")]
+    QueryBoardById { id: i64 },
+    #[chitin(request, response = "i64")]
+    CreateBoard { new_board: super::model::NewBoard },
 }

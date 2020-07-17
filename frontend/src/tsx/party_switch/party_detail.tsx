@@ -1,45 +1,33 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Redirect, Link } from 'react-router-dom';
-import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
 
 import '../../css/party/party_detail.css';
+import { toast } from 'react-toastify';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
 
-async function createBoard(party_name: string, board_name: string): Promise<void> {
-	await ajaxOperation.CreateBoard({
-		party_name, board_name
-	});
-	return;
-}
-
-async function fetchPartyDetail(id: number): Promise<Party> {
-	return unwrap(await API_FETCHER.queryParty(id));
+async function fetchPartyDetail(party_name: string): Promise<Party> {
+	return unwrap(await API_FETCHER.queryParty(party_name));
 }
 
 export function PartyDetail(props: Props): JSX.Element {
 	let [party, setParty] = React.useState<Party | null>(null);
 	let [fetching, setFetching] = React.useState(true);
 
-	// TODO: 改回用 party_name ?
-	let party_id = props.match.params.party_name;
+	let party_name = props.match.params.party_name!;
 	React.useEffect(() => {
-		if (typeof party_id == 'string') {
-			fetchPartyDetail(parseInt(party_id)).then(p => {
-				setParty(p);
-				setFetching(false);
-			}).catch(err => {
-				matchErrAndShow(err);
-			});
-		} else {
+		fetchPartyDetail(party_name).then(p => {
+			setParty(p);
 			setFetching(false);
-		}
-	}, [party_id]);
+		}).catch(err => {
+			toast.error(err);
+		});
+	}, [party_name]);
 
 	const { user_state } = UserState.useContainer();
 
@@ -50,11 +38,11 @@ export function PartyDetail(props: Props): JSX.Element {
 			<div>
 				<span styleName="partyName">{party.party_name}</span>
 				{(() => {
-					if (party.board_id) {
+					if (party.board_name) {
 						// TODO: 取得 board_name
-						let href = `/app/b/${party.board_id}`;
+						let href = `/app/b/${party.board_name}`;
 						return <Link to={href} styleName="boardName">
-							<span>- b/{party.board_id}</span>
+							<span>- b/{party.board_name}</span>
 						</Link>;
 					} else {
 						return <span styleName="boardName">{EXILED_PARTY_NAME}</span>;
@@ -64,7 +52,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			{
 				(() => {
 					if (!party.board_id && user_state.login) {
-						return <CreateBoardBlock party_name={party.id.toString()} rp={props}/>;
+						return <CreateBoardBlock party_id={party.id} rp={props}/>;
 					} else {
 						return null;
 					}
@@ -76,7 +64,7 @@ export function PartyDetail(props: Props): JSX.Element {
 	}
 }
 
-function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element {
+function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
 	let [board_name, setBoardName] = React.useState('');
 	return <div styleName="createBoardBlock">
@@ -91,12 +79,15 @@ function CreateBoardBlock(props: { party_name: string, rp: Props }): JSX.Element
 					}}
 				/>
 				<button onClick={() => {
-					createBoard(props.party_name, board_name).then(() => {
-						// FIXME: 跳轉到新創立的看板
-						props.rp.history.push(`/app/b/${board_name}`);
-					}).catch(err => {
-						matchErrAndShow(err);
-					});
+					API_FETCHER.createBoard({
+						board_name,
+						ruling_party_id: props.party_id,
+						title: '',
+						detail: ''
+					})
+						.then(data => unwrap(data))
+						.then(() => props.rp.history.push(`/app/b/${board_name}`))
+						.catch(err => toast.error(err));
 				}}>確認</button>
 			</div>
 				: <></>

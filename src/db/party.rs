@@ -6,21 +6,20 @@ impl DBObject for Party {
     const TYPE: DataType = DataType::Party;
 }
 
-pub async fn get_by_id(id: i64) -> Fallible<Party> {
-    let pool = get_pool();
-    let party = sqlx::query_as!(Party, "SELECT * FROM parties WHERE id = $1", id)
-        .fetch_one(pool)
-        .await
-        .to_fallible(id)?;
-    Ok(party)
-}
-
 pub async fn get_by_name(name: &str) -> Fallible<Party> {
     let pool = get_pool();
-    let party = sqlx::query_as!(Party, "SELECT * FROM parties WHERE party_name = $1", name)
-        .fetch_one(pool)
-        .await
-        .to_fallible(name)?;
+    let party = sqlx::query_as!(
+        Party,
+        "
+    SELECT parties.*, boards.board_name FROM parties
+    LEFT JOIN boards on boards.id = parties.board_id
+    WHERE parties.party_name = $1
+    ",
+        name
+    )
+    .fetch_one(pool)
+    .await
+    .to_fallible(name)?;
     Ok(party)
 }
 
@@ -29,8 +28,9 @@ pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
     let parties: Vec<Party> = sqlx::query_as!(
         Party,
         "
-    SELECT parties.* FROM parties
+    SELECT parties.*, boards.board_name FROM parties
     INNER JOIN party_members ON parties.id = party_members.party_id
+    LEFT JOIN boards on boards.id = parties.board_id
     WHERE user_id = $1;",
         id
     )

@@ -135,8 +135,12 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
 pub struct PartyQueryRouter {}
 #[async_trait]
 impl api_trait::PartyQueryRouter for PartyQueryRouter {
-    async fn query_party(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Party> {
-        Ok(db::party::get_by_id(id).await?)
+    async fn query_party(
+        &self,
+        context: &mut crate::Ctx,
+        party_name: String,
+    ) -> Fallible<model::Party> {
+        Ok(db::party::get_by_name(&party_name).await?)
     }
     async fn create_party(
         &self,
@@ -187,7 +191,17 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         ])
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        unimplemented!()
+        unimplemented!();
+    }
+    async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
+        Ok(db::board::get_by_id(id).await?)
+    }
+    async fn create_board(
+        &self,
+        context: &mut crate::Ctx,
+        new_board: model::NewBoard,
+    ) -> Fallible<i64> {
+        Ok(db::board::create(&new_board).await?)
     }
 }
 
