@@ -105,7 +105,8 @@ CREATE TABLE parties (
   board_id BIGINT REFERENCES boards(id),
   party_name TEXT NOT NULL UNIQUE,
   energy INT NOT NULL DEFAULT 0,
-  chairman_id BIGINT REFERENCES users(id) NOT NULL,
+  ruling BOOLEAN NOT NULL DEFAULT FALSE,
+  -- chairman_id BIGINT REFERENCES users(id) NOT NULL,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

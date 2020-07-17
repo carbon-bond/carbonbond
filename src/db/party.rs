@@ -1,17 +1,18 @@
 use super::{get_pool, DBObject, ToFallible};
+use crate::api::model::Party;
 use crate::custom_error::{DataType, Fallible};
 
-#[derive(Debug, Default)]
-pub struct Party {
-    pub id: i64,
-    pub party_name: String,
-    pub board_id: Option<i64>,
-    pub energy: i32,
-    pub chairman_id: i64,
-    pub create_time: Option<chrono::DateTime<chrono::Utc>>,
-}
 impl DBObject for Party {
-    const TYPE: DataType = DataType::Article;
+    const TYPE: DataType = DataType::Party;
+}
+
+pub async fn get_by_id(id: i64) -> Fallible<Party> {
+    let pool = get_pool();
+    let party = sqlx::query_as!(Party, "SELECT * FROM parties WHERE id = $1", id)
+        .fetch_one(pool)
+        .await
+        .to_fallible(id)?;
+    Ok(party)
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<Party> {
@@ -21,6 +22,21 @@ pub async fn get_by_name(name: &str) -> Fallible<Party> {
         .await
         .to_fallible(name)?;
     Ok(party)
+}
+
+pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
+    let pool = get_pool();
+    let parties: Vec<Party> = sqlx::query_as!(
+        Party,
+        "
+    SELECT parties.* FROM parties
+    INNER JOIN party_members ON parties.id = party_members.party_id
+    WHERE user_id = $1;",
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(parties)
 }
 
 pub async fn create(
@@ -33,14 +49,13 @@ pub async fn create(
         Some(board_name) => {
             sqlx::query!(
                 "
-                INSERT INTO parties (party_name, board_id, chairman_id)
-                SELECT $1, boards.id, $2
+                INSERT INTO parties (party_name, board_id)
+                SELECT $1, boards.id
                 FROM boards
-                WHERE boards.board_name = $3
+                WHERE boards.board_name = $2
                 RETURNING id
                 ",
                 party_name,
-                chairman_id,
                 board_name
             )
             .fetch_one(pool)
@@ -50,11 +65,10 @@ pub async fn create(
         None => {
             sqlx::query!(
                 "
-                INSERT INTO parties (party_name, chairman_id)
-                VALUES ($1, $2) RETURNING id
+                INSERT INTO parties (party_name)
+                VALUES ($1) RETURNING id
                 ",
                 party_name,
-                chairman_id,
             )
             .fetch_one(pool)
             .await?

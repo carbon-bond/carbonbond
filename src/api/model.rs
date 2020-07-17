@@ -18,9 +18,10 @@ mod model {
     pub struct Party {
         pub id: i64,
         pub party_name: String,
-        pub board_id: Option<u64>,
+        pub board_id: Option<i64>,
         pub energy: i32,
         pub ruling: bool,
+        pub create_time: DateTime<Utc>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {

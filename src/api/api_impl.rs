@@ -136,31 +136,7 @@ pub struct PartyQueryRouter {}
 #[async_trait]
 impl api_trait::PartyQueryRouter for PartyQueryRouter {
     async fn query_party(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Party> {
-        Ok(if id == 1 {
-            model::Party {
-                id: 1,
-                board_id: None,
-                party_name: "東林黨".to_owned(),
-                energy: 2949,
-                ruling: false,
-            }
-        } else if id == 2 {
-            model::Party {
-                id: 2,
-                board_id: Some(1),
-                party_name: "天地會".to_owned(),
-                energy: 14790,
-                ruling: true,
-            }
-        } else {
-            model::Party {
-                id: 3,
-                board_id: Some(2),
-                party_name: "玉皇朝".to_owned(),
-                energy: 56783,
-                ruling: false,
-            }
-        })
+        Ok(db::party::get_by_id(id).await?)
     }
     async fn create_party(
         &self,
@@ -175,7 +151,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
                 Ok(())
             }
             None => Err(Error::LogicError {
-                msg: "".to_owned(),
+                msg: vec![],
                 code: ErrorCode::NeedLogin,
             }),
         }
@@ -234,29 +210,12 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         }
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
-        Ok(vec![
-            model::Party {
-                id: 1,
-                board_id: None,
-                party_name: "東林黨".to_owned(),
-                energy: 2949,
-                ruling: false,
-            },
-            model::Party {
-                id: 2,
-                board_id: Some(1),
-                party_name: "天地會".to_owned(),
-                energy: 14790,
-                ruling: true,
-            },
-            model::Party {
-                id: 3,
-                board_id: Some(2),
-                party_name: "玉皇朝".to_owned(),
-                energy: 56783,
-                ruling: false,
-            },
-        ])
+        if let Some(id) = context.get_id() {
+            let parties = db::party::get_by_member_id(id).await?;
+            Ok(parties.into_iter().collect::<Vec<model::Party>>())
+        } else {
+            Err(ErrorCode::NeedLogin.into())
+        }
     }
     async fn login(
         &self,
