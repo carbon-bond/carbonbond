@@ -23,20 +23,55 @@ pub async fn get_by_name(name: &str) -> Fallible<Party> {
     Ok(party)
 }
 
-pub async fn create(party: &Party) -> Fallible<i64> {
+pub async fn create(
+    party_name: &str,
+    board_name: Option<String>,
+    chairman_id: i64,
+) -> Fallible<i64> {
     let pool = get_pool();
-    let res = sqlx::query!(
+    let party_id = match board_name {
+        Some(board_name) => {
+            sqlx::query!(
+                "
+                INSERT INTO parties (party_name, board_id, chairman_id)
+                SELECT $1, boards.id, $2
+                FROM boards
+                WHERE boards.board_name = $3
+                RETURNING id
+                ",
+                party_name,
+                chairman_id,
+                board_name
+            )
+            .fetch_one(pool)
+            .await?
+            .id
+        }
+        None => {
+            sqlx::query!(
+                "
+                INSERT INTO parties (party_name, chairman_id)
+                VALUES ($1, $2) RETURNING id
+                ",
+                party_name,
+                chairman_id,
+            )
+            .fetch_one(pool)
+            .await?
+            .id
+        }
+    };
+    sqlx::query!(
         "
-        INSERT INTO parties (party_name, board_id, chairman_id)
-        VALUES ($1, $2, $3) RETURNING id
+        INSERT INTO party_members (party_id, user_id)
+        VALUES ($1, $2) RETURNING id
         ",
-        party.party_name,
-        party.board_id,
-        party.chairman_id,
+        party_id,
+        chairman_id,
     )
     .fetch_one(pool)
     .await?;
-    Ok(res.id)
+    Ok(party_id)
 }
 
 pub async fn change_board(party_id: i64, board_id: i64) -> Fallible<()> {

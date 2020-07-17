@@ -27,6 +27,11 @@ pub enum UserQuery {
 pub enum PartyQuery {
     #[chitin(request, response = "super::model::Party")]
     QueryParty { id: i64 },
+    #[chitin(request, response = "()")]
+    CreateParty {
+        party_name: String,
+        board_name: Option<String>,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum ArticleQuery {

@@ -3,15 +3,12 @@ import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import { UserState } from '../global_state';
-import { GQL, matchErrAndShow, ajaxOperation } from '../../ts/api';
 import '../../css/party/my_party_list.css';
-import { API_FETCHER, unwrap_or } from '../../ts/api/api';
+import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
 
 import { EXILED_PARTY_NAME } from './index';
-
-type Board = GQL.BoardMetaFragment;
-// type Party = GQL.PartyMetaFragment;
+import { toast } from 'react-toastify';
 
 async function fetchPartyList(): Promise<Party[]> {
 	let party_list = unwrap_or(await API_FETCHER.queryMyPartyList(), []);
@@ -28,7 +25,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 		fetchPartyList().then(tree => {
 			setPartyList(tree);
 			setFetching(false);
-		}).catch(err => matchErrAndShow(err));
+		}).catch(err => toast.error(err));
 	}, []);
 
 	if (!user_state.login && !user_state.fetching) {
@@ -100,13 +97,15 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			/>
 			<br />
 			<button onClick={() => {
-				ajaxOperation.CreateParty({
-					party_name,
-					board_name: board_name.length == 0 ? undefined : board_name
+				API_FETCHER.createParty(
+					board_name.length == 0 ? null : board_name,
+					party_name
+				).then(res => {
+					unwrap(res);
 				}).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
-					matchErrAndShow(err);
+					toast.error(err);
 				});
 			}}>確認</button>
 		</div>

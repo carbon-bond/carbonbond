@@ -29,10 +29,10 @@ trait DBObject {
     const TYPE: DataType;
 }
 trait ToFallible<T: DBObject> {
-    fn to_fallible(self, target: &str) -> Fallible<T>;
+    fn to_fallible<U: ToString>(self, target: U) -> Fallible<T>;
 }
 impl<T: DBObject> ToFallible<T> for Result<T, sqlx::Error> {
-    fn to_fallible(self, target: &str) -> Fallible<T> {
+    fn to_fallible<U: ToString>(self, target: U) -> Fallible<T> {
         match self {
             Ok(t) => Ok(t),
             Err(sqlx::Error::RowNotFound) => {

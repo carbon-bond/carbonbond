@@ -18,6 +18,15 @@ impl DBObject for User {
     const TYPE: DataType = DataType::User;
 }
 
+pub async fn get_by_id(id: i64) -> Fallible<User> {
+    let pool = get_pool();
+    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
+        .fetch_one(pool)
+        .await
+        .to_fallible(id)?;
+    Ok(user)
+}
+
 pub async fn get_by_name(name: &str) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE name = $1", name)

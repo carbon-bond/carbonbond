@@ -116,9 +116,9 @@ ALTER TABLE boards ADD CONSTRAINT boards_ruling_party_key FOREIGN KEY (ruling_pa
 -- 政黨成員
 CREATE TABLE party_members (
   id BIGSERIAL PRIMARY KEY,
-  board_id BIGINT REFERENCES boards(id),
-  position SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
-  dedication_ratio SMALLINT NOT NULL, -- 10~100的整數，表示該人奉獻鍵能的比率
+  -- board_id BIGINT REFERENCES boards(id),
+  -- position SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
+  -- dedication_ratio SMALLINT NOT NULL, -- 10~100的整數，表示該人奉獻鍵能的比率
   party_id BIGINT REFERENCES parties(id) NOT NULL,
   create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   user_id BIGINT REFERENCES users(id) NOT NULL

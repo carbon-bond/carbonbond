@@ -26,6 +26,9 @@ export abstract class RootQueryFetcher {
     async queryParty(id: number): Promise<Result<Party, any>> {
         return JSON.parse(await this.fetchResult({ "Party": { "QueryParty": { id } } }));
     }
+    async createParty(board_name: Option<string>, party_name: string): Promise<Result<null, any>> {
+        return JSON.parse(await this.fetchResult({ "Party": { "CreateParty": { board_name, party_name } } }));
+    }
     async queryArticleList(author_name: Option<string>, board_name: Option<string>, count: number): Promise<Result<Array<Article>, any>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleList": { author_name, board_name, count } } }));
     }

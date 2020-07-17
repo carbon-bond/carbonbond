@@ -1,6 +1,6 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Error, ErrorCode, Fallible};
 use crate::db;
 use crate::Context;
 use async_trait::async_trait;
@@ -162,6 +162,24 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
             }
         })
     }
+    async fn create_party(
+        &self,
+        context: &mut crate::Ctx,
+        board_name: Option<String>,
+        party_name: String,
+    ) -> Fallible<()> {
+        match context.get_id() {
+            Some(id) => {
+                log::debug!("{} 嘗試創建 {}", id, party_name);
+                db::party::create(&party_name, board_name, id).await?;
+                Ok(())
+            }
+            None => Err(Error::LogicError {
+                msg: "".to_owned(),
+                code: ErrorCode::NeedLogin,
+            }),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -202,15 +220,18 @@ pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
-        Ok(context.get_id().and_then(|id| {
-            Some(model::User {
-                id: id,
-                user_name: id.to_string(),
-                sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
-                energy: 789,
-                invitation_credit: 20,
-            })
-        }))
+        if let Some(id) = context.get_id() {
+            let user = db::user::get_by_id(id).await?;
+            Ok(Some(model::User {
+                id: user.id,
+                user_name: user.name,
+                energy: user.energy,
+                sentence: user.sentence,
+                invitation_credit: user.invitation_credit,
+            }))
+        } else {
+            Ok(None)
+        }
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
         Ok(vec![
