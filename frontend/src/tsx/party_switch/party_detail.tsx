@@ -73,6 +73,10 @@ type Input = {
 	force: string,
 };
 
+function InvalidMessage(props: { msg: string }): JSX.Element {
+	return <span styleName="invalidMessage">{props.msg}</span>;
+}
+
 function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 	const { register, handleSubmit, errors } = useForm<Input>({mode: 'onBlur'});
 	let [expand, setExpand] = React.useState(false);
@@ -90,7 +94,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 		{
 			expand ? <form onSubmit={handleSubmit(onSubmit)} styleName="form">
 				<input name="board_name" placeholder="看板名稱" ref={register({required: true})} autoFocus/>
-				{errors.board_name && <span>必填</span>}
+				{errors.board_name && <InvalidMessage msg="必填" />}
 				<input name="title" placeholder="版主的話" ref={register} />
 				<textarea name="detail" placeholder="看板介紹" ref={register} />
 				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
@@ -105,7 +109,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 						}
 					}
 				})} />
-				{errors.force && <span>力語言語法錯誤</span>}
+				{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
 				<input type="submit" value="確認"/>
 			</form>
 				: <></>

@@ -11,20 +11,28 @@ impl DBObject for NewBoard {
 
 pub async fn get_by_id(id: i64) -> Fallible<Board> {
     let pool = get_pool();
-    let user = sqlx::query_as!(Board, "SELECT * FROM boards WHERE id = $1", id)
+    let board = sqlx::query_as!(Board, "SELECT * FROM boards WHERE id = $1", id)
         .fetch_one(pool)
         .await
         .to_fallible(id)?;
-    Ok(user)
+    Ok(board)
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<Board> {
     let pool = get_pool();
-    let user = sqlx::query_as!(Board, "SELECT * FROM boards WHERE board_name = $1", name)
+    let board = sqlx::query_as!(Board, "SELECT * FROM boards WHERE board_name = $1", name)
         .fetch_one(pool)
         .await
         .to_fallible(name)?;
-    Ok(user)
+    Ok(board)
+}
+
+pub async fn get_all() -> Fallible<Vec<Board>> {
+    let pool = get_pool();
+    let boards = sqlx::query_as!(Board, "SELECT * FROM boards")
+        .fetch_all(pool)
+        .await?;
+    Ok(boards)
 }
 
 pub async fn create(board: &NewBoard) -> Fallible<i64> {

@@ -171,26 +171,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
-        Ok(vec![
-            model::Board {
-                id: 1,
-                board_name: "國士無雙".to_string(),
-                create_time: Utc::now(),
-                title: "諸將易得耳，至如信者，國士無雙".to_owned(),
-                detail: "國士無雙的細節介紹......".to_owned(),
-                force: "".to_owned(),
-                ruling_party_id: 1,
-            },
-            model::Board {
-                id: 2,
-                board_name: "綠帽文學".to_owned(),
-                create_time: Utc::now(),
-                title: "愛是一道光，如此美妙".to_owned(),
-                detail: "綠帽文學的細節介紹......".to_owned(),
-                force: "".to_owned(),
-                ruling_party_id: 2,
-            },
-        ])
+        Ok(db::board::get_all().await?)
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
         unimplemented!();
