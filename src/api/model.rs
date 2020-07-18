@@ -31,6 +31,7 @@ mod model {
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
+        pub force: String,
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -38,6 +39,7 @@ mod model {
         pub board_name: String,
         pub title: String,
         pub detail: String,
+        pub force: String,
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

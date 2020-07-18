@@ -5,6 +5,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state';
+import { useForm } from 'react-hook-form';
 
 import '../../css/party/party_detail.css';
 import { toast } from 'react-toastify';
@@ -23,6 +24,7 @@ export function PartyDetail(props: Props): JSX.Element {
 	React.useEffect(() => {
 		fetchPartyDetail(party_name).then(p => {
 			setParty(p);
+			console.log(p);
 			setFetching(false);
 		}).catch(err => {
 			toast.error(err);
@@ -39,7 +41,6 @@ export function PartyDetail(props: Props): JSX.Element {
 				<span styleName="partyName">{party.party_name}</span>
 				{(() => {
 					if (party.board_name) {
-						// TODO: 取得 board_name
 						let href = `/app/b/${party.board_name}`;
 						return <Link to={href} styleName="boardName">
 							<span>- b/{party.board_name}</span>
@@ -64,32 +65,36 @@ export function PartyDetail(props: Props): JSX.Element {
 	}
 }
 
+type Input = {
+	board_name: string,
+	title: string,
+	detail: string,
+	force: string,
+};
+
 function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
+	const { register, handleSubmit, errors } = useForm<Input>({mode: 'onBlur'});
 	let [expand, setExpand] = React.useState(false);
-	let [board_name, setBoardName] = React.useState('');
+	function onSubmit(data: Input): void {
+		API_FETCHER.createBoard({
+			ruling_party_id: props.party_id,
+			...data
+		})
+			.then(data => unwrap(data))
+			.then(() => props.rp.history.push(`/app/b/${data.board_name}`))
+			.catch(err => toast.error(err));
+	}
 	return <div styleName="createBoardBlock">
-		<div onClick={() => setExpand(!expand)} style={{ cursor: 'pointer' }}>🏂 創立看板</div>
+		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>
 		{
-			expand ? <div>
-				<input type="text"
-					placeholder="看板名稱"
-					value={board_name}
-					onChange={evt => {
-						setBoardName(evt.target.value);
-					}}
-				/>
-				<button onClick={() => {
-					API_FETCHER.createBoard({
-						board_name,
-						ruling_party_id: props.party_id,
-						title: '',
-						detail: ''
-					})
-						.then(data => unwrap(data))
-						.then(() => props.rp.history.push(`/app/b/${board_name}`))
-						.catch(err => toast.error(err));
-				}}>確認</button>
-			</div>
+			expand ? <form onSubmit={handleSubmit(onSubmit)} styleName="form">
+				<input name="board_name" placeholder="看板名稱" ref={register({required: true})} autoFocus/>
+				{errors.board_name && <span>必填</span>}
+				<input name="title" placeholder="版主的話" ref={register} />
+				<textarea name="detail" placeholder="看板介紹" ref={register} />
+				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register} />
+				<input type="submit" value="確認"/>
+			</form>
 				: <></>
 		}
 	</div>;

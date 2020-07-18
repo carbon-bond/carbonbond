@@ -22,7 +22,7 @@
                 height: 100%;
                 
                 & .switchHeader {
-                    height: 120px;
+                    height: 80px;
                     width: 100%;
                     background-color: var(--background-color);
                 }

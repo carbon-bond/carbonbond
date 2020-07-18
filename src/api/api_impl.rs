@@ -178,6 +178,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
                 create_time: Utc::now(),
                 title: "諸將易得耳，至如信者，國士無雙".to_owned(),
                 detail: "國士無雙的細節介紹......".to_owned(),
+                force: "".to_owned(),
                 ruling_party_id: 1,
             },
             model::Board {
@@ -186,6 +187,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
                 create_time: Utc::now(),
                 title: "愛是一道光，如此美妙".to_owned(),
                 detail: "綠帽文學的細節介紹......".to_owned(),
+                force: "".to_owned(),
                 ruling_party_id: 2,
             },
         ])

@@ -13,6 +13,16 @@
         margin-left: 20px;
     }
     & .createBoardBlock {
+        width: 400px;
+        & .createButton {
+            cursor: pointer;
+        }
         margin-top: 20px;
+        & .form {
+            display: flex;
+            flex-direction: column;
+            & input { margin-top: 15px; }
+            & textarea { margin-top: 15px; }
+        }
     }
 }
