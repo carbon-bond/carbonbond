@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 
 import '../../css/party/party_detail.css';
 import { toast } from 'react-toastify';
+import { Parser } from 'force';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
 
@@ -92,7 +93,19 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 				{errors.board_name && <span>必填</span>}
 				<input name="title" placeholder="版主的話" ref={register} />
 				<textarea name="detail" placeholder="看板介紹" ref={register} />
-				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register} />
+				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
+					validate: (value) => {
+						try {
+							const parser = new Parser(value);
+							parser.parse();
+							return true;
+						} catch (err) {
+							console.log(err);
+							return false;
+						}
+					}
+				})} />
+				{errors.force && <span>力語言語法錯誤</span>}
 				<input type="submit" value="確認"/>
 			</form>
 				: <></>

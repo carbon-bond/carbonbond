@@ -16,6 +16,7 @@
 		"babel": "^6.23.0",
 		"date-fns": "^2.0.0-beta.2",
 		"emoji-mart": "^2.11.1",
+		"force": "../force/typescript/",
 		"graphql-request": "^1.8.2",
 		"immutable": "^4.0.0-rc.12",
 		"long": "^4.0.0",
