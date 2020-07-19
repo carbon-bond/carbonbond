@@ -1,55 +1,5 @@
 {
   "db": "PostgreSQL",
-  "118e2b9195290fc9fb87229d5e886263571cd7c1907d99e8208421a480575ae8": {
-    "query": "SELECT * FROM parties WHERE party_name = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "party_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 4,
-          "name": "chairman_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        true,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "12b9665a686338f6ccead84798cd46cd9320e2e0698919d01ed8100156cf10d0": {
     "query": "SELECT * FROM articles WHERE id = $1",
     "describe": {
@@ -112,6 +62,193 @@
       ]
     }
   },
+  "146b4007114e60edd5cb539ce96b48cff4995505204b0583989093dc87153748": {
+    "query": "SELECT * FROM boards",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "15f776367aedd20c1ad8bf16ab017f885043de74c32da2fee9ef304f97a18661": {
+    "query": "SELECT * FROM boards WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "18b0b8b14f55ff490a78b6d996f56260405c6d1605bac1f1f687710fa98e71f8": {
+    "query": "\n                INSERT INTO parties (party_name, board_id)\n                SELECT $1, boards.id\n                FROM boards\n                WHERE boards.board_name = $2\n                RETURNING id\n                ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "324a61b88acce3c7cce51c1cb201ec0ac1cb5d48847c28fd51ed83a5b89a3166": {
+    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    INNER JOIN party_members ON parties.id = party_members.party_id\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE user_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "342c08cdf4a43faea8de89b498435b16c935451aad1678ae7cc2935285724644": {
     "query": "\n        INSERT INTO article_contents (article_id, str_content, int_content)\n        VALUES ($1, $2, $3) RETURNING id\n        ",
     "describe": {
@@ -134,8 +271,8 @@
       ]
     }
   },
-  "49105b5d89b5bcc54ea892d3127ab7ed3609790a95478ad69f3f4c981e551ba2": {
-    "query": "\n        INSERT INTO parties (party_name, board_id, chairman_id)\n        VALUES ($1, $2, $3) RETURNING id\n        ",
+  "482dce2bc7d06dae44298101f21d7bef6512ae070cd04d0df5b95e8f1601e8b4": {
+    "query": "\n                INSERT INTO parties (party_name)\n                VALUES ($1) RETURNING id\n                ",
     "describe": {
       "columns": [
         {
@@ -146,9 +283,7 @@
       ],
       "parameters": {
         "Left": [
-          "Text",
-          "Int8",
-          "Int8"
+          "Text"
         ]
       },
       "nullable": [
@@ -199,6 +334,160 @@
         ]
       },
       "nullable": [
+        false
+      ]
+    }
+  },
+  "78ee9888e1daedd495c655ead041afd7320541bc0fe6436a0df061633da7109c": {
+    "query": "INSERT INTO boards (board_name, detail, title, force, ruling_party_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "7ca503e08ff245158c27ef33697c2556c49e27b34d0a8f45b9dff5187f176095": {
+    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE parties.party_name = $1\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "843923b9a0257cf80f1dff554e7dc8fdfc05f489328e8376513124dfb42996e3": {
+    "query": "SELECT * FROM users WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "avatar",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "invitation_credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 7,
+          "name": "password_hashed",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 8,
+          "name": "salt",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 9,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
         false
       ]
     }
@@ -263,6 +552,27 @@
         false,
         false,
         false,
+        false
+      ]
+    }
+  },
+  "c41456da64ff3d78075709fe14fe46e2d9a07b1703e73c245003188f5c51f5ad": {
+    "query": "\n        INSERT INTO party_members (party_id, user_id)\n        VALUES ($1, $2) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
         false
       ]
     }
@@ -399,11 +709,16 @@
         },
         {
           "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
           "name": "ruling_party_id",
           "type_info": "Int8"
         },
         {
-          "ordinal": 5,
+          "ordinal": 6,
           "name": "create_time",
           "type_info": "Timestamptz"
         }
@@ -419,29 +734,7 @@
         false,
         false,
         false,
-        false
-      ]
-    }
-  },
-  "d93959c0d82c280e74d54eadcb09cf12ed835e92272db25430d1d8274cf06765": {
-    "query": "INSERT INTO boards (board_name, detail, title, ruling_party_id) VALUES ($1, $2, $3, $4) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      },
-      "nullable": [
+        false,
         false
       ]
     }

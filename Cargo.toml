@@ -20,6 +20,8 @@ regex = "1.2.1"
 rustyline = "6.2.0"
 serde = { version = "1.0.98", features = ["derive"] }
 serde_json = "1.0.40"
+# 還不能在 cargo 上找到
+# FIXME: 儘快換成正常的做法
 sqlx = { path = "../sqlx", default-features = false, features = [ "any", "offline", "migrate", "runtime-tokio", "macros", "postgres", "chrono" ] }
 state = { version = "0.4.1", features = ["const_fn", "tls"] }
 structopt = "0.3"
