@@ -1,10 +1,11 @@
 use carbonbond::{
     config::{get_config, init as init_config},
-    custom_error::{Contextable, Error, ErrorCode, Fallible},
+    custom_error::{Error, ErrorCode, Fallible},
     db::{self, user::User},
 };
-use refinery::config::{Config, ConfigDbType};
 use rustyline::Editor;
+use sqlx::migrate::{Migrate, MigrateError, Migrator};
+use sqlx::{AnyConnection, Connection};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 use structopt::StructOpt;
@@ -12,10 +13,6 @@ use tokio::runtime::Runtime;
 
 fn block_on<F: std::future::Future>(future: F) -> F::Output {
     Runtime::new().unwrap().block_on(future)
-}
-
-mod embedded {
-    refinery::embed_migrations!("migrations");
 }
 
 #[derive(StructOpt, Debug)]
@@ -149,7 +146,8 @@ fn check_login(user: &Option<User>) -> Fallible<&User> {
 }
 
 fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
-    let db_name = &get_config().database.dbname;
+    let conf = &get_config().database;
+    let db_name = &conf.dbname;
     match root {
         Root::Login { user_name } => login(user, &user_name)?,
         Root::Start => start_db()?,
@@ -169,14 +167,12 @@ fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
                 create_db()?;
             }
             if !reset.no_migrate {
-                migrate()?;
+                block_on(migrate())?
             }
         }
         Root::Quit => return Ok(true),
         Root::Add(add) => handle_add(add.subcmd, user)?,
-        Root::Migrate => {
-            migrate()?;
-        }
+        Root::Migrate => block_on(migrate())?,
         Root::List => {
             for db in list_db()? {
                 let prefix = if &db == db_name { "* " } else { "" };
@@ -187,20 +183,33 @@ fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
     Ok(false)
 }
 
-fn migrate() -> Fallible<()> {
+async fn migrate() -> Fallible<()> {
     let conf = &get_config().database;
-    let mut ref_conf = Config::new(ConfigDbType::Postgres)
-        .set_db_host(&conf.host)
-        .set_db_port(&conf.port.to_string())
-        .set_db_user(&conf.username)
-        .set_db_name(&conf.dbname)
-        .set_db_pass(&conf.password);
-    let report = embedded::migrations::runner().run(&mut ref_conf)?;
-    let migrations = report.applied_migrations();
-    println!("執行了 {} 次遷移", migrations.len());
-    for m in migrations.iter() {
-        println!("執行遷移：{} - {}", m.version(), m.name());
+    let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
+    let mut conn = AnyConnection::connect(&conf.get_url()).await?;
+
+    conn.ensure_migrations_table().await?;
+
+    let (version, dirty) = conn.version().await?.unwrap_or((0, false));
+
+    if dirty {
+        return Err(MigrateError::Dirty(version).into());
     }
+
+    for migration in migrator.iter() {
+        if migration.version() > version {
+            let elapsed = conn.apply(migration).await?;
+            println!(
+                "{}/遷移 {} ({:?})",
+                migration.version(),
+                migration.description(),
+                elapsed,
+            );
+        } else {
+            conn.validate(migration).await?;
+        }
+    }
+
     Ok(())
 }
 fn list_db() -> Fallible<Vec<String>> {

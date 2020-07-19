@@ -13,10 +13,7 @@ static POOL: Storage<PgPool> = Storage::new();
 
 pub async fn init() -> Fallible<()> {
     let conf = &get_config().database;
-    let pool = PgPool::builder()
-        .max_size(conf.max_conn)
-        .build(&conf.get_url())
-        .await?;
+    let pool = PgPool::connect(&conf.get_url()).await?;
     assert!(POOL.set(pool), "資料庫連接池被重複創建",);
     Ok(())
 }

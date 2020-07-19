@@ -1,10 +1,3 @@
-#[macro_use]
-extern crate derive_more;
-
-#[path = "src/config/config.rs"]
-mod config;
-#[path = "src/custom_error.rs"]
-mod custom_error;
 #[path = "src/api/model.rs"]
 mod model;
 #[path = "src/api/query.rs"]
@@ -13,6 +6,7 @@ use chitin::{ChitinCodegen, CodegenOption};
 use query::RootQuery;
 use std::fs::File;
 use std::io::prelude::*;
+use std::process::Command;
 
 fn main() -> std::io::Result<()> {
     // build server chitin
@@ -43,8 +37,12 @@ fn main() -> std::io::Result<()> {
     client_file
         .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
     // set database url
-    let conf = config::load_config(&None).unwrap();
-    println!("cargo:rustc-env=DATABASE_URL={}", conf.database.get_url());
-
+    // if cfg!(feature = "full-build") {
+    //     let conf = config::load_config(&None).unwrap().database;
+    //     let mut cmd = Command::new("cargo");
+    //     cmd.args(&["sqlx", "prepare", "--", "--bin", "server"]);
+    //     cmd.env("DATABASE_URL", &conf.get_url());
+    //     cmd.spawn().unwrap().wait().unwrap();
+    // }
     Ok(())
 }
