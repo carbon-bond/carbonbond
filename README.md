@@ -45,6 +45,9 @@
     + 使用 `cargo run` 可啟動伺服器
     + 使用 `cargo run -- --config-file FILE` 指定設定檔
     + 使用 `cargo run --bin db-tool` 可管理資料庫
+    + 使用 `cargo run --bin prepare --features prepare` 準備所有程式碼生成的檔案，包含：
+        1. 幾丁前後端
+        2. sqlx 離線文件
 - 前端：使用 typescript + React 開發。
     + `yarn` 安裝套件
     + `yarn watch` 編譯前端，並且監聽檔案改動
