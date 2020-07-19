@@ -174,7 +174,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         Ok(db::board::get_all().await?)
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        unimplemented!();
+        Ok(db::board::get_by_name(&name).await?)
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
         Ok(db::board::get_by_id(id).await?)

@@ -69,9 +69,9 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 		user_name = '未知';
 		category_name = '未知';
 	}
-
+	const url = `/app/b/${props.article.board_name}/a/${props.article.id}`;
 	return (
-		<Link to={`/app/b/${props.article.board_name}/a/${props.article.id}`}>
+		<Link to={url}>
 			<div styleName="articleContainer">
 				<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
 				<div styleName="articleBody">

@@ -4,14 +4,16 @@ import { RouteComponentProps } from 'react-router';
 import { MainScrollState } from '../global_state';
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
-import { Article } from '../../ts/api/api_trait';
+import { Article, Board } from '../../ts/api/api_trait';
 
 import '../../css/article_wrapper.css';
 import '../../css/board_switch/board_page.css';
 
 const PAGE_SIZE: number = 10;
 
-type Props = RouteComponentProps<{ board_name: string }>;
+type Props = RouteComponentProps<{ board_name: string }> & {
+	board: Board
+};
 
 // TODO: Show fetching animation before data
 
@@ -24,14 +26,13 @@ async function fetchArticles(
 }
 
 export function BoardPage(props: Props): JSX.Element {
-	let board_name = props.match.params.board_name;
+	let board_name = props.board.board_name;
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
 		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {
-			console.log(more_articles);
 			setArticles(more_articles);
 		});
 	}, [board_name]);
@@ -45,7 +46,6 @@ export function BoardPage(props: Props): JSX.Element {
 		// const before = articles.slice(-1)[0].id;
 		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {
 			if (more_articles.length > 0) {
-				console.log(more_articles);
 				setArticles([...articles, ...more_articles]);
 			} else {
 				set_is_end(true);

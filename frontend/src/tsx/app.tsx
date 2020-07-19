@@ -52,8 +52,8 @@ function App(): JSX.Element {
 				<Route path="/app/a/:article_id" render={props =>
 					<ArticlePage {...props} />
 				} />
-				<Route path="/app/b/:board_name" render={() =>
-					<BoardSwitch />
+				<Route path="/app/b/:board_name" render={props =>
+					<BoardSwitch {...props}/>
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />

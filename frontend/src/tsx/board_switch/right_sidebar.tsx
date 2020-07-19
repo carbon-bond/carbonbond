@@ -1,10 +1,13 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { EditorPanelState, UserState } from '../global_state';
+import { Board } from '../../ts/api/api_trait';
 
 import '../../css/board_switch/right_sidebar.css';
 
-type Props = RouteComponentProps<{ board_name: string }>;
+type Props = RouteComponentProps<{ board_name: string }> & {
+	board: Board
+};
 
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -32,9 +35,9 @@ export function BoardSidebar(props: Props): JSX.Element {
 			<div styleName="rightSidebarBlock">
 				<div styleName="header">看板簡介</div>
 				<div styleName="content">
-					這是一個看板內容的簡介，這是一個看板內容的簡介，這是一個看板內容的簡介，這是一個看板內容的簡介
+					{props.board.detail}
 				</div>
-				<div styleName="rightSidebarButton trackBoardButton">追蹤此看板</div>
+				{/* <div styleName="rightSidebarButton trackBoardButton">追蹤此看板</div> */}
 			</div>
 		</div>
 
