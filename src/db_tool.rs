@@ -9,11 +9,6 @@ use sqlx::{AnyConnection, Connection};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 use structopt::StructOpt;
-use tokio::runtime::Runtime;
-
-fn block_on<F: std::future::Future>(future: F) -> F::Output {
-    Runtime::new().unwrap().block_on(future)
-}
 
 #[derive(StructOpt, Debug)]
 struct ArgRoot {
@@ -75,7 +70,8 @@ enum AddSubCommand {
     },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> () {
     env_logger::init();
     let mut user: Option<User> = None;
     let args = std::env::args();
@@ -83,12 +79,12 @@ fn main() {
         match ArgRoot::from_iter_safe(args) {
             Ok(root) => {
                 init_config(root.config);
-                block_on(db::init()).unwrap();
+                db::init().await.unwrap();
                 if let Some(name) = &root.user {
-                    login(&mut user, name).unwrap();
+                    login(&mut user, name).await.unwrap();
                 }
                 if let Some(cmd) = root.subcmd {
-                    handle_root(cmd, &mut user).unwrap();
+                    handle_root(cmd, &mut user).await.unwrap();
                     return;
                 }
             }
@@ -99,7 +95,7 @@ fn main() {
         }
     } else {
         init_config(None);
-        block_on(db::init()).unwrap();
+        db::init().await.unwrap();
     }
     let mut rl = Editor::<()>::new();
     let mut quit = false;
@@ -119,7 +115,7 @@ fn main() {
             let mut args = vec!["#"];
             args.extend(word.split(" ").filter(|s| s.len() != 0));
             match Root::from_iter_safe(args) {
-                Ok(root) => match handle_root(root, &mut user) {
+                Ok(root) => match handle_root(root, &mut user).await {
                     Ok(true) => {
                         quit = true;
                         break;
@@ -133,8 +129,8 @@ fn main() {
     }
 }
 
-fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
-    let user_found = block_on(db::user::get_by_name(name))?;
+async fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
+    let user_found = db::user::get_by_name(name).await?;
     *user = Some(user_found);
     Ok(())
 }
@@ -145,11 +141,11 @@ fn check_login(user: &Option<User>) -> Fallible<&User> {
     }
 }
 
-fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
+async fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
     let conf = &get_config().database;
     let db_name = &conf.dbname;
     match root {
-        Root::Login { user_name } => login(user, &user_name)?,
+        Root::Login { user_name } => login(user, &user_name).await?,
         Root::Start => start_db()?,
         Root::Stop => stop_db()?,
         Root::Init => {
@@ -167,12 +163,12 @@ fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
                 create_db()?;
             }
             if !reset.no_migrate {
-                block_on(migrate())?
+                migrate().await?
             }
         }
         Root::Quit => return Ok(true),
-        Root::Add(add) => handle_add(add.subcmd, user)?,
-        Root::Migrate => block_on(migrate())?,
+        Root::Add(add) => handle_add(add.subcmd, user).await?,
+        Root::Migrate => migrate().await?,
         Root::List => {
             for db in list_db()? {
                 let prefix = if &db == db_name { "* " } else { "" };
@@ -330,14 +326,14 @@ END $$;";
     )?;
     Ok(())
 }
-fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
+async fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
     match subcmd {
         AddSubCommand::User {
             name,
             email,
             password,
         } => {
-            block_on(db::user::signup(&name, &email, &password))?;
+            db::user::signup(&name, &email, &password).await?;
         }
         AddSubCommand::Board {
             board_name,

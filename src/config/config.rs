@@ -62,7 +62,7 @@ pub struct DatabaseConfig {
     pub dbname: String,
     pub username: String,
     pub password: String,
-    pub port: u32,
+    pub port: u16,
     pub host: String,
     pub data_path: String,
     pub max_conn: u32,

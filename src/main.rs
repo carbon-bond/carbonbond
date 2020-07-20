@@ -81,16 +81,15 @@ async fn main() -> Fallible<()> {
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
     config::init(config_file);
     let conf = config::get_config();
-    // TODO: 初始化資料庫連線池
-    log::info!("資料庫位置：{}", &conf.database.get_url());
+    log::info!("初始化資料庫連線池，位置：{}", &conf.database.get_url());
     db::init().await.unwrap();
-    // 載入前端資源
+    log::info!("載入前端資源");
     let static_files = Static::new("./frontend/static");
-    // 載入首頁
+    log::info!("載入首頁");
     let content = std::fs::read_to_string("./frontend/static/index.html").expect("讀取首頁失敗");
     INDEX.set(content);
 
-    // 打開伺服器
+    log::info!("啟動伺服器");
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
     let service = make_service_fn(|_| {

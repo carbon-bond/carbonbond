@@ -54,8 +54,8 @@ pub async fn create(user: &User) -> Fallible<i64> {
 pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
     use rand::Rng;
     let salt = rand::thread_rng().gen::<[u8; 16]>();
-
     let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default())?;
+    log::trace!("生成使用者 {}:{} 的鹽及雜湊", name, email);
     let pool = get_pool();
     let res = sqlx::query!(
         "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -66,6 +66,7 @@ pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
     )
     .fetch_one(pool)
     .await?;
+    log::trace!("成功新增使用者 {}:{}", name, email);
     Ok(res.id)
 }
 
