@@ -1,5 +1,0 @@
-# 若無本資料夾，protobuf 編譯時會出錯
-# Ignore everything in this directory
-*
-# Except this file
-!.gitignore

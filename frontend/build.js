@@ -21,23 +21,6 @@ const handler = (err, stats) => {
 
 const compiler = webpack(config);
 
-function protobuf_compile() {
-	const out = `${__dirname}/src/ts/protobuf/chat_proto.js`;
-	const args = ['--target', 'static-module',
-		'-w', 'es6',
-		'--force-number',
-		'-o', out,
-		`${__dirname}/../api/protobuf/chat.proto`].join(' ');
-	try {
-		execSync(`npx pbjs ${args}` , { stdio: 'pipe' });
-		execSync(`npx pbts -o ${__dirname}/src/ts/protobuf/chat_proto.d.ts ${out}` , { stdio: 'pipe' });
-		console.log('protobuf 編譯完成'.green);
-	} catch (err) {
-		console.log('protobuf 編譯錯誤：');
-		console.log(err.stderr.toString().red);
-	}
-}
-
 function api_codegen() {
 	try {
 		execSync('yarn api-codegen', { stdio: 'inherit' });
@@ -48,9 +31,6 @@ function api_codegen() {
 }
 
 if (argv['watch']) {
-	// protobuf
-	protobuf_compile();
-	watch(`${__dirname}/../api/protobuf`, protobuf_compile);
 	// api codegen
 	api_codegen();
 	watch(`${__dirname}/../api/api.gql`, api_codegen);
@@ -62,9 +42,6 @@ if (argv['watch']) {
 		poll: undefined
 	}, handler);
 } else {
-	// protobuf
-	protobuf_compile();
-
 	// api codegen
 	api_codegen();
 

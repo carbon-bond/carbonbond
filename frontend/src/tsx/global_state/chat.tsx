@@ -2,16 +2,11 @@ import { createContainer } from 'unstated-next';
 import * as React from 'react';
 const { useState } = React;
 import { Record, List, Map } from 'immutable';
-import { chat_proto } from '../../ts/protobuf/chat_proto.js';
-const {
-	ServerSendData,
-} = chat_proto;
-
 
 export class Message extends Record({ sender_name: '', content: '', time: new Date(0) }) {
-	static fromProtobuf(message: chat_proto.IMessage): Message {
+	static fromProtobuf(message: IMessage): Message {
 		return new Message({
-			sender_name: message.senderName!,
+			sender_name: message.sender_name!,
 			content: message.content!,
 			time: new Date(message.time!)
 		});
@@ -156,35 +151,9 @@ function useAllChatState(): {
 
 	React.useEffect(() => {
 		const _onmessage = (event: MessageEvent): void => {
-			const buf = new Uint8Array(event.data);
-			const data = ServerSendData.decode(buf);
-			switch (data.Data) {
-				case 'recentChatResponse': {
-					const recent_chats = data.recentChatResponse!.chats!.chats!;
-					let new_all_chat = all_chat;
-					for (let chat of recent_chats) {
-						if (chat.directChat) {
-							console.log(`direct chat id: ${chat.directChat.directChatId}`);
-							let direct_chat_data = new DirectChatData({
-								id: chat.directChat.directChatId!,
-								name: chat.directChat.name!,
-								history: List([Message.fromProtobuf(chat.directChat.latestMessage!)]),
-								read_time: new Date(chat.directChat.readTime!),
-							});
-							new_all_chat = new_all_chat.addChat(chat.directChat.name!, direct_chat_data);
-						}
-						// TODO: chat.groupChat, chat.upgradedGroupChat
-					}
-					setAllChat(new_all_chat);
-					break;
-				}
-				default: {
-					console.error('聊天 websocket 收到未識別的資料型別');
-				}
-			}
-			console.log(data.recentChatResponse);
+			// 改用 chitin
+			console.log(event);
 		};
-		// window.chat_socket.setHandler(onmessage);
 	}, [all_chat]);
 
 	function addMessage(name: string, message: Message): void {
