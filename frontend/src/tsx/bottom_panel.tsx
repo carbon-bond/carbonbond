@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../css/bottom_panel.css';
-import { BottomPanelState } from './global_state';
+import { BottomPanelState } from './global_state/bottom_panel';
 import { EditorPanel } from './editor_panel';
 import { ChatRoomPanel } from './chatroom_panel';
 

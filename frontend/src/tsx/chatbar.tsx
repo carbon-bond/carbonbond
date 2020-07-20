@@ -1,6 +1,7 @@
 import * as React from 'react';
 import '../css/chatbar.css';
-import { BottomPanelState, AllChatState, ChatData, DirectChatData, GroupChatData } from './global_state';
+import { AllChatState, ChatData, DirectChatData, GroupChatData } from './global_state/chat';
+import { BottomPanelState } from './global_state/bottom_panel';
 import { roughDate } from '../ts/date';
 
 function ChatUnit(props: { chat: ChatData }): JSX.Element {

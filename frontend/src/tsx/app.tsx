@@ -14,7 +14,11 @@ import '../css/variable.css?global';
 import '../css/layout.css?global';
 import '../css/global.css?global';
 
-import { UserState, BottomPanelState, AllChatState, EditorPanelState, MainScrollState } from './global_state';
+import { UserState } from './global_state/user';
+import { BottomPanelState} from './global_state/bottom_panel';
+import { AllChatState } from './global_state/chat';
+import { EditorPanelState } from './global_state/editor_panel';
+import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { InvitePage } from './invite_page';

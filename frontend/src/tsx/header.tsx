@@ -9,7 +9,7 @@ import '../css/header.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 
 import { useInputValue } from './utils';
-import { UserState } from './global_state';
+import { UserState } from './global_state/user';
 
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);

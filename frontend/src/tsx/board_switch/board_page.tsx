@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
-import { MainScrollState } from '../global_state';
+import { MainScrollState } from '../global_state/main_scroll';
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { Article, Board } from '../../ts/api/api_trait';

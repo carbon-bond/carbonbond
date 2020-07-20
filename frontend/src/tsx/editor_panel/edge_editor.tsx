@@ -2,7 +2,7 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import '../../css/edge_editor.css';
-import { EditorPanelState, Transfuse } from '../global_state';
+import { EditorPanelState, Transfuse } from '../global_state/editor_panel';
 
 function EdgeBlock(props: {
 	onClick: () => void,

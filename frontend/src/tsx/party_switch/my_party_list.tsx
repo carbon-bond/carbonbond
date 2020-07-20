@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
-import { UserState } from '../global_state';
+import { UserState } from '../global_state/user';
 import '../../css/party/my_party_list.css';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';

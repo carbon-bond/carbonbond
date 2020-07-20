@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 import '../../css/bottom_panel.css';
-import { EditorPanelState, EditorPanelData } from '../global_state';
+import { EditorPanelState, EditorPanelData } from '../global_state/editor_panel';
 import { ajaxOperation, matchErrAndShow } from '../../ts/api';
 import { Option, Select } from '../components/select';
 import { CategoryBody, checkCanAttach, FieldType } from '../../ts/forum_util';

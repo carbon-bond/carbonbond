@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
-import { EditorPanelState, UserState } from '../global_state';
+import { UserState } from '../global_state/user';
+import { EditorPanelState } from '../global_state/editor_panel';
 import { Board } from '../../ts/api/api_trait';
 
 import '../../css/board_switch/right_sidebar.css';

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { UserState } from './global_state';
+import { UserState } from './global_state/user';
 import { STORAGE_NAME } from '../ts/constants';
 import { Board } from '../ts/api/api_trait';
 

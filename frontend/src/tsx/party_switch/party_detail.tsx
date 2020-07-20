@@ -4,7 +4,7 @@ import { Redirect, Link } from 'react-router-dom';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
 import { EXILED_PARTY_NAME } from './index';
-import { UserState } from '../global_state';
+import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
 
 import '../../css/party/party_detail.css';

@@ -1,5 +1,5 @@
 import { ajaxOperation } from './api';
-import { EditorPanelData, Transfuse } from '../tsx/global_state';
+import { EditorPanelData, Transfuse } from '../tsx/global_state/editor_panel';
 import { Article, ArticleMeta } from '../tsx/board_switch';
 
 export enum FieldType {

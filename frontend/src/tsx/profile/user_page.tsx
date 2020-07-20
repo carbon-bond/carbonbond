@@ -4,7 +4,7 @@ import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Article } from '../../ts/api/api_trait';
-import { UserState } from '../global_state';
+import { UserState } from '../global_state/user';
 import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
 
