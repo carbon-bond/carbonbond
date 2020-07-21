@@ -9,15 +9,11 @@ import { RouteComponentProps } from 'react-router';
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
-import { GQL } from '../../ts/api';
 import { Board } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { toast } from 'react-toastify';
 
 import '../../css/board_switch/board_page.css';
-
-export type Article = GQL.ArticleDetailQuery['article'];
-export type ArticleMeta = GQL.ArticleMetaFragment;
 
 type Props = RouteComponentProps<{ board_name: string }>;
 

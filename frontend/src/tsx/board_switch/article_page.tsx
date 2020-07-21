@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
-// import { checkCanReply, genReplyTitle } from '../../ts/forum_util';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 import '../../css/board_switch/article_page.css';

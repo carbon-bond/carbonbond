@@ -12,15 +12,20 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
-	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
-	let board_name = props.match.params.board_name;
+	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
 
 	function onEditClick(): void {
 		console.log('press post');
 		if (editor_panel_data) {
 			alert('正在編輯其它文章');
 		} else {
-			openEditorPanel({ board_name });
+			setEditorPanelData({
+				board: props.board,
+				category: '',
+				title: '',
+				content: [],
+			});
+			openEditorPanel();
 		}
 	}
 
