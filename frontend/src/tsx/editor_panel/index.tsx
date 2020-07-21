@@ -2,7 +2,8 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
-import '../../css/bottom_panel.css';
+import '../../css/bottom_panel/bottom_panel.css';
+import '../../css/bottom_panel/editor.css';
 import { EditorPanelState } from '../global_state/editor_panel';
 
 async function _createArticle(): Promise<void> {
@@ -45,15 +46,14 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element | null {
 		}
 	}
 	if (editor_panel_data) {
-		return <div styleName="singlePanel editorPanel">
-			<div styleName="roomTitle title">
+		return <div styleName="editorPanel">
+			<div styleName="roomTitle">
 				<div styleName="leftSet">發表文章</div>
 				<div onClick={() => onTitleClick()} styleName="middleSet">
-					<div style={{ width: '100%', textAlign: 'center' }}>
-						b/{'TODO: 發在哪個看板'}
-					</div>
+					{ editor_panel_data.board.board_name }
 				</div>
 				<div styleName="rightSet">
+					<div styleName="button">⇱</div>
 					<div styleName="button" onClick={() => deleteEditor()}>✗</div>
 				</div>
 			</div>

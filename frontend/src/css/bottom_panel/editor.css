@@ -1,0 +1,53 @@
+.editorPanel {
+    background: var(--background-color);
+    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.75);
+    width: 500px;
+    & .editorBody {
+        height: 450px;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        & .editorInnerBody {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        & .articleContent {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        & .oneLineInput {
+            width: 100%;
+            display: block;
+            min-height: 30px;
+        }
+        & .inValid {
+            box-shadow: 0px 0px 3px 0px red;
+        }
+        & .textInput {
+            display: block;
+            overflow-y: auto;
+            width: 100%;
+            resize: none;
+            flex: 1;
+            min-height: 70%;
+        }
+        & .colLabel {
+            margin-top: 5px;
+        }
+        & .articleMeta {
+            min-height: 30px;
+            display: flex;
+            flex-direction: row;
+            & .test {
+                background-color: blue;
+            }
+            & .articleTitle {
+                height: 100%;
+                flex: 1;
+            }
+        }
+    }
+}

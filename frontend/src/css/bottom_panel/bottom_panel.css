@@ -1,0 +1,44 @@
+:root {
+    --room-width: 300px;
+}
+.roomWidth {
+    width: var(--room-width);
+}
+
+.bottomPanel {
+    position: fixed;
+    right: 20px;
+    bottom: 0px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    z-index: 200;
+    & .roomTitle {
+        background-color: var(--sub-theme-color);
+        height: 30px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        & .leftSet {
+            font-size: 18px;
+            margin-left: 4px;
+        }
+        & .middleSet {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        & .rightSet {
+            font-size: 22px;
+            margin-right: 4px;
+            display: flex;
+            flex-direction: row;
+            & .button {
+                width: 25px;
+            }
+        }
+    }
+}
