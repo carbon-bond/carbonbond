@@ -35,6 +35,11 @@ mod model {
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct BoardName {
+        pub id: i64,
+        pub board_name: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct NewBoard {
         pub board_name: String,
         pub title: String,

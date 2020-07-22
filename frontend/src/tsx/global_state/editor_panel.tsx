@@ -11,7 +11,7 @@ export type NewArticle = {
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
 	board: Board,
-	category: string,
+	category?: string,
 	title: string,
 	content: string[],
 };

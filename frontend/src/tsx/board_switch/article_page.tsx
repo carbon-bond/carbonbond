@@ -38,7 +38,7 @@ function BigReply(): JSX.Element {
 	return <div styleName="replyCard">
 		{
 			articles.map(article =>
-				<div>
+				<div key={article.title}>
 					<ArticleLine
 						title={article.title}
 						category_name={article.category_name} />

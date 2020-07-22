@@ -8,6 +8,7 @@ export type Result<T, E> = {
 export type User = {     id: number; user_name: string; energy: number; sentence: string;     invitation_credit: number };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export type Board = {     id: number; board_name: string; create_time: string; title: string; detail: string; force: string; ruling_party_id: number };
+export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; title: string; detail: string; force: string;     ruling_party_id: number };
 export type Article = {     id: number; category: string; title: string; energy: number;     create_time: string; root_id: number; author_id: number;     author_name: string; content: string []; board_id: number;     board_name: string };
 export abstract class RootQueryFetcher {
@@ -38,6 +39,9 @@ export abstract class RootQueryFetcher {
     }
     async queryBoardList(count: number): Promise<Result<Array<Board>, any>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryBoardList": { count } } }));
+    }
+    async queryBoardNameList(): Promise<Result<Array<BoardName>, any>> {
+        return JSON.parse(await this.fetchResult({ "Board": { "QueryBoardNameList": {  } } }));
     }
     async queryBoard(name: string): Promise<Result<Board, any>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryBoard": { name } } }));

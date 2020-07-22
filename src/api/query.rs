@@ -48,6 +48,8 @@ pub enum ArticleQuery {
 pub enum BoardQuery {
     #[chitin(request, response = "Vec<super::model::Board>")]
     QueryBoardList { count: usize },
+    #[chitin(request, response = "Vec<super::model::BoardName>")]
+    QueryBoardNameList {},
     #[chitin(request, response = "super::model::Board")]
     QueryBoard { name: String },
     #[chitin(request, response = "super::model::Board")]

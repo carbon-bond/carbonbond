@@ -173,6 +173,12 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     ) -> Fallible<Vec<model::Board>> {
         Ok(db::board::get_all().await?)
     }
+    async fn query_board_name_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Fallible<Vec<model::BoardName>> {
+        Ok(db::board::get_all_board_names().await?)
+    }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
         Ok(db::board::get_by_name(&name).await?)
     }

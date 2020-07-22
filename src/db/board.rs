@@ -1,8 +1,11 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::{Board, NewBoard};
+use crate::api::model::{Board, BoardName, NewBoard};
 use crate::custom_error::{DataType, Fallible};
 
 impl DBObject for Board {
+    const TYPE: DataType = DataType::Board;
+}
+impl DBObject for BoardName {
     const TYPE: DataType = DataType::Board;
 }
 impl DBObject for NewBoard {
@@ -30,6 +33,14 @@ pub async fn get_by_name(name: &str) -> Fallible<Board> {
 pub async fn get_all() -> Fallible<Vec<Board>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(Board, "SELECT * FROM boards")
+        .fetch_all(pool)
+        .await?;
+    Ok(boards)
+}
+
+pub async fn get_all_board_names() -> Fallible<Vec<BoardName>> {
+    let pool = get_pool();
+    let boards = sqlx::query_as!(BoardName, "SELECT board_name, id FROM boards")
         .fetch_all(pool)
         .await?;
     Ok(boards)
