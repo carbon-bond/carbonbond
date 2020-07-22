@@ -71,20 +71,19 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 	}
 	const url = `/app/b/${props.article.board_name}/a/${props.article.id}`;
 	return (
-		<Link to={url}>
-			<div styleName="articleContainer">
-				<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
-				<div styleName="articleBody">
-					<div styleName="leftPart">
-						<ArticleLine category_name={category_name} title={props.article.title} />
-						<div styleName="articleContent">
-							{props.article.content}
-						</div>
+		<div styleName="articleContainer">
+			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
+			<div styleName="articleBody">
+				<div styleName="leftPart">
+					<ArticleLine category_name={category_name} title={props.article.title} />
+					<div styleName="articleContent">
+						{props.article.content}
 					</div>
 				</div>
-				<ArticleFooter />
 			</div>
-		</Link >
+			<ArticleFooter />
+			<Link styleName="overlay" to={url}> </Link >
+		</div>
 	);
 }
 
