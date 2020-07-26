@@ -3,7 +3,7 @@ use carbonbond::{
     api::api_trait::RootQueryRouter,
     api::query,
     config,
-    custom_error::{Error, ErrorCode, Fallible},
+    custom_error::{Contextable, Error, ErrorCode, Fallible},
     db, Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
@@ -36,23 +36,18 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
     match (req.method(), req.uri().path()) {
         (&Method::POST, "/api") => {
             let (parts, body) = req.into_parts();
-
-            let body = hyper::body::to_bytes(body).await?;
             log::trace!("原始請求： {:#?}", body);
-
-            let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
-                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
-            log::info!("請求： {:#?}", query);
-
-            let root: api_impl::RootQueryRouter = Default::default();
 
             let mut context = Ctx {
                 headers: parts.headers,
                 resp: Response::new(String::new()),
             };
+            let body = hyper::body::to_bytes(body).await?;
 
-            let ret = root.handle(&mut context, query).await?;
-            context.resp.body_mut().push_str(&ret);
+            let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
+                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
+            let resp = on_api(query, &mut context).await?;
+            context.resp.body_mut().push_str(&resp);
             Ok(context.resp.map(|s| Body::from(s)))
         }
         (&Method::GET, _) => {
@@ -70,6 +65,19 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
             Ok(not_found)
         }
     }
+}
+async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {
+    log::info!("請求： {:#?}", query);
+    let root: api_impl::RootQueryRouter = Default::default();
+    let resp = root
+        .handle(context, query.clone())
+        .await
+        .context("api 物件序列化錯誤（極異常！）")?;
+
+    if let Some(err) = &resp.1 {
+        log::warn!("執行 api {:?} 時發生錯誤： {}", query, err);
+    }
+    Ok(resp.0)
 }
 #[tokio::main]
 async fn main() -> Fallible<()> {

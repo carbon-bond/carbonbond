@@ -19,9 +19,6 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     type BoardQueryRouter = BoardQueryRouter;
     type UserQueryRouter = UserQueryRouter;
     type PartyQueryRouter = PartyQueryRouter;
-    fn on_error(&self, err: &crate::custom_error::Error) {
-        log::warn!("{}", err);
-    }
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
     }

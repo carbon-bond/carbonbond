@@ -134,7 +134,6 @@ impl From<ErrorCode> for Error {
 
 impl<E: StdError + Sync + Send + 'static> From<E> for Error {
     fn from(err: E) -> Error {
-        log::warn!("{}", err);
         Error::InternalError {
             msg: vec![],
             source: Some(Box::new(err)),

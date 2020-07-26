@@ -1,7 +1,7 @@
 use chitin::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum RootQuery {
     #[chitin(router)]
     User(UserQuery),
@@ -12,7 +12,7 @@ pub enum RootQuery {
     #[chitin(router)]
     Board(BoardQuery),
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum UserQuery {
     #[chitin(request, response = "Option<super::model::User>")]
     QueryMe {},
@@ -27,7 +27,7 @@ pub enum UserQuery {
     #[chitin(request, response = "()")]
     SubscribeBoard { board_id: i64 },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum PartyQuery {
     #[chitin(request, response = "super::model::Party")]
     QueryParty { party_name: String },
@@ -37,7 +37,7 @@ pub enum PartyQuery {
         board_name: Option<String>,
     },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::Article>")]
     QueryArticleList {
@@ -48,7 +48,7 @@ pub enum ArticleQuery {
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum BoardQuery {
     #[chitin(request, response = "Vec<super::model::Board>")]
     QueryBoardList { count: usize },

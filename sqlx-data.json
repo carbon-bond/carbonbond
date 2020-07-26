@@ -820,5 +820,29 @@
       },
       "nullable": []
     }
+  },
+  "dbf0ec2e755aa70f56f210a34cc17484814ea3c05bbcde9f2718a3b50b14c822": {
+    "query": "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bytea",
+          "Bytea",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
   }
 }
