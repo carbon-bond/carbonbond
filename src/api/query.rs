@@ -22,6 +22,10 @@ pub enum UserQuery {
     Login { user_name: String, password: String },
     #[chitin(request, response = "()")]
     Logout {},
+    #[chitin(request, response = "Vec<super::model::BoardOverview>")]
+    SubcribedBoards {},
+    #[chitin(request, response = "()")]
+    SubscribeBoard { board_id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug)]
 pub enum PartyQuery {

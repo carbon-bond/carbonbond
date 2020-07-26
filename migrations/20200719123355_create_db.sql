@@ -119,8 +119,10 @@ ALTER TABLE boards
   ADD CONSTRAINT boards_ruling_party_key FOREIGN KEY (ruling_party_id) REFERENCES parties (id);
 
 CREATE TABLE subscribed_boards (
+  id bigserial PRIMARY KEY,
   user_id bigint REFERENCES users (id),
-  board_id bigint REFERENCES boards (id)
+  board_id bigint REFERENCES boards (id),
+  create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
 -- 政黨成員

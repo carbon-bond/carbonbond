@@ -61,6 +61,13 @@ mod model {
         pub board_id: u64,
         pub board_name: String,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct BoardOverview {
+        pub id: i64,
+        pub board_name: String,
+        pub title: String,
+        pub popularity: u64,
+    }
 }
 
 pub use model::*;

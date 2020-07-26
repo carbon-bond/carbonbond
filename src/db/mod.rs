@@ -7,6 +7,7 @@ pub mod article;
 pub mod article_content;
 pub mod board;
 pub mod party;
+pub mod subscribed_boards;
 pub mod user;
 
 static POOL: Storage<PgPool> = Storage::new();

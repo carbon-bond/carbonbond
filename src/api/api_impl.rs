@@ -240,4 +240,19 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context.forget_id()?;
         Ok(())
     }
+    async fn subcribed_boards(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+        let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
+        db::subscribed_boards::get_subscribed_boards(id).await
+    }
+    async fn subscribe_board(
+        &self,
+        context: &mut crate::Ctx,
+        board_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
+        db::subscribed_boards::subscribe(id, board_id).await
+    }
 }
