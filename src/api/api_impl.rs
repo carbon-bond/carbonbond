@@ -1,6 +1,6 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::{Error, ErrorCode, Fallible};
+use crate::custom_error::{ErrorCode, Fallible};
 use crate::db;
 use crate::Context;
 use async_trait::async_trait;
@@ -19,6 +19,9 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     type BoardQueryRouter = BoardQueryRouter;
     type UserQueryRouter = UserQueryRouter;
     type PartyQueryRouter = PartyQueryRouter;
+    fn on_error(&self, err: &crate::custom_error::Error) {
+        log::warn!("{}", err);
+    }
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
     }
@@ -154,10 +157,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
                 db::party::create(&party_name, board_name, id).await?;
                 Ok(())
             }
-            None => Err(Error::LogicError {
-                msg: vec![],
-                code: ErrorCode::NeedLogin,
-            }),
+            None => Err(ErrorCode::NeedLogin.into()),
         }
     }
 }

@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::api::model::BoardOverview;
-use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
+use crate::custom_error::{DataType, Fallible};
 
 impl DBObject for BoardOverview {
     const TYPE: DataType = DataType::Board;
@@ -19,7 +19,6 @@ pub async fn subscribe(user_id: i64, board_id: i64) -> Fallible<()> {
 }
 
 pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>> {
-    // XXX: left join?
     let pool = get_pool();
     let records = sqlx::query!(
         "

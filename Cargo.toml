@@ -7,7 +7,7 @@ default-run = "server"
 
 [dependencies]
 async-trait = "0.1.31"
-chitin = { git = "https://github.com/carbon-bond/chitin" }
+chitin = { git = "https://github.com/carbon-bond/chitin", version = "0.2.0" }
 chrono = { version = "0.4.7", features = ["serde"] }
 clap = { version = "2.33.0", features = ["yaml"] }
 cookie = { version = "0.14.1", features= ["secure", "percent-encode"] }
@@ -34,7 +34,7 @@ rand = "0.7.3"
 rust-argon2 = "0.8.2"
 
 [build-dependencies]
-chitin = { git = "https://github.com/carbon-bond/chitin" }
+chitin = { git = "https://github.com/carbon-bond/chitin", version = "0.2.0" }
 chrono = { version = "0.4.7", features = ["serde"] }
 serde = { version = "1.0.98", features = ["derive"] }
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }

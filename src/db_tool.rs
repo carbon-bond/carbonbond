@@ -333,7 +333,7 @@ async fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<
             email,
             password,
         } => {
-            db::user::signup(&name, &email, &password).await?;
+            db::user::signup(&name, &password, &email).await?;
         }
         AddSubCommand::Board {
             board_name,

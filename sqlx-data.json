@@ -529,44 +529,6 @@
       ]
     }
   },
-  "86194847d9839c8bcf985d41d4841f32c442faa770e61649549c07818b9848fd": {
-    "query": "SELECT * FROM subscribed_boards WHERE user_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        true,
-        true,
-        false
-      ]
-    }
-  },
   "a8c084301a7f27721b2399242f5fd108bc82508e2ccf54f07571fa670217a20d": {
     "query": "\n    SELECT boards.board_name, boards.title, boards.id FROM subscribed_boards\n    LEFT JOIN boards on boards.id = subscribed_boards.board_id\n    WHERE subscribed_boards.user_id = $1\n    ",
     "describe": {
