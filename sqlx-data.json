@@ -249,6 +249,30 @@
       ]
     }
   },
+  "333369cc0e6a43adc007f8ccd6afd2b9cf5b687e3b350981d3ebb7e6484af0e3": {
+    "query": "SELECT board_name, id FROM boards",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
   "342c08cdf4a43faea8de89b498435b16c935451aad1678ae7cc2935285724644": {
     "query": "\n        INSERT INTO article_contents (article_id, str_content, int_content)\n        VALUES ($1, $2, $3) RETURNING id\n        ",
     "describe": {
@@ -750,30 +774,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "dbf0ec2e755aa70f56f210a34cc17484814ea3c05bbcde9f2718a3b50b14c822": {
-    "query": "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Bytea",
-          "Bytea",
-          "Text",
-          "Text"
-        ]
-      },
-      "nullable": [
-        false
-      ]
     }
   }
 }

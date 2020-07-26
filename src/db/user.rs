@@ -36,21 +36,6 @@ pub async fn get_by_name(name: &str) -> Fallible<User> {
     Ok(user)
 }
 
-pub async fn create(user: &User) -> Fallible<i64> {
-    let pool = get_pool();
-    let res = sqlx::query!(
-        "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-        user.name,
-        user.password_hashed,
-        user.salt,
-        user.email,
-        user.sentence
-    )
-    .fetch_one(pool)
-    .await?;
-    Ok(res.id)
-}
-
 pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
     use rand::Rng;
     let salt = rand::thread_rng().gen::<[u8; 16]>();

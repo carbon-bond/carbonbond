@@ -118,6 +118,11 @@ CREATE INDEX parties_create_time_index ON parties (create_time);
 ALTER TABLE boards
   ADD CONSTRAINT boards_ruling_party_key FOREIGN KEY (ruling_party_id) REFERENCES parties (id);
 
+CREATE TABLE subscribed_boards (
+  user_id bigint REFERENCES users (id),
+  board_id bigint REFERENCES boards (id)
+);
+
 -- 政黨成員
 CREATE TABLE party_members (
   id bigserial PRIMARY KEY,
