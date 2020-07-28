@@ -1,7 +1,7 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::custom_error::{DataType, Fallible};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Article {
     pub id: i64,
     pub board_id: i64,
@@ -10,7 +10,7 @@ pub struct Article {
     pub title: String,
     pub author_id: i64,
     pub show_in_list: bool,
-    pub create_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub create_time: chrono::DateTime<chrono::Utc>,
 }
 impl DBObject for Article {
     const TYPE: DataType = DataType::Article;

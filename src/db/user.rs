@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct User {
     pub name: String,
     pub id: i64,
@@ -12,7 +12,7 @@ pub struct User {
     pub invitation_credit: i32,
     pub password_hashed: Vec<u8>,
     pub salt: Vec<u8>,
-    pub create_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub create_time: chrono::DateTime<chrono::Utc>,
 }
 impl DBObject for User {
     const TYPE: DataType = DataType::User;

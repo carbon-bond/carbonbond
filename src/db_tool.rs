@@ -4,8 +4,8 @@ use carbonbond::{
     db::{self, user::User},
 };
 use rustyline::Editor;
-use sqlx::migrate::{Migrate, MigrateError, Migrator};
-use sqlx::{AnyConnection, Connection};
+use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
+use sqlx_beta::{AnyConnection, Connection};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 use structopt::StructOpt;
@@ -193,13 +193,11 @@ async fn migrate() -> Fallible<()> {
     }
 
     for migration in migrator.iter() {
-        if migration.version() > version {
+        if migration.version > version {
             let elapsed = conn.apply(migration).await?;
             println!(
                 "{}/遷移 {} ({:?})",
-                migration.version(),
-                migration.description(),
-                elapsed,
+                migration.version, migration.description, elapsed,
             );
         } else {
             conn.validate(migration).await?;

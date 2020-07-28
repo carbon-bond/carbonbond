@@ -1,6 +1,6 @@
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use sqlx::postgres::{PgConnectOptions, PgPool};
+use sqlx::postgres::PgPool;
 use state::Storage;
 
 pub mod article;
@@ -14,13 +14,10 @@ static POOL: Storage<PgPool> = Storage::new();
 
 pub async fn init() -> Fallible<()> {
     let conf = &get_config().database;
-    let opt = PgConnectOptions::new()
-        .host(&conf.host)
-        .password(&conf.password)
-        .username(&conf.username)
-        .port(conf.port)
-        .database(&conf.dbname);
-    let pool = PgPool::connect_with(opt).await?;
+    let pool = PgPool::builder()
+        .max_size(20)
+        .build(&conf.get_url())
+        .await?;
     assert!(POOL.set(pool), "資料庫連接池被重複創建",);
     Ok(())
 }

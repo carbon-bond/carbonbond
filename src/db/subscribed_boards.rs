@@ -13,7 +13,7 @@ pub async fn subscribe(user_id: i64, board_id: i64) -> Fallible<()> {
         user_id,
         board_id,
     )
-    .fetch_one(pool)
+    .execute(pool)
     .await?;
     Ok(())
 }
