@@ -5,8 +5,12 @@ mod query;
 use carbonbond::{config::load_config, custom_error::Fallible};
 use chitin::{ChitinCodegen, CodegenOption};
 use query::RootQuery;
+use rustyline::Editor;
+use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
+use sqlx_beta::{AnyConnection, Connection};
 use std::fs::File;
 use std::io::Write;
+use std::process::{Command, Stdio};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -17,23 +21,13 @@ struct Arg {
     backend_chitin: bool,
     #[structopt(short, long)]
     sqlx: bool,
+    #[structopt(short, long)]
+    migrate: bool,
 }
-impl Arg {
-    fn init(&mut self) {
-        // structopt::clap::AppSettings;
-        match (self.frontend_chitin, self.backend_chitin, self.sqlx) {
-            (false, false, false) => {
-                self.frontend_chitin = true;
-                self.backend_chitin = true;
-                self.sqlx = true;
-            }
-            _ => (),
-        }
-    }
-}
-fn main() -> Fallible<()> {
+
+#[tokio::main]
+async fn main() -> Fallible<()> {
     let mut arg = Arg::from_args();
-    arg.init();
     if arg.backend_chitin {
         let mut server_file = File::create("src/api/api_trait.rs")?;
         server_file.write_all(b"use async_trait::async_trait;\n")?;
@@ -63,12 +57,37 @@ fn main() -> Fallible<()> {
         client_file
             .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
     }
+    let conf = load_config(&None)?.database;
     if arg.sqlx {
-        let conf = load_config(&None)?.database;
         let mut cmd = std::process::Command::new("cargo");
         cmd.args(&["sqlx", "prepare", "--", "--bin", "server"]);
         cmd.env("DATABASE_URL", &conf.get_url());
         cmd.spawn().unwrap().wait().unwrap();
+    }
+    if arg.migrate {
+        // 資料庫遷移
+        let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
+        let mut conn = AnyConnection::connect(&conf.get_url()).await?;
+
+        conn.ensure_migrations_table().await?;
+
+        let (version, dirty) = conn.version().await?.unwrap_or((0, false));
+
+        if dirty {
+            return Err(MigrateError::Dirty(version).into());
+        }
+
+        for migration in migrator.iter() {
+            if migration.version > version {
+                let elapsed = conn.apply(migration).await?;
+                println!(
+                    "{}/遷移 {} ({:?})",
+                    migration.version, migration.description, elapsed,
+                );
+            } else {
+                conn.validate(migration).await?;
+            }
+        }
     }
     Ok(())
 }
