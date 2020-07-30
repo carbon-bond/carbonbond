@@ -9,11 +9,20 @@
     cursor: pointer;
 }
 
+.rightSidebarButton:not(:last-of-type)  {
+    margin-bottom: 10px;
+}
+
 .rightSidebarButton:hover {
     filter: brightness(120%);
 }
 
 .postArticleButton {
+    background-color: var(--theme-color);
+    color: var(--background-color);
+}
+
+.subscribeButton {
     background-color: var(--theme-color);
     color: var(--background-color);
 }

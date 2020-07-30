@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
+import { toast } from 'react-toastify';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { Board } from '../../ts/api/api_trait';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/right_sidebar.css';
 
@@ -14,6 +16,14 @@ export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
 
+	async function onSubscribeBoardClick() {
+		console.log('按下追蹤看板');
+		try {
+			unwrap(await API_FETCHER.subscribeBoard(props.board.id));
+		} catch (err) {
+			toast.error(err);
+		}
+	}
 	function onEditClick(): void {
 		console.log('press post');
 		if (editor_panel_data) {
@@ -34,6 +44,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 			user_state.login &&
 			<div styleName="rightSidebarItem">
 				<div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton"><b>🖉 </b>發表文章</div>
+				<div onClick={() => onSubscribeBoardClick()} styleName="subscribeButton rightSidebarButton"><b>🔖 </b>追蹤看板</div>
 			</div>
 		}
 		<div styleName="rightSidebarItem">
