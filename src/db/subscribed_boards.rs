@@ -6,6 +6,17 @@ impl DBObject for BoardOverview {
     const TYPE: DataType = DataType::Board;
 }
 
+pub async fn unsubscribe(user_id: i64, board_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "DELETE FROM subscribed_boards WHERE user_id = $1 AND board_id = $2",
+        user_id,
+        board_id,
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
 pub async fn subscribe(user_id: i64, board_id: i64) -> Fallible<()> {
     let pool = get_pool();
     sqlx::query!(

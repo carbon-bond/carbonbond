@@ -7,6 +7,7 @@ import { Board } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/right_sidebar.css';
+import { SubscribedBoardsState } from '../global_state/subscribed_boards';
 
 type Props = RouteComponentProps<{ board_name: string }> & {
 	board: Board
@@ -14,12 +15,30 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 
 export function BoardSidebar(props: Props): JSX.Element {
 	let { user_state } = UserState.useContainer();
+	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
+	let has_subscribed = subscribed_boards.has(props.board.id);
 
+	async function onUnsubscribeBoardClick() {
+		console.log('按下取消追蹤看板');
+		try {
+			unwrap(await API_FETCHER.unsubscribeBoard(props.board.id));
+			unsubscribe(props.board.id);
+		} catch (err) {
+			toast.error(err);
+		}
+	}
 	async function onSubscribeBoardClick() {
 		console.log('按下追蹤看板');
 		try {
 			unwrap(await API_FETCHER.subscribeBoard(props.board.id));
+			let b = props.board;
+			subscribe({
+				id: b.id,
+				board_name: b.board_name,
+				title: b.title,
+				popularity: 0
+			});
 		} catch (err) {
 			toast.error(err);
 		}
@@ -39,12 +58,24 @@ export function BoardSidebar(props: Props): JSX.Element {
 		}
 	}
 
+	function SubscribeButton() {
+		if (has_subscribed) {
+			return <div onClick={() => onUnsubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
+				<b>😭 </b>取消追蹤
+			</div>;
+		} else {
+			return <div onClick={() => onSubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
+				<b>🔖 </b>追蹤看板
+			</div>;
+		}
+	}
+
 	return <>
 		{
 			user_state.login &&
 			<div styleName="rightSidebarItem">
 				<div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton"><b>🖉 </b>發表文章</div>
-				<div onClick={() => onSubscribeBoardClick()} styleName="subscribeButton rightSidebarButton"><b>🔖 </b>追蹤看板</div>
+				<SubscribeButton />
 			</div>
 		}
 		<div styleName="rightSidebarItem">

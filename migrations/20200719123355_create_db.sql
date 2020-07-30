@@ -122,7 +122,8 @@ CREATE TABLE subscribed_boards (
   id bigserial PRIMARY KEY,
   user_id bigint REFERENCES users (id),
   board_id bigint REFERENCES boards (id),
-  create_time timestamptz NOT NULL DEFAULT NOW()
+  create_time timestamptz NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, board_id)
 );
 
 -- 政黨成員

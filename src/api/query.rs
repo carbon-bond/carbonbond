@@ -23,9 +23,11 @@ pub enum UserQuery {
     #[chitin(request, response = "()")]
     Logout {},
     #[chitin(request, response = "Vec<super::model::BoardOverview>")]
-    SubcribedBoards {},
+    QuerySubcribedBoards {},
     #[chitin(request, response = "()")]
     SubscribeBoard { board_id: i64 },
+    #[chitin(request, response = "()")]
+    UnsubscribeBoard { board_id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum PartyQuery {

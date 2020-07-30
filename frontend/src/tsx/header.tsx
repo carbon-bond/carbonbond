@@ -62,10 +62,10 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 		if (logining) {
 			return <div ref={ref_all} styleName="loginModal">
-				<div styleName="escape" onClick={ () => setLogining(false) }>✗</div>
+				<div styleName="escape" onClick={() => setLogining(false)}>✗</div>
 				<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
 				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-				<button onClick={ () => login_request(name.value, password.value) }>登入</button>
+				<button onClick={() => login_request(name.value, password.value)}>登入</button>
 			</div>;
 		} else {
 			return <></>;
@@ -78,10 +78,10 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div styleName="triangle"> </div>
 				<div styleName="features">
 					<div styleName="feature">🏯 我的個板</div>
-					<div styleName="feature" onClick={ () => props.history.push(`/app/user/${user_state.user_name}`) }>📜 我的卷宗</div>
-					<div styleName="feature" onClick={ () => props.history.push('/app/party') }>👥 我的政黨</div>
-					<div styleName="feature" onClick={ () => props.history.push('/app/invite') }>🖅 寄發邀請信</div>
-					<div styleName="feature" onClick={ () => logout_request() }>🏳 登出</div>
+					<div styleName="feature" onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</div>
+					<div styleName="feature" onClick={() => props.history.push('/app/party')}>👥 我的政黨</div>
+					<div styleName="feature" onClick={() => props.history.push('/app/invite')}>🖅 寄發邀請信</div>
+					<div styleName="feature" onClick={() => logout_request()}>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>
 			</div>;
@@ -99,7 +99,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div styleName="icon">🗞️</div>
 				<div ref={ref} styleName="wrap">
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
-						<img src={`/avatar/${user_state.user_name}`}/>
+						<img src={`/avatar/${user_state.user_name}`} />
 						<div styleName="userName">{user_state.user_name}</div>
 						<div styleName="energy">☘ {user_state.energy}</div>
 					</div>
@@ -108,7 +108,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			</>;
 		} else {
 			return <div styleName="wrap">
-				<div styleName="login" onClick={ () => setLogining(true) }>登入 🔫</div>
+				<div styleName="login" onClick={() => setLogining(true)}>登入 🔫</div>
 			</div>;
 		}
 	}
@@ -117,7 +117,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			<LoginModal />
 			<div styleName="container">
 				<div styleName="leftSet">
-					<div styleName="carbonbond" onClick={ () => props.history.push('/app') }>
+					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
 						<img src="/img/icon_with_text.png" alt="" />
 					</div>
 					<div styleName="location">全站熱門</div>
@@ -126,7 +126,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				</div>
 
 				<div styleName="rightSet">
-					{ UserStatus() }
+					{UserStatus()}
 				</div>
 			</div>
 		</div>

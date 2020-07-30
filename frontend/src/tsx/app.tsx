@@ -15,7 +15,8 @@ import '../css/layout.css?global';
 import '../css/global.css?global';
 
 import { UserState } from './global_state/user';
-import { BottomPanelState} from './global_state/bottom_panel';
+import { BottomPanelState } from './global_state/bottom_panel';
+import { SubscribedBoardsState } from './global_state/subscribed_boards';
 import { AllChatState } from './global_state/chat';
 import { EditorPanelState } from './global_state/editor_panel';
 import { MainScrollState } from './global_state/main_scroll';
@@ -29,6 +30,7 @@ import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { ArticlePage } from './board_switch/article_page';
+import { API_FETCHER, unwrap } from '../ts/api/api';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -51,13 +53,13 @@ function App(): JSX.Element {
 					<PartySwitch />
 				} />
 				<Route path="/app/user/:user_name" render={props =>
-					<UserPage {...props}/>
+					<UserPage {...props} />
 				} />
 				<Route path="/app/a/:article_id" render={props =>
 					<ArticlePage {...props} />
 				} />
 				<Route path="/app/b/:board_name" render={props =>
-					<BoardSwitch {...props}/>
+					<BoardSwitch {...props} />
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />
@@ -66,6 +68,23 @@ function App(): JSX.Element {
 		</div>;
 	}
 	function Content(): JSX.Element {
+		const { user_state } = UserState.useContainer();
+		const { load } = SubscribedBoardsState.useContainer();
+		React.useEffect(() => {
+			(async () => {
+				if (user_state.login) {
+					console.log("載入追蹤看板");
+					try {
+						let result = await API_FETCHER.querySubcribedBoards();
+						let boards = unwrap(result);
+						load(boards);
+					} catch (err) {
+						toast(err);
+					}
+				}
+			})();
+		}, [user_state]);
+
 		return <Router>
 			<Header></Header>
 			<div className="other">
@@ -81,13 +100,15 @@ function App(): JSX.Element {
 	return (
 		<div className="app">
 			<UserState.Provider>
-				<BottomPanelState.Provider>
-					<AllChatState.Provider>
-						<EditorPanelState.Provider>
-							<Content />
-						</EditorPanelState.Provider>
-					</AllChatState.Provider>
-				</BottomPanelState.Provider>
+				<SubscribedBoardsState.Provider>
+					<BottomPanelState.Provider>
+						<AllChatState.Provider>
+							<EditorPanelState.Provider>
+								<Content />
+							</EditorPanelState.Provider>
+						</AllChatState.Provider>
+					</BottomPanelState.Provider>
+				</SubscribedBoardsState.Provider>
 			</UserState.Provider>
 		</div>
 	);
