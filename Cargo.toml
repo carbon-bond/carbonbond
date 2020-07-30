@@ -42,15 +42,15 @@ typescript-definitions = { git = "https://github.com/carbon-bond/typescript-defi
 
 [[bin]]
 name = "server"
-path = "src/main.rs"
+path = "src/bin/main.rs"
 
 [[bin]]
 name = "dbtool"
-path = "src/db_tool.rs"
+path = "src/bin/db_tool.rs"
 
 [[bin]]
 name = "prepare"
-path = "src/prepare.rs"
+path = "src/bin/prepare.rs"
 required-features = ["prepare"]
 
 [lib]

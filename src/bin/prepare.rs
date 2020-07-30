@@ -1,16 +1,14 @@
-#[path = "api/model.rs"]
+#[path = "../api/model.rs"]
 mod model;
-#[path = "api/query.rs"]
+#[path = "../api/query.rs"]
 mod query;
-use carbonbond::{config::load_config, custom_error::Fallible};
+use carbonbond::{bin_util, config::load_config, custom_error::Fallible};
 use chitin::{ChitinCodegen, CodegenOption};
 use query::RootQuery;
-use rustyline::Editor;
-use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
-use sqlx_beta::{AnyConnection, Connection};
+use sqlx_beta::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};
+use sqlx_beta::{any::Any, AnyConnection, Connection};
 use std::fs::File;
 use std::io::Write;
-use std::process::{Command, Stdio};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -23,11 +21,13 @@ struct Arg {
     sqlx: bool,
     #[structopt(short, long)]
     migrate: bool,
+    #[structopt(short, long)]
+    clean: bool,
 }
 
 #[tokio::main]
 async fn main() -> Fallible<()> {
-    let mut arg = Arg::from_args();
+    let arg = Arg::from_args();
     if arg.backend_chitin {
         let mut server_file = File::create("src/api/api_trait.rs")?;
         server_file.write_all(b"use async_trait::async_trait;\n")?;
@@ -64,11 +64,18 @@ async fn main() -> Fallible<()> {
         cmd.env("DATABASE_URL", &conf.get_url());
         cmd.spawn().unwrap().wait().unwrap();
     }
+    if arg.clean {
+        bin_util::clean_db(&conf)?;
+    }
     if arg.migrate {
         // 資料庫遷移
+        let url = conf.get_url();
+        if !Any::database_exists(&url).await? {
+            log::info!("創建資料庫：{}", url);
+            Any::create_database(&url).await?;
+        }
         let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
-        let mut conn = AnyConnection::connect(&conf.get_url()).await?;
-
+        let mut conn = AnyConnection::connect(&url).await?;
         conn.ensure_migrations_table().await?;
 
         let (version, dirty) = conn.version().await?.unwrap_or((0, false));
