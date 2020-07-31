@@ -30,7 +30,7 @@ tokio = { version = "0.2", features = ["full"] }
 toml = "0.5.1"
 typescript-definitions = { git = "https://github.com/carbon-bond/typescript-definitions" }
 rand = "0.7.3"
-rust-argon2 = "0.8.2"
+rust-argon2 = { version = "0.8.2", optional = true }
 
 [build-dependencies]
 toml = "0.5.1"
@@ -57,6 +57,6 @@ required-features = ["prepare"]
 doctest = false
 
 [features]
-default = ["sqlx", "hyper"]
+default = ["sqlx", "hyper", "rust-argon2"]
 prepare = []
 
