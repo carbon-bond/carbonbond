@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { UserState } from './global_state/user';
 import { STORAGE_NAME } from '../ts/constants';
-import { Board, BoardOverview } from '../ts/api/api_trait';
+import { BoardOverview } from '../ts/api/api_trait';
 
 import '../css/browsebar.css';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
@@ -18,8 +18,8 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 			board_name: b.board_name,
 			title: b.title,
 			popularity: 0
-		}
-	})
+		};
+	});
 }
 
 // TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request

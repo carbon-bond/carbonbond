@@ -69,11 +69,11 @@ function App(): JSX.Element {
 	}
 	function Content(): JSX.Element {
 		const { user_state } = UserState.useContainer();
-		const { load } = SubscribedBoardsState.useContainer();
+		const { load, unload } = SubscribedBoardsState.useContainer();
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
-					console.log("載入追蹤看板");
+					console.log('載入追蹤看板');
 					try {
 						let result = await API_FETCHER.querySubcribedBoards();
 						let boards = unwrap(result);
@@ -81,9 +81,11 @@ function App(): JSX.Element {
 					} catch (err) {
 						toast(err);
 					}
+				} else {
+					unload();
 				}
 			})();
-		}, [user_state]);
+		}, [load, unload, user_state.login]);
 
 		return <Router>
 			<Header></Header>

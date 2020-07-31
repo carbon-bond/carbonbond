@@ -22,7 +22,7 @@ function useEditorPanelState(): {
 	closeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: (data: EditorPanelData | null) => void,
-} {
+	} {
 	let [data, setData] = useState<EditorPanelData | null>(null);
 	let [is_open, setOpen] = useState(false);
 

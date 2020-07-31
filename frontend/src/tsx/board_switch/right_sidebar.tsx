@@ -19,7 +19,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
 	let has_subscribed = subscribed_boards.has(props.board.id);
 
-	async function onUnsubscribeBoardClick() {
+	async function onUnsubscribeBoardClick(): Promise<void> {
 		console.log('按下取消追蹤看板');
 		try {
 			unwrap(await API_FETCHER.unsubscribeBoard(props.board.id));
@@ -28,7 +28,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 			toast.error(err);
 		}
 	}
-	async function onSubscribeBoardClick() {
+	async function onSubscribeBoardClick(): Promise<void> {
 		console.log('按下追蹤看板');
 		try {
 			unwrap(await API_FETCHER.subscribeBoard(props.board.id));
@@ -58,7 +58,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 		}
 	}
 
-	function SubscribeButton() {
+	function SubscribeButton(): JSX.Element {
 		if (has_subscribed) {
 			return <div onClick={() => onUnsubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
 				<b>😭 </b>取消追蹤
