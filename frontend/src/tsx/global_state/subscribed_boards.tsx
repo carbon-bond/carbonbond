@@ -1,5 +1,5 @@
 import { createContainer } from 'unstated-next';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Map } from 'immutable';
 import { BoardOverview } from '../../ts/api/api_trait';
 
@@ -11,26 +11,26 @@ function useSubecribedBoardsState(): {
 	unload: () => void,
 	} {
 	let [data, setData] = useState(Map<number, BoardOverview>());
-	let subscribe = (board: BoardOverview): void => {
+	let subscribe = useCallback((board: BoardOverview): void => {
 		setData(m => {
 			return m.set(board.id, board);
 		});
-	};
-	let unsubscribe = (id: number): void => {
+	}, []);
+	let unsubscribe = useCallback((id: number): void => {
 		setData(m => {
 			return m.remove(id);
 		});
-	};
-	let unload = (): void => {
+	}, []);
+	let unload = useCallback((): void => {
 		setData(Map());
-	};
-	let load = (boards: BoardOverview[]): void => {
+	}, []);
+	let load = useCallback((boards: BoardOverview[]): void => {
 		let list: [number, BoardOverview][] = [];
 		for (const board of boards) {
 			list.push([board.id, board]);
 		}
 		setData(Map(list));
-	};
+	}, []);
 	return {
 		subscribed_boards: data,
 		unsubscribe,
