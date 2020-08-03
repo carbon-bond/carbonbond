@@ -94,9 +94,21 @@ function EditorBody(): JSX.Element {
 		() => (new Parser(board.force)).parse(),
 		[board]
 	);
-	if (editor_panel_data == null) {
-		return <></>;
-	}
+	if (editor_panel_data == null) { return <></>; }
+	const Fields = (): JSX.Element => {
+		if (editor_panel_data.category == undefined || editor_panel_data.category == '') {
+			return <></>;
+		}
+		let input_fields = [];
+		let category = force.categories.get(editor_panel_data.category);
+		if (category == undefined) {
+			return <></>;
+		}
+		for (let field of category.fields) {
+			input_fields.push(<input placeholder={field.name}></input>);
+		}
+		return <div>{input_fields}</div>;
+	};
 	return <div styleName="editorBody">
 		<div styleName="location">
 			<select required
@@ -137,6 +149,7 @@ function EditorBody(): JSX.Element {
 			}}
 			value={editor_panel_data.title}
 		></input>
+		<Fields />
 	</div>;
 }
 
