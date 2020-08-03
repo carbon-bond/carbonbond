@@ -60,6 +60,8 @@ pub enum BoardQuery {
     QueryBoard { name: String },
     #[chitin(request, response = "super::model::Board")]
     QueryBoardById { id: i64 },
+    #[chitin(request, response = "usize")]
+    QuerySubscribedUserCount { id: i64 },
     #[chitin(request, response = "i64")]
     CreateBoard { new_board: super::model::NewBoard },
 }

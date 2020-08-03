@@ -140,7 +140,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         context: &mut crate::Ctx,
         party_name: String,
     ) -> Fallible<model::Party> {
-        Ok(db::party::get_by_name(&party_name).await?)
+        db::party::get_by_name(&party_name).await
     }
     async fn create_party(
         &self,
@@ -168,19 +168,19 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
-        Ok(db::board::get_all().await?)
+        db::board::get_all().await
     }
     async fn query_board_name_list(
         &self,
         context: &mut crate::Ctx,
     ) -> Fallible<Vec<model::BoardName>> {
-        Ok(db::board::get_all_board_names().await?)
+        db::board::get_all_board_names().await
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        Ok(db::board::get_by_name(&name).await?)
+        db::board::get_by_name(&name).await
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
-        Ok(db::board::get_by_id(id).await?)
+        db::board::get_by_id(id).await
     }
     async fn create_board(
         &self,
@@ -188,6 +188,13 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         new_board: model::NewBoard,
     ) -> Fallible<i64> {
         Ok(db::board::create(&new_board).await?)
+    }
+    async fn query_subscribed_user_count(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<usize, crate::custom_error::Error> {
+        db::subscribed_boards::get_subscribed_user_count(id).await
     }
 }
 
@@ -211,8 +218,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
         if let Some(id) = context.get_id() {
-            let parties = db::party::get_by_member_id(id).await?;
-            Ok(parties.into_iter().collect::<Vec<model::Party>>())
+            db::party::get_by_member_id(id).await
         } else {
             Err(ErrorCode::NeedLogin.into())
         }
@@ -234,8 +240,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         }))
     }
     async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {
-        context.forget_id()?;
-        Ok(())
+        context.forget_id()
     }
     async fn query_subcribed_boards(
         &self,

@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::api::model::BoardOverview;
-use crate::custom_error::{DataType, Fallible};
+use crate::custom_error::{DataType, ErrorCode, Fallible};
 
 impl DBObject for BoardOverview {
     const TYPE: DataType = DataType::Board;
@@ -51,4 +51,20 @@ pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>>
         })
         .collect();
     Ok(boards)
+}
+
+pub async fn get_subscribed_user_count(board_id: i64) -> Fallible<usize> {
+    let pool = get_pool();
+    let count = sqlx::query!(
+        "
+    SELECT count(*) FROM subscribed_boards
+    WHERE subscribed_boards.board_id = $1
+    ",
+        board_id
+    )
+    .fetch_one(pool)
+    .await?
+    .count
+    .ok_or(ErrorCode::NotFound(DataType::Board, "".to_owned()).context("查不到訂閱看板人數？？"))?;
+    Ok(count as usize)
 }

@@ -10,7 +10,7 @@ import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { Board } from '../../ts/api/api_trait';
-import { API_FETCHER, unwrap_or } from '../../ts/api/api';
+import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { toast } from 'react-toastify';
 
 import '../../css/board_switch/board_page.css';
@@ -21,12 +21,21 @@ export function BoardSwitch(props: Props): JSX.Element {
 	let board_name = props.match.params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
+	let [subscribe_count, setSubscribeCount] = React.useState(0);
 	React.useEffect(() => {
-		API_FETCHER.queryBoard(board_name).then(board => {
-			setBoard(unwrap_or(board, null));
-			setFetching(false);
+		API_FETCHER.queryBoard(board_name).then(res => {
+			try {
+				let board = unwrap(res);
+				setBoard(board);
+				return API_FETCHER.querySubscribedUserCount(board.id);
+			} catch (err) {
+				return Promise.reject(err);
+			}
+		}).then(res => {
+			setSubscribeCount(unwrap_or(res, 0));
 		}).catch(err => {
 			toast.error(err);
+		}).finally(() => {
 			setFetching(false);
 		});
 	}, [board_name]);
@@ -47,7 +56,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 						<div styleName="headerRight">
 							<div styleName="dataBox">
 								<div styleName="dataBoxItem">
-									<div styleName="number">143.2 萬</div>
+									<div styleName="number">{subscribe_count}</div>
 									<div styleName="text">追蹤人數</div>
 								</div>
 								<div styleName="dataBoxItem">

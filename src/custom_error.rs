@@ -32,6 +32,11 @@ pub enum ErrorCode {
     #[display(fmt = "其它")]
     Other,
 }
+impl ErrorCode {
+    pub fn context<S: ToString>(self, context: S) -> Error {
+        Error::new_logic(self, context)
+    }
+}
 #[derive(Serialize, Debug)]
 pub enum Error {
     /// 此錯誤代表程式使用者對於碳鍵程式的異常操作
