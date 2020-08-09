@@ -4,7 +4,7 @@ use carbonbond::{
     api::query,
     config,
     custom_error::{Contextable, Error, ErrorCode, Fallible},
-    db, Ctx,
+    db, redis, Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
@@ -67,7 +67,7 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
     }
 }
 async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {
-    log::info!("請求： {:#?}", query);
+    log::info!("請求： {:?}", query);
     let root: api_impl::RootQueryRouter = Default::default();
     let resp = root
         .handle(context, query.clone())
@@ -91,6 +91,8 @@ async fn main() -> Fallible<()> {
     let conf = config::get_config();
     log::info!("初始化資料庫連線池，位置：{}", &conf.database.get_url());
     db::init().await.unwrap();
+    log::info!("初始化 redis 客戶端");
+    redis::init().await.unwrap();
     log::info!("載入前端資源");
     let static_files = Static::new("./frontend/static");
     log::info!("載入首頁");

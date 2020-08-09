@@ -2,6 +2,7 @@ use super::api_trait;
 use super::model;
 use crate::custom_error::{ErrorCode, Fallible};
 use crate::db;
+use crate::redis;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -177,10 +178,18 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         db::board::get_all_board_names().await
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        db::board::get_by_name(&name).await
+        let board = db::board::get_by_name(&name).await?;
+        if let Some(user_id) = context.get_id() {
+            redis::board_pop::set_user_board(user_id, board.id).await?;
+        }
+        Ok(board)
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
-        db::board::get_by_id(id).await
+        let board = db::board::get_by_id(id).await?;
+        if let Some(user_id) = context.get_id() {
+            redis::board_pop::set_user_board(user_id, board.id).await?;
+        }
+        Ok(board)
     }
     async fn create_board(
         &self,
@@ -247,7 +256,12 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
         let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
-        db::subscribed_boards::get_subscribed_boards(id).await
+        let mut boards = db::subscribed_boards::get_subscribed_boards(id).await?;
+        for board in boards.iter_mut() {
+            let pop = redis::board_pop::get_board_pop(board.id).await?;
+            board.popularity = pop;
+        }
+        Ok(boards)
     }
     async fn unsubscribe_board(
         &self,

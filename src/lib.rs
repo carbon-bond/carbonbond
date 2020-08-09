@@ -8,6 +8,8 @@ pub mod custom_error;
 pub mod api;
 #[cfg(not(feature = "prepare"))]
 pub mod db;
+#[cfg(not(feature = "prepare"))]
+pub mod redis;
 
 #[cfg(not(feature = "prepare"))]
 mod product {

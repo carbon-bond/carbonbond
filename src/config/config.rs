@@ -28,8 +28,9 @@ pub fn get_mode() -> Mode {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub database: DatabaseConfig,
     pub user: RawUserConfig,
+    pub database: DatabaseConfig,
+    pub redis: RedisConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,6 +56,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub user: UserConfig,
+    pub redis: RedisConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -74,6 +76,10 @@ impl DatabaseConfig {
             self.username, self.password, self.host, self.port, self.dbname
         )
     }
+}
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RedisConfig {
+    pub host: String,
 }
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
@@ -157,8 +163,9 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         mode,
         file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        database: raw_config.database,
         user: Fallible::<UserConfig>::from(raw_config.user)?,
+        database: raw_config.database,
+        redis: raw_config.redis,
     };
 
     Ok(config)

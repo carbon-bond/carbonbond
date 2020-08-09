@@ -146,7 +146,7 @@ impl<E: StdError + Sync + Send + 'static> From<E> for Error {
     }
 }
 
-pub type Fallible<T> = Result<T, Error>;
+pub type Fallible<T = ()> = Result<T, Error>;
 
 pub trait Contextable<T> {
     fn context<S: ToString>(self, msg: S) -> Fallible<T>;

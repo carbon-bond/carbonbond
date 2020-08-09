@@ -113,7 +113,7 @@ function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 		<div styleName="boardBlock">
 			<div>
 				<div styleName="boardName">😈 {board.board_name}</div>
-				<div styleName="boardHeat">🔥 0</div>
+				<div styleName="boardHeat">🔥 {board.popularity}</div>
 				<div styleName="boardTitle">{board.title}</div>
 			</div>
 		</div>
