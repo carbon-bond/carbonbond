@@ -41,13 +41,13 @@ pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>>
     )
     .fetch_all(pool)
     .await?;
-    let boards: Vec<BoardOverview> = records
+    let boards: Vec<_> = records
         .into_iter()
         .map(|r| BoardOverview {
             id: r.id,
             board_name: r.board_name,
             title: r.title,
-            popularity: 0, // XXX: 正確填入
+            popularity: 0,
         })
         .collect();
     Ok(boards)

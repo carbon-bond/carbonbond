@@ -17,3 +17,4 @@ pub async fn get_conn() -> Fallible<Connection> {
 }
 
 pub mod board_pop;
+pub mod hot_boards;

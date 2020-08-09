@@ -4,7 +4,9 @@ use carbonbond::{
     api::query,
     config,
     custom_error::{Contextable, Error, ErrorCode, Fallible},
-    db, redis, Ctx,
+    db, redis,
+    service::hot_boards,
+    Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
@@ -109,8 +111,16 @@ async fn main() -> Fallible<()> {
         }
     });
     let server = Server::bind(&addr).serve(service);
+
     log::info!("Listening on http://{}", addr);
-    server.await?;
+    tokio::select! {
+        res = server => {
+            res?;
+        },
+        res = hot_boards::start() => {
+            res?;
+        }
+    };
 
     Ok(())
 }

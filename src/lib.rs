@@ -10,6 +10,8 @@ pub mod api;
 pub mod db;
 #[cfg(not(feature = "prepare"))]
 pub mod redis;
+#[cfg(not(feature = "prepare"))]
+pub mod service;
 
 #[cfg(not(feature = "prepare"))]
 mod product {

@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::{Board, BoardName, NewBoard};
+use crate::api::model::{Board, BoardName, BoardOverview, NewBoard};
 use crate::custom_error::{DataType, Fallible};
 
 impl DBObject for Board {
@@ -43,6 +43,25 @@ pub async fn get_all_board_names() -> Fallible<Vec<BoardName>> {
     let boards = sqlx::query_as!(BoardName, "SELECT board_name, id FROM boards")
         .fetch_all(pool)
         .await?;
+    Ok(boards)
+}
+pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
+    let pool = get_pool();
+    let boards = sqlx::query!(
+        "SELECT board_name, id, title FROM boards WHERE id = ANY($1)",
+        board_ids
+    )
+    .fetch_all(pool)
+    .await?;
+    let boards: Vec<_> = boards
+        .into_iter()
+        .map(|r| BoardOverview {
+            id: r.id,
+            board_name: r.board_name,
+            title: r.title,
+            popularity: 0,
+        })
+        .collect();
     Ok(boards)
 }
 

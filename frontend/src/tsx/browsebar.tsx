@@ -9,17 +9,10 @@ import { BoardOverview } from '../ts/api/api_trait';
 import '../css/browsebar.css';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
 
-// TODO: 正確實作之
 async function fetchHotBoards(): Promise<BoardOverview[]> {
-	let boards = unwrap_or(await API_FETCHER.queryBoardList(10), []);
-	return boards.map(b => {
-		return {
-			id: b.id,
-			board_name: b.board_name,
-			title: b.title,
-			popularity: 0
-		};
-	});
+	let boards = unwrap_or(await API_FETCHER.queryHotBoards(), []);
+	boards.sort((b1, b2) => b2.popularity - b1.popularity);
+	return boards;
 }
 
 // TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request

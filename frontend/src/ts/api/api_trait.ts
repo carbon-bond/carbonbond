@@ -65,4 +65,7 @@ export abstract class RootQueryFetcher {
     async createBoard(new_board: NewBoard): Promise<Result<number, any>> {
         return JSON.parse(await this.fetchResult({ "Board": { "CreateBoard": { new_board } } }));
     }
+    async queryHotBoards(): Promise<Result<Array<BoardOverview>, any>> {
+        return JSON.parse(await this.fetchResult({ "Board": { "QueryHotBoards": {  } } }));
+    }
 }

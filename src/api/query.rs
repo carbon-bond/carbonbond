@@ -64,4 +64,6 @@ pub enum BoardQuery {
     QuerySubscribedUserCount { id: i64 },
     #[chitin(request, response = "i64")]
     CreateBoard { new_board: super::model::NewBoard },
+    #[chitin(request, response = "Vec<super::model::BoardOverview>")]
+    QueryHotBoards {},
 }

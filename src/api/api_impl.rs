@@ -180,14 +180,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
         let board = db::board::get_by_name(&name).await?;
         if let Some(user_id) = context.get_id() {
-            redis::board_pop::set_user_board(user_id, board.id).await?;
+            redis::board_pop::set_board_pop(user_id, board.id).await?;
         }
         Ok(board)
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
         let board = db::board::get_by_id(id).await?;
         if let Some(user_id) = context.get_id() {
-            redis::board_pop::set_user_board(user_id, board.id).await?;
+            redis::board_pop::set_board_pop(user_id, board.id).await?;
         }
         Ok(board)
     }
@@ -204,6 +204,18 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         id: i64,
     ) -> Result<usize, crate::custom_error::Error> {
         db::subscribed_boards::get_subscribed_user_count(id).await
+    }
+    async fn query_hot_boards(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+        let board_ids = redis::hot_boards::get_hot_boards().await?;
+        let mut boards = db::board::get_overview(&board_ids).await?;
+        for board in boards.iter_mut() {
+            let pop = redis::board_pop::get_board_pop(board.id).await?;
+            board.popularity = pop;
+        }
+        Ok(boards)
     }
 }
 
