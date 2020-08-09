@@ -31,9 +31,10 @@ pub async fn subscribe(user_id: i64, board_id: i64) -> Fallible<()> {
 
 pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
-    let records = sqlx::query!(
+    let boards = sqlx::query_as!(
+        BoardOverview,
         "
-    SELECT boards.board_name, boards.title, boards.id FROM subscribed_boards
+    SELECT boards.board_name, boards.title, boards.id, 0::bigint as popularity FROM subscribed_boards
     LEFT JOIN boards on boards.id = subscribed_boards.board_id
     WHERE subscribed_boards.user_id = $1
     ",
@@ -41,15 +42,6 @@ pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>>
     )
     .fetch_all(pool)
     .await?;
-    let boards: Vec<_> = records
-        .into_iter()
-        .map(|r| BoardOverview {
-            id: r.id,
-            board_name: r.board_name,
-            title: r.title,
-            popularity: 0,
-        })
-        .collect();
     Ok(boards)
 }
 

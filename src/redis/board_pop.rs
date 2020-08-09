@@ -18,14 +18,14 @@ pub async fn set_board_pop(user_id: i64, board_id: i64) -> Fallible {
     Ok(())
 }
 
-pub async fn get_board_pop(board_id: i64) -> Fallible<u64> {
+pub async fn get_board_pop(board_id: i64) -> Fallible<i64> {
     log::trace!("查詢 #{} 看板人氣", board_id);
     let mut conn = get_conn().await?;
-    let pop: u64 = conn.hget(BOARD_KEY, board_id).await.unwrap_or(0);
+    let pop: i64 = conn.hget(BOARD_KEY, board_id).await.unwrap_or(0);
     Ok(pop)
 }
 
-pub async fn get_all_board_pop() -> Fallible<HashMap<i64, u64>> {
+pub async fn get_all_board_pop() -> Fallible<HashMap<i64, i64>> {
     log::trace!("查詢全看板人氣");
     let mut conn = get_conn().await?;
     let map = conn.hgetall(BOARD_KEY).await.unwrap_or_default();

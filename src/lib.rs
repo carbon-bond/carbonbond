@@ -12,6 +12,8 @@ pub mod db;
 pub mod redis;
 #[cfg(not(feature = "prepare"))]
 pub mod service;
+#[cfg(not(feature = "prepare"))]
+pub mod util;
 
 #[cfg(not(feature = "prepare"))]
 mod product {

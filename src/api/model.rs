@@ -33,6 +33,7 @@ mod model {
         pub detail: String,
         pub force: String,
         pub ruling_party_id: i64,
+        pub popularity: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BoardName {
@@ -66,7 +67,7 @@ mod model {
         pub id: i64,
         pub board_name: String,
         pub title: String,
-        pub popularity: u64,
+        pub popularity: i64,
     }
 }
 

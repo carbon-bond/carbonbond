@@ -60,7 +60,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 									<div styleName="text">追蹤人數</div>
 								</div>
 								<div styleName="dataBoxItem">
-									<div styleName="number">800</div>
+									<div styleName="number">{board.popularity}</div>
 									<div styleName="text">在線人數</div>
 								</div>
 							</div>

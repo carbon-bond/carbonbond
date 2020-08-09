@@ -3,6 +3,7 @@ use super::model;
 use crate::custom_error::{ErrorCode, Fallible};
 use crate::db;
 use crate::redis;
+use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -169,7 +170,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
-        db::board::get_all().await
+        db::board::get_all().await?.assign_props().await
     }
     async fn query_board_name_list(
         &self,
@@ -182,14 +183,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         if let Some(user_id) = context.get_id() {
             redis::board_pop::set_board_pop(user_id, board.id).await?;
         }
-        Ok(board)
+        board.assign_props().await
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
         let board = db::board::get_by_id(id).await?;
         if let Some(user_id) = context.get_id() {
             redis::board_pop::set_board_pop(user_id, board.id).await?;
         }
-        Ok(board)
+        board.assign_props().await
     }
     async fn create_board(
         &self,
@@ -210,12 +211,10 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
         let board_ids = redis::hot_boards::get_hot_boards().await?;
-        let mut boards = db::board::get_overview(&board_ids).await?;
-        for board in boards.iter_mut() {
-            let pop = redis::board_pop::get_board_pop(board.id).await?;
-            board.popularity = pop;
-        }
-        Ok(boards)
+        db::board::get_overview(&board_ids)
+            .await?
+            .assign_props()
+            .await
     }
 }
 
@@ -268,12 +267,10 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
         let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
-        let mut boards = db::subscribed_boards::get_subscribed_boards(id).await?;
-        for board in boards.iter_mut() {
-            let pop = redis::board_pop::get_board_pop(board.id).await?;
-            board.popularity = pop;
-        }
-        Ok(boards)
+        db::subscribed_boards::get_subscribed_boards(id)
+            .await?
+            .assign_props()
+            .await
     }
     async fn unsubscribe_board(
         &self,
