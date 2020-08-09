@@ -1,4 +1,4 @@
-use crate::{
+use carbonbond::{
     config::DatabaseConfig,
     custom_error::{Error, Fallible},
 };

@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate derive_more;
 
-pub mod bin_util;
 pub mod config;
 pub mod custom_error;
 

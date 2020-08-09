@@ -1,8 +1,9 @@
+mod bin_util;
 #[path = "../api/model.rs"]
 mod model;
 #[path = "../api/query.rs"]
 mod query;
-use carbonbond::{bin_util, config::load_config, custom_error::Fallible};
+use carbonbond::{config::load_config, custom_error::Fallible};
 use chitin::{ChitinCodegen, CodegenOption};
 use query::RootQuery;
 use sqlx_beta::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};

@@ -1,5 +1,4 @@
 use carbonbond::{
-    bin_util::{clean_db, run_cmd},
     config::{get_config, init as init_config},
     custom_error::{Error, ErrorCode, Fallible},
     db::{self, user::User},
@@ -9,6 +8,9 @@ use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
 use sqlx_beta::{AnyConnection, Connection};
 use std::io::Write;
 use structopt::StructOpt;
+
+mod bin_util;
+use bin_util::{clean_db, run_cmd};
 
 #[derive(StructOpt, Debug)]
 struct ArgRoot {
