@@ -1,38 +1,34 @@
 use super::{get_pool, DBObject, ToFallible};
+use crate::api::model::{User, UserRelation, UserRelationType};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 
-#[derive(Debug)]
-pub struct User {
-    pub name: String,
-    pub id: i64,
-    pub email: String,
-    pub energy: i32,
-    pub sentence: String,
-    pub avatar: Option<i64>,
-    pub invitation_credit: i32,
-    pub password_hashed: Vec<u8>,
-    pub salt: Vec<u8>,
-    pub create_time: chrono::DateTime<chrono::Utc>,
-}
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<User> {
     let pool = get_pool();
-    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
-        .fetch_one(pool)
-        .await
-        .to_fallible(id)?;
+    let user = sqlx::query_as!(
+        User,
+        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy FROM users WHERE id = $1",
+        id
+    )
+    .fetch_one(pool)
+    .await
+    .to_fallible(id)?;
     Ok(user)
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<User> {
     let pool = get_pool();
-    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE name = $1", name)
-        .fetch_one(pool)
-        .await
-        .to_fallible(name)?;
+    let user = sqlx::query_as!(
+        User,
+        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy FROM users WHERE name = $1",
+        name
+    )
+    .fetch_one(pool)
+    .await
+    .to_fallible(name)?;
     Ok(user)
 }
 
@@ -56,15 +52,21 @@ pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
 }
 
 pub async fn login(name: &str, password: &str) -> Fallible<User> {
-    let user = get_by_name(name).await?;
+    let pool = get_pool();
+    let record = sqlx::query!(
+        "SELECT salt, password_hashed from users WHERE name = $1",
+        name
+    )
+    .fetch_one(pool)
+    .await?;
     let equal = argon2::verify_raw(
         password.as_bytes(),
-        &user.salt,
-        &user.password_hashed,
+        &record.salt,
+        &record.password_hashed,
         &argon2::Config::default(),
     )?;
     if equal {
-        Ok(user)
+        get_by_name(name).await
     } else {
         Err(Error::new_logic(ErrorCode::PermissionDenied, "密碼錯誤"))
     }

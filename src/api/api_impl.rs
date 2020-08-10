@@ -224,14 +224,7 @@ pub struct UserQueryRouter {}
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
         if let Some(id) = context.get_id() {
-            let user = db::user::get_by_id(id).await?;
-            Ok(Some(model::User {
-                id: user.id,
-                user_name: user.name,
-                energy: user.energy,
-                sentence: user.sentence,
-                invitation_credit: user.invitation_credit,
-            }))
+            Ok(Some(db::user::get_by_id(id).await?))
         } else {
             Ok(None)
         }
@@ -251,13 +244,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Fallible<Option<model::User>> {
         let user = db::user::login(&user_name, &password).await?;
         context.remember_id(user.id)?;
-        Ok(Some(model::User {
-            id: user.id,
-            user_name: user_name,
-            sentence: user.sentence,
-            energy: user.energy,
-            invitation_credit: user.invitation_credit,
-        }))
+        Ok(Some(user))
     }
     async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {
         context.forget_id()

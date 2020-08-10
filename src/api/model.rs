@@ -69,6 +69,21 @@ mod model {
         pub title: String,
         pub popularity: i64,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Copy, Display, Debug)]
+    pub enum UserRelationType {
+        #[display(fmt = "follow")]
+        Follow,
+        #[display(fmt = "hate")]
+        Hate,
+        #[display(fmt = "openly_hate")]
+        OpenlyHate,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UserRelation {
+        from_user: i64,
+        to_user: i64,
+        ty: UserRelationType,
+    }
 }
 
 pub use model::*;

@@ -54,14 +54,22 @@ pub fn run_cmd(
 }
 
 pub fn clean_db(conf: &DatabaseConfig) -> Fallible<()> {
-    let command = "
+    let command = format!(
+        "
 DO $$ DECLARE
   r RECORD;
 BEGIN
-  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
-    EXECUTE 'DROP TABLE ' || quote_ident(r.tablename) || ' CASCADE';
+  FOR r IN (SELECT distinct schemaname FROM pg_catalog.pg_tables
+        WHERE schemaname <> 'pg_catalog'
+        AND schemaname <> 'information_schema') LOOP
+    EXECUTE 'DROP SCHEMA ' || r.schemaname || ' CASCADE';
   END LOOP;
-END $$;";
+
+  EXECUTE 'CREATE SCHEMA public';
+  ALTER USER {} SET search_path = public;
+END $$;",
+        conf.username
+    );
 
     run_cmd(
         "psql",
@@ -73,7 +81,7 @@ END $$;";
             "-d",
             &conf.dbname,
             "-c",
-            command,
+            &command,
         ],
         &[("PGPASSWORD", &conf.password)],
         false,

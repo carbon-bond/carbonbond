@@ -12,6 +12,8 @@ export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; title: string; detail: string; force: string;     ruling_party_id: number };
 export type Article = {     id: number; category: string; title: string; energy: number;     create_time: string; root_id: number; author_id: number;     author_name: string; content: string []; board_id: number;     board_name: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
+export enum UserRelationType { Follow = "Follow", Hate = "Hate", OpenlyHate = "OpenlyHate" };
+export type UserRelation = { from_user: number; to_user: number; ty: UserRelationType };
 export abstract class RootQueryFetcher {
     abstract fetchResult(query: Object): Promise<string>;
     async queryMe(): Promise<Result<Option<User>, any>> {
