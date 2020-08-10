@@ -14,8 +14,10 @@ mod model {
         pub sentence: String,
         pub invitation_credit: i32,
 
-        pub hate_count: i64,
-        pub follow_count: i64,
+        pub hated_count: i64,
+        pub followed_count: i64,
+        pub hating_count: i64,
+        pub following_count: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {

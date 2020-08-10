@@ -250,8 +250,14 @@ function UserPage(props: Props): JSX.Element {
 				<Sentence is_me={is_me} refresh={refreshProfile} sentence={profile.sentence} />
 				<div styleName="data">
 					<div styleName="energy">{user.energy} 鍵能</div>
-					<div styleName="trace">{user.follow_count} 追蹤</div>
-					<div styleName="hate">{user.hate_count} 仇視</div>
+					<div styleName="trace">
+						<p>被 {user.followed_count} 人追蹤</p>
+						<p>追蹤 {user.following_count} 人</p>
+					</div>
+					<div styleName="hate">
+						<p>被 {user.hated_count} 人仇視</p>
+						<p>仇視 {user.hating_count} 人</p>
+					</div>
 				</div>
 			</div>
 			<div styleName="operation">
