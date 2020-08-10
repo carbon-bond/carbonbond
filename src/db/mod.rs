@@ -32,12 +32,29 @@ trait DBObject {
 trait ToFallible<T: DBObject> {
     fn to_fallible<U: ToString>(self, target: U) -> Fallible<T>;
 }
+trait ToTypedFallible<T> {
+    fn to_typed_fallible<U: ToString>(self, ty: DataType, target: U) -> Fallible<T>;
+}
+
 impl<T: DBObject> ToFallible<T> for Result<T, sqlx::Error> {
     fn to_fallible<U: ToString>(self, target: U) -> Fallible<T> {
+        self.to_typed_fallible(T::TYPE, target)
+        // match self {
+        //     Ok(t) => Ok(t),
+        //     Err(sqlx::Error::RowNotFound) => {
+        //         Err(ErrorCode::NotFound(T::TYPE, target.to_string()).into())
+        //     }
+        //     Err(err) => Err(err.into()),
+        // }
+    }
+}
+
+impl<T> ToTypedFallible<T> for Result<T, sqlx::Error> {
+    fn to_typed_fallible<U: ToString>(self, ty: DataType, target: U) -> Fallible<T> {
         match self {
             Ok(t) => Ok(t),
             Err(sqlx::Error::RowNotFound) => {
-                Err(ErrorCode::NotFound(T::TYPE, target.to_string()).into())
+                Err(ErrorCode::NotFound(ty, target.to_string()).into())
             }
             Err(err) => Err(err.into()),
         }

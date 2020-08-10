@@ -207,12 +207,10 @@ function UserPage(props: Props): JSX.Element {
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [profile, setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
 	const [user, setUser] = React.useState<User | null>(null);
-	const [fetching, setFeching] = React.useState(true);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		setFeching(true);
 		Promise.all([
 			fetchArticles(user_name, PAGE_SIZE),
 			API_FETCHER.queryUser(user_name)
@@ -220,7 +218,6 @@ function UserPage(props: Props): JSX.Element {
 			try {
 				setArticles(more_articles);
 				setUser(unwrap(user));
-				setFeching(false);
 			} catch (err) {
 				toast(err);
 			}
@@ -234,7 +231,7 @@ function UserPage(props: Props): JSX.Element {
 	}
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
-			API_FETCHER.createUserRelation(user.id, kind);
+			API_FETCHER.createUserRelation(kind, user.id);
 		}
 	}
 
@@ -242,7 +239,7 @@ function UserPage(props: Props): JSX.Element {
 
 	const is_me = user_state.login && user_state.user_name == user_name;
 
-	if (fetching) {
+	if (!user) {
 		return <></>;
 	}
 	return <div>
@@ -252,9 +249,9 @@ function UserPage(props: Props): JSX.Element {
 				<div styleName="username">{user_name}</div>
 				<Sentence is_me={is_me} refresh={refreshProfile} sentence={profile.sentence} />
 				<div styleName="data">
-					<div styleName="energy">9.8 萬 鍵能</div>
-					<div styleName="trace">8425 追蹤</div>
-					<div styleName="hate">17 仇視</div>
+					<div styleName="energy">{user.energy} 鍵能</div>
+					<div styleName="trace">{user.follow_count} 追蹤</div>
+					<div styleName="hate">{user.hate_count} 仇視</div>
 				</div>
 			</div>
 			<div styleName="operation">

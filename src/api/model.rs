@@ -13,6 +13,9 @@ mod model {
         pub energy: i32,
         pub sentence: String,
         pub invitation_credit: i32,
+
+        pub hate_count: i64,
+        pub follow_count: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {

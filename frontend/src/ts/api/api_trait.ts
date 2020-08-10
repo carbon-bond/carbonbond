@@ -5,7 +5,7 @@ export type Result<T, E> = {
 } | {
     'Err': E
 };
-export type User = {     id: number; user_name: string; energy: number; sentence: string;     invitation_credit: number };
+export type User = {     id: number; user_name: string; energy: number; sentence: string;     invitation_credit: number; hate_count: number; follow_count: number };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export type Board = {     id: number; board_name: string; create_time: string; title: string; detail: string; force: string; ruling_party_id: number;     popularity: number };
 export type BoardName = { id: number; board_name: string };
@@ -40,8 +40,8 @@ export abstract class RootQueryFetcher {
     async unsubscribeBoard(board_id: number): Promise<Result<null, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "UnsubscribeBoard": { board_id } } }));
     }
-    async createUserRelation(target_user: number, ty: UserRelationKind): Promise<Result<null, any>> {
-        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, ty } } }));
+    async createUserRelation(kind: UserRelationKind, target_user: number): Promise<Result<null, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { kind, target_user } } }));
     }
     async queryParty(party_name: string): Promise<Result<Party, any>> {
         return JSON.parse(await this.fetchResult({ "Party": { "QueryParty": { party_name } } }));

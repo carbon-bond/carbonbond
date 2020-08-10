@@ -14,7 +14,10 @@ pub async fn get_by_id(id: i64) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy FROM users WHERE id = $1",
+        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy,
+        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hate_count,
+        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND kind='follow') as follow_count
+        FROM users WHERE id = $1",
         id
     )
     .fetch_one(pool)
@@ -27,7 +30,10 @@ pub async fn get_by_name(name: &str) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy FROM users WHERE name = $1",
+        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy,
+        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hate_count,
+        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND kind='follow') as follow_count
+        FROM users WHERE name = $1",
         name
     )
     .fetch_one(pool)

@@ -33,7 +33,7 @@ pub enum UserQuery {
     #[chitin(request, response = "()")]
     CreateUserRelation {
         target_user: i64,
-        ty: super::model::UserRelationKind,
+        kind: super::model::UserRelationKind,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]

@@ -278,8 +278,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn create_user_relation(
         &self,
         context: &mut crate::Ctx,
-        target_user: i64,
         kind: model::UserRelationKind,
+        target_user: i64,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
         db::user::create_relation(&model::UserRelation {
