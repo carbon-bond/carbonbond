@@ -23,8 +23,7 @@ async fn user_test() -> Fallible<i64> {
 
     let user = db::user::get_by_name("測試人").await.unwrap();
     assert_eq!(user_id, user.id);
-    assert_eq!("測試人", &user.name);
-    assert_eq!("test_email@test.com", &user.email);
+    assert_eq!("測試人", &user.user_name);
 
     let code = db::user::get_by_name("測試人2")
         .await
