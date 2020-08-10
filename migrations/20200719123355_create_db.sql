@@ -140,7 +140,7 @@ CREATE TABLE party_members (
 
 CREATE INDEX party_members_create_time_index ON party_members (create_time);
 
-CREATE TYPE user_relation_type AS ENUM (
+CREATE TYPE user_relation_kind AS ENUM (
   'follow',
   'hate',
   'openly_hate'
@@ -150,6 +150,7 @@ CREATE TABLE user_relations (
   id bigserial PRIMARY KEY,
   from_user bigint REFERENCES users (id) NOT NULL,
   to_user bigint REFERENCES users (id) NOT NULL,
-  ty user_relation_type NOT NULL
+  kind user_relation_kind NOT NULL,
+  UNIQUE (from_user, to_user)
 );
 

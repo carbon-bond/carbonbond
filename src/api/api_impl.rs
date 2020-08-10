@@ -279,12 +279,12 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         target_user: i64,
-        ty: model::UserRelationType,
+        kind: model::UserRelationKind,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
         db::user::create_relation(&model::UserRelation {
             from_user,
-            ty,
+            kind,
             to_user: target_user,
         })
         .await

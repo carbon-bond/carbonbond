@@ -70,7 +70,7 @@ mod model {
         pub popularity: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Copy, Display, Debug)]
-    pub enum UserRelationType {
+    pub enum UserRelationKind {
         #[display(fmt = "follow")]
         Follow,
         #[display(fmt = "hate")]
@@ -82,7 +82,7 @@ mod model {
     pub struct UserRelation {
         pub from_user: i64,
         pub to_user: i64,
-        pub ty: UserRelationType,
+        pub kind: UserRelationKind,
     }
 }
 

@@ -12,8 +12,8 @@ export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; title: string; detail: string; force: string;     ruling_party_id: number };
 export type Article = {     id: number; category: string; title: string; energy: number;     create_time: string; root_id: number; author_id: number;     author_name: string; content: string []; board_id: number;     board_name: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
-export enum UserRelationType { Follow = "Follow", Hate = "Hate", OpenlyHate = "OpenlyHate" };
-export type UserRelation = { from_user: number; to_user: number; ty: UserRelationType };
+export enum UserRelationKind { Follow = "Follow", Hate = "Hate", OpenlyHate = "OpenlyHate" };
+export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
 export abstract class RootQueryFetcher {
     abstract fetchResult(query: Object): Promise<string>;
     async queryMe(): Promise<Result<Option<User>, any>> {
@@ -40,7 +40,7 @@ export abstract class RootQueryFetcher {
     async unsubscribeBoard(board_id: number): Promise<Result<null, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "UnsubscribeBoard": { board_id } } }));
     }
-    async createUserRelation(target_user: number, ty: UserRelationType): Promise<Result<null, any>> {
+    async createUserRelation(target_user: number, ty: UserRelationKind): Promise<Result<null, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, ty } } }));
     }
     async queryParty(party_name: string): Promise<Result<Party, any>> {

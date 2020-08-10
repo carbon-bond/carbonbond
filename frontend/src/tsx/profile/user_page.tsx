@@ -3,7 +3,7 @@ import ReactModal from 'react-modal';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
-import { Article, UserRelationType, User } from '../../ts/api/api_trait';
+import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
@@ -232,9 +232,9 @@ function UserPage(props: Props): JSX.Element {
 			setProfile(profile);
 		});
 	}
-	function createUserRelation(ty: UserRelationType): void {
+	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
-			API_FETCHER.createUserRelation(user.id, ty);
+			API_FETCHER.createUserRelation(user.id, kind);
 		}
 	}
 
@@ -262,10 +262,10 @@ function UserPage(props: Props): JSX.Element {
 					{
 						user_state.login && user_state.user_name != user_name ?
 							<div styleName="relation">
-								<button onClick={() => createUserRelation(UserRelationType.Follow)}>
+								<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
 									追蹤
 								</button>
-								<button onClick={() => createUserRelation(UserRelationType.Hate)}>
+								<button onClick={() => createUserRelation(UserRelationKind.Hate)}>
 									仇視
 								</button>
 							</div> :
