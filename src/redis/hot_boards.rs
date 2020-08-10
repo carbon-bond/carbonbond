@@ -5,6 +5,9 @@ use redis::AsyncCommands;
 const KEY: &'static str = "hot_boards";
 
 pub async fn set_hot_boards(boards: &[i64]) -> Fallible {
+    if boards.len() == 0 {
+        return Ok(());
+    }
     log::trace!("設定熱門看板");
     let mut conn = get_conn().await?;
     conn.del(KEY).await?;

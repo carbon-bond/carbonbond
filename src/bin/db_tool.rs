@@ -1,7 +1,8 @@
 use carbonbond::{
+    api::model::User,
     config::{get_config, init as init_config},
     custom_error::{Error, ErrorCode, Fallible},
-    db::{self, user::User},
+    db,
 };
 use rustyline::Editor;
 use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
@@ -102,7 +103,7 @@ async fn main() -> () {
     let mut rl = Editor::<()>::new();
     let mut quit = false;
     while !quit {
-        let name = user.as_ref().map_or("", |u| &u.name);
+        let name = user.as_ref().map_or("", |u| &u.user_name);
         let line = rl.readline(&format!("{}> ", name)).unwrap();
         let words: Vec<_> = line
             .split("&&")
