@@ -19,7 +19,7 @@ pub mod util;
 mod product {
     pub const MAX_ARTICLE_FIELD: usize = 15;
 
-    use crate::custom_error::Fallible;
+    use crate::custom_error::{ErrorCode, Fallible};
 
     use cookie::Cookie;
     use hyper::header;
@@ -31,6 +31,9 @@ mod product {
         fn remember_id(&mut self, id: i64) -> Fallible<()>;
         fn forget_id(&mut self) -> Fallible<()>;
         fn get_id(&mut self) -> Option<i64>;
+        fn get_id_strict(&mut self) -> Fallible<i64> {
+            self.get_id().ok_or_else(|| ErrorCode::NeedLogin.into())
+        }
     }
 
     pub struct Ctx {

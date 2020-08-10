@@ -1,6 +1,10 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{User, UserRelation, UserRelationType};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
+use sqlx::{
+    encode::Encode,
+    postgres::{PgRawBuffer, PgTypeInfo},
+};
 
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
@@ -70,4 +74,29 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
     } else {
         Err(Error::new_logic(ErrorCode::PermissionDenied, "密碼錯誤"))
     }
+}
+
+impl sqlx::Type<sqlx::Postgres> for UserRelationType {
+    fn type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("USER_RELATION_TYPE")
+    }
+}
+impl Encode<sqlx::Postgres> for UserRelationType {
+    fn encode(&self, buf: &mut PgRawBuffer) {
+        use std::io::Write;
+        write!(&mut *buf, "{}", self).unwrap();
+    }
+}
+pub async fn create_relation(relation: &UserRelation) -> Fallible {
+    log::trace!("創造用戶關係");
+    let pool = get_pool();
+    sqlx::query_unchecked!(
+        "INSERT INTO user_relations (from_user, to_user, ty) VALUES ($1, $2, $3)",
+        relation.from_user,
+        relation.to_user,
+        relation.ty
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }

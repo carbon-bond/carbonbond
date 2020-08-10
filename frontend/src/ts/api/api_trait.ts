@@ -28,6 +28,9 @@ export abstract class RootQueryFetcher {
     async logout(): Promise<Result<null, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "Logout": {  } } }));
     }
+    async queryUser(name: string): Promise<Result<User, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryUser": { name } } }));
+    }
     async querySubcribedBoards(): Promise<Result<Array<BoardOverview>, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "QuerySubcribedBoards": {  } } }));
     }
@@ -36,6 +39,9 @@ export abstract class RootQueryFetcher {
     }
     async unsubscribeBoard(board_id: number): Promise<Result<null, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "UnsubscribeBoard": { board_id } } }));
+    }
+    async createUserRelation(target_user: number, ty: UserRelationType): Promise<Result<null, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, ty } } }));
     }
     async queryParty(party_name: string): Promise<Result<Party, any>> {
         return JSON.parse(await this.fetchResult({ "Party": { "QueryParty": { party_name } } }));

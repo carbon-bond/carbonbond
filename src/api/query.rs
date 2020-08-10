@@ -22,12 +22,19 @@ pub enum UserQuery {
     Login { user_name: String, password: String },
     #[chitin(request, response = "()")]
     Logout {},
+    #[chitin(request, response = "super::model::User")]
+    QueryUser { name: String },
     #[chitin(request, response = "Vec<super::model::BoardOverview>")]
     QuerySubcribedBoards {},
     #[chitin(request, response = "()")]
     SubscribeBoard { board_id: i64 },
     #[chitin(request, response = "()")]
     UnsubscribeBoard { board_id: i64 },
+    #[chitin(request, response = "()")]
+    CreateUserRelation {
+        target_user: i64,
+        ty: super::model::UserRelationType,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum PartyQuery {

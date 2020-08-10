@@ -1,6 +1,6 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::{ErrorCode, Fallible};
+use crate::custom_error::Fallible;
 use crate::db;
 use crate::redis;
 use crate::util::HasBoardProps;
@@ -150,14 +150,10 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         board_name: Option<String>,
         party_name: String,
     ) -> Fallible<()> {
-        match context.get_id() {
-            Some(id) => {
-                log::debug!("{} 嘗試創建 {}", id, party_name);
-                db::party::create(&party_name, board_name, id).await?;
-                Ok(())
-            }
-            None => Err(ErrorCode::NeedLogin.into()),
-        }
+        let id = context.get_id_strict()?;
+        log::debug!("{} 嘗試創建 {}", id, party_name);
+        db::party::create(&party_name, board_name, id).await?;
+        Ok(())
     }
 }
 
@@ -230,11 +226,15 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         }
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
-        if let Some(id) = context.get_id() {
-            db::party::get_by_member_id(id).await
-        } else {
-            Err(ErrorCode::NeedLogin.into())
-        }
+        let id = context.get_id_strict()?;
+        db::party::get_by_member_id(id).await
+    }
+    async fn query_user(
+        &self,
+        context: &mut crate::Ctx,
+        name: String,
+    ) -> Result<super::model::User, crate::custom_error::Error> {
+        db::user::get_by_name(&name).await
     }
     async fn login(
         &self,
@@ -253,7 +253,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
-        let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
+        let id = context.get_id_strict()?;
         db::subscribed_boards::get_subscribed_boards(id)
             .await?
             .assign_props()
@@ -264,16 +264,29 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
+        let id = context.get_id_strict()?;
         db::subscribed_boards::unsubscribe(id, board_id).await
     }
-
     async fn subscribe_board(
         &self,
         context: &mut crate::Ctx,
         board_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id().ok_or(ErrorCode::NeedLogin)?;
+        let id = context.get_id_strict()?;
         db::subscribed_boards::subscribe(id, board_id).await
+    }
+    async fn create_user_relation(
+        &self,
+        context: &mut crate::Ctx,
+        target_user: i64,
+        ty: model::UserRelationType,
+    ) -> Result<(), crate::custom_error::Error> {
+        let from_user = context.get_id_strict()?;
+        db::user::create_relation(&model::UserRelation {
+            from_user,
+            ty,
+            to_user: target_user,
+        })
+        .await
     }
 }

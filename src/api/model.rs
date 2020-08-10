@@ -80,9 +80,9 @@ mod model {
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct UserRelation {
-        from_user: i64,
-        to_user: i64,
-        ty: UserRelationType,
+        pub from_user: i64,
+        pub to_user: i64,
+        pub ty: UserRelationType,
     }
 }
 
