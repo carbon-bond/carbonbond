@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate derive_more;
+
 mod bin_util;
 #[path = "../api/model.rs"]
 mod model;
