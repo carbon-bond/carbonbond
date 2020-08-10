@@ -1,22 +1,17 @@
 use carbonbond::{
+    api::model::User,
     config::{get_config, init as init_config},
     custom_error::{Error, ErrorCode, Fallible},
-    db::{self, user::User},
+    db,
 };
-use refinery::config::{Config, ConfigDbType};
 use rustyline::Editor;
-use std::io::{BufRead, BufReader, Write};
-use std::process::{Command, Stdio};
+use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
+use sqlx_beta::{AnyConnection, Connection};
+use std::io::Write;
 use structopt::StructOpt;
-use tokio::runtime::Runtime;
 
-fn block_on<F: std::future::Future>(future: F) -> F::Output {
-    Runtime::new().unwrap().block_on(future)
-}
-
-mod embedded {
-    refinery::embed_migrations!("migrations");
-}
+mod bin_util;
+use bin_util::{clean_db, run_cmd};
 
 #[derive(StructOpt, Debug)]
 struct ArgRoot {
@@ -78,7 +73,8 @@ enum AddSubCommand {
     },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> () {
     env_logger::init();
     let mut user: Option<User> = None;
     let args = std::env::args();
@@ -86,12 +82,12 @@ fn main() {
         match ArgRoot::from_iter_safe(args) {
             Ok(root) => {
                 init_config(root.config);
-                block_on(db::init()).unwrap();
+                db::init().await.unwrap();
                 if let Some(name) = &root.user {
-                    login(&mut user, name).unwrap();
+                    login(&mut user, name).await.unwrap();
                 }
                 if let Some(cmd) = root.subcmd {
-                    handle_root(cmd, &mut user).unwrap();
+                    handle_root(cmd, &mut user).await.unwrap();
                     return;
                 }
             }
@@ -102,12 +98,12 @@ fn main() {
         }
     } else {
         init_config(None);
-        block_on(db::init()).unwrap();
+        db::init().await.unwrap();
     }
     let mut rl = Editor::<()>::new();
     let mut quit = false;
     while !quit {
-        let name = user.as_ref().map_or("", |u| &u.name);
+        let name = user.as_ref().map_or("", |u| &u.user_name);
         let line = rl.readline(&format!("{}> ", name)).unwrap();
         let words: Vec<_> = line
             .split("&&")
@@ -122,7 +118,7 @@ fn main() {
             let mut args = vec!["#"];
             args.extend(word.split(" ").filter(|s| s.len() != 0));
             match Root::from_iter_safe(args) {
-                Ok(root) => match handle_root(root, &mut user) {
+                Ok(root) => match handle_root(root, &mut user).await {
                     Ok(true) => {
                         quit = true;
                         break;
@@ -136,22 +132,23 @@ fn main() {
     }
 }
 
-fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
-    let user_found = block_on(db::user::get_by_name(name))?;
+async fn login(user: &mut Option<User>, name: &str) -> Fallible<()> {
+    let user_found = db::user::get_by_name(name).await?;
     *user = Some(user_found);
     Ok(())
 }
 fn check_login(user: &Option<User>) -> Fallible<&User> {
     match user {
         Some(u) => Ok(u),
-        _ => Err(Error::new_logic(ErrorCode::NeedLogin, "")),
+        _ => Err(ErrorCode::NeedLogin.into()),
     }
 }
 
-fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
-    let db_name = &get_config().database.dbname;
+async fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
+    let conf = &get_config().database;
+    let db_name = &conf.dbname;
     match root {
-        Root::Login { user_name } => login(user, &user_name)?,
+        Root::Login { user_name } => login(user, &user_name).await?,
         Root::Start => start_db()?,
         Root::Stop => stop_db()?,
         Root::Init => {
@@ -163,20 +160,18 @@ fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
             let exist = list_db()?.contains(db_name);
             if exist {
                 println!("{} 已存在，清空之", db_name);
-                clean_db()?;
+                clean_db(conf)?;
             } else {
                 println!("找不到 {}，創建之", db_name);
                 create_db()?;
             }
             if !reset.no_migrate {
-                migrate()?;
+                migrate().await?
             }
         }
         Root::Quit => return Ok(true),
-        Root::Add(add) => handle_add(add.subcmd, user)?,
-        Root::Migrate => {
-            migrate()?;
-        }
+        Root::Add(add) => handle_add(add.subcmd, user).await?,
+        Root::Migrate => migrate().await?,
         Root::List => {
             for db in list_db()? {
                 let prefix = if &db == db_name { "* " } else { "" };
@@ -187,20 +182,31 @@ fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
     Ok(false)
 }
 
-fn migrate() -> Fallible<()> {
+async fn migrate() -> Fallible<()> {
     let conf = &get_config().database;
-    let mut ref_conf = Config::new(ConfigDbType::Postgres)
-        .set_db_host(&conf.host)
-        .set_db_port(&conf.port.to_string())
-        .set_db_user(&conf.username)
-        .set_db_name(&conf.dbname)
-        .set_db_pass(&conf.password);
-    let report = embedded::migrations::runner().run(&mut ref_conf)?;
-    let migrations = report.applied_migrations();
-    println!("執行了 {} 次遷移", migrations.len());
-    for m in migrations.iter() {
-        println!("執行遷移：{} - {}", m.version(), m.name());
+    let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
+    let mut conn = AnyConnection::connect(&conf.get_url()).await?;
+
+    conn.ensure_migrations_table().await?;
+
+    let (version, dirty) = conn.version().await?.unwrap_or((0, false));
+
+    if dirty {
+        return Err(MigrateError::Dirty(version).into());
     }
+
+    for migration in migrator.iter() {
+        if migration.version > version {
+            let elapsed = conn.apply(migration).await?;
+            println!(
+                "{}/遷移 {} ({:?})",
+                migration.version, migration.description, elapsed,
+            );
+        } else {
+            conn.validate(migration).await?;
+        }
+    }
+
     Ok(())
 }
 fn list_db() -> Fallible<Vec<String>> {
@@ -240,10 +246,9 @@ fn start_db() -> Fallible<()> {
         false,
     )
     .map_err(|e| match e {
-        Error::OperationError { msg } => Error::new_op(format!(
-            "{}\n若排除其它問題仍無法開啟資料庫，建議執行：\n   sudo service postgresql restart",
-            msg
-        )),
+        Error::OperationError { .. } => {
+            e.context("若排除其它問題仍無法開啟資料庫，建議執行： sudo service postgresql restart")
+        }
         _ => e,
     })?;
     Ok(())
@@ -294,49 +299,14 @@ fn create_db() -> Fallible<()> {
     )?;
     Ok(())
 }
-fn clean_db() -> Fallible<()> {
-    let command = "
-DO $$ DECLARE
-  r RECORD;
-BEGIN
-  FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
-    EXECUTE 'DROP TABLE ' || quote_ident(r.tablename) || ' CASCADE';
-  END LOOP;
-END $$;";
-
-    let conf = &get_config().database;
-    run_cmd(
-        "psql",
-        &[
-            "-p",
-            &conf.port.to_string(),
-            "-U",
-            &conf.username,
-            "-d",
-            &conf.dbname,
-            "-c",
-            command,
-        ],
-        &[("PGPASSWORD", &conf.password)],
-        false,
-    )?;
-    Ok(())
-}
-fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
+async fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
     match subcmd {
         AddSubCommand::User {
             name,
             email,
             password,
         } => {
-            unimplemented!("創建用戶還缺雜湊功能");
-            // db::user::create(&db::user::User {
-            //     name,
-            //     email,
-            //     password_hashed: vec![1, 2, 3],
-            //     salt: vec![4, 5, 6],
-            //     ..Default::default()
-            // });
+            db::user::signup(&name, &password, &email).await?;
         }
         AddSubCommand::Board {
             board_name,
@@ -349,51 +319,4 @@ fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<()> {
         }
     }
     Ok(())
-}
-fn run_cmd(
-    program: &str,
-    args: &[&str],
-    env: &[(&str, &str)],
-    mute: bool,
-) -> Fallible<Vec<String>> {
-    log::info!("執行命令行指令：{} {:?}", program, args);
-    let mut cmd = Command::new(program);
-    cmd.args(args);
-    for (key, value) in env.iter() {
-        cmd.env(key, value);
-    }
-    let mut child = cmd
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", program), e))?;
-
-    if let Some(stdout) = &mut child.stdout {
-        let mut out_str = vec![];
-        let reader = BufReader::new(stdout);
-        reader
-            .lines()
-            .filter_map(|line| line.ok())
-            .for_each(|line| {
-                if !mute {
-                    println!("  ==> {}", line);
-                }
-                out_str.push(line);
-            });
-
-        let status = child.wait()?;
-        if status.success() {
-            Ok(out_str)
-        } else {
-            Err(Error::new_op(format!(
-                "{} 指令異常退出，狀態碼 = {:?}",
-                program,
-                status.code().unwrap_or(0)
-            )))
-        }
-    } else {
-        return Err(Error::new_internal_without_source(format!(
-            "無法取得 {} 之標準輸出",
-            program
-        )));
-    }
 }

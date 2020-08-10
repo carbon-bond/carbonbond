@@ -1,6 +1,6 @@
 import * as React from 'react';
 import '../css/invite_page.css';
-import { UserState } from './global_state';
+import { UserState } from './global_state/user';
 import { useInputValue } from './utils';
 import { toast } from 'react-toastify';
 import { matchErrAndShow, ajaxOperation } from '../ts/api';

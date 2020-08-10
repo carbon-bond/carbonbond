@@ -5,8 +5,8 @@
     justify-content: center;
     & > div {
         background-color: var(--background-color);
-        & .boardBlock:first-child {
-            border-bottom: 0px;
+        & .boardBlock:not(:first-child) {
+            border-top: 0px;
         }
         & .boardBlock:hover {
             background: var(--hover-background-color)

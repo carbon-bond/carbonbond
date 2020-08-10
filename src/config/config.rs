@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::{Contextable, Error, Fallible};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Mode {
@@ -28,8 +28,9 @@ pub fn get_mode() -> Mode {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub database: DatabaseConfig,
     pub user: RawUserConfig,
+    pub database: DatabaseConfig,
+    pub redis: RedisConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,6 +56,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub user: UserConfig,
+    pub redis: RedisConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -62,7 +64,7 @@ pub struct DatabaseConfig {
     pub dbname: String,
     pub username: String,
     pub password: String,
-    pub port: u32,
+    pub port: u16,
     pub host: String,
     pub data_path: String,
     pub max_conn: u32,
@@ -74,6 +76,10 @@ impl DatabaseConfig {
             self.username, self.password, self.host, self.port, self.dbname
         )
     }
+}
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RedisConfig {
+    pub host: String,
 }
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
@@ -94,7 +100,7 @@ pub struct UserConfig {
 impl From<RawServerConfig> for Fallible<ServerConfig> {
     fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
         let mut mailgun_api_key = load_file_content(&orig.mailgun_key_file)
-            .map_err(|e| e.add_msg(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file)))?;
+            .context(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file))?;
         mailgun_api_key = mailgun_api_key.trim().to_owned();
         Ok(ServerConfig {
             address: orig.address,
@@ -123,6 +129,8 @@ fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
     Ok(content)
 }
 
+/// 載入一至多個設定檔
+/// * `path` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
 fn load_content_with_prior(paths: &[&str]) -> Fallible<(String, String)> {
     if paths.len() == 0 {
         return Err(Error::new_op("未指定設定檔"));
@@ -136,7 +144,6 @@ fn load_content_with_prior(paths: &[&str]) -> Fallible<(String, String)> {
 }
 
 /// 載入設定檔，回傳一個設定檔物件
-/// * `path` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
 pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     // 載入設定檔
     let mode = get_mode();
@@ -156,8 +163,9 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         mode,
         file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        database: raw_config.database,
         user: Fallible::<UserConfig>::from(raw_config.user)?,
+        database: raw_config.database,
+        redis: raw_config.redis,
     };
 
     Ok(config)

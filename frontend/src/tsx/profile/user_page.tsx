@@ -1,15 +1,16 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
-import { API_FETCHER, unwrap_or } from '../../ts/api/api';
+import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
-import { Article } from '../../ts/api/api_trait';
-import { UserState } from '../global_state';
+import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
+import { UserState } from '../global_state/user';
 import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
 
 import '../../css/article_wrapper.css';
 import '../../css/user_page.css';
+import { toast } from 'react-toastify';
 
 // TODO: 可剪裁非正方形的圖片
 function EditAvatar(props: { name: string }): JSX.Element {
@@ -40,7 +41,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		e.preventDefault();
 		try {
 			if (previewData != null) {
-				await ajaxOperation.UpdateProfile({avatar: previewData.split(',')[1]});
+				await ajaxOperation.UpdateProfile({ avatar: previewData.split(',')[1] });
 			}
 			setIsEditing(false);
 			location.reload();
@@ -89,7 +90,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 	</div>;
 }
 
-function Avatar(props: {is_me: boolean, name: string}): JSX.Element {
+function Avatar(props: { is_me: boolean, name: string }): JSX.Element {
 	if (props.is_me) {
 		return <EditAvatar name={props.name} />;
 	} else {
@@ -101,20 +102,20 @@ function Avatar(props: {is_me: boolean, name: string}): JSX.Element {
 
 function EditSentence(props: { sentence: string, refresh: Function }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
-	const {input_props, setValue} = useInputValue(props.sentence);
+	const { input_props, setValue } = useInputValue(props.sentence);
 	React.useEffect(() => {
 		setValue(props.sentence);
 	}, [props.sentence, setValue]);
 
 	async function updateSentence(): Promise<void> {
-		await ajaxOperation.UpdateProfile({sentence: input_props.value});
+		await ajaxOperation.UpdateProfile({ sentence: input_props.value });
 		await props.refresh();
 		setIsEditing(false);
 	}
 
 	if (is_editing) {
 		return <div>
-			<input {...input_props} type="text" autoFocus/>
+			<input {...input_props} type="text" autoFocus />
 			<div>
 				<button onClick={updateSentence}>確定</button>
 				<button onClick={() => { setValue(props.sentence); setIsEditing(false); }}>取消</button>
@@ -133,9 +134,9 @@ function EditSentence(props: { sentence: string, refresh: Function }): JSX.Eleme
 	}
 }
 
-function Sentence(props: {is_me: boolean, sentence: string, refresh: Function}): JSX.Element {
+function Sentence(props: { is_me: boolean, sentence: string, refresh: Function }): JSX.Element {
 	if (props.is_me) {
-		return <EditSentence sentence={props.sentence} refresh={props.refresh}/>;
+		return <EditSentence sentence={props.sentence} refresh={props.refresh} />;
 	} else if (props.sentence == '') {
 		return <div styleName="noSentence">
 			尚未設置一句話介紹
@@ -205,12 +206,21 @@ function UserPage(props: Props): JSX.Element {
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [profile, setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
+	const [user, setUser] = React.useState<User | null>(null);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		fetchArticles(user_name, PAGE_SIZE).then(more_articles => {
-			setArticles(more_articles);
+		Promise.all([
+			fetchArticles(user_name, PAGE_SIZE),
+			API_FETCHER.queryUser(user_name)
+		]).then(([more_articles, user]) => {
+			try {
+				setArticles(more_articles);
+				setUser(unwrap(user));
+			} catch (err) {
+				toast(err);
+			}
 		});
 	}, [user_name]);
 
@@ -219,11 +229,19 @@ function UserPage(props: Props): JSX.Element {
 			setProfile(profile);
 		});
 	}
+	function createUserRelation(kind: UserRelationKind): void {
+		if (user) {
+			API_FETCHER.createUserRelation(kind, user.id);
+		}
+	}
 
 	React.useEffect(refreshProfile, [user_name]);
 
 	const is_me = user_state.login && user_state.user_name == user_name;
 
+	if (!user) {
+		return <></>;
+	}
 	return <div>
 		<div styleName="up">
 			<Avatar is_me={is_me} name={user_name} />
@@ -231,9 +249,15 @@ function UserPage(props: Props): JSX.Element {
 				<div styleName="username">{user_name}</div>
 				<Sentence is_me={is_me} refresh={refreshProfile} sentence={profile.sentence} />
 				<div styleName="data">
-					<div styleName="energy">9.8 萬 鍵能</div>
-					<div styleName="trace">8425 追蹤</div>
-					<div styleName="hate">17 仇視</div>
+					<div styleName="energy">{user.energy} 鍵能</div>
+					<div styleName="trace">
+						<p>被 {user.followed_count} 人追蹤</p>
+						<p>追蹤 {user.following_count} 人</p>
+					</div>
+					<div styleName="hate">
+						<p>被 {user.hated_count} 人仇視</p>
+						<p>仇視 {user.hating_count} 人</p>
+					</div>
 				</div>
 			</div>
 			<div styleName="operation">
@@ -241,8 +265,12 @@ function UserPage(props: Props): JSX.Element {
 					{
 						user_state.login && user_state.user_name != user_name ?
 							<div styleName="relation">
-								<button>追蹤</button>
-								<button>仇視</button>
+								<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
+									追蹤
+								</button>
+								<button onClick={() => createUserRelation(UserRelationKind.Hate)}>
+									仇視
+								</button>
 							</div> :
 							<></>
 					}
@@ -264,7 +292,7 @@ function UserPage(props: Props): JSX.Element {
 			<div styleName="detail">
 				{
 					user_state.login && user_state.user_name == user_name ?
-						<button styleName="editButton" onClick={ () => alert('TODO') }>🖉 編輯我的資料</button> :
+						<button styleName="editButton" onClick={() => alert('TODO')}>🖉 編輯我的資料</button> :
 						<></>
 				}
 				<div>

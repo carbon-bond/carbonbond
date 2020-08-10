@@ -1,3 +1,6 @@
+:root {
+    --user-info-min-width: 160px;
+}
 .header {
     background-color: var(--header-color);
     border-bottom-width: 1px;
@@ -101,6 +104,7 @@
                 background-color: var(--hover-background-color);
             }
             & .userInfo {
+                min-width: var(--user-info-min-width);
                 margin-left: 20px;
                 padding-left: 10px;
                 padding-right: 10px;
@@ -122,7 +126,7 @@
                 }
             }
             & .dropdown {
-                width: 160px;
+                width: var(--user-info-min-width);
                 position: absolute;
                 top: 60px;
                 display: flex;

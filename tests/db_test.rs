@@ -1,4 +1,5 @@
 use carbonbond::{
+    api::model,
     config,
     custom_error::{DataType, ErrorCode, Fallible},
     db,
@@ -18,49 +19,40 @@ async fn setup() {
 }
 
 async fn user_test() -> Fallible<i64> {
-    let user_id = db::user::create(&db::user::User {
-        name: "測試人".to_string(),
-        email: "test_email@test.com".to_string(),
-        sentence: "一句話".to_string(),
-        password_hashed: vec![1, 2, 3],
-        salt: vec![4, 5, 6],
-        ..Default::default()
-    })
-    .await?;
+    let user_id = db::user::signup("測試人", "測試密碼", "test_email@test.com").await?;
 
     let user = db::user::get_by_name("測試人").await.unwrap();
     assert_eq!(user_id, user.id);
-    assert!(user.create_time.is_some());
-    assert_eq!(user.password_hashed, vec![1, 2, 3]);
-    assert_eq!(user.salt, vec![4, 5, 6]);
+    assert_eq!("測試人", &user.user_name);
 
     let code = db::user::get_by_name("測試人2")
         .await
-        .err()
-        .unwrap()
+        .unwrap_err()
         .code()
         .unwrap();
     assert_eq!(
         code,
         ErrorCode::NotFound(DataType::User, "測試人2".to_owned())
     );
+
+    db::user::login("測試人", "測試密碼")
+        .await
+        .expect("正確的帳密無法登入");
+    db::user::login("測試人", "錯錯錯")
+        .await
+        .expect_err("錯誤的帳密卻能登入");
     Ok(user_id)
 }
 async fn party_test(chairman_id: i64) -> Fallible<i64> {
-    db::party::create(&db::party::Party {
-        party_name: "測試無法黨".to_string(),
-        chairman_id,
-        ..Default::default()
-    })
-    .await
+    db::party::create("測試無法黨", None, chairman_id).await
 }
 async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
-    db::board::create(&db::board::Board {
+    db::board::create(&model::NewBoard {
         board_name: "測試板".to_string(),
         title: "整合測試測起來！".to_string(),
         detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
+        force: "".to_owned(),
         ruling_party_id,
-        ..Default::default()
     })
     .await
 }

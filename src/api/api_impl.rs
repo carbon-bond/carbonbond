@@ -1,6 +1,9 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::{Error, Fallible};
+use crate::custom_error::Fallible;
+use crate::db;
+use crate::redis;
+use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -84,7 +87,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_article(
         &self,
         context: &mut crate::Ctx,
-        id: u64,
+        id: i64,
     ) -> Result<model::Article, crate::custom_error::Error> {
         if id == 1 {
             Ok(model::Article {
@@ -134,32 +137,23 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
 pub struct PartyQueryRouter {}
 #[async_trait]
 impl api_trait::PartyQueryRouter for PartyQueryRouter {
-    async fn query_party(&self, context: &mut crate::Ctx, id: u64) -> Fallible<model::Party> {
-        Ok(if id == 1 {
-            model::Party {
-                id: 1,
-                board_id: None,
-                party_name: "東林黨".to_owned(),
-                energy: 2949,
-                ruling: false,
-            }
-        } else if id == 2 {
-            model::Party {
-                id: 2,
-                board_id: Some(1),
-                party_name: "天地會".to_owned(),
-                energy: 14790,
-                ruling: true,
-            }
-        } else {
-            model::Party {
-                id: 3,
-                board_id: Some(2),
-                party_name: "玉皇朝".to_owned(),
-                energy: 56783,
-                ruling: false,
-            }
-        })
+    async fn query_party(
+        &self,
+        context: &mut crate::Ctx,
+        party_name: String,
+    ) -> Fallible<model::Party> {
+        db::party::get_by_name(&party_name).await
+    }
+    async fn create_party(
+        &self,
+        context: &mut crate::Ctx,
+        board_name: Option<String>,
+        party_name: String,
+    ) -> Fallible<()> {
+        let id = context.get_id_strict()?;
+        log::debug!("{} 嘗試創建 {}", id, party_name);
+        db::party::create(&party_name, board_name, id).await?;
+        Ok(())
     }
 }
 
@@ -172,27 +166,51 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
-        Ok(vec![
-            model::Board {
-                id: 1,
-                board_name: "國士無雙".to_string(),
-                create_time: Utc::now(),
-                title: "諸將易得耳，至如信者，國士無雙".to_owned(),
-                detail: "國士無雙的細節介紹......".to_owned(),
-                ruling_party_id: 1,
-            },
-            model::Board {
-                id: 2,
-                board_name: "綠帽文學".to_owned(),
-                create_time: Utc::now(),
-                title: "愛是一道光，如此美妙".to_owned(),
-                detail: "綠帽文學的細節介紹......".to_owned(),
-                ruling_party_id: 2,
-            },
-        ])
+        db::board::get_all().await?.assign_props().await
+    }
+    async fn query_board_name_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Fallible<Vec<model::BoardName>> {
+        db::board::get_all_board_names().await
     }
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        unimplemented!()
+        let board = db::board::get_by_name(&name).await?;
+        if let Some(user_id) = context.get_id() {
+            redis::board_pop::set_board_pop(user_id, board.id).await?;
+        }
+        board.assign_props().await
+    }
+    async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
+        let board = db::board::get_by_id(id).await?;
+        if let Some(user_id) = context.get_id() {
+            redis::board_pop::set_board_pop(user_id, board.id).await?;
+        }
+        board.assign_props().await
+    }
+    async fn create_board(
+        &self,
+        context: &mut crate::Ctx,
+        new_board: model::NewBoard,
+    ) -> Fallible<i64> {
+        Ok(db::board::create(&new_board).await?)
+    }
+    async fn query_subscribed_user_count(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<usize, crate::custom_error::Error> {
+        db::subscribed_boards::get_subscribed_user_count(id).await
+    }
+    async fn query_hot_boards(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+        let board_ids = redis::hot_boards::get_hot_boards().await?;
+        db::board::get_overview(&board_ids)
+            .await?
+            .assign_props()
+            .await
     }
 }
 
@@ -201,40 +219,22 @@ pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
-        Ok(context.get_id().and_then(|id| {
-            Some(model::User {
-                id: id as u64,
-                user_name: id.to_string(),
-                sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
-                energy: 789,
-                invitation_credit: 20,
-            })
-        }))
+        if let Some(id) = context.get_id() {
+            Ok(Some(db::user::get_by_id(id).await?))
+        } else {
+            Ok(None)
+        }
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
-        Ok(vec![
-            model::Party {
-                id: 1,
-                board_id: None,
-                party_name: "東林黨".to_owned(),
-                energy: 2949,
-                ruling: false,
-            },
-            model::Party {
-                id: 2,
-                board_id: Some(1),
-                party_name: "天地會".to_owned(),
-                energy: 14790,
-                ruling: true,
-            },
-            model::Party {
-                id: 3,
-                board_id: Some(2),
-                party_name: "玉皇朝".to_owned(),
-                energy: 56783,
-                ruling: false,
-            },
-        ])
+        let id = context.get_id_strict()?;
+        db::party::get_by_member_id(id).await
+    }
+    async fn query_user(
+        &self,
+        context: &mut crate::Ctx,
+        name: String,
+    ) -> Result<super::model::User, crate::custom_error::Error> {
+        db::user::get_by_name(&name).await
     }
     async fn login(
         &self,
@@ -242,17 +242,51 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         password: String,
         user_name: String,
     ) -> Fallible<Option<model::User>> {
-        context.remember_id(user_name.parse::<u64>()?)?;
-        Ok(Some(model::User {
-            id: user_name.parse::<u64>()?,
-            user_name: user_name,
-            sentence: "他日若遂凌雲志，敢笑黃巢不丈夫".to_owned(),
-            energy: 789,
-            invitation_credit: 20,
-        }))
+        let user = db::user::login(&user_name, &password).await?;
+        context.remember_id(user.id)?;
+        Ok(Some(user))
     }
     async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {
-        context.forget_id()?;
-        Ok(())
+        context.forget_id()
+    }
+    async fn query_subcribed_boards(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::subscribed_boards::get_subscribed_boards(id)
+            .await?
+            .assign_props()
+            .await
+    }
+    async fn unsubscribe_board(
+        &self,
+        context: &mut crate::Ctx,
+        board_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::subscribed_boards::unsubscribe(id, board_id).await
+    }
+    async fn subscribe_board(
+        &self,
+        context: &mut crate::Ctx,
+        board_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::subscribed_boards::subscribe(id, board_id).await
+    }
+    async fn create_user_relation(
+        &self,
+        context: &mut crate::Ctx,
+        kind: model::UserRelationKind,
+        target_user: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let from_user = context.get_id_strict()?;
+        db::user::create_relation(&model::UserRelation {
+            from_user,
+            kind,
+            to_user: target_user,
+        })
+        .await
     }
 }

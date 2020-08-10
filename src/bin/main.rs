@@ -3,8 +3,10 @@ use carbonbond::{
     api::api_trait::RootQueryRouter,
     api::query,
     config,
-    custom_error::{Error, ErrorCode, Fallible},
-    db, Ctx,
+    custom_error::{Contextable, Error, ErrorCode, Fallible},
+    db, redis,
+    service::hot_boards,
+    Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
@@ -36,23 +38,18 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
     match (req.method(), req.uri().path()) {
         (&Method::POST, "/api") => {
             let (parts, body) = req.into_parts();
-
-            let body = hyper::body::to_bytes(body).await?;
             log::trace!("原始請求： {:#?}", body);
-
-            let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
-                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
-            log::info!("請求： {:#?}", query);
-
-            let root: api_impl::RootQueryRouter = Default::default();
 
             let mut context = Ctx {
                 headers: parts.headers,
                 resp: Response::new(String::new()),
             };
+            let body = hyper::body::to_bytes(body).await?;
 
-            let ret = root.handle(&mut context, query).await?;
-            context.resp.body_mut().push_str(&ret);
+            let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
+                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
+            let resp = on_api(query, &mut context).await?;
+            context.resp.body_mut().push_str(&resp);
             Ok(context.resp.map(|s| Body::from(s)))
         }
         (&Method::GET, _) => {
@@ -71,6 +68,19 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
         }
     }
 }
+async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {
+    log::info!("請求： {:?}", query);
+    let root: api_impl::RootQueryRouter = Default::default();
+    let resp = root
+        .handle(context, query.clone())
+        .await
+        .context("api 物件序列化錯誤（極異常！）")?;
+
+    if let Some(err) = &resp.1 {
+        log::warn!("執行 api {:?} 時發生錯誤： {}", query, err);
+    }
+    Ok(resp.0)
+}
 #[tokio::main]
 async fn main() -> Fallible<()> {
     // 初始化紀錄器
@@ -81,16 +91,17 @@ async fn main() -> Fallible<()> {
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
     config::init(config_file);
     let conf = config::get_config();
-    // TODO: 初始化資料庫連線池
-    log::info!("資料庫位置：{}", &conf.database.get_url());
+    log::info!("初始化資料庫連線池，位置：{}", &conf.database.get_url());
     db::init().await.unwrap();
-    // 載入前端資源
+    log::info!("初始化 redis 客戶端");
+    redis::init().await.unwrap();
+    log::info!("載入前端資源");
     let static_files = Static::new("./frontend/static");
-    // 載入首頁
+    log::info!("載入首頁");
     let content = std::fs::read_to_string("./frontend/static/index.html").expect("讀取首頁失敗");
     INDEX.set(content);
 
-    // 打開伺服器
+    log::info!("啟動伺服器");
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
     let service = make_service_fn(|_| {
@@ -100,8 +111,16 @@ async fn main() -> Fallible<()> {
         }
     });
     let server = Server::bind(&addr).serve(service);
+
     log::info!("Listening on http://{}", addr);
-    server.await?;
+    tokio::select! {
+        res = server => {
+            res?;
+        },
+        res = hot_boards::start() => {
+            res?;
+        }
+    };
 
     Ok(())
 }

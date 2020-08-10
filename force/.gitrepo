@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:carbon-bond/force.git
+	branch = master
+	commit = 91a947731565029a9bc4fd66c203480c9a2f5273
+	parent = 8dcd03b86807432b872b28d8c39cd7459b734a22
+	method = merge
+	cmdver = 0.4.1

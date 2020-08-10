@@ -20,6 +20,9 @@ host = "localhost"
 data_path = "data"
 max_conn = 10
 
+[redis]
+host = "redis://127.0.0.1/"
+
 [user]
 invitation_credit = 20
 email_whitelist = [

@@ -1,19 +1,22 @@
 import * as React from 'react';
-import '../css/bottom_panel.css';
+import '../css/bottom_panel/bottom_panel.css';
+import '../css/bottom_panel/chat_room.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
 import { useScrollBottom, useInputValue } from './utils';
-import { Message } from './global_state';
 import useOnClickOutside from 'use-onclickoutside';
 import {
-	BottomPanelState,
 	AllChatState,
 	IMessage,
+	Message,
+} from './global_state/chat';
+import {
+	BottomPanelState,
 	RoomData,
 	SimpleRoomData,
 	ChannelRoomData,
 	isChannelRoomData
-} from './global_state';
+} from './global_state/bottom_panel';
 import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css?global';
 import * as EmojiMart from 'emoji-mart';
@@ -213,8 +216,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			}
 		}
 
-		return <div styleName="chatPanel singlePanel">
-			<div styleName="roomTitle title">
+		return <div styleName="chatPanel">
+			<div styleName="roomTitle">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(false)}></div>
 				<div styleName="rightSet">
@@ -228,8 +231,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
 	} else {
-		return <div styleName="chatPanel singlePanel roomWidth">
-			<div styleName="roomTitle title">
+		return <div styleName="chatPanel roomWidth">
+			<div styleName="roomTitle">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
 				<div styleName="rightSet">
@@ -288,8 +291,8 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			</div>;
 		}
 
-		return <div styleName="chatPanel singlePanel">
-			<div styleName="roomTitle title">
+		return <div styleName="chatPanel">
+			<div styleName="roomTitle">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(false)}>#{props.room.channel}</div>
 				<div styleName="rightSet">
@@ -314,8 +317,8 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			</div>
 		</div>;
 	} else {
-		return <div styleName="chatPanel singlePanel roomWidth">
-			<div styleName="roomTitle title">
+		return <div styleName="chatPanel roomWidth">
+			<div styleName="roomTitle">
 				<div styleName="leftSet">{props.room.name}</div>
 				<div styleName="middleSet" onClick={() => setExtended(true)}>#{props.room.channel}</div>
 				<div styleName="rightSet">

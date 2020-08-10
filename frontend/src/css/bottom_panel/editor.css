@@ -1,0 +1,27 @@
+.editorPanel {
+    background: var(--background-color);
+    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.75);
+    width: 500px;
+    & .editorBody {
+        height: 450px;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        & .location {
+            height: 40px;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            & .board {
+                flex: 1;
+            }
+            & .category {
+                flex: 1;
+            }
+        }
+        & .articleTitle {
+            height: 40px;
+        }
+    }
+}

@@ -1,42 +1,91 @@
 use super::{get_pool, DBObject, ToFallible};
+use crate::api::model::Party;
 use crate::custom_error::{DataType, Fallible};
 
-#[derive(Debug, Default)]
-pub struct Party {
-    pub id: i64,
-    pub party_name: String,
-    pub board_id: Option<i64>,
-    pub energy: i32,
-    pub chairman_id: i64,
-    pub create_time: Option<chrono::DateTime<chrono::Utc>>,
-}
 impl DBObject for Party {
-    const TYPE: DataType = DataType::Article;
+    const TYPE: DataType = DataType::Party;
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<Party> {
     let pool = get_pool();
-    let party = sqlx::query_as!(Party, "SELECT * FROM parties WHERE party_name = $1", name)
-        .fetch_one(pool)
-        .await
-        .to_fallible(name)?;
+    let party = sqlx::query_as!(
+        Party,
+        "
+    SELECT parties.*, boards.board_name FROM parties
+    LEFT JOIN boards on boards.id = parties.board_id
+    WHERE parties.party_name = $1
+    ",
+        name
+    )
+    .fetch_one(pool)
+    .await
+    .to_fallible(name)?;
     Ok(party)
 }
 
-pub async fn create(party: &Party) -> Fallible<i64> {
+pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
     let pool = get_pool();
-    let res = sqlx::query!(
+    let parties: Vec<Party> = sqlx::query_as!(
+        Party,
         "
-        INSERT INTO parties (party_name, board_id, chairman_id)
-        VALUES ($1, $2, $3) RETURNING id
+    SELECT parties.*, boards.board_name FROM parties
+    INNER JOIN party_members ON parties.id = party_members.party_id
+    LEFT JOIN boards on boards.id = parties.board_id
+    WHERE user_id = $1;",
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(parties)
+}
+
+pub async fn create(
+    party_name: &str,
+    board_name: Option<String>,
+    chairman_id: i64,
+) -> Fallible<i64> {
+    let pool = get_pool();
+    let party_id = match board_name {
+        Some(board_name) => {
+            sqlx::query!(
+                "
+                INSERT INTO parties (party_name, board_id)
+                SELECT $1, boards.id
+                FROM boards
+                WHERE boards.board_name = $2
+                RETURNING id
+                ",
+                party_name,
+                board_name
+            )
+            .fetch_one(pool)
+            .await?
+            .id
+        }
+        None => {
+            sqlx::query!(
+                "
+                INSERT INTO parties (party_name)
+                VALUES ($1) RETURNING id
+                ",
+                party_name,
+            )
+            .fetch_one(pool)
+            .await?
+            .id
+        }
+    };
+    sqlx::query!(
+        "
+        INSERT INTO party_members (party_id, user_id)
+        VALUES ($1, $2) RETURNING id
         ",
-        party.party_name,
-        party.board_id,
-        party.chairman_id,
+        party_id,
+        chairman_id,
     )
     .fetch_one(pool)
     .await?;
-    Ok(res.id)
+    Ok(party_id)
 }
 
 pub async fn change_board(party_id: i64, board_id: i64) -> Fallible<()> {

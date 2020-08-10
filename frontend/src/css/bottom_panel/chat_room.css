@@ -1,0 +1,110 @@
+.chatPanel {
+    & .panelContent {
+        display: flex;
+        flex-direction: row;
+        & .channels {
+            width: 160px;
+            font-size: 15px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            background-color: var(--background-color);
+            & .channelControl {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+            & .channelList {
+                & .selected {
+                    background: #E5E5E5;
+                }
+                & .channel {
+                    cursor: pointer;
+                    & .channelSymbol {
+                        font-size: 17px;
+                        font-weight: bold;
+                    }
+                    padding: 1px 6px;
+                }
+            }
+        }
+    }
+}
+
+.messages {
+    width: var(--room-width);
+    height: 320px;
+    padding: 4px;
+    background: white;
+    border: 1px #DDDDDD solid;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+}
+.inputBar {
+    background: #F1F1F1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 34px;
+    padding-right: 4px;
+    position: relative;
+    & .nonText {
+        cursor: pointer;
+        font-size: 22px;
+        margin-left: 4px;
+        & .emojiPicker {
+            position: absolute;
+            bottom: 40px;
+            transform: translateX(-50%);
+        }
+        & .loading {
+            position: absolute;
+            bottom: 40px;
+            background: white;
+            border: 1px #888888 solid;
+            transform: translateX(-50%);
+        }
+    }
+    & input {
+        flex-grow: 1;
+        margin-left: 4px;
+        border-radius: 10px;
+        text-indent: 5px;
+        height: 28px;
+    }
+}
+/* 在 chatContent 之中 */
+.messageBlock {
+    & .meta {
+        & .who {
+            font-weight: bold;
+        }
+        & .date {
+            font-size: 12px;
+            color: #888888;
+            margin-left: 5px;
+        }
+    }
+    & .normal {
+        word-break: break-all;
+        margin-top: 4px;
+        font-size: 15px;
+        & a:hover {
+            text-decoration: underline;
+        }
+    }
+    & .emojis {
+        font-size: 35px;
+    }
+    & .image {
+        & img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        width: calc(var(--room-width ) - 20px)
+    }
+    margin-bottom: 6px;
+}
