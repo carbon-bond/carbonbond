@@ -14,12 +14,7 @@ pub async fn get_by_id(id: i64) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy,
-        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hated_count,
-        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND kind='follow') as followed_count,
-        (SELECT COUNT(*) FROM user_relations WHERE from_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hating_count,
-        (SELECT COUNT(*) FROM user_relations WHERE from_user=users.id AND kind='follow') as following_count
-        FROM users WHERE id = $1",
+        "SELECT * from user_with_relations() as u where u.id = $1",
         id
     )
     .fetch_one(pool)
@@ -32,12 +27,7 @@ pub async fn get_by_name(name: &str) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(
         User,
-        "SELECT id, name as user_name, sentence, invitation_credit, 0 as energy,
-        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hated_count,
-        (SELECT COUNT(*) FROM user_relations WHERE to_user=users.id AND kind='follow') as followed_count,
-        (SELECT COUNT(*) FROM user_relations WHERE from_user=users.id AND (kind='hate' OR kind='openly_hate' )) as hating_count,
-        (SELECT COUNT(*) FROM user_relations WHERE from_user=users.id AND kind='follow') as following_count
-        FROM users WHERE name = $1",
+        "SELECT * from user_with_relations() as u where u.user_name = $1",
         name
     )
     .fetch_one(pool)
@@ -53,7 +43,7 @@ pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
     log::trace!("生成使用者 {}:{} 的鹽及雜湊", name, email);
     let pool = get_pool();
     let res = sqlx::query!(
-        "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO users (user_name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
         name,
         hash,
         salt.to_vec(),
@@ -68,7 +58,7 @@ pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
 pub async fn login(name: &str, password: &str) -> Fallible<User> {
     let pool = get_pool();
     let record = sqlx::query!(
-        "SELECT salt, password_hashed from users WHERE name = $1",
+        "SELECT salt, password_hashed from users WHERE user_name = $1",
         name
     )
     .fetch_one(pool)

@@ -10,9 +10,8 @@ mod model {
     pub struct User {
         pub id: i64,
         pub user_name: String,
-        pub energy: i32,
+        pub energy: i64,
         pub sentence: String,
-        pub invitation_credit: i32,
 
         pub hated_count: i64,
         pub followed_count: i64,
