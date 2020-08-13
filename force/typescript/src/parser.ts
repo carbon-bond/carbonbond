@@ -26,7 +26,7 @@ type DataType = {
 	kind: 'number'
 };
 
-interface Field {
+export interface Field {
 	datatype: DataType,
 	name: string
 }

@@ -5,7 +5,8 @@ import { RouteComponentProps } from 'react-router';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { BoardName } from '../../ts/api/api_trait';
-import { Parser } from 'force';
+import * as Force from 'force';
+const Parser = Force.Parser;
 
 
 import '../../css/bottom_panel/bottom_panel.css';
@@ -95,6 +96,19 @@ function EditorBody(): JSX.Element {
 		[board]
 	);
 	if (editor_panel_data == null) { return <></>; }
+	const Field = (field: Force.Field): JSX.Element => {
+		const Wrap = (element: JSX.Element): JSX.Element => {
+			return <div styleName="field">
+				<label htmlFor={field.name}>{field.name}</label>
+				{element}
+			</div>;
+		};
+		if (field.datatype.kind == 'text') {
+			return Wrap(<textarea placeholder={field.name} id={field.name}></textarea>);
+		} else {
+			return Wrap(<input placeholder={field.name} id={field.name}></input>);
+		}
+	};
 	const Fields = (): JSX.Element => {
 		if (editor_panel_data.category == undefined || editor_panel_data.category == '') {
 			return <></>;
@@ -105,9 +119,9 @@ function EditorBody(): JSX.Element {
 			return <></>;
 		}
 		for (let field of category.fields) {
-			input_fields.push(<input placeholder={field.name}></input>);
+			input_fields.push(Field(field));
 		}
-		return <div>{input_fields}</div>;
+		return <div styleName="fields">{input_fields}</div>;
 	};
 	return <div styleName="editorBody">
 		<div styleName="location">
