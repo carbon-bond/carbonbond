@@ -56,6 +56,12 @@ pub enum ArticleQuery {
     },
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },
+    #[chitin(request, response = "()")]
+    CreateArticle {
+        board_id: i64,
+        category_name: String,
+        content: String,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum BoardQuery {

@@ -92,7 +92,7 @@ const Field = (props: {field: Force.Field, register}): JSX.Element => {
 		return Wrap(
 			<textarea
 				placeholder={field.name}
-				name={field.name}
+				name={`content.${field.name}`}
 				ref={register({ required: true })}
 				id={field.name}
 			>
@@ -101,7 +101,7 @@ const Field = (props: {field: Force.Field, register}): JSX.Element => {
 		return Wrap(
 			<input
 				placeholder={field.name}
-				name={field.name}
+				name={`content.${field.name}`}
 				ref={register({ required: true })}
 				id={field.name}
 			>
@@ -128,15 +128,23 @@ function EditorBody(): JSX.Element {
 		[board]
 	);
 
-	const onSubmit = (): void => {};
 
 	if (editor_panel_data == null) { return <></>; }
+
+	// @ts-ignore
+	const onSubmit = (data): void => {
+		console.log(data);
+		API_FETCHER.createArticle(parseInt(data.board_id), data.category_name, JSON.stringify(data.content));
+	};
+
 	return <div styleName="editorBody">
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<div styleName="location">
 				<select required
 					styleName="board"
+					name="board_id"
 					value={board.id}
+					ref={register()}
 					onChange={(evt) => {
 						API_FETCHER.queryBoardById(parseInt(evt.target.value))
 						.then(data => unwrap(data))
@@ -147,12 +155,19 @@ function EditorBody(): JSX.Element {
 					<option value="" disabled hidden>看板</option>
 					{
 						board_options.map(board =>
-							<option value={board.id} key={board.id}>{board.board_name}</option>)
+							<option
+								value={board.id}
+								key={board.id}
+							>
+								{board.board_name}
+							</option>)
 					}
 				</select>
 				<select required
 					styleName="category"
 					value={editor_panel_data.category}
+					name="category_name"
+					ref={register()}
 					onChange={(evt) => {
 						setEditorPanelData({ ...editor_panel_data, category: evt.target.value });
 					}}

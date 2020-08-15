@@ -131,6 +131,19 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             })
         }
     }
+    async fn create_article(
+        &self,
+        context: &mut crate::Ctx,
+        board_id: i64,
+        category_name: String,
+        content: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        println!(
+            "發表文章： 看板 {}, 分類 {}, 內容 {}",
+            board_id, category_name, content
+        );
+        Ok(())
+    }
 }
 
 #[derive(Default)]

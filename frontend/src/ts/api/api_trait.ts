@@ -55,6 +55,9 @@ export abstract class RootQueryFetcher {
     async queryArticle(id: number): Promise<Result<Article, any>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticle": { id } } }));
     }
+    async createArticle(board_id: number, category_name: string, content: string): Promise<Result<null, any>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, content } } }));
+    }
     async queryBoardList(count: number): Promise<Result<Array<Board>, any>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryBoardList": { count } } }));
     }
