@@ -5,7 +5,6 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
-import { matchErrAndShow, ajaxOperation } from '../../ts/api';
 import { useInputValue } from '../utils';
 
 import '../../css/article_wrapper.css';
@@ -39,14 +38,15 @@ function EditAvatar(props: { name: string }): JSX.Element {
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
 		e.preventDefault();
+		// XXX: 修好它
 		try {
 			if (previewData != null) {
-				await ajaxOperation.UpdateProfile({ avatar: previewData.split(',')[1] });
+				// await ajaxOperation.UpdateProfile({ avatar: previewData.split(',')[1] });
 			}
 			setIsEditing(false);
 			location.reload();
 		} catch (err) {
-			matchErrAndShow(err);
+			// matchErrAndShow(err);
 		}
 		return {};
 	}
@@ -108,7 +108,8 @@ function EditSentence(props: { sentence: string, refresh: Function }): JSX.Eleme
 	}, [props.sentence, setValue]);
 
 	async function updateSentence(): Promise<void> {
-		await ajaxOperation.UpdateProfile({ sentence: input_props.value });
+		// XXX: 修好它
+		// await ajaxOperation.UpdateProfile({ sentence: input_props.value });
 		await props.refresh();
 		setIsEditing(false);
 	}
@@ -183,13 +184,6 @@ type Profile = {
 	sentence: string,
 };
 
-async function fetchUserProfile(
-	name: string,
-): Promise<Profile> {
-	let res = await ajaxOperation.User({ name });
-	return res.user;
-}
-
 // TODO: 分頁
 async function fetchArticles(
 	author_name: string,
@@ -225,9 +219,10 @@ function UserPage(props: Props): JSX.Element {
 	}, [user_name]);
 
 	function refreshProfile(): void {
-		fetchUserProfile(user_name).then(profile => {
-			setProfile(profile);
-		});
+		// XXX: 修好
+		// fetchUserProfile(user_name).then(profile => {
+		// 	setProfile(profile);
+		// });
 	}
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {

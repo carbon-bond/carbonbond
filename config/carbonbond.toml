@@ -24,7 +24,6 @@ max_conn = 10
 host = "redis://127.0.0.1/"
 
 [user]
-invitation_credit = 20
 email_whitelist = [
     # 臺大
     '@ntu\.edu\.tw$',

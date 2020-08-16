@@ -10,14 +10,12 @@ type UserStateType = {
 	login: true,
 	id: number,
 	user_name: string,
-	invitation_credit: number,
 	energy: number
 };
 
 interface LoginData {
 	id: number,
 	user_name: string,
-	invitation_credit: number,
 	energy: number
 }
 
@@ -32,7 +30,6 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 					login: true,
 					user_name: user.user_name,
 					id: user.id,
-					invitation_credit: user.invitation_credit,
 					energy: user.energy,
 				});
 			} else {
@@ -53,7 +50,6 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 			login: true,
 			id: data.id,
 			user_name: data.user_name,
-			invitation_credit: data.invitation_credit,
 			energy: data.energy,
 		});
 	}

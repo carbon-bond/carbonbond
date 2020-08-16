@@ -22,7 +22,6 @@ import { EditorPanelState } from './global_state/editor_panel';
 import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
-import { InvitePage } from './invite_page';
 import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
 import { BoardSwitch } from './board_switch';
@@ -45,9 +44,6 @@ function App(): JSX.Element {
 				)} />
 				<Route path="/app/register/:invite_code" render={props =>
 					<SignupPage {...props} />
-				} />
-				<Route path="/app/invite" render={() =>
-					<InvitePage />
 				} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />

@@ -24,7 +24,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				setLogin({
 					user_name: user.user_name,
 					energy: user.energy,
-					invitation_credit: user.invitation_credit
 				});
 				toast('登入成功');
 			} else {
@@ -80,7 +79,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="feature">🏯 我的個板</div>
 					<div styleName="feature" onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</div>
 					<div styleName="feature" onClick={() => props.history.push('/app/party')}>👥 我的政黨</div>
-					<div styleName="feature" onClick={() => props.history.push('/app/invite')}>🖅 寄發邀請信</div>
 					<div styleName="feature" onClick={() => logout_request()}>🏳 登出</div>
 					<div styleName="feature">⚙ 設定</div>
 				</div>

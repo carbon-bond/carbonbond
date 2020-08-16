@@ -2,10 +2,7 @@ import * as React from 'react';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { GQL } from '../ts/api';
 import { Article } from '../ts/api/api_trait';
-
-export type ArticleMeta = GQL.ArticleMetaFragment;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);

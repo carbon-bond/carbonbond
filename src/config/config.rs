@@ -45,7 +45,6 @@ pub struct RawServerConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawUserConfig {
-    pub invitation_credit: i32,
     pub email_whitelist: Vec<String>,
 }
 
@@ -93,7 +92,6 @@ pub struct ServerConfig {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserConfig {
-    pub invitation_credit: i32,
     pub email_whitelist: Vec<String>,
 }
 
@@ -116,7 +114,6 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
 impl From<RawUserConfig> for Fallible<UserConfig> {
     fn from(orig: RawUserConfig) -> Fallible<UserConfig> {
         Ok(UserConfig {
-            invitation_credit: orig.invitation_credit,
             email_whitelist: orig.email_whitelist,
         })
     }
