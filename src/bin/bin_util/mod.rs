@@ -1,6 +1,6 @@
 use carbonbond::{
     config::DatabaseConfig,
-    custom_error::{Error, Fallible},
+    custom_error::{Contextable, Error, Fallible},
 };
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
@@ -20,7 +20,7 @@ pub fn run_cmd(
     let mut child = cmd
         .stdout(Stdio::piped())
         .spawn()
-        .map_err(|e| e.context(format!("執行 {} 指令失敗", program)))?;
+        .context(format!("執行 {} 指令失敗", program))?;
 
     if let Some(stdout) = &mut child.stdout {
         let mut out_str = vec![];

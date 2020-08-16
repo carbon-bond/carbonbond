@@ -172,7 +172,7 @@
     }
 }
 
-.loginModal {
+.loginModal, .signupModal {
     width: 40%;
     height: 260px;
     background-color: var(--background-color);

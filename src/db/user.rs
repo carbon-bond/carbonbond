@@ -49,7 +49,7 @@ pub async fn create_signup_token(email: &str) -> Fallible<String> {
     let token = loop {
         let token = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(10)
+            .take(20)
             .collect::<String>();
         if get_email_by_token(&token).await?.is_none() {
             break token;

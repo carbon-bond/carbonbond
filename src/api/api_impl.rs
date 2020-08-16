@@ -237,7 +237,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         email: String,
     ) -> Result<(), crate::custom_error::Error> {
-        let token = db::user::create_signup_token(&email).await;
+        let token = db::user::create_signup_token(&email).await?;
         // TODO: 寄信！
         Ok(())
     }

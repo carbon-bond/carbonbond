@@ -7,13 +7,14 @@ import useOnClickOutside from 'use-onclickoutside';
 import '../css/header.css';
 
 import { API_FETCHER, unwrap } from '../ts/api/api';
-
+import { isEmail } from '../ts/regex_util';
 import { useInputValue } from './utils';
 import { UserState } from './global_state/user';
 
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
+	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
 
 	async function login_request(name: string, password: string): Promise<void> {
@@ -44,6 +45,46 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			toast.error(err);
 		}
 		return {};
+	}
+	function SignupModal(): JSX.Element {
+		const [signup_sent, setSignupSent] = React.useState(false);
+		let email = useInputValue('').input_props;
+		let ref_all = React.useRef(null);
+		useOnClickOutside(ref_all, () => setSignuping(false));
+		async function signup_request(email: string): Promise<void> {
+			try {
+				if (!isEmail(email)) {
+					throw "信箱格式異常";
+				}
+				unwrap(await API_FETCHER.sendSignupEmail(email));
+				setSignupSent(true);
+			} catch (err) {
+				toast.error(err);
+			}
+			return;
+		}
+		if (signuping) {
+			return <div ref={ref_all} styleName="signupModal">
+				<div styleName="escape" onClick={() => setSignuping(false)}>✗</div>
+				<input type="text" placeholder="😎 信箱" autoFocus {...email} />
+				{
+					(() => {
+						if (signup_sent) {
+							return <>
+								<p>已寄出註冊碼</p>
+								<button onClick={() => signup_request(email.value)}>再次寄發註冊信</button>
+							</>;
+						} else {
+							return <>
+								<button onClick={() => signup_request(email.value)}>寄發註冊信</button>
+							</>;
+						}
+					})()
+				}
+			</div>;
+		} else {
+			return <></>;
+		}
 	}
 	function LoginModal(): JSX.Element {
 		let name = useInputValue('').input_props;
@@ -107,12 +148,14 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		} else {
 			return <div styleName="wrap">
 				<div styleName="login" onClick={() => setLogining(true)}>登入 🔫</div>
+				<div styleName="login" onClick={() => setSignuping(true)}>註冊 ⭐</div>
 			</div>;
 		}
 	}
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
+			<SignupModal />
 			<div styleName="container">
 				<div styleName="leftSet">
 					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>

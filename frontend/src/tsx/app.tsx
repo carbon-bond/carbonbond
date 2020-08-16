@@ -42,9 +42,6 @@ function App(): JSX.Element {
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
 				)} />
-				<Route path="/app/register/:invite_code" render={props =>
-					<SignupPage {...props} />
-				} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
 				} />
