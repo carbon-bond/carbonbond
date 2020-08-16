@@ -4,6 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { useInputValue } from './utils';
 import '../css/signup_page.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
+import { Error } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 
 type Props = RouteComponentProps<{ signup_token: string }>;
@@ -13,7 +14,7 @@ export function SignupPage(props: Props): JSX.Element {
 	let password = useInputValue('').input_props;
 	let repeated_password = useInputValue('').input_props;
 	let [email, setEmail] = React.useState<null | string>(null);
-	let [err, setErr] = React.useState<any>(null);
+	let [err, setErr] = React.useState<Error | null>(null);
 	let signup_token = props.match.params.signup_token;
 	let { getLoginState } = UserState.useContainer();
 
@@ -34,9 +35,12 @@ export function SignupPage(props: Props): JSX.Element {
 	React.useEffect(() => {
 		API_FETCHER.queryEmailByToken(signup_token).then(res => {
 			try {
-				setEmail(unwrap(res));
+				if ('Ok' in res) {
+					setEmail(res.Ok);
+				} else {
+					setErr(res.Err);
+				}
 			} catch (err) {
-				setErr(err);
 				toast.error(err);
 			}
 		})

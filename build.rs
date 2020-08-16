@@ -40,8 +40,9 @@ fn main() -> std::io::Result<()> {
 };\n",
     )?;
     client_file.write_all(model::gen_typescript().as_bytes())?;
+    client_file.write_all(custom_error::gen_typescript().as_bytes())?;
     client_file
-        .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
+        .write_all(RootQuery::codegen(&CodegenOption::Client { error: "Error" }).as_bytes())?;
     // set database url
     let conf = config::load_config(&None).unwrap();
     println!("cargo:rustc-env=DATABASE_URL={}", conf.database.get_url());

@@ -1,26 +1,11 @@
-#[macro_use]
-extern crate derive_more;
-
 mod bin_util;
-#[path = "../api/model.rs"]
-mod model;
-#[path = "../api/query.rs"]
-mod query;
 use carbonbond::{config::load_config, custom_error::Fallible};
-use chitin::{ChitinCodegen, CodegenOption};
-use query::RootQuery;
 use sqlx_beta::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};
 use sqlx_beta::{any::Any, AnyConnection, Connection};
-use std::fs::File;
-use std::io::Write;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 struct Arg {
-    #[structopt(short, long)]
-    frontend_chitin: bool,
-    #[structopt(short, long)]
-    backend_chitin: bool,
     #[structopt(short, long)]
     sqlx: bool,
     #[structopt(short, long)]
@@ -32,35 +17,6 @@ struct Arg {
 #[tokio::main]
 async fn main() -> Fallible<()> {
     let arg = Arg::from_args();
-    if arg.backend_chitin {
-        let mut server_file = File::create("src/api/api_trait.rs")?;
-        server_file.write_all(b"use async_trait::async_trait;\n")?;
-        server_file.write_all(b"use crate::api::query::*;\n")?;
-        server_file.write_all(b"use serde_json::error::Error;\n")?;
-        server_file.write_all(
-            RootQuery::codegen(&CodegenOption::Server {
-                error: "crate::custom_error::Error",
-                context: "&mut crate::Ctx",
-            })
-            .as_bytes(),
-        )?;
-    }
-
-    if arg.frontend_chitin {
-        let mut client_file = File::create("frontend/src/ts/api/api_trait.ts")?;
-        client_file.write_all(b"/*eslint-disable*/\n")?;
-        client_file.write_all(b"export type Option<T> = T | null;\n")?;
-        client_file.write_all(
-            b"export type Result<T, E> = {
-    'Ok': T
-} | {
-    'Err': E
-};\n",
-        )?;
-        client_file.write_all(model::gen_typescript().as_bytes())?;
-        client_file
-            .write_all(RootQuery::codegen(&CodegenOption::Client { error: "any" }).as_bytes())?;
-    }
     let conf = load_config(&None)?.database;
     if arg.sqlx {
         let mut cmd = std::process::Command::new("cargo");
