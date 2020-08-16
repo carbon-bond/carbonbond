@@ -18,6 +18,16 @@ pub enum UserQuery {
     QueryMe {},
     #[chitin(request, response = "Vec<super::model::Party>")]
     QueryMyPartyList {},
+
+    #[chitin(request, response = "()")]
+    SendSignupEmail { email: String },
+    #[chitin(request, response = "super::model::User")]
+    Signup {
+        user_name: String,
+        password: String,
+        token: String,
+    },
+
     #[chitin(request, response = "Option<super::model::User>")]
     Login { user_name: String, password: String },
     #[chitin(request, response = "()")]

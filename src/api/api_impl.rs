@@ -1,5 +1,6 @@
 use super::api_trait;
 use super::model;
+use crate::custom_error::Error;
 use crate::custom_error::Fallible;
 use crate::db;
 use crate::redis;
@@ -231,6 +232,31 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
 pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
+    async fn send_signup_email(
+        &self,
+        context: &mut crate::Ctx,
+        email: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        let token = db::user::create_signup_token(&email).await;
+        // TODO: 寄信！
+        Ok(())
+    }
+    async fn signup(
+        &self,
+        context: &mut crate::Ctx,
+        password: String,
+        token: String,
+        user_name: String,
+    ) -> Result<super::model::User, crate::custom_error::Error> {
+        db::user::signup_with_token(&user_name, &password, &token).await?;
+        self.login(context, password, user_name.clone())
+            .await?
+            .ok_or(Error::new_internal(format!(
+                "創完帳號 {} 就無法登入？",
+                user_name
+            )))
+    }
+
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
         if let Some(id) = context.get_id() {
             Ok(Some(db::user::get_by_id(id).await?))

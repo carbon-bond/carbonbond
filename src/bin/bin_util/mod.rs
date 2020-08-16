@@ -20,7 +20,7 @@ pub fn run_cmd(
     let mut child = cmd
         .stdout(Stdio::piped())
         .spawn()
-        .map_err(|e| Error::new_internal(format!("執行 {} 指令失敗", program), e))?;
+        .map_err(|e| e.context(format!("執行 {} 指令失敗", program)))?;
 
     if let Some(stdout) = &mut child.stdout {
         let mut out_str = vec![];
@@ -46,7 +46,7 @@ pub fn run_cmd(
             )))
         }
     } else {
-        return Err(Error::new_internal_without_source(format!(
+        return Err(Error::new_internal(format!(
             "無法取得 {} 之標準輸出",
             program
         )));

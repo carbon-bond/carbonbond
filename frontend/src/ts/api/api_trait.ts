@@ -22,6 +22,12 @@ export abstract class RootQueryFetcher {
     async queryMyPartyList(): Promise<Result<Array<Party>, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyPartyList": {  } } }));
     }
+    async sendSignupEmail(email: string): Promise<Result<null, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email } } }));
+    }
+    async signup(password: string, token: string, user_name: string): Promise<Result<User, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "Signup": { password, token, user_name } } }));
+    }
     async login(password: string, user_name: string): Promise<Result<Option<User>, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "Login": { password, user_name } } }));
     }

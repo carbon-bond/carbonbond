@@ -15,8 +15,8 @@ pub enum DataType {
     Party,
     #[display(fmt = "使用者")]
     User,
-    #[display(fmt = "邀請碼")]
-    InviteCode,
+    #[display(fmt = "註冊碼")]
+    SignupToken,
 }
 
 #[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq)]
@@ -69,19 +69,8 @@ impl Error {
             _ => None,
         }
     }
-    /// 若需要對原始錯誤打上更清楚的訊息可使用本函式
-    pub fn new_internal<S, E>(msg: S, source: E) -> Error
-    where
-        S: ToString,
-        E: StdError + Sync + Send + 'static,
-    {
-        Error::InternalError {
-            msg: vec![msg.to_string()],
-            source: Some(Box::new(source)),
-        }
-    }
     /// 原始錯誤無法被正確封裝才應使用本函式
-    pub fn new_internal_without_source<S: ToString>(msg: S) -> Error {
+    pub fn new_internal<S: ToString>(msg: S) -> Error {
         Error::InternalError {
             msg: vec![msg.to_string()],
             source: None,

@@ -18,6 +18,14 @@ CREATE TABLE users (
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
+-- 註冊用
+CREATE TABLE signup_tokens (
+  id bigserial PRIMARY KEY,
+  email text NOT NULL UNIQUE,
+  token text NOT NULL UNIQUE,
+  create_time timestamptz NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX users_email_index ON users (email);
 
 -- 註冊邀請
