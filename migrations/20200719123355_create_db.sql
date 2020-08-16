@@ -7,14 +7,13 @@ CREATE TABLE images (
 -- 使用者
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
-  name text NOT NULL UNIQUE,
+  user_name text NOT NULL UNIQUE,
   email text NOT NULL UNIQUE,
-  energy int NOT NULL DEFAULT 0,
   sentence text NOT NULL DEFAULT '',
   avatar bigint REFERENCES images (id) NULL,
-  invitation_credit int NOT NULL DEFAULT 3,
   password_hashed bytea NOT NULL,
   salt bytea NOT NULL,
+  energy bigint NOT NULL DEFAULT 0,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -161,4 +160,63 @@ CREATE TABLE user_relations (
   kind user_relation_kind NOT NULL,
   UNIQUE (from_user, to_user)
 );
+
+CREATE FUNCTION user_with_relations ()
+  RETURNS TABLE (
+    id bigint,
+    user_name text,
+    sentence text,
+    energy bigint,
+    hated_count bigint,
+    hating_count bigint,
+    followed_count bigint,
+    following_count bigint
+  )
+  AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    users.id,
+    users.user_name,
+    users.sentence,
+    users.energy,
+    (
+      SELECT
+        COUNT(*)
+      FROM
+        user_relations
+      WHERE
+        to_user = users.id
+        AND (kind = 'hate'
+          OR kind = 'openly_hate')) AS hated_count,
+    (
+      SELECT
+        COUNT(*)
+      FROM
+        user_relations
+      WHERE
+        to_user = users.id
+        AND kind = 'follow') AS followed_count,
+    (
+      SELECT
+        COUNT(*)
+      FROM
+        user_relations
+      WHERE
+        from_user = users.id
+        AND (kind = 'hate'
+          OR kind = 'openly_hate')) AS hating_count,
+    (
+      SELECT
+        COUNT(*)
+      FROM
+        user_relations
+      WHERE
+        from_user = users.id
+        AND kind = 'follow') AS following_count
+  FROM
+    users;
+END
+$$
+LANGUAGE plpgsql;
 

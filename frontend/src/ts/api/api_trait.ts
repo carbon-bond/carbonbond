@@ -5,7 +5,7 @@ export type Result<T, E> = {
 } | {
     'Err': E
 };
-export type User = {     id: number; user_name: string; energy: number; sentence: string;     invitation_credit: number; hated_count: number; followed_count:     number; hating_count: number; following_count: number };
+export type User = {     id: number; user_name: string; energy: number; sentence: string;     hated_count: number; followed_count: number; hating_count: number;     following_count: number };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export type Board = {     id: number; board_name: string; create_time: string; title: string; detail: string; force: string; ruling_party_id: number;     popularity: number };
 export type BoardName = { id: number; board_name: string };
