@@ -4,6 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { useInputValue } from './utils';
 import '../css/signup_page.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
+import { UserState } from './global_state/user';
 
 type Props = RouteComponentProps<{ signup_token: string }>;
 
@@ -14,6 +15,7 @@ export function SignupPage(props: Props): JSX.Element {
 	let [email, setEmail] = React.useState<null | string>(null);
 	let [err, setErr] = React.useState<any>(null);
 	let signup_token = props.match.params.signup_token;
+	let { getLoginState } = UserState.useContainer();
 
 	async function signup_request(name: string, password: string, repeated_password: string): Promise<void> {
 		try {
@@ -22,6 +24,7 @@ export function SignupPage(props: Props): JSX.Element {
 			}
 			await API_FETCHER.signup(password, signup_token, name);
 			props.history.push('/app/');
+			getLoginState();
 			toast('註冊成功');
 		} catch (err) {
 			toast.error(err);
