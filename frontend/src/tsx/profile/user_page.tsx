@@ -213,7 +213,7 @@ function UserPage(props: Props): JSX.Element {
 				setArticles(more_articles);
 				setUser(unwrap(user));
 			} catch (err) {
-				toast(err);
+				toast.error(err);
 			}
 		});
 	}, [user_name]);

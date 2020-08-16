@@ -27,6 +27,8 @@ pub enum UserQuery {
         password: String,
         token: String,
     },
+    #[chitin(request, response = "String")]
+    QueryEmailByToken { token: String },
 
     #[chitin(request, response = "Option<super::model::User>")]
     Login { user_name: String, password: String },

@@ -28,6 +28,9 @@ export abstract class RootQueryFetcher {
     async signup(password: string, token: string, user_name: string): Promise<Result<User, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "Signup": { password, token, user_name } } }));
     }
+    async queryEmailByToken(token: string): Promise<Result<string, any>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryEmailByToken": { token } } }));
+    }
     async login(password: string, user_name: string): Promise<Result<Option<User>, any>> {
         return JSON.parse(await this.fetchResult({ "User": { "Login": { password, user_name } } }));
     }

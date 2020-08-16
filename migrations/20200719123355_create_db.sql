@@ -19,9 +19,8 @@ CREATE TABLE users (
 
 -- 註冊用
 CREATE TABLE signup_tokens (
-  id bigserial PRIMARY KEY,
+  token text NOT NULL PRIMARY KEY,
   email text NOT NULL UNIQUE,
-  token text NOT NULL UNIQUE,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 

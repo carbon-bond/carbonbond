@@ -39,6 +39,9 @@ function App(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
 		return <div className="mainBody" ref={ref => setEmitter(ref)}>
 			<Switch>
+				<Route exact path="/app/signup/:signup_token" render={props => (
+					<SignupPage {...props} />
+				)} />
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
 				)} />
@@ -72,7 +75,7 @@ function App(): JSX.Element {
 						let boards = unwrap(result);
 						load(boards);
 					} catch (err) {
-						toast(err);
+						toast.error(err);
 					}
 				} else {
 					unload();

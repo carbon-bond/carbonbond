@@ -1,7 +1,6 @@
 use super::api_trait;
 use super::model;
-use crate::custom_error::Error;
-use crate::custom_error::Fallible;
+use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::redis;
 use crate::util::HasBoardProps;
@@ -255,6 +254,17 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
                 "創完帳號 {} 就無法登入？",
                 user_name
             )))
+    }
+    async fn query_email_by_token(
+        &self,
+        context: &mut crate::Ctx,
+        token: String,
+    ) -> Result<String, crate::custom_error::Error> {
+        if let Some(email) = db::user::get_email_by_token(&token).await? {
+            Ok(email)
+        } else {
+            Err(ErrorCode::NotFound(DataType::SignupToken, token).into())
+        }
     }
 
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {

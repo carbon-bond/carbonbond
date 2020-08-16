@@ -64,7 +64,7 @@ pub async fn create_signup_token(email: &str) -> Fallible<String> {
     .await?;
     Ok(token)
 }
-async fn get_email_by_token(token: &str) -> Fallible<Option<String>> {
+pub async fn get_email_by_token(token: &str) -> Fallible<Option<String>> {
     let pool = get_pool();
     let record = sqlx::query!("SELECT email FROM signup_tokens WHERE token = $1", token)
         .fetch_optional(pool)
@@ -72,9 +72,15 @@ async fn get_email_by_token(token: &str) -> Fallible<Option<String>> {
     Ok(record.map(|r| r.email))
 }
 pub async fn signup_with_token(name: &str, password: &str, token: &str) -> Fallible<i64> {
+    log::trace!("使用者用註冊碼註冊");
     let email = get_email_by_token(token).await?;
     if let Some(email) = email {
-        signup(name, password, &email).await
+        let pool = get_pool();
+        let id = signup(name, password, &email).await?;
+        sqlx::query!("DELETE FROM signup_tokens WHERE token = $1", token)
+            .execute(pool)
+            .await?;
+        Ok(id)
     } else {
         Err(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).into())
     }
