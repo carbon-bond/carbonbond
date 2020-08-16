@@ -24,6 +24,14 @@ pub async fn get_by_id(id: i64) -> Fallible<User> {
     Ok(user)
 }
 
+pub async fn email_used(email: &str) -> Fallible<bool> {
+    let pool = get_pool();
+    let arr = sqlx::query!("SELECT 1 as t from users where email = $1 LIMIT 1", email)
+        .fetch_all(pool)
+        .await?;
+    Ok(arr.len() != 0)
+}
+
 pub async fn get_by_name(name: &str) -> Fallible<User> {
     let pool = get_pool();
     let user = sqlx::query_as!(

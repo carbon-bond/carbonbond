@@ -1,7 +1,7 @@
-use super::api_trait;
-use super::model;
+use super::{api_trait, model};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
+use crate::email;
 use crate::redis;
 use crate::util::HasBoardProps;
 use crate::Context;
@@ -237,8 +237,11 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         email: String,
     ) -> Result<(), crate::custom_error::Error> {
         let token = db::user::create_signup_token(&email).await?;
-        // TODO: 寄信！
-        Ok(())
+        if db::user::email_used(&email).await? {
+            Err(ErrorCode::DuplicateRegister.into())
+        } else {
+            email::send_signup_email(&token, &email)
+        }
     }
     async fn signup(
         &self,
