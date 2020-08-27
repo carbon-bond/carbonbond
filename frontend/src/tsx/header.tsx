@@ -54,7 +54,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		async function signup_request(email: string): Promise<void> {
 			try {
 				if (!isEmail(email)) {
-					throw "信箱格式異常";
+					throw '信箱格式異常';
 				}
 				unwrap(await API_FETCHER.sendSignupEmail(email));
 				setSignupSent(true);

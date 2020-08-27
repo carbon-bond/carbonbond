@@ -136,8 +136,8 @@ function EditorBody(): JSX.Element {
 		API_FETCHER.createArticle(
 			parseInt(data.board_id),
 			data.category_name,
+			data.title,
 			JSON.stringify(data.content),
-			data.title
 		);
 	};
 

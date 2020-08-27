@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { RouteComponentProps } from 'react-router';
 import { useInputValue } from './utils';
 import '../css/signup_page.css';
-import { API_FETCHER, unwrap } from '../ts/api/api';
+import { API_FETCHER } from '../ts/api/api';
 import { Error } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 
@@ -43,8 +43,8 @@ export function SignupPage(props: Props): JSX.Element {
 			} catch (err) {
 				toast.error(err);
 			}
-		})
-	}, []);
+		});
+	}, [signup_token]);
 
 	if (email) {
 		return <div styleName="signupPage">

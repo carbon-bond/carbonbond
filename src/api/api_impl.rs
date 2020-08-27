@@ -144,6 +144,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             board_id, category_name, content
         );
         let author_id = context.get_id_strict()?;
+        db::article::create(author_id, board_id, category_name, title, content).await?;
         Ok(())
     }
 }

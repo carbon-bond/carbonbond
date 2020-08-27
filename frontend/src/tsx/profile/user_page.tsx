@@ -199,7 +199,7 @@ function UserPage(props: Props): JSX.Element {
 	const { user_state } = UserState.useContainer();
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
-	const [profile, setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
+	const [profile, _setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
 	const [user, setUser] = React.useState<User | null>(null);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
