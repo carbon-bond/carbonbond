@@ -128,13 +128,17 @@ function EditorBody(): JSX.Element {
 		[board]
 	);
 
-
 	if (editor_panel_data == null) { return <></>; }
 
 	// @ts-ignore
 	const onSubmit = (data): void => {
 		console.log(data);
-		API_FETCHER.createArticle(parseInt(data.board_id), data.category_name, JSON.stringify(data.content));
+		API_FETCHER.createArticle(
+			parseInt(data.board_id),
+			data.category_name,
+			JSON.stringify(data.content),
+			data.title
+		);
 	};
 
 	return <div styleName="editorBody">
@@ -182,6 +186,8 @@ function EditorBody(): JSX.Element {
 			<input
 				styleName="articleTitle"
 				placeholder="文章標題"
+				name="title"
+				ref={register()}
 				onChange={(evt) => {
 					setEditorPanelData({ ...editor_panel_data, title: evt.target.value });
 				}}

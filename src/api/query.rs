@@ -72,6 +72,7 @@ pub enum ArticleQuery {
     CreateArticle {
         board_id: i64,
         category_name: String,
+        title: String,
         content: String,
     },
 }

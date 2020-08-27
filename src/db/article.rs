@@ -5,7 +5,6 @@ use crate::custom_error::{DataType, Fallible};
 pub struct Article {
     pub id: i64,
     pub board_id: i64,
-    pub root_id: i64,
     pub category_id: i64,
     pub title: String,
     pub author_id: i64,
@@ -24,6 +23,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
         .to_fallible(&id.to_string())?;
     Ok(article)
 }
+
 pub async fn get_by_board_id(board_id: i64, offset: i64, limit: i64) -> Fallible<Vec<Article>> {
     let pool = get_pool();
     let articles = sqlx::query_as!(
@@ -38,32 +38,64 @@ pub async fn get_by_board_id(board_id: i64, offset: i64, limit: i64) -> Fallible
     Ok(articles)
 }
 
+#[derive(Debug)]
+pub struct Category {
+    pub id: i64,
+    pub board_id: i64,
+    pub category_name: String,
+    pub version: i64,
+    pub source: String,
+    pub create_time: chrono::DateTime<chrono::Utc>,
+}
+impl DBObject for Category {
+    const TYPE: DataType = DataType::Category;
+}
+
+async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<Category> {
+    let pool = get_pool();
+    let category = sqlx::query_as!(
+        Category,
+        "
+        SELECT * FROM categories WHERE board_id = $1 AND category_name = $2
+        ORDER BY version DESC
+        LIMIT 1
+        ",
+        board_id,
+        category_name
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(category)
+}
+
 pub async fn create(
-    article: &Article,
-    str_content: Vec<String>,
-    int_content: Vec<i32>,
+    author_id: i64,
+    board_id: i64,
+    category_name: String,
+    title: String,
+    _content: String,
 ) -> Fallible<i64> {
     // TODO: 交易？
     let pool = get_pool();
+    let category = get_newest_category(board_id, category_name).await?;
     let article_id = sqlx::query!(
         "
-        INSERT INTO articles (board_id, root_id, title, category_id, author_id)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id
+        INSERT INTO articles (author_id, board_id, title, category_id)
+        VALUES ($1, $2, $3, $4) RETURNING id
         ",
-        article.board_id,
-        article.root_id,
-        article.title,
-        article.category_id,
-        article.author_id,
+        author_id,
+        board_id,
+        title,
+        category.id,
     )
     .fetch_one(pool)
     .await?
     .id;
-    article_content::create(&article_content::ArticleContent {
-        article_id,
-        str_content,
-        int_content,
-    })
-    .await?;
+    // article_content::create(&article_content::ArticleContent {
+    //     article_id,
+    //     str_content,
+    //     int_content,
+    // })
+    // .await?;
     Ok(article_id)
 }

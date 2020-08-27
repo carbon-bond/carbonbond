@@ -136,12 +136,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
         category_name: String,
+        title: String,
         content: String,
     ) -> Result<(), crate::custom_error::Error> {
         println!(
             "發表文章： 看板 {}, 分類 {}, 內容 {}",
             board_id, category_name, content
         );
+        let author_id = context.get_id_strict()?;
         Ok(())
     }
 }

@@ -67,11 +67,11 @@ CREATE INDEX boards_create_time_index ON boards (create_time);
 -- 類別定義
 CREATE TABLE categories (
   id bigserial PRIMARY KEY,
-  category_name text NOT NULL,
   board_id bigint REFERENCES boards (id) NOT NULL,
-  body text NOT NULL,
-  is_active boolean NOT NULL DEFAULT TRUE,
-  replacing bigint REFERENCES categories (id)
+  category_name text NOT NULL,
+  version bigint,
+  source text NOT NULL,
+  create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX categories_category_name_index ON categories (category_name);
@@ -79,11 +79,10 @@ CREATE INDEX categories_category_name_index ON categories (category_name);
 -- 文章
 CREATE TABLE articles (
   id bigserial PRIMARY KEY,
+  author_id bigint REFERENCES users (id) NOT NULL,
   board_id bigint REFERENCES boards (id) NOT NULL,
-  root_id bigint NOT NULL, -- 應該要 ref 自己
   category_id bigint REFERENCES categories (id) NOT NULL,
   title text NOT NULL,
-  author_id bigint REFERENCES users (id) NOT NULL,
   show_in_list boolean NOT NULL DEFAULT TRUE,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );

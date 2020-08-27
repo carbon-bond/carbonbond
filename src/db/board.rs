@@ -1,6 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{Board, BoardName, BoardOverview, NewBoard};
 use crate::custom_error::{DataType, Fallible};
+use force::parser::parse;
 
 impl DBObject for Board {
     const TYPE: DataType = DataType::Board;
@@ -68,8 +69,13 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
 pub async fn create(board: &NewBoard) -> Fallible<i64> {
     // TODO: 交易？
     let pool = get_pool();
-    let board_id= sqlx::query!(
-        "INSERT INTO boards (board_name, detail, title, force, ruling_party_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    let force = parse(&board.force)?;
+    let board_id = sqlx::query!(
+        "
+        INSERT INTO boards (board_name, detail, title, force, ruling_party_id)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id
+        ",
         board.board_name,
         board.detail,
         board.title,
@@ -79,6 +85,21 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     .fetch_one(pool)
     .await?
     .id;
+    for (name, category) in &force.categories {
+        let _category_id = sqlx::query!(
+            "
+        INSERT INTO categories (board_id, category_name, version, source)
+        VALUES ($1, $2, 1, $3)
+        RETURNING id
+        ",
+            board_id,
+            name,
+            category.source
+        )
+        .fetch_one(pool)
+        .await?
+        .id;
+    }
     super::party::change_board(board.ruling_party_id, board_id).await?;
     Ok(board_id)
 }
