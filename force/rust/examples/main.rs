@@ -40,7 +40,7 @@ fn main() {
     for token in &tokens {
         println!("{:?}", token);
     }
-    let mut parser = Parser::new(tokens);
-    let force = parser.parse();
+    let mut parser = Parser::new(source);
+    let force = parser.parse().unwrap();
     println!("{:#?}", force);
 }

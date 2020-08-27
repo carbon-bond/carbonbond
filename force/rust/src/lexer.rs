@@ -1,4 +1,4 @@
-use logos::{Lexer, Logos};
+use logos::{Lexer, Logos, Span};
 
 // 先藉助 logos 函式庫自動生成 LogoToken ，再將之轉成自定義的 Token
 
@@ -59,14 +59,11 @@ fn get_string(lex: &mut Lexer<Token>) -> String {
     lex.slice().to_string()
 }
 
-pub fn lexer(s: &str) -> Vec<Token> {
-    let mut lex = Token::lexer(s);
-    let mut tokens = vec![];
-    while let Some(token) = lex.next() {
-        tokens.push(token);
-    }
-    tokens.push(Token::End);
-    return tokens;
+pub fn lexer(s: &str) -> Vec<(Token, Span)> {
+    let lex = Token::lexer(s);
+    let mut ret: Vec<(Token, Span)> = lex.spanned().collect();
+    ret.push((Token::End, s.len()..s.len()));
+    ret
 }
 
 #[cfg(test)]

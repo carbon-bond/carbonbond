@@ -1,25 +1,29 @@
 use crate::lexer::{lexer, Token};
 use crate::DataType;
 use crate::{Bondee, Tag};
+use logos::Span;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 
-#[derive(Debug, PartialEq)]
-struct Field {
-    datatype: DataType,
-    name: String,
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Field {
+    pub datatype: DataType,
+    pub name: String,
 }
 
-#[derive(Debug, PartialEq)]
-struct Category {
-    name: String,
-    fields: Vec<Field>,
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Category {
+    pub source: String,
+    pub name: String,
+    pub fields: Vec<Field>,
 }
 
 type Categories = HashMap<String, Category>;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Force {
-    categories: Categories,
+    pub categories: Categories,
 }
 
 #[derive(Debug)]
@@ -28,25 +32,36 @@ pub enum ForceError {
     NoMeet { expect: String, fact: Token },
 }
 
+impl fmt::Display for ForceError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "力語言錯誤")
+    }
+}
+
+impl std::error::Error for ForceError {}
+
 pub type ForceResult<T> = Result<T, ForceError>;
 
 pub struct Parser {
-    tokens: Vec<Token>,
+    tokens: Vec<(Token, Span)>,
     count: usize,
     cur: Token,
+    source: String,
 }
 
 impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Parser {
+    pub fn new(source: &str) -> Parser {
+        let tokens = lexer(source);
         return Parser {
             count: 0,
-            cur: tokens[0].clone(),
+            cur: tokens[0].0.clone(),
             tokens: tokens,
+            source: source.to_owned(),
         };
     }
     fn advance(&mut self) {
         self.count += 1;
-        self.cur = self.tokens[self.count].clone()
+        self.cur = self.tokens[self.count].clone().0
     }
     fn eat(&mut self, expect: Token) -> ForceResult<()> {
         if self.cur == expect {
@@ -163,11 +178,9 @@ impl Parser {
         }
     }
     fn parse_category(&mut self) -> ForceResult<Category> {
+        let start = self.tokens[self.count].1.start;
         let name = self.get_identifier()?;
-        let mut category = Category {
-            name,
-            fields: Vec::new(),
-        };
+        let mut fields = Vec::new();
         self.eat(Token::LeftCurlyBrace)?;
         loop {
             if let Token::RightCurlyBrace = self.cur {
@@ -175,11 +188,16 @@ impl Parser {
             } else {
                 let datatype = self.parse_datatype()?;
                 let name = self.get_identifier()?;
-                category.fields.push(Field { datatype, name });
+                fields.push(Field { datatype, name });
             }
         }
+        let end = self.tokens[self.count].1.end;
         self.eat(Token::RightCurlyBrace)?;
-        Ok(category)
+        Ok(Category {
+            name,
+            fields,
+            source: self.source[start..end].to_string(),
+        })
     }
     fn parse_categories(&mut self) -> ForceResult<Categories> {
         let mut categories = HashMap::new();
@@ -200,8 +218,7 @@ impl Parser {
 }
 
 pub fn parse(source: &str) -> ForceResult<Force> {
-    let tokens = lexer(source);
-    Parser::new(tokens).parse()
+    Parser::new(source).parse()
 }
 
 #[cfg(test)]
@@ -224,7 +241,8 @@ mod test {
                         datatype: DataType::OneLine,
                         name: "網址".to_owned()
                     }
-                ]
+                ],
+                source: "新聞 {單行 記者 單行 網址}".to_owned()
             }
         );
         Ok(())
