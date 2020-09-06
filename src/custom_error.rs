@@ -10,8 +10,12 @@ mod inner {
     pub enum DataType {
         #[display(fmt = "分類")]
         Category,
-        #[display(fmt = "內容")]
-        Content,
+        #[display(fmt = "整數欄位")]
+        IntField,
+        #[display(fmt = "文字欄位")]
+        StringField,
+        #[display(fmt = "鍵結欄位")]
+        BondField,
         #[display(fmt = "看板")]
         Board,
         #[display(fmt = "文章")]
@@ -36,8 +40,8 @@ mod inner {
         DuplicateRegister,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
-        #[display(fmt = "其它")]
-        Other,
+        #[display(fmt = "其它： {}", "_0")]
+        Other(String),
     }
     impl ErrorCode {
         pub fn context<S: ToString>(self, context: S) -> Error {

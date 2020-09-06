@@ -90,11 +90,23 @@ CREATE TABLE articles (
 CREATE INDEX articles_create_time_name_index ON articles (create_time);
 
 -- 文章內容
-CREATE TABLE article_contents (
+CREATE TABLE article_string_fields (
   id bigserial PRIMARY KEY,
   article_id bigint REFERENCES articles (id) NOT NULL,
-  str_content text[15] NOT NULL,
-  int_content int[15] NOT NULL
+  name text NOT NULL,
+  value text NOT NULL
+);
+CREATE TABLE article_int_fields (
+  id bigserial PRIMARY KEY,
+  article_id bigint REFERENCES articles (id) NOT NULL,
+  name text NOT NULL,
+  value bigint NOT NULL
+);
+CREATE TABLE article_bond_fields (
+  id bigserial PRIMARY KEY,
+  article_id bigint REFERENCES articles (id) NOT NULL,
+  name text NOT NULL,
+  value bigint REFERENCES articles (id) NOT NULL
 );
 
 -- 連接關係

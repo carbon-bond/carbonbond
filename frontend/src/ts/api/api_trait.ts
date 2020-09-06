@@ -14,14 +14,14 @@ export type Article = {     id: number; category: string; title: string; energy:
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", OpenlyHate = "OpenlyHate" };
 export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
-export enum DataType {     Category = "Category", Content = "Content", Board = "Board", Article =     "Article", Party = "Party", User = "User", SignupToken = "SignupToken" };
+export enum DataType {     Category = "Category", IntField = "IntField", StringField = "StringField",     BondField = "BondField", Board = "Board", Article = "Article", Party =     "Party", User = "User", SignupToken = "SignupToken" };
 export type ErrorCode = 
  | "NeedLogin" 
  | "PermissionDenied" 
  | { NotFound: [DataType, string] } 
  | "DuplicateRegister" 
  | "ParsingJson" 
- | "Other";
+ | { Other: string };
 export type Error = 
  | { OperationError: { msg: string [] } } 
  | { LogicError: { msg: string []; code: ErrorCode } } 

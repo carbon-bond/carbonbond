@@ -68,12 +68,17 @@ async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<C
     Ok(category)
 }
 
+fn parse_category(source: &str) -> Fallible<force::parser::Category> {
+    let f = force::parser::parse(source)?;
+    Ok(f.categories.into_iter().next().unwrap().1)
+}
+
 pub async fn create(
     author_id: i64,
     board_id: i64,
     category_name: String,
     title: String,
-    _content: String,
+    content: String,
 ) -> Fallible<i64> {
     // TODO: 交易？
     let pool = get_pool();
@@ -91,11 +96,6 @@ pub async fn create(
     .fetch_one(pool)
     .await?
     .id;
-    // article_content::create(&article_content::ArticleContent {
-    //     article_id,
-    //     str_content,
-    //     int_content,
-    // })
-    // .await?;
+    article_content::create(article_id, &content, parse_category(&category.source)?).await?;
     Ok(article_id)
 }
