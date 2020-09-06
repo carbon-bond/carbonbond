@@ -1,40 +1,59 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
+use crate::api::model::{Article, ArticleMeta};
 use crate::custom_error::{DataType, Fallible};
 
-#[derive(Debug)]
-pub struct Article {
-    pub id: i64,
-    pub board_id: i64,
-    pub category_id: i64,
-    pub title: String,
-    pub author_id: i64,
-    pub show_in_list: bool,
-    pub create_time: chrono::DateTime<chrono::Utc>,
-}
-impl DBObject for Article {
+impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<Article> {
     let pool = get_pool();
-    let article = sqlx::query_as!(Article, "SELECT * FROM articles WHERE id = $1", id)
-        .fetch_one(pool)
-        .await
-        .to_fallible(&id.to_string())?;
-    Ok(article)
+    let meta = sqlx::query_as!(
+        ArticleMeta,
+        "
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name FROM articles
+        INNER JOIN users on articles.author_id = users.id
+        INNER JOIN boards on articles.board_id = boards.id
+        INNER JOIN categories on articles.category_id = categories.id
+        WHERE articles.id = $1
+        ",
+        id
+    )
+    .fetch_one(pool)
+    .await
+    .to_fallible(&id.to_string())?;
+    let content = article_content::get_by_article_id(id).await?;
+    Ok(Article { meta, content })
 }
 
-pub async fn get_by_board_id(board_id: i64, offset: i64, limit: i64) -> Fallible<Vec<Article>> {
+pub async fn get_by_board_name(
+    board_name: &str,
+    offset: i64,
+    limit: usize,
+) -> Fallible<Vec<Article>> {
     let pool = get_pool();
-    let articles = sqlx::query_as!(
-        Article,
-        "SELECT * FROM articles WHERE board_id = $1 LIMIT $2 OFFSET $3",
-        board_id,
-        limit,
+    let metas = sqlx::query_as!(
+        ArticleMeta,
+        "
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name FROM articles
+        INNER JOIN users on articles.author_id = users.id
+        INNER JOIN boards on articles.board_id = boards.id
+        INNER JOIN categories on articles.category_id = categories.id
+        WHERE boards.board_name = $1 LIMIT $2 OFFSET $3
+        ",
+        board_name,
+        limit as i64,
         offset
     )
     .fetch_all(pool)
     .await?;
+
+    // XXX: n + 1 問題
+    let mut articles = Vec::new();
+    for meta in metas.into_iter() {
+        let content = article_content::get_by_article_id(meta.id).await?;
+        articles.push(Article { meta, content });
+    }
     Ok(articles)
 }
 

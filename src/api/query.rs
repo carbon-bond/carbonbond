@@ -63,8 +63,8 @@ pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::Article>")]
     QueryArticleList {
         count: usize,
-        board_name: Option<String>,
         author_name: Option<String>,
+        board_name: Option<String>,
     },
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },

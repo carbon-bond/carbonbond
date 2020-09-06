@@ -10,7 +10,8 @@ export type Party = {     id: number; party_name: string; board_id: number | nul
 export type Board = {     id: number; board_name: string; create_time: string; title: string; detail: string; force: string; ruling_party_id: number;     popularity: number };
 export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; title: string; detail: string; force: string;     ruling_party_id: number };
-export type Article = {     id: number; category: string; title: string; energy: number;     create_time: string; root_id: number; author_id: number;     author_name: string; content: string []; board_id: number;     board_name: string };
+export type ArticleMeta = {     id: number; board_id: number; board_name: string; category_id:     number; category_name: string; title: string; author_id: number;     author_name: string; show_in_list: boolean; create_time: string };
+export type Article = { meta: ArticleMeta; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", OpenlyHate = "OpenlyHate" };
 export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
@@ -21,6 +22,7 @@ export type ErrorCode =
  | { NotFound: [DataType, string] } 
  | "DuplicateRegister" 
  | "ParsingJson" 
+ | "UnImplemented" 
  | { Other: string };
 export type Error = 
  | { OperationError: { msg: string [] } } 

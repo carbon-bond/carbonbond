@@ -6,7 +6,6 @@ use crate::redis;
 use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
-use chrono::Utc;
 
 #[derive(Default)]
 pub struct RootQueryRouter {
@@ -42,94 +41,23 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,
-        board_name: Option<String>,
         author_name: Option<String>,
+        board_name: Option<String>,
         count: usize,
     ) -> Fallible<Vec<model::Article>> {
-        Ok(vec![model::Article {
-                id: 1,
-                title: "公子獻頭".to_owned(),
-                content: vec!["荊軻，亦作荊柯，喜好讀書擊劍，為人慷慨俠義。後遊歷到燕國，被稱為「荊卿」，隨之由燕國的田光推薦給太子丹，拜為上卿。\n 秦滅趙國後，兵鋒直指燕國南界，太子丹震懼，與田光密謀，決定派荊軻入秦行刺秦王。荊軻獻計給太子丹，擬以秦國叛將樊於期之頭及燕督亢(今河北涿縣、易縣、固安一帶，是一塊肥沃的土地)地圖進獻秦王，伺機行刺。太子丹不忍殺樊於期，荊軻隻好私見樊於期，告以實情，樊於期為成全荊軻而自刎。".to_owned()],
-                author_id: 1,
-                author_name: "賈詡".to_owned(),
-                root_id: 1,
-                board_id: 1,
-                board_name: "國士無雙".to_owned(),
-                energy: 17,
-                create_time: Utc::now(),
-                category: "問題".to_owned(),
-            },model::Article {
-                id: 2,
-                title: "這高鐵也太晃了".to_owned(),
-                content: vec![
-                    "我問：那個男的是你前男友，對嗎？".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我問：你們昨天晚上睡一起是嗎？".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我問：上床了，對嗎？".to_owned(),
-                    "她猶豫。".to_owned(),
-                    "我說不要緊的承認吧。".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我說：昨天晚上我打電話的時候，你們正忙吧。".to_owned(),
-                    "她不說話。".to_owned(),
-                    "我感到天旋地轉，媽的，這高鐵也太晃了。".to_owned(),
-                ],
-                author_id: 2,
-                author_name: "賤人".to_owned(),
-                root_id: 1,
-                board_id: 1,
-                board_name: "綠帽文學".to_owned(),
-                energy: 17,
-                create_time: Utc::now(),
-                category: "問題".to_owned(),
-            }])
+        // TODO: 支援 author_name
+        match board_name {
+            Some(name) => Ok(db::article::get_by_board_name(&name, 0, count).await?),
+            _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
+        }
     }
     async fn query_article(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         id: i64,
     ) -> Result<model::Article, crate::custom_error::Error> {
-        if id == 1 {
-            Ok(model::Article {
-                id: 1,
-                title: "公子獻頭".to_owned(),
-                content: vec!["荊軻，亦作荊柯，喜好讀書擊劍，為人慷慨俠義。後遊歷到燕國，被稱為「荊卿」，隨之由燕國的田光推薦給太子丹，拜為上卿。\n 秦滅趙國後，兵鋒直指燕國南界，太子丹震懼，與田光密謀，決定派荊軻入秦行刺秦王。荊軻獻計給太子丹，擬以秦國叛將樊於期之頭及燕督亢(今河北涿縣、易縣、固安一帶，是一塊肥沃的土地)地圖進獻秦王，伺機行刺。太子丹不忍殺樊於期，荊軻隻好私見樊於期，告以實情，樊於期為成全荊軻而自刎。".to_owned()],
-                author_id: 1,
-                author_name: "賈詡".to_owned(),
-                root_id: 1,
-                board_id: 1,
-                board_name: "國士無雙".to_owned(),
-                energy: 17,
-                create_time: Utc::now(),
-                category: "問題".to_owned(),
-            })
-        } else {
-            Ok(model::Article {
-                id: 2,
-                title: "這高鐵也太晃了".to_owned(),
-                content: vec![
-                    "我問：那個男的是你前男友，對嗎？".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我問：你們昨天晚上睡一起是嗎？".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我問：上床了，對嗎？".to_owned(),
-                    "她猶豫。".to_owned(),
-                    "我說不要緊的承認吧。".to_owned(),
-                    "她點頭。".to_owned(),
-                    "我說：昨天晚上我打電話的時候，你們正忙吧。".to_owned(),
-                    "她不說話。".to_owned(),
-                    "我感到天旋地轉，媽的，這高鐵也太晃了。".to_owned(),
-                ],
-                author_id: 2,
-                author_name: "賤人".to_owned(),
-                root_id: 1,
-                board_id: 1,
-                board_name: "綠帽文學".to_owned(),
-                energy: 17,
-                create_time: Utc::now(),
-                category: "問題".to_owned(),
-            })
-        }
+        let article = db::article::get_by_id(id).await?;
+        Ok(article)
     }
     async fn create_article(
         &self,
@@ -155,7 +83,7 @@ pub struct PartyQueryRouter {}
 impl api_trait::PartyQueryRouter for PartyQueryRouter {
     async fn query_party(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         party_name: String,
     ) -> Fallible<model::Party> {
         db::party::get_by_name(&party_name).await
@@ -179,14 +107,14 @@ pub struct BoardQueryRouter {}
 impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_board_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         count: usize,
     ) -> Fallible<Vec<model::Board>> {
         db::board::get_all().await?.assign_props().await
     }
     async fn query_board_name_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
     ) -> Fallible<Vec<model::BoardName>> {
         db::board::get_all_board_names().await
     }
@@ -213,14 +141,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn query_subscribed_user_count(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         id: i64,
     ) -> Result<usize, crate::custom_error::Error> {
         db::subscribed_boards::get_subscribed_user_count(id).await
     }
     async fn query_hot_boards(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
         let board_ids = redis::hot_boards::get_hot_boards().await?;
         db::board::get_overview(&board_ids)
@@ -236,7 +164,7 @@ pub struct UserQueryRouter {}
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn send_signup_email(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         email: String,
     ) -> Result<(), crate::custom_error::Error> {
         let token = db::user::create_signup_token(&email).await?;
@@ -263,7 +191,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
     async fn query_email_by_token(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         token: String,
     ) -> Result<String, crate::custom_error::Error> {
         if let Some(email) = db::user::get_email_by_token(&token).await? {
@@ -286,7 +214,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
     async fn query_user(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         name: String,
     ) -> Result<super::model::User, crate::custom_error::Error> {
         db::user::get_by_name(&name).await

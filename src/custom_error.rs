@@ -40,6 +40,8 @@ mod inner {
         DuplicateRegister,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
+        #[display(fmt = "後端尚未實作")]
+        UnImplemented,
         #[display(fmt = "其它： {}", "_0")]
         Other(String),
     }

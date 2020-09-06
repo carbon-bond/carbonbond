@@ -69,7 +69,8 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	// const { editor_panel_data, openEditorPanel, addEdge }
 	// 	= EditorPanelState.useContainer();
 
-	const category_name = props.article.category;
+	const category_name = article.meta.category_name;
+	const content = JSON.parse(article.content);
 
 	// function onReplyClick(transfuse: Transfuse): void {
 	// 	if (editor_panel_data) { // 有文章在編輯中
@@ -99,21 +100,23 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	// }
 	return <div styleName="articlePage">
 		<ArticleHeader
-			user_name={article.author_name}
-			board_name={article.board_name}
-			date={new Date(article.create_time)} />
+			user_name={article.meta.author_name}
+			board_name={article.meta.board_name}
+			date={new Date(article.meta.create_time)} />
 		<ArticleLine
 			category_name={category_name}
-			title={article.title} />
+			title={article.meta.title} />
 		<div styleName="articleContent">
 			{
-				article.content.map((txt, i) => {
-					return <div key={i}>
-						{txt.split('\n').map(line => {
+				Object.keys(content).map(field_name => {
+					return <div key={field_name}>
+						<div>{field_name}:</div>
+						{content[field_name]}
+						{/* {txt.split('\n').map(line => {
 							return line.length == 0 ?
 								<br />
 								: <p key={line}>{line}</p>;
-						})}
+						})} */}
 					</div>;
 				})
 			}
@@ -152,7 +155,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		if (board_name) {
 			return <ArticleDisplayPage article={article} board_name={board_name}/>;
 		} else {
-			return <Redirect to={`/app/b/${article.board_name}/a/${article.id}`} />;
+			return <Redirect to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
 		}
 	} else {
 		return <div>找不到文章QQ</div>;

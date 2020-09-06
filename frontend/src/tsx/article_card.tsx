@@ -56,23 +56,23 @@ export function ArticleFooter(): JSX.Element {
 
 function ArticleCard(props: { article: Article }): JSX.Element {
 
-	const date = new Date(props.article.create_time);
+	const date = new Date(props.article.meta.create_time);
 	let user_name = '';
 	let category_name = '';
 	try {
-		user_name = props.article.author_name;
-		category_name = props.article.category;
+		user_name = props.article.meta.author_name;
+		category_name = props.article.meta.category_name;
 	} catch {
 		user_name = '未知';
 		category_name = '未知';
 	}
-	const url = `/app/b/${props.article.board_name}/a/${props.article.id}`;
+	const url = `/app/b/${props.article.meta.board_name}/a/${props.article.meta.id}`;
 	return (
 		<div styleName="articleContainer">
-			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
+			<ArticleHeader user_name={user_name} board_name={props.article.meta.board_name} date={date} />
 			<div styleName="articleBody">
 				<div styleName="leftPart">
-					<ArticleLine category_name={category_name} title={props.article.title} />
+					<ArticleLine category_name={category_name} title={props.article.meta.title} />
 					<div styleName="articleContent">
 						{props.article.content}
 					</div>

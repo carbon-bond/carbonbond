@@ -53,18 +53,22 @@ mod model {
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Article {
+    pub struct ArticleMeta {
         pub id: i64,
-        pub category: String, // XXX: ??
-        pub title: String,
-        pub energy: i32,
-        pub create_time: DateTime<Utc>,
-        pub root_id: u64,
-        pub author_id: u64,
-        pub author_name: String,
-        pub content: Vec<String>,
-        pub board_id: u64,
+        pub board_id: i64,
         pub board_name: String,
+        pub category_id: i64,
+        pub category_name: String,
+        pub title: String,
+        pub author_id: i64,
+        pub author_name: String,
+        pub show_in_list: bool,
+        pub create_time: chrono::DateTime<chrono::Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Article {
+        pub meta: ArticleMeta,
+        pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BoardOverview {

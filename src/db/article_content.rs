@@ -1,7 +1,8 @@
-use super::{get_pool, DBObject, ToFallible};
+use super::{get_pool, DBObject};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use force::parser::Category;
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub struct ArticleIntField {
@@ -33,7 +34,21 @@ impl DBObject for ArticleBondField {
 
 pub async fn get_by_article_id(id: i64) -> Fallible<String> {
     let pool = get_pool();
-    Ok("".to_owned())
+    let mut kvs: HashMap<String, Value> = HashMap::new();
+    let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
+        ArticleStringField,
+        "
+        SELECT article_id, name, value FROM article_string_fields
+        WHERE article_id = $1;
+        ",
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    for field in string_fields.into_iter() {
+        kvs.insert(field.name, Value::String(field.value));
+    }
+    Ok(serde_json::to_string(&kvs)?)
 }
 
 fn mismatch_error(field: &force::parser::Field) -> Fallible<()> {
