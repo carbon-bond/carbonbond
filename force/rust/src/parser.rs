@@ -1,46 +1,6 @@
 use crate::lexer::{lexer, Token};
-use crate::DataType;
-use crate::{Bondee, Tag};
+use crate::*;
 use logos::Span;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fmt;
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Field {
-    pub datatype: DataType,
-    pub name: String,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Category {
-    pub source: String,
-    pub name: String,
-    pub fields: Vec<Field>,
-}
-
-type Categories = HashMap<String, Category>;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Force {
-    pub categories: Categories,
-}
-
-#[derive(Debug)]
-pub enum ForceError {
-    NonExpect { expect: Token, fact: Token },
-    NoMeet { expect: String, fact: Token },
-}
-
-impl fmt::Display for ForceError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "力語言錯誤")
-    }
-}
-
-impl std::error::Error for ForceError {}
-
-pub type ForceResult<T> = Result<T, ForceError>;
 
 pub struct Parser {
     tokens: Vec<(Token, Span)>,
@@ -177,7 +137,7 @@ impl Parser {
             }),
         }
     }
-    fn parse_category(&mut self) -> ForceResult<Category> {
+    pub fn parse_category(&mut self) -> ForceResult<Category> {
         let start = self.tokens[self.count].1.start;
         let name = self.get_identifier()?;
         let mut fields = Vec::new();
@@ -221,30 +181,36 @@ pub fn parse(source: &str) -> ForceResult<Force> {
     Parser::new(source).parse()
 }
 
+pub fn parse_category(source: &str) -> ForceResult<Category> {
+    Parser::new(source).parse_category()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     #[test]
     fn test_simple_category() -> ForceResult<()> {
-        let force = parse("新聞 {單行 記者 單行 網址}")?;
+        let source = "新聞 {單行 記者 單行 網址}";
+
+        let force = parse(source)?;
         assert_eq!(force.categories.len(), 1);
-        assert_eq!(
-            force.categories.get("新聞").unwrap(),
-            &Category {
-                name: "新聞".to_owned(),
-                fields: vec![
-                    Field {
-                        datatype: DataType::OneLine,
-                        name: "記者".to_owned()
-                    },
-                    Field {
-                        datatype: DataType::OneLine,
-                        name: "網址".to_owned()
-                    }
-                ],
-                source: "新聞 {單行 記者 單行 網址}".to_owned()
-            }
-        );
+
+        let ans = &Category {
+            name: "新聞".to_owned(),
+            fields: vec![
+                Field {
+                    datatype: DataType::OneLine,
+                    name: "記者".to_owned(),
+                },
+                Field {
+                    datatype: DataType::OneLine,
+                    name: "網址".to_owned(),
+                },
+            ],
+            source: "新聞 {單行 記者 單行 網址}".to_owned(),
+        };
+        assert_eq!(force.categories.get("新聞").unwrap(), ans);
+        assert_eq!(&parse_category(source).unwrap(), ans);
         Ok(())
     }
 }

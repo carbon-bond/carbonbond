@@ -235,3 +235,8 @@ export function parse(source: string): Force {
 	const parser = new Parser(source);
 	return parser.parse();
 }
+
+export function parse_category(source: string): Category {
+	const parser = new Parser(source);
+	return parser.parse_category();
+}
