@@ -66,14 +66,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_name: String,
         title: String,
         content: String,
-    ) -> Result<(), crate::custom_error::Error> {
+    ) -> Result<i64, crate::custom_error::Error> {
         println!(
             "發表文章： 看板 {}, 分類 {}, 內容 {}",
             board_id, category_name, content
         );
         let author_id = context.get_id_strict()?;
-        db::article::create(author_id, board_id, category_name, title, content).await?;
-        Ok(())
+        let id = db::article::create(author_id, board_id, category_name, title, content).await?;
+        Ok(id)
     }
 }
 

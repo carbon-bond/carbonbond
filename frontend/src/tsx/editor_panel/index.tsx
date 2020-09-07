@@ -6,6 +6,7 @@ import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { BoardName } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import * as Force from 'force';
 const Parser = Force.Parser;
 
@@ -13,11 +14,7 @@ const Parser = Force.Parser;
 import '../../css/bottom_panel/bottom_panel.css';
 import '../../css/bottom_panel/editor.css';
 
-async function _createArticle(): Promise<void> {
-	// dummy
-}
-
-function _EditorPanel(props: RouteComponentProps): JSX.Element | null {
+function EditorPanel(): JSX.Element | null {
 	const { is_open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
 		= EditorPanelState.useContainer();
 	function onTitleClick(): void {
@@ -43,12 +40,6 @@ function _EditorPanel(props: RouteComponentProps): JSX.Element | null {
 			}
 		}
 		if (do_delete) {
-			setEditorPanelData(null);
-		}
-	}
-	function _onPost(article_id: number): void {
-		if (editor_panel_data) {
-			props.history.push(`/app/b/${editor_panel_data.board.board_name}/a/${article_id}`);
 			setEditorPanelData(null);
 		}
 	}
@@ -109,8 +100,8 @@ const Field = (props: {field: Force.Field, register}): JSX.Element => {
 	}
 };
 
-function EditorBody(): JSX.Element {
-	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+function _EditorBody(props: RouteComponentProps): JSX.Element {
+	const { closeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { register, handleSubmit } = useForm();
 	const board = editor_panel_data!.board;
 	const [ board_options, setBoardOptions ] = useState<BoardName[]>([{
@@ -138,7 +129,17 @@ function EditorBody(): JSX.Element {
 			data.category_name,
 			data.title,
 			JSON.stringify(data.content),
-		);
+		)
+			.then(data => unwrap(data))
+			.then(id => {
+				toast('發文成功');
+				closeEditorPanel();
+				props.history.push(`/app/b/${editor_panel_data.board.board_name}/a/${id}`);
+				setEditorPanelData(null);
+			})
+			.catch(err => {
+				toast.error(err);
+			});
 	};
 
 	return <div styleName="editorBody">
@@ -214,5 +215,5 @@ function EditorBody(): JSX.Element {
 	</div>;
 }
 
-const EditorPanel = withRouter(_EditorPanel);
+const EditorBody = withRouter(_EditorBody);
 export { EditorPanel };
