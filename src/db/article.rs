@@ -1,6 +1,7 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta};
 use crate::custom_error::{DataType, Fallible};
+use force::parse_category;
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
@@ -85,11 +86,6 @@ async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<C
     .fetch_one(pool)
     .await?;
     Ok(category)
-}
-
-fn parse_category(source: &str) -> Fallible<force::parser::Category> {
-    let f = force::parser::parse(source)?;
-    Ok(f.categories.into_iter().next().unwrap().1)
 }
 
 pub async fn create(

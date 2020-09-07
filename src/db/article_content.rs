@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use force::parser::Category;
+use force::Category;
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -51,7 +51,7 @@ pub async fn get_by_article_id(id: i64) -> Fallible<String> {
     Ok(serde_json::to_string(&kvs)?)
 }
 
-fn mismatch_error(field: &force::parser::Field) -> Fallible<()> {
+fn mismatch_error(field: &force::Field) -> Fallible<()> {
     Err(ErrorCode::Other(format!(
         "力語言型別錯誤：預期欄位 {} 是 {:?} 型別",
         field.name, field.datatype

@@ -8,7 +8,6 @@ import { BoardName } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import * as Force from 'force';
-const Parser = Force.Parser;
 
 
 import '../../css/bottom_panel/bottom_panel.css';
@@ -115,7 +114,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		.catch(err => console.log(err));
 	}, []);
 	const force = useMemo(
-		() => (new Parser(board.force)).parse(),
+		() => Force.parse(board.force),
 		[board]
 	);
 
