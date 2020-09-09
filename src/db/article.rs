@@ -12,7 +12,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     let meta = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name FROM articles
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
         INNER JOIN users on articles.author_id = users.id
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id
@@ -36,7 +36,7 @@ pub async fn get_by_board_name(
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name FROM articles
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
         INNER JOIN users on articles.author_id = users.id
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id

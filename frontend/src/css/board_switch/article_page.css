@@ -11,6 +11,13 @@
         line-height: 1.5;
         font-size: 16px;
         color: var(--font-color);
+        
+        & .field {
+            margin-bottom: 20px;
+            & .fieldName {
+                color: var(--light-font-color);
+            }
+        }
     }
     & .reply {
         cursor: pointer;

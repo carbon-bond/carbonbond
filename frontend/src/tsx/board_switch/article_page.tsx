@@ -6,6 +6,7 @@ import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
+import { parse_category } from 'force';
 
 function ReplyOptions(): JSX.Element {
 	return <></>;
@@ -56,6 +57,34 @@ function Comments(): JSX.Element {
 	return <></>;
 }
 
+function SplitLine(props: { text: string }): JSX.Element {
+	return <>{
+		props.text.split('\n').map(line => {
+			return line.length == 0 ?
+				<br />
+				: <p key={line}>{line}</p>;
+		})
+	}
+	</>;
+}
+
+function ArticleContent(props: { article: Article }): JSX.Element {
+	const article = props.article;
+	const category = parse_category(article.meta.category_source);
+	const content = JSON.parse(article.content);
+
+	return <div styleName="articleContent">
+		{
+			category.fields.map(field =>
+				<div styleName="field" key={field.name}>
+					<div styleName="fieldName">{field.name}：</div>
+					<SplitLine text={content[field.name]} />
+				</div>
+			)
+		}
+	</div>;
+}
+
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
 	// let { article, board_name } = props;
 	let { article } = props;
@@ -70,7 +99,6 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	// 	= EditorPanelState.useContainer();
 
 	const category_name = article.meta.category_name;
-	const content = JSON.parse(article.content);
 
 	// function onReplyClick(transfuse: Transfuse): void {
 	// 	if (editor_panel_data) { // 有文章在編輯中
@@ -106,21 +134,7 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 		<ArticleLine
 			category_name={category_name}
 			title={article.meta.title} />
-		<div styleName="articleContent">
-			{
-				Object.keys(content).map(field_name => {
-					return <div key={field_name}>
-						<div>{field_name}:</div>
-						{content[field_name]}
-						{/* {txt.split('\n').map(line => {
-							return line.length == 0 ?
-								<br />
-								: <p key={line}>{line}</p>;
-						})} */}
-					</div>;
-				})
-			}
-		</div>
+		<ArticleContent article={article} />
 		<ArticleFooter />
 		<ReplyOptions />
 		<BigReply />

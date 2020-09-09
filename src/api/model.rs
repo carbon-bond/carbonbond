@@ -59,6 +59,7 @@ mod model {
         pub board_name: String,
         pub category_id: i64,
         pub category_name: String,
+        pub category_source: String,
         pub title: String,
         pub author_id: i64,
         pub author_name: String,
