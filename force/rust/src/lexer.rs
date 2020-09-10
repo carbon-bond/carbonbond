@@ -38,7 +38,7 @@ pub enum Token {
     TaggedBond,
 
     // 正則表達式
-    #[regex("/[^/]+/", get_string)]
+    #[regex("/[^/]+/", extract_regex)]
     Regex(String),
 
     // 鍵結的符號
@@ -57,6 +57,11 @@ pub enum Token {
 
 fn get_string(lex: &mut Lexer<Token>) -> String {
     lex.slice().to_string()
+}
+
+fn extract_regex(lex: &mut Lexer<Token>) -> String {
+    let s = lex.slice();
+    s[1..(s.len() - 1)].to_string()
 }
 
 pub fn lexer(s: &str) -> Vec<(Token, Span)> {
@@ -113,6 +118,6 @@ mod tests {
     #[test]
     fn test_regex() {
         let mut lexer = Token::lexer("/[ab]+d?/");
-        assert_eq!(lexer.next(), Some(Token::Regex("/[ab]+d?/".to_owned())));
+        assert_eq!(lexer.next(), Some(Token::Regex("[ab]+d?".to_owned())));
     }
 }

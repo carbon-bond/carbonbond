@@ -32,7 +32,10 @@ let lexer = moo.compile({
 
 lexer.next = (next => () => {
 	let token;
-	while ((token = next.call(lexer)) && (token.type === 'whitespace' || token.type == 'new_line')) { }
+	while ((token = next.call(lexer)) && (token.type == 'whitespace' || token.type == 'new_line')) { }
+	if (token?.type == 'regex') { // 把正則表達式兩旁的 / / 拔掉
+		token.value = token.value.slice(1, -1);
+	}
 	return token;
 })(lexer.next);
 

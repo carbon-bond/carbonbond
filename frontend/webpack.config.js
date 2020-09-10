@@ -29,7 +29,11 @@ module.exports = smp.wrap({
 							presets: [
 								'@babel/typescript',
 							],
-						}
+							plugins: [
+								'@babel/plugin-proposal-optional-chaining',
+								'@babel/plugin-syntax-dynamic-import'
+							]
+						},
 					},
 				]
 			},

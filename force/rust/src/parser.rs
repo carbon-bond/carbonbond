@@ -1,6 +1,8 @@
+use crate::defs::*;
 use crate::lexer::{lexer, Token};
-use crate::*;
 use logos::Span;
+use regex::Regex;
+use std::collections::HashMap;
 
 pub struct Parser {
     tokens: Vec<(Token, Span)>,
@@ -113,8 +115,10 @@ impl Parser {
             Token::Text => {
                 self.advance();
                 match self.cur.clone() {
-                    Token::Regex(regex) => {
+                    Token::Regex(s) => {
                         self.advance();
+                        let regex =
+                            Regex::new(&s).map_err(|_e| ForceError::InvalidRegex { regex: s })?;
                         Ok(DataType::Text(Some(regex)))
                     }
                     _ => Ok(DataType::Text(None)),
@@ -207,9 +211,27 @@ mod test {
                     name: "網址".to_owned(),
                 },
             ],
-            source: "新聞 {單行 記者 單行 網址}".to_owned(),
+            source: source.to_owned(),
         };
         assert_eq!(force.categories.get("新聞").unwrap(), ans);
+        assert_eq!(&parse_category(source).unwrap(), ans);
+        Ok(())
+    }
+    #[test]
+    fn test_regex() -> ForceResult<()> {
+        let source = "作文比賽 {文本/我的志願是.+/ 文章}";
+
+        let force = parse(source)?;
+        assert_eq!(force.categories.len(), 1);
+
+        let ans = &Category {
+            name: "作文比賽".to_owned(),
+            fields: vec![Field {
+                datatype: DataType::Text(Some(Regex::new("我的志願是.+").unwrap())),
+                name: "文章".to_owned(),
+            }],
+            source: source.to_owned(),
+        };
         assert_eq!(&parse_category(source).unwrap(), ans);
         Ok(())
     }

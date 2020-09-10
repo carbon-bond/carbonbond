@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:carbon-bond/force.git
 	branch = master
-	commit = ae4aa7932b8f1fb89088455da67b018d7b9cb1cd
+	commit = 1759451503029a151bfb164a1a7b8038f8ad47cd
 	parent = 8dcd03b86807432b872b28d8c39cd7459b734a22
 	method = merge
 	cmdver = 0.4.1

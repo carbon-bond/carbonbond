@@ -7,6 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { BoardName } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { Validator } from '../../ts/validator';
 import * as Force from 'force';
 
 
@@ -70,32 +71,29 @@ function EditorPanel(): JSX.Element | null {
 type OpType = { label: string, value: number };
 
 // @ts-ignore
-const Field = (props: {field: Force.Field, register}): JSX.Element => {
-	const { field, register } = props;
+const Field = (props: {field: Force.Field, validator: Validator, register}): JSX.Element => {
+	const { field, validator, register } = props;
 	const Wrap = (element: JSX.Element): JSX.Element => {
 		return <div key={field.name} styleName="field">
 			<label htmlFor={field.name}>{field.name}</label>
 			{element}
 		</div>;
 	};
+	const input_props = {
+		placeholder: field.name,
+		name: `content.${field.name}`,
+		ref: register({
+			required: true,
+			validate: (data: string) => {
+				return validator.validate_datatype(field.datatype, data);
+			}
+		}),
+		id: field.name
+	};
 	if (field.datatype.kind == 'text') {
-		return Wrap(
-			<textarea
-				placeholder={field.name}
-				name={`content.${field.name}`}
-				ref={register({ required: true })}
-				id={field.name}
-			>
-			</textarea>);
+		return Wrap( <textarea {...input_props}> </textarea> );
 	} else {
-		return Wrap(
-			<input
-				placeholder={field.name}
-				name={`content.${field.name}`}
-				ref={register({ required: true })}
-				id={field.name}
-			>
-			</input>);
+		return Wrap( <input {...input_props}> </input> );
 	}
 };
 
@@ -117,6 +115,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		() => Force.parse(board.force),
 		[board]
 	);
+	const validator = new Validator(board.id);
 
 	if (editor_panel_data == null) { return <></>; }
 
@@ -204,7 +203,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 						return <></>;
 					}
 					for (let field of category.fields) {
-						input_fields.push(<Field key={field.name} field={field} register={register} />);
+						input_fields.push(<Field validator={validator} key={field.name} field={field} register={register} />);
 					}
 					return <div styleName="fields">{input_fields}</div>;
 				})()

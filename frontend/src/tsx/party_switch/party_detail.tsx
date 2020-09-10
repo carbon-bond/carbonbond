@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 
 import '../../css/party/party_detail.css';
 import { toast } from 'react-toastify';
-import { Parser } from 'force';
+import { parse } from 'force';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
 
@@ -100,8 +100,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
 					validate: (value) => {
 						try {
-							const parser = new Parser(value);
-							parser.parse();
+							parse(value);
 							return true;
 						} catch (err) {
 							console.log(err);

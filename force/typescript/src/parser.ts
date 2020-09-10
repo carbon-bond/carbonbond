@@ -1,46 +1,6 @@
 import { lexer } from './lexer';
 import * as moo from 'moo';
-
-interface Tag {
-	name: string;
-}
-
-type Bondee = {
-	kind: 'choices',
-	choices: string[]
-} | { kind: 'all' };
-
-type DataType = {
-	kind: 'bond',
-	bondee: Bondee
-} | {
-	kind: 'tagged_bond',
-	bondee: Bondee,
-	tags: Tag[]
-} | {
-	kind: 'one_line'
-} | {
-	kind: 'text',
-	regex: string | undefined
-} | {
-	kind: 'number'
-};
-
-export interface Field {
-	datatype: DataType,
-	name: string
-}
-
-interface Category {
-	name: string,
-	fields: Field[]
-}
-
-type Categories = Map<string, Category>;
-
-interface Force {
-	categories: Categories
-}
+import { Tag, Bondee, DataType, Category, Categories, Force } from './defs';
 
 function non_expect(expect: string, fact: moo.Token): Error {
 	return new Error(`預期 ${expect} ，但得到 ${JSON.stringify(fact)}`);
@@ -161,7 +121,7 @@ export class Parser {
 					this.advance();
 					return {
 						kind: 'text',
-						regex
+						regex: new RegExp(regex),
 					};
 				} else {
 					return {

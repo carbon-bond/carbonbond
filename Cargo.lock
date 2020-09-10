@@ -780,6 +780,7 @@ dependencies = [
  "logos",
  "regex",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
