@@ -8,8 +8,7 @@
 		"build": "node build.js",
 		"watch": "node build.js --watch",
 		"check-ts": "tsc --skipLibCheck",
-		"check-css": "stylelint '**/*.css'",
-		"api-codegen": "graphql-codegen --config codegen.yml"
+		"check-css": "stylelint '**/*.css'"
 	},
 	"dependencies": {
 		"@types/emoji-mart": "^2.8.4",
@@ -17,7 +16,6 @@
 		"date-fns": "^2.0.0-beta.2",
 		"emoji-mart": "^2.11.1",
 		"force": "../force/typescript/",
-		"graphql-request": "^1.8.2",
 		"immutable": "^4.0.0-rc.12",
 		"long": "^4.0.0",
 		"normalize.css": "^8.0.1",
@@ -38,9 +36,6 @@
 		"@babel/plugin-syntax-dynamic-import": "^7.2.0",
 		"@babel/preset-react": "^7.10.4",
 		"@babel/preset-typescript": "^7.10.4",
-		"@graphql-codegen/cli": "^1.6.1",
-		"@graphql-codegen/typescript": "1.6.1",
-		"@graphql-codegen/typescript-operations": "1.6.1",
 		"@types/react": "^16.8.18",
 		"@types/react-css-modules": "^4.6.2",
 		"@types/react-dom": "^16.8.4",
@@ -59,7 +54,6 @@
 		"eslint-plugin-react": "^7.13.0",
 		"eslint-plugin-react-hooks": "^1.6.1",
 		"file-loader": "^4.2.0",
-		"graphql": "^14.5.3",
 		"html-webpack-plugin": "^3.2.0",
 		"minimist": "^1.2.0",
 		"node-watch": "^0.6.3",
