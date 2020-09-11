@@ -40,7 +40,9 @@ pub async fn get_by_board_name(
         INNER JOIN users on articles.author_id = users.id
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id
-        WHERE boards.board_name = $1 LIMIT $2 OFFSET $3
+        WHERE boards.board_name = $1
+        ORDER BY articles.create_time DESC
+        LIMIT $2 OFFSET $3
         ",
         board_name,
         limit as i64,
