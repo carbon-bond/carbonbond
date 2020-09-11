@@ -10,4 +10,10 @@ export class Validator extends force.ValidatorTrait {
 	validate_bondee(_bondee: force.Bondee, _data: any): boolean {
 		return true;
 	}
+	// eslint-disable-next-line
+	validate_number(data: any): boolean {
+		console.log(`${data} 是數字？`);
+		const n = Number(data);
+		return !isNaN(n) && Number.isInteger(n);
+	}
 }

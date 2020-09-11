@@ -78,7 +78,7 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 			category.fields.map(field =>
 				<div styleName="field" key={field.name}>
 					<div styleName="fieldName">{field.name}：</div>
-					<SplitLine text={content[field.name]} />
+					<SplitLine text={`${content[field.name]}`} />
 				</div>
 			)
 		}

@@ -111,6 +111,12 @@ pub async fn create(
     .fetch_one(pool)
     .await?
     .id;
-    article_content::create(article_id, &content, parse_category(&category.source)?).await?;
+    article_content::create(
+        article_id,
+        board_id,
+        &content,
+        parse_category(&category.source)?,
+    )
+    .await?;
     Ok(article_id)
 }

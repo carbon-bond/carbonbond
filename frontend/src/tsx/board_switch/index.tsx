@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {
+	Link,
 	Switch,
 	Route,
 	Redirect,
@@ -49,7 +50,9 @@ export function BoardSwitch(props: Props): JSX.Element {
 				<div styleName="boardHeader">
 					<div>
 						<div styleName="headerLeft">
-							<div styleName="boardTitle">{board.board_name}</div>
+							<div styleName="boardTitle">
+								<Link to={`/app/b/${board.board_name}`}>{board.board_name}</Link>
+							</div>
 							<div styleName="boardSubTitle">{board.title}</div>
 						</div>
 

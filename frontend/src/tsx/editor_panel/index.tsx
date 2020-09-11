@@ -91,9 +91,11 @@ const Field = (props: {field: Force.Field, validator: Validator, register}): JSX
 		id: field.name
 	};
 	if (field.datatype.kind == 'text') {
-		return Wrap( <textarea {...input_props}> </textarea> );
+		return Wrap( <textarea {...input_props} /> );
+	} else if (field.datatype.kind == 'number') {
+		return Wrap( <input type="number" {...input_props} /> );
 	} else {
-		return Wrap( <input {...input_props}> </input> );
+		return Wrap( <input {...input_props} /> );
 	}
 };
 
@@ -122,6 +124,12 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	// @ts-ignore
 	const onSubmit = (data): void => {
 		console.log(data);
+		let category = force.categories.get(editor_panel_data.category!)!;
+		for (let field of category.fields) {
+			if (field.datatype.kind == 'number') {
+				data.content[field.name] = Number(data.content[field.name]);
+			}
+		}
 		API_FETCHER.createArticle(
 			parseInt(data.board_id),
 			data.category_name,
