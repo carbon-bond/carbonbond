@@ -63,6 +63,20 @@ pub async fn get_by_article_id(id: i64) -> Fallible<String> {
         // kvs.insert(field.name, Value::Number(field.value.into()));
         kvs.insert(field.name, field.value.into());
     }
+    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
+        ArticleBondField,
+        "
+        SELECT article_id, name, value FROM article_bond_fields
+        WHERE article_id = $1;
+        ",
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    for field in bond_fields.into_iter() {
+        // kvs.insert(field.name, Value::Number(field.value.into()));
+        kvs.insert(field.name, field.value.into());
+    }
     Ok(serde_json::to_string(&kvs)?)
 }
 
@@ -118,6 +132,22 @@ pub(super) async fn create(
                         article_id,
                         field.name,
                         s
+                    )
+                    .execute(pool)
+                    .await?;
+                }
+                // validate 過，不可能發生
+                _ => {}
+            },
+            force::DataType::Bond(_) => match &json[&field.name] {
+                Value::Number(number) => {
+                    sqlx::query!(
+                        "INSERT INTO article_bond_fields
+                        (article_id, name, value)
+                        VALUES ($1, $2, $3)",
+                        article_id,
+                        field.name,
+                        number.as_i64().unwrap()
                     )
                     .execute(pool)
                     .await?;

@@ -59,6 +59,13 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let article = db::article::get_by_id(id).await?;
         Ok(article)
     }
+    async fn query_article_meta(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<super::model::ArticleMeta, crate::custom_error::Error> {
+        db::article::get_meta_by_id(id).await
+    }
     async fn create_article(
         &self,
         context: &mut crate::Ctx,

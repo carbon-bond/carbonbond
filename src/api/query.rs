@@ -68,6 +68,8 @@ pub enum ArticleQuery {
     },
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },
+    #[chitin(request, response = "super::model::ArticleMeta")]
+    QueryArticleMeta { id: i64 },
     #[chitin(request, response = "i64")]
     CreateArticle {
         board_id: i64,

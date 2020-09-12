@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect, useMemo } = React;
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
@@ -71,12 +72,14 @@ function EditorPanel(): JSX.Element | null {
 type OpType = { label: string, value: number };
 
 // @ts-ignore
-const Field = (props: {field: Force.Field, validator: Validator, register}): JSX.Element => {
-	const { field, validator, register } = props;
+const Field = (props: {field: Force.Field, validator: Validator, register, errors}): JSX.Element => {
+	const { field, validator, register, errors } = props;
+	console.log(errors);
 	const Wrap = (element: JSX.Element): JSX.Element => {
 		return <div key={field.name} styleName="field">
 			<label htmlFor={field.name}>{field.name}</label>
 			{element}
+			{errors.content && errors.content[field.name] && <InvalidMessage msg="不符力語言定義" />}
 		</div>;
 	};
 	const input_props = {
@@ -101,7 +104,7 @@ const Field = (props: {field: Force.Field, validator: Validator, register}): JSX
 
 function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { closeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-	const { register, handleSubmit } = useForm();
+	const { register, handleSubmit, errors } = useForm();
 	const board = editor_panel_data!.board;
 	const [ board_options, setBoardOptions ] = useState<BoardName[]>([{
 		id: board.id,
@@ -126,7 +129,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		console.log(data);
 		let category = force.categories.get(editor_panel_data.category!)!;
 		for (let field of category.fields) {
-			if (field.datatype.kind == 'number') {
+			if (field.datatype.kind == 'number' || field.datatype.kind == 'bond') {
 				data.content[field.name] = Number(data.content[field.name]);
 			}
 		}
@@ -211,7 +214,13 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 						return <></>;
 					}
 					for (let field of category.fields) {
-						input_fields.push(<Field validator={validator} key={field.name} field={field} register={register} />);
+						input_fields.push(
+							<Field
+								validator={validator}
+								errors={errors}
+								key={field.name}
+								field={field}
+								register={register} />);
 					}
 					return <div styleName="fields">{input_fields}</div>;
 				})()

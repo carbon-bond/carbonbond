@@ -7,7 +7,7 @@ impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
 }
 
-pub async fn get_by_id(id: i64) -> Fallible<Article> {
+pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = sqlx::query_as!(
         ArticleMeta,
@@ -23,6 +23,12 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     .fetch_one(pool)
     .await
     .to_fallible(&id.to_string())?;
+    Ok(meta)
+}
+
+pub async fn get_by_id(id: i64) -> Fallible<Article> {
+    let pool = get_pool();
+    let meta = get_meta_by_id(id).await?;
     let content = article_content::get_by_article_id(id).await?;
     Ok(Article { meta, content })
 }
@@ -88,6 +94,12 @@ async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<C
     .fetch_one(pool)
     .await?;
     Ok(category)
+}
+
+pub async fn check_bond(article_id: i64, board_id: i64, category_name: &str) -> Fallible<bool> {
+    let pool = get_pool();
+    let meta = get_meta_by_id(article_id).await?;
+    Ok(meta.category_name == category_name && meta.board_id == board_id)
 }
 
 pub async fn create(

@@ -6,6 +6,7 @@ import { Party } from '../../ts/api/api_trait';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
+import { InvalidMessage } from '../../tsx/components/invalid_message';
 
 import '../../css/party/party_detail.css';
 import { toast } from 'react-toastify';
@@ -72,10 +73,6 @@ type Input = {
 	detail: string,
 	force: string,
 };
-
-function InvalidMessage(props: { msg: string }): JSX.Element {
-	return <span styleName="invalidMessage">{props.msg}</span>;
-}
 
 function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 	const { register, handleSubmit, errors } = useForm<Input>({mode: 'onBlur'});
