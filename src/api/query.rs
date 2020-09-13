@@ -1,5 +1,7 @@
 use chitin::*;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum RootQuery {
@@ -78,6 +80,16 @@ pub enum ArticleQuery {
         category_name: String,
         title: String,
         content: String,
+    },
+    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    SearchArticle {
+        author_name: String,
+        board_id: i64,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+        category: String,
+        title: String, // TODO: 模糊搜尋
+        str_content: HashMap<String, String>,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]

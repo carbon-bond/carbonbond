@@ -6,6 +6,8 @@ use crate::redis;
 use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct RootQueryRouter {
@@ -38,6 +40,19 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
 pub struct ArticleQueryRouter {}
 #[async_trait]
 impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
+    async fn search_article(
+        &self,
+        context: &mut crate::Ctx,
+        author_name: String,
+        board_id: i64,
+        category: String,
+        end_time: Option<DateTime<Utc>>,
+        start_time: Option<DateTime<Utc>>,
+        str_content: HashMap<String, String>,
+        title: String,
+    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
+        Ok(vec![])
+    }
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,
