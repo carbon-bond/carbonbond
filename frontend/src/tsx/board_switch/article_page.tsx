@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
@@ -31,27 +30,10 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 
 	return <div styleName="replyCardList">
 		{
-			metas.map(meta => <BigReply key={meta.id} meta={meta} />)
+			metas.map(meta => <SimpleArticleCard key={meta.id} meta={meta} />)
 		}
 	</div>;
 }
-function BigReply(props: { meta: ArticleMeta }): JSX.Element {
-	const { meta } = props;
-	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
-	return <div styleName="replyCard">
-		<div key={meta.title}>
-			<ArticleLine
-				title={meta.title}
-				category_name={meta.category_name} />
-			<ArticleHeader
-				user_name={meta.author_name}
-				board_name={meta.board_name}
-				date={new Date(meta.create_time)} />
-		</div>
-		<Link styleName="overlay" to={url}></Link >
-	</div >;
-}
-
 function Comments(): JSX.Element {
 	return <></>;
 }
@@ -77,7 +59,18 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 			category.fields.map(field =>
 				<div styleName="field" key={field.name}>
 					<div styleName="fieldName">{field.name}：</div>
-					<SplitLine text={`${content[field.name]}`} />
+					{
+						(() => {
+							const value = content[field.name];
+							if (field.datatype.kind == 'bond') {
+								return <div styleName="wrap">
+									<SimpleArticleCardById article_id={value} />
+								</div>;
+							} else {
+								return <SplitLine text={`${value}`} />;
+							}
+						})()
+					}
 				</div>
 			)
 		}

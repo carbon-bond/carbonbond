@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { toast } from 'react-toastify';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { Article } from '../ts/api/api_trait';
+import { Article, ArticleMeta } from '../ts/api/api_trait';
+import { API_FETCHER, unwrap } from '../ts/api/api';
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
@@ -84,6 +86,46 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 	);
 }
 
+function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
+	const { meta } = props;
+	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
+	return <div styleName="simpleArticleCard">
+		<div key={meta.title}>
+			<ArticleLine
+				title={meta.title}
+				category_name={meta.category_name} />
+			<ArticleHeader
+				user_name={meta.author_name}
+				board_name={meta.board_name}
+				date={new Date(meta.create_time)} />
+		</div>
+		<Link styleName="overlay" to={url}></Link >
+	</div >;
+}
+
+function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
+	let [meta, setMeta] = React.useState<ArticleMeta | null>(null);
+
+	React.useEffect(() => {
+		API_FETCHER.queryArticleMeta(props.article_id).then(data => {
+			setMeta(unwrap(data));
+			// setFetching(false);
+		}).catch(err => {
+			toast.error(err);
+			// setFetching(false);
+		});
+	}, [props.article_id]);
+
+	// TODO: 改爲 fetching 圖標
+	if (meta == null) {
+		return <></>;
+	} else {
+		return <SimpleArticleCard meta={meta} />;
+	}
+}
+
 export {
-	ArticleCard
+	ArticleCard,
+	SimpleArticleCardById,
+	SimpleArticleCard
 };
