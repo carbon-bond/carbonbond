@@ -1,10 +1,11 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 import '../../css/board_switch/article_page.css';
-import { Article } from '../../ts/api/api_trait';
+import { Article, ArticleMeta } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
 import { parse_category } from 'force';
 
@@ -12,45 +13,43 @@ function ReplyOptions(): JSX.Element {
 	return <></>;
 }
 
-function BigReply(): JSX.Element {
+function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
-	type Article = {
-		title: string,
-		category_name: string,
-		energy: number,
-		create_time: Date,
-		bond_name: string,
-		bond_type: number,
-		user_name: string,
-		board_name: string
-	};
-	let articles: Article[] = [
+	const { article } = props;
+	// let [fetching, setFetching] = React.useState(true);
+	let [metas, setMetas] = React.useState<ArticleMeta[]>([]);
+
+	React.useEffect(() => {
+		API_FETCHER.queryBonder(article.meta.id).then(data => {
+			setMetas(unwrap(data));
+			// setFetching(false);
+		}).catch(err => {
+			toast.error(err);
+			// setFetching(false);
+		});
+	}, [article.meta.id]);
+
+	return <div styleName="replyCardList">
 		{
-			title: '開越多，文青咖啡店就倒越多',
-			category_name: '回答',
-			energy: 271,
-			create_time: new Date(),
-			bond_name: '戰',
-			bond_type: -1,
-			user_name: '臥龍生',
-			board_name: '八卦'
-		}
-	];
-	return <div styleName="replyCard">
-		{
-			articles.map(article =>
-				<div key={article.title}>
-					<ArticleLine
-						title={article.title}
-						category_name={article.category_name} />
-					<ArticleHeader
-						user_name={article.user_name}
-						board_name={article.board_name}
-						date={article.create_time} />
-				</div>
-			)
+			metas.map(meta => <BigReply key={meta.id} meta={meta} />)
 		}
 	</div>;
+}
+function BigReply(props: { meta: ArticleMeta }): JSX.Element {
+	const { meta } = props;
+	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
+	return <div styleName="replyCard">
+		<div key={meta.title}>
+			<ArticleLine
+				title={meta.title}
+				category_name={meta.category_name} />
+			<ArticleHeader
+				user_name={meta.author_name}
+				board_name={meta.board_name}
+				date={new Date(meta.create_time)} />
+		</div>
+		<Link styleName="overlay" to={url}></Link >
+	</div >;
 }
 
 function Comments(): JSX.Element {
@@ -137,7 +136,7 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 		<ArticleContent article={article} />
 		<ArticleFooter />
 		<ReplyOptions />
-		<BigReply />
+		<BigReplyList article={article}/>
 		<Comments />
 		{/* <ReplyBtn label="戰" transfuse={-1} />
 		<ReplyBtn label="挺" transfuse={1} />

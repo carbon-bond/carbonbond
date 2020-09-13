@@ -5,11 +5,15 @@
     width: 100%;
     font-size: 14px;
     & .authorId {
+        position: relative;
+        z-index: 10;
         color: var(--light-font-color);
         margin-right: 6px;
         text-decoration: underline;
     }
     & .articleBoard {
+        position: relative;
+        z-index: 10;
         color: var(--light-font-color);
         margin-left: 6px;
         text-decoration: underline;

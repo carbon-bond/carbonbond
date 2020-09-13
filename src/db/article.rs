@@ -66,6 +66,29 @@ pub async fn get_by_board_name(
     Ok(articles)
 }
 
+pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
+    let pool = get_pool();
+    let metas = sqlx::query_as!(
+        ArticleMeta,
+        "
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source
+        FROM article_bond_fields
+        INNER JOIN articles on articles.id = article_bond_fields.article_id
+        INNER JOIN users on articles.author_id = users.id
+        INNER JOIN boards on articles.board_id = boards.id
+        INNER JOIN categories on articles.category_id = categories.id
+        WHERE article_bond_fields.value = $1
+        ORDER BY articles.create_time DESC
+        ",
+        article_id,
+    )
+    .fetch_all(pool)
+    .await?;
+
+    // XXX: n + 1 問題
+    Ok(metas)
+}
+
 #[derive(Debug)]
 pub struct Category {
     pub id: i64,
