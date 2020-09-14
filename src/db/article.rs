@@ -1,12 +1,53 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta};
 use crate::custom_error::{DataType, Fallible};
+use chrono::{DateTime, Utc};
 use force::parse_category;
+use std::collections::HashMap;
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
 }
 
+pub async fn search_article_meta(
+    author_name: Option<String>,
+    board_id: i64,
+    category: Option<String>,
+    end_time: Option<DateTime<Utc>>,
+    start_time: Option<DateTime<Utc>>,
+    str_content: HashMap<String, String>,
+    title: Option<String>,
+) -> Fallible<Vec<ArticleMeta>> {
+    let pool = get_pool();
+    // XXX: 把這段長長的 join 寫成資料庫函式
+    let meta = sqlx::query_as!(
+        ArticleMeta,
+        "
+        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
+        INNER JOIN users on articles.author_id = users.id
+        INNER JOIN boards on articles.board_id = boards.id
+        INNER JOIN categories on articles.category_id = categories.id
+        WHERE articles.board_id = $1
+        AND ($2 OR users.user_name = $3)
+        AND ($4 OR categories.category_name = $5)
+        AND ($6 OR articles.create_time < $7)
+        AND ($8 OR articles.create_time > $9)
+        AND ($10 OR articles.title ~ $11)
+        ",
+        board_id,
+        author_name.is_some(),
+        author_name.unwrap_or_default(),
+        category.is_some(),
+        category.unwrap_or_default(),
+        end_time.is_some(),
+        end_time.unwrap_or(Utc::now()),
+        start_time.is_some(),
+        start_time.unwrap_or(Utc::now()),
+        title.is_some(),
+        title.unwrap_or_default()
+    ).fetch_all(pool).await?;
+    Ok(meta)
+}
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = sqlx::query_as!(

@@ -43,15 +43,25 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn search_article(
         &self,
         context: &mut crate::Ctx,
-        author_name: String,
+        author_name: Option<String>,
         board_id: i64,
-        category: String,
+        category: Option<String>,
         end_time: Option<DateTime<Utc>>,
         start_time: Option<DateTime<Utc>>,
         str_content: HashMap<String, String>,
-        title: String,
+        title: Option<String>,
     ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
-        Ok(vec![])
+        let meta = db::article::search_article_meta(
+            author_name,
+            board_id,
+            category,
+            end_time,
+            start_time,
+            str_content,
+            title,
+        )
+        .await?;
+        Ok(meta)
     }
     async fn query_article_list(
         &self,
