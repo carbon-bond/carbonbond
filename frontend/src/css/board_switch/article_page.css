@@ -38,3 +38,7 @@
 .replyCardList > div:not(:first-child) {
     border-top: 0px;
 }
+
+.offset {
+    margin-left: 20px;
+}

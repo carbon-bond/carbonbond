@@ -7,10 +7,7 @@ import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
 import { parse_category } from 'force';
-
-function ReplyOptions(): JSX.Element {
-	return <></>;
-}
+import { useForce } from '../../tsx/cache';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
@@ -78,8 +75,7 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 }
 
 function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
-	// let { article, board_name } = props;
-	let { article } = props;
+	let { article, board_name } = props;
 
 	let scrollHandler = React.useCallback(() => {
 		console.log('成功!!');
@@ -108,16 +104,37 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	// 	}
 	// }
 
-	// function _ReplyBtn(props: { transfuse: Transfuse, label: string }): JSX.Element {
-	// 	let can_reply = checkCanReply(editor_panel_data, article, props.transfuse);
-	// 	if (can_reply) {
-	// 		return <span styleName="reply" onClick={() => onReplyClick(props.transfuse)}>
-	// 			{props.label}
-	// 		</span>;
-	// 	} else {
-	// 		return <div styleName="cantReply">{props.label}</div>;
-	// 	}
+	// function ReplyButton(porps: { category_name: string, field_name: string }): JSX.Element {
+
 	// }
+
+	function ReplyButtons(): JSX.Element {
+		let [expanded, setExpanded] = React.useState<Boolean>(false);
+		const force = useForce(board_name);
+		let candidates = [];
+		if (force) {
+			for (let [_, category] of force.categories) {
+				for (let field of category.fields) {
+					if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
+						let bondee = field.datatype.bondee;
+						if (bondee.kind == 'all' || bondee.choices.includes(category_name)) {
+							candidates.push(`${category.name}#${field.name}`);
+						}
+					}
+				}
+			}
+		}
+		return <div>
+			<button onClick={() => setExpanded(!expanded)}>鍵結到本文</button>
+			<div styleName="offset">
+				{
+					expanded ?
+						candidates.map(c => <button key={c}>{c}</button>) :
+						<></>
+				}
+			</div>
+		</div>;
+	}
 	return <div styleName="articlePage">
 		<ArticleHeader
 			user_name={article.meta.author_name}
@@ -126,14 +143,11 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 		<ArticleLine
 			category_name={category_name}
 			title={article.meta.title} />
+		<ReplyButtons />
 		<ArticleContent article={article} />
 		<ArticleFooter />
-		<ReplyOptions />
 		<BigReplyList article={article}/>
 		<Comments />
-		{/* <ReplyBtn label="戰" transfuse={-1} />
-		<ReplyBtn label="挺" transfuse={1} />
-		<ReplyBtn label="回" transfuse={0} /> */}
 	</div>;
 }
 

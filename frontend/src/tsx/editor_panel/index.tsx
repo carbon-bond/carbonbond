@@ -134,9 +134,9 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			}
 		}
 		API_FETCHER.createArticle(
-			parseInt(data.board_id),
-			data.category_name,
-			data.title,
+			board.id,
+			category.name,
+			editor_panel_data.title,
 			JSON.stringify(data.content),
 		)
 			.then(data => unwrap(data))
@@ -156,9 +156,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			<div styleName="location">
 				<select required
 					styleName="board"
-					name="board_id"
 					value={board.id}
-					ref={register()}
 					onChange={(evt) => {
 						API_FETCHER.queryBoardById(parseInt(evt.target.value))
 						.then(data => unwrap(data))
@@ -180,8 +178,6 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				<select required
 					styleName="category"
 					value={editor_panel_data.category}
-					name="category_name"
-					ref={register()}
 					onChange={(evt) => {
 						setEditorPanelData({ ...editor_panel_data, category: evt.target.value });
 					}}
@@ -197,7 +193,6 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				styleName="articleTitle"
 				placeholder="文章標題"
 				name="title"
-				ref={register()}
 				onChange={(evt) => {
 					setEditorPanelData({ ...editor_panel_data, title: evt.target.value });
 				}}
