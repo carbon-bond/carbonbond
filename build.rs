@@ -19,6 +19,8 @@ fn main() -> std::io::Result<()> {
     let mut server_file = File::create("src/api/api_trait.rs")?;
     server_file.write_all(b"use async_trait::async_trait;\n")?;
     server_file.write_all(b"use crate::api::query::*;\n")?;
+    server_file.write_all(b"use std::collections::HashMap;\n")?;
+    server_file.write_all(b"use chrono::{DateTime, Utc};\n")?;
     server_file.write_all(b"use serde_json::error::Error;\n")?;
     server_file.write_all(
         RootQuery::codegen(&CodegenOption::Server {
@@ -32,6 +34,9 @@ fn main() -> std::io::Result<()> {
     let mut client_file = File::create("frontend/src/ts/api/api_trait.ts")?;
     client_file.write_all(b"/*eslint-disable*/\n")?;
     client_file.write_all(b"export type Option<T> = T | null;\n")?;
+    client_file.write_all(
+        b"// @ts-ignore\nexport type HashMap<K extends string | number, T> = { [key: K]: T };\n",
+    )?;
     client_file.write_all(
         b"export type Result<T, E> = {
     'Ok': T
