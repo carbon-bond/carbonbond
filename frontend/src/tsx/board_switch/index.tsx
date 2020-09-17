@@ -78,7 +78,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 							<BoardPage {...props} board={board!} />
 						} />
 						<Route exact path="/app/b/:board_name/a/:article_id" render={props =>
-							<ArticlePage {...props} />
+							<ArticlePage {...props} board={board!}/>
 						} />
 						<Redirect to="/app" />
 					</Switch>

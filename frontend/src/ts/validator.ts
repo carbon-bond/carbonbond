@@ -13,7 +13,12 @@ export class Validator extends force.ValidatorTrait {
 		if (isNaN(article_id)) {
 			return false;
 		}
-		const meta = unwrap(await API_FETCHER.queryArticleMeta(article_id));
+		let meta;
+		try {
+			meta = unwrap(await API_FETCHER.queryArticleMeta(article_id));
+		} catch {
+			return false;
+		}
 		if (meta.board_id != this.board_id) { return false; }
 		if (bondee.kind == 'all') {
 			return true;
@@ -23,7 +28,9 @@ export class Validator extends force.ValidatorTrait {
 	}
 	// eslint-disable-next-line
 	async validate_number(data: any): Promise<boolean> {
+		if (data.length == 0) { return false; }
 		const n = Number(data);
+		console.log(`data = ${data}, 數字是 ${n}`);
 		return !isNaN(n) && Number.isInteger(n);
 	}
 }

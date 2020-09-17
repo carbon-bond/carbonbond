@@ -32,8 +32,8 @@ function EditorPanel(): JSX.Element | null {
 			if (editor_panel_data.title != '') {
 				do_delete = confirm('確定要結束發文？');
 			} else {
-				for (let c of editor_panel_data.content) {
-					if (c != '') {
+				for (let k of Object.keys(editor_panel_data.content)) {
+					if (editor_panel_data.content[k] != '') {
 						do_delete = confirm('確定要結束發文？');
 						break;
 					}
@@ -72,26 +72,39 @@ function EditorPanel(): JSX.Element | null {
 type OpType = { label: string, value: number };
 
 // @ts-ignore
-const Field = (props: {field: Force.Field, validator: Validator, register, errors}): JSX.Element => {
-	const { field, validator, register, errors } = props;
-	console.log(errors);
+const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+	const { field, validator } = props;
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const [ is_valid, setIsValid ] = useState<boolean>(true);
+
+	let content = editor_panel_data!.content;
+	useEffect(() => {
+		validator.validate_datatype(field.datatype, content[field.name]).then(res => setIsValid(res));
+	}, [field, content, validator]);
+
+	if (editor_panel_data == null) { return <></>; }
+
+
 	const Wrap = (element: JSX.Element): JSX.Element => {
 		return <div key={field.name} styleName="field">
 			<label htmlFor={field.name}>{field.name}</label>
 			{element}
-			{errors.content && errors.content[field.name] && <InvalidMessage msg="不符力語言定義" />}
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
 		</div>;
 	};
 	const input_props = {
 		placeholder: field.name,
-		name: `content.${field.name}`,
-		ref: register({
-			required: true,
-			validate: (data: string) => {
-				return validator.validate_datatype(field.datatype, data);
-			}
-		}),
-		id: field.name
+		id: field.name,
+		value: content[field.name],
+		onChange: (evt: { target: { value: string } }) => {
+			setEditorPanelData({
+				...editor_panel_data,
+				content: {
+					...editor_panel_data.content,
+					[field.name]: evt.target.value
+				}
+			});
+		}
 	};
 	if (field.datatype.kind == 'text') {
 		return Wrap( <textarea {...input_props} /> );
@@ -104,7 +117,7 @@ const Field = (props: {field: Force.Field, validator: Validator, register, error
 
 function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { closeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-	const { register, handleSubmit, errors } = useForm();
+	const { handleSubmit } = useForm();
 	const board = editor_panel_data!.board;
 	const [ board_options, setBoardOptions ] = useState<BoardName[]>([{
 		id: board.id,
@@ -128,17 +141,31 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const onSubmit = (data): void => {
 		console.log(data);
 		let category = force.categories.get(editor_panel_data.category!)!;
+		// eslint-disable-next-line
+		let content: { [index: string]: any } = {};
 		for (let field of category.fields) {
 			if (field.datatype.kind == 'number' || field.datatype.kind == 'bond') {
-				data.content[field.name] = Number(data.content[field.name]);
+				content[field.name] = Number(editor_panel_data.content[field.name]);
+			} else {
+				content[field.name] = editor_panel_data.content[field.name];
 			}
 		}
-		API_FETCHER.createArticle(
-			board.id,
-			category.name,
-			editor_panel_data.title,
-			JSON.stringify(data.content),
-		)
+		// XXX: 各個欄位 Field 組件中檢查過了，應嘗試快取該結果
+		validator.validate_category(category, content)
+			.then(ok => {
+				if (!ok) {
+					toast.error('文章不符力語言格式，請檢查各欄位無誤再送出');
+					return Promise.reject();
+				}
+			})
+			.then(() =>
+				API_FETCHER.createArticle(
+					board.id,
+					category.name,
+					editor_panel_data.title,
+					JSON.stringify(content),
+				)
+			)
 			.then(data => unwrap(data))
 			.then(id => {
 				toast('發文成功');
@@ -179,7 +206,12 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					styleName="category"
 					value={editor_panel_data.category}
 					onChange={(evt) => {
-						setEditorPanelData({ ...editor_panel_data, category: evt.target.value });
+						let content: {[index: string]: string} = {};
+						let category = force.categories.get(evt.target.value)!;
+						for (let field of category.fields) {
+							content[field.name] = '';
+						}
+						setEditorPanelData({ ...editor_panel_data, content, category: evt.target.value });
 					}}
 				>
 					<option value="" disabled hidden>文章分類</option>
@@ -212,10 +244,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 						input_fields.push(
 							<Field
 								validator={validator}
-								errors={errors}
 								key={field.name}
-								field={field}
-								register={register} />);
+								field={field} />);
 					}
 					return <div styleName="fields">{input_fields}</div>;
 				})()

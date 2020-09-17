@@ -52,7 +52,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 				board: props.board,
 				category: '',
 				title: '',
-				content: [],
+				content: {},
 			});
 			openEditorPanel();
 		}

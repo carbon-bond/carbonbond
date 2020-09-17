@@ -4,10 +4,11 @@ import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById } from '../article_card';
 import '../../css/board_switch/article_page.css';
-import { Article, ArticleMeta } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
 import { parse_category } from 'force';
 import { useForce } from '../../tsx/cache';
+import { EditorPanelState } from '../global_state/editor_panel';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
@@ -74,8 +75,8 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 	</div>;
 }
 
-function ArticleDisplayPage(props: { article: Article, board_name: string }): JSX.Element {
-	let { article, board_name } = props;
+function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
+	let { article, board } = props;
 
 	let scrollHandler = React.useCallback(() => {
 		console.log('成功!!');
@@ -104,21 +105,52 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	// 	}
 	// }
 
-	// function ReplyButton(porps: { category_name: string, field_name: string }): JSX.Element {
+	function ReplyButton(props: { category_name: string, field_name: string }): JSX.Element {
+		const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+		const onClick = (): void => {
+			if (editor_panel_data == null ||
+				editor_panel_data.category == '') {
+				setEditorPanelData({
+					board,
+					category: props.category_name,
+					title: '',
+					content: { [props.field_name]: `${article.meta.id}` }
+				});
+				openEditorPanel();
+			} else if (editor_panel_data.board.id == board.id && editor_panel_data.category == props.category_name) {
+				setEditorPanelData({
+					...editor_panel_data,
+					content: {
+						...editor_panel_data.content,
+						[props.field_name]: `${article.meta.id}`
+					}
+				});
+				openEditorPanel();
+			} else {
+				toast.error('尚在編輯其他文章，請關閉後再點擊');
+			}
+		};
+		return <button onClick={onClick}>
+			{`${props.category_name}#${props.field_name}`}
+		</button>;
+	}
 
-	// }
+	type FieldPath = {
+		category: string,
+		field: string,
+	};
 
 	function ReplyButtons(): JSX.Element {
 		let [expanded, setExpanded] = React.useState<Boolean>(false);
-		const force = useForce(board_name);
-		let candidates = [];
+		const force = useForce(board.board_name);
+		let candidates: FieldPath[] = [];
 		if (force) {
 			for (let [_, category] of force.categories) {
 				for (let field of category.fields) {
 					if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
 						let bondee = field.datatype.bondee;
 						if (bondee.kind == 'all' || bondee.choices.includes(category_name)) {
-							candidates.push(`${category.name}#${field.name}`);
+							candidates.push({ category: category.name, field: field.name});
 						}
 					}
 				}
@@ -129,7 +161,14 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 			<div styleName="offset">
 				{
 					expanded ?
-						candidates.map(c => <button key={c}>{c}</button>) :
+					// XXX: 這個 key 可能會被惡意製造成重複的
+						candidates.map(fp => {
+							const key = `${fp.category}#${fp.field}`;
+							return <ReplyButton
+								category_name={fp.category}
+								field_name={fp.field}
+								key={key} />;
+						}) :
 						<></>
 				}
 			</div>
@@ -151,7 +190,10 @@ function ArticleDisplayPage(props: { article: Article, board_name: string }): JS
 	</div>;
 }
 
-type Props = RouteComponentProps<{ article_id?: string, board_name?: string }>;
+type Props = RouteComponentProps<{ article_id?: string, board_name?: string }> & {
+	board: Board
+};
+
 
 export function ArticlePage(props: Props): JSX.Element {
 	let article_id = parseInt(props.match.params.article_id!);
@@ -173,7 +215,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
-			return <ArticleDisplayPage article={article} board_name={board_name}/>;
+			return <ArticleDisplayPage article={article} board={props.board}/>;
 		} else {
 			return <Redirect to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
 		}

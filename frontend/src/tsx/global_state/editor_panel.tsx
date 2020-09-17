@@ -8,7 +8,7 @@ export type EditorPanelData = {
 	board: Board,
 	category?: string,
 	title: string,
-	content: string[],
+	content: { [index: string]: string },
 };
 
 function useEditorPanelState(): {
