@@ -6,7 +6,10 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Bondee {
     All,
-    Choices(Vec<String>),
+    Choices {
+        category: Vec<String>,
+        family: Vec<String>,
+    },
 }
 // TODO: 處理輸能等等額外設定
 #[derive(Debug, Clone, PartialEq)]
@@ -51,6 +54,7 @@ pub struct Field {
 pub struct Category {
     pub source: String,
     pub name: String,
+    pub family: Vec<String>,
     pub fields: Vec<Field>,
 }
 

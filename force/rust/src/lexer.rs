@@ -24,6 +24,8 @@ pub enum Token {
     Sharp,
     #[token(":")]
     Colon,
+    #[token("@")]
+    At,
 
     // 域型別
     #[token("單行")]
@@ -49,7 +51,7 @@ pub enum Token {
 
     // 識別子，只能是中文、英文、數字、底線
     // TODO: 增強識別子的限制
-    #[regex("[^\\s/\\[\\]\\}\\{,#:]+", get_string)]
+    #[regex("[^\\s/\\[\\]\\}\\{,#@:]+", get_string)]
     Identifier(String),
 
     End,
@@ -78,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_special_character() {
-        let mut lexer = Token::lexer("{}[],#:");
+        let mut lexer = Token::lexer("{}[],#:@");
         assert_eq!(lexer.next(), Some(Token::LeftCurlyBrace));
         assert_eq!(lexer.next(), Some(Token::RightCurlyBrace));
         assert_eq!(lexer.next(), Some(Token::LeftSquareBracket));
@@ -86,6 +88,7 @@ mod tests {
         assert_eq!(lexer.next(), Some(Token::Comma));
         assert_eq!(lexer.next(), Some(Token::Sharp));
         assert_eq!(lexer.next(), Some(Token::Colon));
+        assert_eq!(lexer.next(), Some(Token::At));
         assert_eq!(lexer.next(), None);
     }
     #[test]
@@ -119,5 +122,15 @@ mod tests {
     fn test_regex() {
         let mut lexer = Token::lexer("/[ab]+d?/");
         assert_eq!(lexer.next(), Some(Token::Regex("[ab]+d?".to_owned())));
+    }
+    #[test]
+    fn test_family() {
+        let mut lexer = Token::lexer("@批踢踢文章");
+        assert_eq!(lexer.next(), Some(Token::At));
+        assert_eq!(
+            lexer.next(),
+            Some(Token::Identifier("批踢踢文章".to_owned()))
+        );
+        assert_eq!(lexer.next(), None);
     }
 }
