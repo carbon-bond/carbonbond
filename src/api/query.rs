@@ -84,7 +84,7 @@ pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
     SearchArticle {
         author_name: Option<String>,
-        board_id: i64,
+        board_name: String,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
         category: Option<String>,

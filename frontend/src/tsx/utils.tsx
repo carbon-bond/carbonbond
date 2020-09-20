@@ -3,19 +3,22 @@ import * as React from 'react';
 type InputEvent = React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>;
 
 // 以返回的 value, onChange 綁定 input 的值
-function useInputValue(initialValue: string = ''): {
-		input_props: {
-			value: string,
-			onChange: (e: InputEvent) => void
-		},
-		setValue: React.Dispatch<React.SetStateAction<string>>,
-	} {
+function useInputValue(initialValue: string = '', onChange: (s: string) => void = () => { }): {
+	input_props: {
+		value: string,
+		onChange: (e: InputEvent) => void
+	},
+	setValue: React.Dispatch<React.SetStateAction<string>>,
+} {
 	const [value, setValue] = React.useState<string>(initialValue);
-
 	return {
 		input_props: {
 			value: value,
-			onChange: (event: InputEvent) => setValue(event.target.value)
+			onChange: (event: InputEvent) => {
+				let value = event.target.value;
+				setValue(value);
+				onChange(value);
+			}
 		},
 		setValue,
 	};
@@ -40,7 +43,7 @@ function useScrollBottom(): React.RefObject<HTMLDivElement> {
 function useScrollState(): {
 	setEmitter: (emitter: HTMLElement | null) => void,
 	useScrollToBottom: (handler: () => void) => void
-	} {
+} {
 	let [emitter, setEmitter] = React.useState<HTMLElement | null>(null);
 	function useScrollToBottom(handler: () => void): void {
 		React.useLayoutEffect(() => {
@@ -63,7 +66,7 @@ function useScrollState(): {
 					window.removeEventListener('resize', listener);
 				}
 			};
-		// eslint-disable-next-line
+			// eslint-disable-next-line
 		}, [emitter, handler]);
 		// NOTE: 上面那行 linter 會報警告，但不加 emitter 可能會導致錯誤
 	}

@@ -11,7 +11,7 @@ impl DBObject for ArticleMeta {
 
 pub async fn search_article_meta(
     author_name: Option<String>,
-    board_id: i64,
+    board_name: String,
     category: Option<String>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
@@ -27,23 +27,23 @@ pub async fn search_article_meta(
         INNER JOIN users on articles.author_id = users.id
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id
-        WHERE articles.board_id = $1
+        WHERE boards.board_name = $1
         AND ($2 OR users.user_name = $3)
         AND ($4 OR categories.category_name = $5)
         AND ($6 OR articles.create_time < $7)
         AND ($8 OR articles.create_time > $9)
         AND ($10 OR articles.title ~ $11)
         ",
-        board_id,
-        author_name.is_some(),
+        board_name,
+        author_name.is_none(),
         author_name.unwrap_or_default(),
-        category.is_some(),
+        category.is_none(),
         category.unwrap_or_default(),
-        end_time.is_some(),
+        end_time.is_none(),
         end_time.unwrap_or(Utc::now()),
-        start_time.is_some(),
+        start_time.is_none(),
         start_time.unwrap_or(Utc::now()),
-        title.is_some(),
+        title.is_none(),
         title.unwrap_or_default()
     ).fetch_all(pool).await?;
     Ok(meta)
