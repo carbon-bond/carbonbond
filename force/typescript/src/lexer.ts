@@ -12,13 +12,14 @@ let lexer = moo.compile({
 	comma: ',',
 	sharp: '#',
 	colon: ':',
+	at: '@',
 
 	star: '*',
 
 	regex: new RegExp('/[^/]+/'),
 
 	identifier: {
-		match: /[^\s/\[\],\{\}#:]+/, type: moo.keywords({
+		match: /[^\s/\[\],\{\}#@:]+/, type: moo.keywords({
 			one_line: '單行',
 			text: '文本',
 			number: '數字',

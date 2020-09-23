@@ -1,7 +1,7 @@
 import { lexer } from './lexer';
 
 test('lexer 解析特殊符號', () => {
-	lexer.reset('{}[],#:');
+	lexer.reset('{}[],#:@');
 	expect(lexer.next()!.type!).toBe('left_curly_brace');
 	expect(lexer.next()!.type!).toBe('right_curly_brace');
 	expect(lexer.next()!.type!).toBe('left_square_bracket');
@@ -9,6 +9,7 @@ test('lexer 解析特殊符號', () => {
 	expect(lexer.next()!.type!).toBe('comma');
 	expect(lexer.next()!.type!).toBe('sharp');
 	expect(lexer.next()!.type!).toBe('colon');
+	expect(lexer.next()!.type!).toBe('at');
 	expect(lexer.next()).toBe(undefined);
 });
 
@@ -39,4 +40,11 @@ test('lexer 解析識別子', () => {
 test('lexer 解析正則表達式', () => {
 	lexer.reset('/[ab]+d?/');
 	expect(lexer.next()!.type!).toBe('regex');
+});
+
+test('lexer 解析分類族', () => {
+	lexer.reset('@批踢踢文章');
+	expect(lexer.next()!.type!).toBe('at');
+	expect(lexer.next()!.type!).toBe('identifier');
+	expect(lexer.next()).toBe(undefined);
 });

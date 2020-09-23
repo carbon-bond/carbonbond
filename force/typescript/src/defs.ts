@@ -30,6 +30,7 @@ export interface Field {
 
 export interface Category {
 	name: string,
+	family: string[],
 	fields: Field[]
 }
 

@@ -153,24 +153,56 @@ export class Parser {
 			}
 		}
 	}
+	parse_family(): string[] {
+		switch (this.cur().type)  {
+			case 'at': {
+				this.advance();
+				this.eat('left_square_bracket');
+				const name = this.get_identifier();
+				const family = [name];
+				while (true) {
+					if (this.cur().type == 'right_square_bracket') {
+						this.advance();
+						break;
+					} else {
+						this.eat('comma');
+						const name = this.get_identifier();
+						family.push(name);
+					}
+				}
+				return family;
+			}
+			default: {
+				return [];
+			}
+		}
+	}
 	parse_category(): Category {
+		// 讀取分類名稱
 		const name = this.get_identifier();
-		let category: Category = {
-			name,
-			fields: []
-		};
+
+		// 讀取分類族
+		const family = this.parse_family();
+
+		// 讀取各欄位資訊
+		const fields = [];
 		this.eat('left_curly_brace');
+
 		while (true) {
 			if (this.cur().type == 'right_curly_brace') {
 				break;
 			} else {
 				const datatype = this.parse_datatype();
 				const name = this.get_identifier();
-				category.fields.push({ datatype, name });
+				fields.push({ datatype, name });
 			}
 		}
 		this.eat('right_curly_brace');
-		return category;
+		return {
+			name,
+			family,
+			fields
+		};
 	}
 	parse_categories(): Categories {
 		let categories = new Map<string, Category>();
