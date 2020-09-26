@@ -4,7 +4,8 @@ export interface Tag {
 
 export type Bondee = {
 	kind: 'choices',
-	choices: string[]
+	category: string[],
+	family: string[]
 } | { kind: 'all' };
 
 export type DataType = {

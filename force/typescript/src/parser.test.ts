@@ -15,3 +15,29 @@ test('解析簡單分類', () => {
 	expect(force.categories.get('新聞')).toStrictEqual(ans);
 	expect(parse_category(source)).toStrictEqual(ans);
 });
+
+test('解析鍵結候選', () => {
+	const source = '留言 { 鍵結[@批踢踢文章, @狄卡文章, 新聞] 原文 }';
+
+	const force = parse(source);
+	expect(force.categories.size).toBe(1);
+
+	const ans = {
+		name: '留言',
+		fields: [
+			{
+				datatype: {
+					kind: 'bond',
+					bondee: {
+						kind: 'choices',
+						category: ['新聞'],
+						family: ['批踢踢文章', '狄卡文章']
+					}
+				},
+				name: '原文'
+			},
+		],
+		family: []
+	};
+	expect(parse_category(source)).toStrictEqual(ans);
+});

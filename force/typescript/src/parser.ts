@@ -6,6 +6,14 @@ function non_expect(expect: string, fact: moo.Token): Error {
 	return new Error(`預期 ${expect} ，但得到 ${JSON.stringify(fact)}`);
 }
 
+type Choice = {
+	kind: 'category',
+	name: string,
+} | {
+	kind: 'family',
+	name: string,
+};
+
 export class Parser {
 	source: string;
 	tokens: moo.Token[];
@@ -72,6 +80,49 @@ export class Parser {
 		}
 		return tags;
 	}
+	parse_choice(): Choice {
+		switch (this.cur().type) {
+			case 'at': {
+				this.advance();
+				const name = this.get_identifier();
+				return { kind: 'family', name };
+			}
+			default: {
+				const name = this.get_identifier();
+				return { kind: 'category', name };
+			}
+		}
+	}
+	parse_choices(): Bondee {
+		const category: string[] = [];
+		const family: string[] = [];
+		const choice = this.parse_choice();
+		if (choice.kind == 'category') {
+			category.push(choice.name);
+		} else if (choice.kind == 'family'){
+			family.push(choice.name);
+		}
+		while (true) {
+			if (this.cur().type == 'right_square_bracket') {
+				break;
+			} else if (this.cur().type == 'comma') {
+				this.advance();
+				const choice = this.parse_choice();
+				if (choice.kind == 'category') {
+					category.push(choice.name);
+				} else if (choice.kind == 'family'){
+					family.push(choice.name);
+				}
+			} else {
+				throw non_expect(', 或 ]', this.cur());
+			}
+		}
+		return {
+			kind: 'choices',
+			category,
+			family
+		};
+	}
 	parse_bondee(): Bondee {
 		this.eat('left_square_bracket');
 		switch (this.cur().type) {
@@ -80,24 +131,11 @@ export class Parser {
 				this.eat('right_square_bracket');
 				return { kind: 'all' };
 			}
-			case 'identifier': {
-				let choices = [this.cur().value];
-				this.advance();
-				this.cur().type = this.cur().type; // 無意義，只是讓 typescript 不要報錯
-				while (true) {
-					if (this.cur().type == 'right_square_bracket') {
-						break;
-					} else {
-						this.eat('comma');
-						const name = this.get_identifier();
-						choices.push(name);
-					}
-				}
+			case 'identifier':
+			case 'at': {
+				let choices = this.parse_choices();
 				this.eat('right_square_bracket');
-				return {
-					kind: 'choices',
-					choices
-				};
+				return choices;
 			}
 			default: {
 				throw non_expect('* 或識別子', this.cur());

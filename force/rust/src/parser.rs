@@ -79,8 +79,8 @@ impl Parser {
         match self.cur {
             Token::At => {
                 self.advance();
-                let family = self.get_identifier()?;
-                Ok(Choice::Family(family))
+                let name = self.get_identifier()?;
+                Ok(Choice::Family(name))
             }
             _ => {
                 let name = self.get_identifier()?;
