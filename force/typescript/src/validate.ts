@@ -20,7 +20,7 @@ export abstract class ValidatorTrait {
 			} else {
 				return true;
 			}
-		} else if (datatype.kind == 'bond') {
+		} else if (datatype.kind == 'bond' || datatype.kind == 'tagged_bond') {
 			return (await this.validate_bondee(datatype.bondee, data));
 		} else {
 			return false;

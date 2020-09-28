@@ -7,7 +7,7 @@ import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
 import { parse_category } from 'force';
-import { useForce } from '../../tsx/cache';
+import { useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
@@ -37,11 +37,12 @@ function Comments(): JSX.Element {
 }
 
 function SplitLine(props: { text: string }): JSX.Element {
+	let key = 0;
 	return <>{
 		props.text.split('\n').map(line => {
 			return line.length == 0 ?
-				<br />
-				: <p key={line}>{line}</p>;
+				<br key={key++}/>
+				: <p key={key++}>{line}</p>;
 		})
 	}
 	</>;
@@ -142,14 +143,16 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 
 	function ReplyButtons(): JSX.Element {
 		let [expanded, setExpanded] = React.useState<Boolean>(false);
-		const force = useForce(board.board_name);
+		const force = useForce(board.id);
 		let candidates: FieldPath[] = [];
 		if (force) {
 			for (let [_, category] of force.categories) {
 				for (let field of category.fields) {
 					if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
 						let bondee = field.datatype.bondee;
-						if (bondee.kind == 'all' || bondee.choices.includes(category_name)) {
+						if (bondee.kind == 'all'
+							|| bondee.category.includes(category_name)
+							|| bondee.family.filter(f => force.families.get(f)!.includes(category_name)).length > 0) {
 							candidates.push({ category: category.name, field: field.name});
 						}
 					}

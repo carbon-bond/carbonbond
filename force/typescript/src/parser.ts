@@ -6,6 +6,27 @@ function non_expect(expect: string, fact: moo.Token): Error {
 	return new Error(`預期 ${expect} ，但得到 ${JSON.stringify(fact)}`);
 }
 
+class SemanticError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'SemanticError';
+	}
+}
+
+function invalid_bond(categories: string[], families: string[]): SemanticError {
+	let msg;
+	if (families.length == 0) {
+		msg = `不存在分類 [ ${categories} ]`;
+	} else if (categories.length == 0) {
+		msg = `不存在分類族 [ ${families.map(f => '@' + f)} ]`;
+	} else {
+		msg = `不存在分類 [ ${categories} ]
+		以及分類族 [ ${families.map(f => '@' + f)} ]
+`;
+	}
+	return new SemanticError(msg);
+}
+
 type Choice = {
 	kind: 'category',
 	name: string,
@@ -255,8 +276,53 @@ export class Parser {
 		return categories;
 	}
 	parse(): Force {
+		const categories = this.parse_categories();
+
+		// 建造分類族雜湊表
+		const families = new Map<string, string[]>();
+
+		for (let [_key, category] of categories) {
+			for (let family of category.family) {
+				let f = families.get(family);
+				if (f == undefined) {
+					families.set(family, [category.name]);
+				} else {
+					f.push(category.name);
+				}
+			}
+		}
+
+		// 檢驗鍵結指向的分類跟分類族是否存在
+		let not_found_categories = new Set<string>();
+		let not_found_families = new Set<string>();
+
+		for (let [_key, category] of categories) {
+			for (let field of category.fields) {
+				if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
+					const bondee = field.datatype.bondee;
+					if (bondee.kind == 'choices') {
+						for (let c of bondee.category) {
+							if (categories.get(c) == undefined) {
+								not_found_categories.add(c);
+							}
+						}
+						for (let f of bondee.family) {
+							if (families.get(f) == undefined) {
+								not_found_families.add(f);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (not_found_categories.size > 0 || not_found_families.size > 0) {
+			throw invalid_bond([...not_found_categories], [...not_found_families]);
+		}
+
 		return {
-			categories: this.parse_categories()
+			families,
+			categories
 		};
 	}
 }

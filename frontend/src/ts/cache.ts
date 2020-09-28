@@ -3,31 +3,31 @@ import { unwrap, API_FETCHER } from '../ts/api/api';
 import React from 'react';
 import { toast } from 'react-toastify';
 
-export const get_force: (board_name: string) => Promise<Force> = (() => {
-	const cache = new Map<string, Force>();
-	return async (board_name: string): Promise<Force> => {
-		let force = cache.get(board_name);
+export const get_force: (id: number) => Promise<Force> = (() => {
+	const cache = new Map<number, Force>();
+	return async (id: number): Promise<Force> => {
+		let force = cache.get(id);
 		if (force != undefined) {
 			return force;
 		} else {
-			const board = unwrap(await API_FETCHER.queryBoard(board_name));
+			const board = unwrap(await API_FETCHER.queryBoardById(id));
 			force = parse(board.force);
-			cache.set(board_name, force);
+			cache.set(id, force);
 			return force;
 		}
 	};
 })();
 
-export function useForce(board_name: string): Force | null {
+export function useForce(id: number): Force | null {
 	let [force, setForce] = React.useState<Force | null>(null);
 
 	React.useEffect(() => {
-		get_force(board_name).then(data => {
+		get_force(id).then(data => {
 			setForce(data);
 		}).catch(err => {
 			toast.error(err);
 		});
-	}, [board_name]);
+	}, [id]);
 
 	return force;
 }

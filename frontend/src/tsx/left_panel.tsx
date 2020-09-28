@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ChatBar } from './chatbar';
+import { ChatBar } from '../tsx/chatbar';
 import { BrowseBar } from './browsebar';
 import { SearchBar } from './search_bar';
 import '../css/sidebar.css';

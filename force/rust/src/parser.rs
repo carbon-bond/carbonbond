@@ -244,7 +244,64 @@ impl Parser {
     }
     pub fn parse(&mut self) -> ForceResult<Force> {
         let categories = self.parse_categories()?;
-        return Ok(Force { categories });
+
+        // 建造分類族雜湊表
+        let mut families: HashMap<String, Vec<String>> = HashMap::new();
+
+        for (_key, category) in &categories {
+            for family in &category.family {
+                match families.get_mut(family) {
+                    Some(f) => {
+                        f.push(category.name.clone());
+                    }
+                    None => {
+                        families.insert(family.clone(), vec![category.name.clone()]);
+                    }
+                }
+            }
+        }
+
+        // 檢驗鍵結指向的分類跟分類族是否存在
+        let mut not_found_categories = Vec::new();
+        let mut not_found_families = Vec::new();
+
+        for (_key, category) in &categories {
+            for field in &category.fields {
+                match &field.datatype {
+                    DataType::Bond(bondee) | DataType::TaggedBond(bondee, _) => {
+                        if let Bondee::Choices {
+                            family: family_choices,
+                            category: category_choices,
+                        } = bondee
+                        {
+                            for c in category_choices {
+                                if categories.get(c).is_none() {
+                                    not_found_categories.push(c.clone());
+                                }
+                            }
+                            for f in family_choices {
+                                if families.get(f).is_none() {
+                                    not_found_families.push(f.clone());
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        if not_found_categories.len() > 0 || not_found_families.len() > 0 {
+            return Err(ForceError::InvalidBond {
+                not_found_categories,
+                not_found_families,
+            });
+        }
+
+        return Ok(Force {
+            categories,
+            families,
+        });
     }
 }
 
@@ -283,6 +340,27 @@ mod test {
         };
         assert_eq!(force.categories.get("新聞").unwrap(), ans);
         assert_eq!(&parse_category(source).unwrap(), ans);
+
+        assert_eq!(force.families.len(), 2);
+        assert_eq!(force.families.get("轉載").unwrap().len(), 1);
+        assert_eq!(
+            force
+                .families
+                .get("轉載")
+                .unwrap()
+                .contains(&"新聞".to_string()),
+            true
+        );
+        assert_eq!(force.families.get("外部").unwrap().len(), 1);
+        assert_eq!(
+            force
+                .families
+                .get("外部")
+                .unwrap()
+                .contains(&"新聞".to_string()),
+            true
+        );
+
         Ok(())
     }
     #[test]
@@ -308,9 +386,6 @@ mod test {
     fn test_choices() -> ForceResult<()> {
         let source = "留言 { 鍵結[@批踢踢文章, @狄卡文章, 新聞] 原文 }";
 
-        let force = parse(source)?;
-        assert_eq!(force.categories.len(), 1);
-
         let ans = &Category {
             name: "留言".to_owned(),
             fields: vec![Field {
@@ -324,6 +399,46 @@ mod test {
             source: source.to_owned(),
         };
         assert_eq!(&parse_category(source).unwrap(), ans);
+        Ok(())
+    }
+    #[test]
+    fn test_family() -> ForceResult<()> {
+        let source = "
+            留言 { 鍵結[@批踢踢文章, @狄卡文章, 新聞] 原文 }
+            新聞 {}
+            八卦 @[批踢踢文章] {}
+            政黑 @[批踢踢文章] {}
+            有趣 @[狄卡文章] {}
+            ";
+        let force = parse(source)?;
+
+        assert_eq!(force.families.get("批踢踢文章").unwrap().len(), 2);
+        assert_eq!(
+            force
+                .families
+                .get("批踢踢文章")
+                .unwrap()
+                .contains(&"八卦".to_string()),
+            true
+        );
+        assert_eq!(
+            force
+                .families
+                .get("批踢踢文章")
+                .unwrap()
+                .contains(&"政黑".to_string()),
+            true
+        );
+
+        assert_eq!(force.families.get("狄卡文章").unwrap().len(), 1);
+        assert_eq!(
+            force
+                .families
+                .get("狄卡文章")
+                .unwrap()
+                .contains(&"有趣".to_string()),
+            true
+        );
         Ok(())
     }
 }

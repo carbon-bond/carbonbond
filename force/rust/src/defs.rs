@@ -62,11 +62,16 @@ pub type Categories = HashMap<String, Category>;
 
 #[derive(Debug)]
 pub struct Force {
+    pub families: HashMap<String, Vec<String>>,
     pub categories: Categories,
 }
 
 #[derive(Debug)]
 pub enum ForceError {
+    InvalidBond {
+        not_found_categories: Vec<String>,
+        not_found_families: Vec<String>,
+    },
     NonExpect {
         expect: lexer::Token,
         fact: lexer::Token,

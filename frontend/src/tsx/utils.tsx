@@ -43,7 +43,7 @@ function useScrollBottom(): React.RefObject<HTMLDivElement> {
 function useScrollState(): {
 	setEmitter: (emitter: HTMLElement | null) => void,
 	useScrollToBottom: (handler: () => void) => void
-} {
+	} {
 	let [emitter, setEmitter] = React.useState<HTMLElement | null>(null);
 	function useScrollToBottom(handler: () => void): void {
 		React.useLayoutEffect(() => {

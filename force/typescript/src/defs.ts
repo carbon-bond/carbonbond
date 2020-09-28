@@ -38,5 +38,6 @@ export interface Category {
 export type Categories = Map<string, Category>;
 
 export interface Force {
+	families: Map<string, string[]>,
 	categories: Categories
 }
