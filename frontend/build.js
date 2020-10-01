@@ -3,6 +3,7 @@ const config = require('./webpack.config.js');
 
 const argv = require('minimist')(process.argv.slice(2));
 
+// eslint-disable-next-line
 const handler = (err, stats) => {
 	if (err) {
 		console.error(err);

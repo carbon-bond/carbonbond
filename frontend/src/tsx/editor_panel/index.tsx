@@ -69,8 +69,6 @@ function EditorPanel(): JSX.Element | null {
 	}
 }
 
-type OpType = { label: string, value: number };
-
 // @ts-ignore
 const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field, validator } = props;
