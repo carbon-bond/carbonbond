@@ -1,12 +1,10 @@
 import * as React from 'react';
 import { ChatBar } from '../tsx/chatbar';
 import { BrowseBar } from './browsebar';
-import { SearchBar } from './search_bar';
 import '../css/sidebar.css';
 
 enum Option {
 	Browse,
-	Search,
 	Chat,
 	DiscoverFriend,
 	Draft,
@@ -18,8 +16,6 @@ function PanelMain(option: Option): JSX.Element {
 	switch (option) {
 		case Option.Browse:
 			return <div styleName="sidebar"><BrowseBar /></div>;
-		case Option.Search:
-			return <div styleName="sidebar"><SearchBar /></div>;
 		case Option.Chat:
 			return <div styleName="sidebar"><ChatBar /></div>;
 		case Option.DiscoverFriend:
@@ -51,7 +47,6 @@ function LeftPanel(): JSX.Element {
 			<div styleName="menubar">
 				<div styleName="topSet">
 					<div styleName="icon" onClick={toggleOption(Option.Browse)}>🗐</div>
-					<div styleName="icon" onClick={toggleOption(Option.Search)}>🔍</div>
 					<div styleName="icon" onClick={toggleOption(Option.Chat)}>🗨️</div>
 					<div styleName="icon" onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
 					<div styleName="icon" onClick={toggleOption(Option.Draft)}>稿</div>

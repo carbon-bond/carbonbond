@@ -17,6 +17,7 @@ import '../css/global.css?global';
 import { UserState } from './global_state/user';
 import { BottomPanelState } from './global_state/bottom_panel';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
+import { BoardCacheState } from './global_state/board_cache';
 import { AllChatState } from './global_state/chat';
 import { EditorPanelState } from './global_state/editor_panel';
 import { MainScrollState } from './global_state/main_scroll';
@@ -29,6 +30,7 @@ import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { API_FETCHER, unwrap } from '../ts/api/api';
+import { SearchPage } from './search_page/search_page';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -43,6 +45,9 @@ function App(): JSX.Element {
 				)} />
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
+				)} />
+				<Route exact path="/app/search" render={props => (
+					<SearchPage {...props}/>
 				)} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
@@ -98,7 +103,9 @@ function App(): JSX.Element {
 					<BottomPanelState.Provider>
 						<AllChatState.Provider>
 							<EditorPanelState.Provider>
-								<Content />
+								<BoardCacheState.Provider>
+									<Content />
+								</BoardCacheState.Provider>
 							</EditorPanelState.Provider>
 						</AllChatState.Provider>
 					</BottomPanelState.Provider>

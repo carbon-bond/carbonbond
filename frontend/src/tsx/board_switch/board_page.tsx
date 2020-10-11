@@ -8,6 +8,7 @@ import { Article, Board } from '../../ts/api/api_trait';
 
 import '../../css/article_wrapper.css';
 import '../../css/board_switch/board_page.css';
+import { BoardCacheState } from '../global_state/board_cache';
 
 const PAGE_SIZE: number = 10;
 
@@ -30,6 +31,14 @@ export function BoardPage(props: Props): JSX.Element {
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [is_end, set_is_end] = React.useState<boolean>(false);
+
+	const { setBoard } = BoardCacheState.useContainer();
+	React.useEffect(() => {
+		setBoard({ id: props.board.id, board_name: props.board.board_name });
+		// return () => {
+		// 	setBoard(null);
+		// };
+	}, [props.board, setBoard]);
 
 	React.useEffect(() => {
 		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {

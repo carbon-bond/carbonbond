@@ -47,33 +47,39 @@
             line-height: 40px;
             cursor: text;
             height: 40px;
-            width: 500px;
-            border-radius: 3px;
-            border: 1px solid var(--border-color);
-            background: var(--background-color);
+            width: 700px;
 
-            padding: 0 14px;
             position: relative;
+            display: flex;
+            flex-direction: row;
 
-            &:empty:before{
-                content: '搜尋全站';
-                height: 100%;
-                width: 100%;
-                background-image: url(/img/search.png);
-                background-repeat: no-repeat;
-                background-position: 0 center;
-
-                position: absolute;
-                left: 14px;
-                top: 0;
-                color: var(--light-font-color);
-
-                display: flex;
-                padding-left: 30px;
+            & select {
+                margin: 0;
+                width: 100px;
             }
+            & input {
+                margin: 0;
+                flex: 1;
 
-            &:focus:before{
-                content: none;
+                border-radius: 3px;
+                border: 1px solid var(--border-color);
+                background: var(--background-color);
+                &:empty:before{
+                    content: '搜尋全站';
+                    height: 100%;
+                    width: 100%;
+                    background-image: url(/img/search.png);
+                    background-repeat: no-repeat;
+                    background-position: 0 center;
+
+                    position: absolute;
+                    left: 14px;
+                    top: 0;
+                    color: var(--light-font-color);
+
+                    display: flex;
+                    padding-left: 30px;
+                }
             }
         }
 

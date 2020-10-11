@@ -10,12 +10,15 @@ import { API_FETCHER, unwrap } from '../ts/api/api';
 import { isEmail } from '../ts/regex_util';
 import { useInputValue } from './utils';
 import { UserState } from './global_state/user';
+import { SearchBar } from './search_bar';
+import { BoardCacheState } from './global_state/board_cache';
 
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
+	const { board } = BoardCacheState.useContainer();
 
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
@@ -152,6 +155,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			</div>;
 		}
 	}
+	let title = board ? board.board_name : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
@@ -161,9 +165,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
 						<img src="/img/icon_with_text.png" alt="" />
 					</div>
-					<div styleName="location">全站熱門</div>
-					<div styleName="searchPart" contentEditable={true} placeholder="搜尋全站">
-					</div>
+					<div styleName="location">{title}</div>
+					<SearchBar history={props.history} cur_board={board}/>
 				</div>
 
 				<div styleName="rightSet">
