@@ -5,13 +5,16 @@ import { BoardName } from '../../ts/api/api_trait';
 type SetBoard = (b: BoardName | null) => void;
 
 function useBoardCacheState(): {
-    board: BoardName | null,
-    setBoard: SetBoard
-    } {
-	let [board, setBoard] = React.useState<BoardName | null>(null);
+	board: BoardName | null,
+	setBoard: SetBoard
+	} {
+	let [board, _setBoard] = React.useState<BoardName | null>(null);
+	let setBoard = React.useCallback((board: BoardName | null) => {
+		_setBoard(board);
+	}, []);
 	return {
 		board,
-		setBoard: (b: BoardName | null) => setBoard(b)
+		setBoard
 	};
 }
 

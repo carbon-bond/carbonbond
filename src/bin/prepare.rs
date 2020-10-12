@@ -16,8 +16,10 @@ struct Arg {
 
 #[tokio::main]
 async fn main() -> Fallible<()> {
+    env_logger::init();
     let arg = Arg::from_args();
     let conf = load_config(&None)?.database;
+    log::info!("使用配置 {:?}", conf);
     if arg.sqlx {
         let mut cmd = std::process::Command::new("cargo");
         cmd.args(&["sqlx", "prepare", "--", "--bin", "server"]);
