@@ -44,14 +44,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         context: &mut crate::Ctx,
         author_name: Option<String>,
-        board_name: String,
+        board_name: Option<String>,
         category: Option<String>,
         end_time: Option<DateTime<Utc>>,
         start_time: Option<DateTime<Utc>>,
         str_content: HashMap<String, String>,
         title: Option<String>,
-    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
-        let meta = db::article::search_article_meta(
+    ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
+        let meta = db::article::search_article(
             author_name,
             board_name,
             category,

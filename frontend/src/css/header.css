@@ -59,6 +59,7 @@
             }
             & input {
                 margin: 0;
+                padding: 10px;
                 flex: 1;
 
                 border-radius: 3px;
