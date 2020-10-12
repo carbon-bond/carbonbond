@@ -41,6 +41,21 @@ impl Parser {
             })
         }
     }
+    fn get_integer(&mut self) -> ForceResult<usize> {
+        let ret = if let Token::Integer(n) = &self.cur {
+            Ok(*n)
+        } else {
+            Err(ForceError::NonExpect {
+                // TODO: 提高拋錯的可讀性
+                expect: Token::Integer(123456789),
+                fact: self.cur.clone(),
+            })
+        };
+        if let Ok(_) = ret {
+            self.advance();
+        }
+        ret
+    }
     fn get_identifier(&mut self) -> ForceResult<String> {
         let ret = if let Token::Identifier(id) = &self.cur {
             Ok(id.clone())
@@ -136,15 +151,15 @@ impl Parser {
             }),
         }
     }
-    fn parse_datatype(&mut self) -> ForceResult<DataType> {
+    fn parse_datatype(&mut self) -> ForceResult<BasicDataType> {
         match self.cur {
             Token::Number => {
                 self.advance();
-                Ok(DataType::Number)
+                Ok(BasicDataType::Number)
             }
             Token::OneLine => {
                 self.advance();
-                Ok(DataType::OneLine)
+                Ok(BasicDataType::OneLine)
             }
             Token::Text => {
                 self.advance();
@@ -153,21 +168,21 @@ impl Parser {
                         self.advance();
                         let regex =
                             Regex::new(&s).map_err(|_e| ForceError::InvalidRegex { regex: s })?;
-                        Ok(DataType::Text(Some(regex)))
+                        Ok(BasicDataType::Text(Some(regex)))
                     }
-                    _ => Ok(DataType::Text(None)),
+                    _ => Ok(BasicDataType::Text(None)),
                 }
             }
             Token::Bond => {
                 self.advance();
                 let bondee = self.parse_bondee()?;
-                Ok(DataType::Bond(bondee))
+                Ok(BasicDataType::Bond(bondee))
             }
             Token::TaggedBond => {
                 self.advance();
                 let bondee = self.parse_bondee()?;
                 let tags = self.parse_tags()?;
-                Ok(DataType::TaggedBond(bondee, tags))
+                Ok(BasicDataType::TaggedBond(bondee, tags))
             }
             _ => Err(ForceError::NoMeet {
                 expect: "型別".to_owned(),
@@ -201,6 +216,30 @@ impl Parser {
             _ => Ok(vec![]),
         }
     }
+    pub fn parse_field(&mut self) -> ForceResult<Field> {
+        let basic_datatype = self.parse_datatype()?;
+        let name = self.get_identifier()?;
+        let datatype = match self.cur {
+            Token::QuestionMark => {
+                self.advance();
+                DataType::Optional(basic_datatype)
+            }
+            Token::LeftSquareBracket => {
+                self.advance();
+                let min = self.get_integer()?;
+                self.eat(Token::Tilde)?;
+                let max = self.get_integer()?;
+                self.eat(Token::RightSquareBracket)?;
+                DataType::Array {
+                    t: basic_datatype,
+                    min,
+                    max,
+                }
+            }
+            _ => DataType::Single(basic_datatype),
+        };
+        Ok(Field { datatype, name })
+    }
     pub fn parse_category(&mut self) -> ForceResult<Category> {
         let start = self.tokens[self.count].1.start;
         // 讀取分類名稱
@@ -216,9 +255,7 @@ impl Parser {
             if let Token::RightCurlyBrace = self.cur {
                 break;
             } else {
-                let datatype = self.parse_datatype()?;
-                let name = self.get_identifier()?;
-                fields.push(Field { datatype, name });
+                fields.push(self.parse_field()?);
             }
         }
         let end = self.tokens[self.count].1.end;
@@ -267,8 +304,8 @@ impl Parser {
 
         for (_key, category) in &categories {
             for field in &category.fields {
-                match &field.datatype {
-                    DataType::Bond(bondee) | DataType::TaggedBond(bondee, _) => {
+                match field.datatype.basic_type() {
+                    BasicDataType::Bond(bondee) | BasicDataType::TaggedBond(bondee, _) => {
                         if let Bondee::Choices {
                             family: family_choices,
                             category: category_choices,
@@ -327,11 +364,11 @@ mod test {
             name: "新聞".to_owned(),
             fields: vec![
                 Field {
-                    datatype: DataType::OneLine,
+                    datatype: BasicDataType::OneLine.into(),
                     name: "記者".to_owned(),
                 },
                 Field {
-                    datatype: DataType::OneLine,
+                    datatype: BasicDataType::OneLine.into(),
                     name: "網址".to_owned(),
                 },
             ],
@@ -373,7 +410,7 @@ mod test {
         let ans = &Category {
             name: "作文比賽".to_owned(),
             fields: vec![Field {
-                datatype: DataType::Text(Some(Regex::new("我的志願是.+").unwrap())),
+                datatype: BasicDataType::Text(Some(Regex::new("我的志願是.+").unwrap())).into(),
                 name: "文章".to_owned(),
             }],
             family: vec![],
@@ -389,10 +426,11 @@ mod test {
         let ans = &Category {
             name: "留言".to_owned(),
             fields: vec![Field {
-                datatype: DataType::Bond(Bondee::Choices {
+                datatype: BasicDataType::Bond(Bondee::Choices {
                     category: vec!["新聞".to_owned()],
                     family: vec!["批踢踢文章".to_owned(), "狄卡文章".to_owned()],
-                }),
+                })
+                .into(),
                 name: "原文".to_owned(),
             }],
             family: vec![],

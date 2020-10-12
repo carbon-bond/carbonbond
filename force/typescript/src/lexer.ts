@@ -13,13 +13,16 @@ let lexer = moo.compile({
 	sharp: '#',
 	colon: ':',
 	at: '@',
+	question_mark: '?',
+	tilde: '~',
 
 	star: '*',
 
 	regex: new RegExp('/[^/]+/'),
 
 	identifier: {
-		match: /[^\s/\[\],\{\}#@:]+/, type: moo.keywords({
+		match: /[^\s/\[\],\{\}\?~#@:]+/,
+		type: moo.keywords({
 			one_line: '單行',
 			text: '文本',
 			number: '數字',
@@ -36,6 +39,9 @@ lexer.next = (next => () => {
 	while ((token = next.call(lexer)) && (token.type == 'whitespace' || token.type == 'new_line')) { }
 	if (token?.type == 'regex') { // 把正則表達式兩旁的 / / 拔掉
 		token.value = token.value.slice(1, -1);
+	}
+	if (token?.type == 'identifier' && /^[0-9]+$/.test(token.value)) {
+		token.type = 'integer';
 	}
 	return token;
 })(lexer.next);

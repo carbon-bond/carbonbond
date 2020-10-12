@@ -3,14 +3,34 @@ use serde_json::Value;
 
 pub trait ValidatorTrait {
     fn validate_bond(&self, bondee: &Bondee, data: &Value) -> bool;
-    fn validate_datatype(&self, data_type: &DataType, data: &Value) -> bool {
+    fn validate_basic_datatype(&self, data_type: &BasicDataType, data: &Value) -> bool {
         match (data_type, data) {
-            (DataType::Number, Value::Number(n)) => n.is_i64(),
-            (DataType::OneLine, Value::String(s)) => !s.contains('\n'),
-            (DataType::Text(None), Value::String(_)) => true,
-            (DataType::Text(Some(regex)), Value::String(s)) => regex.is_match(s),
-            (DataType::Bond(bondee), data) => self.validate_bond(bondee, data),
+            (BasicDataType::Number, Value::Number(n)) => n.is_i64(),
+            (BasicDataType::OneLine, Value::String(s)) => !s.contains('\n'),
+            (BasicDataType::Text(None), Value::String(_)) => true,
+            (BasicDataType::Text(Some(regex)), Value::String(s)) => regex.is_match(s),
+            (BasicDataType::Bond(bondee), data) => self.validate_bond(bondee, data),
             _ => false,
+        }
+    }
+    fn validate_datatype(&self, data_type: &DataType, data: &Value) -> bool {
+        match data_type {
+            DataType::Optional(t) => data.is_null() || self.validate_basic_datatype(t, data),
+            DataType::Single(t) => self.validate_basic_datatype(t, data),
+            DataType::Array { t, min, max } => match data {
+                Value::Array(values) => {
+                    if values.len() < *min || values.len() > *max {
+                        return false;
+                    }
+                    for value in values {
+                        if !self.validate_basic_datatype(t, value) {
+                            return false;
+                        }
+                    }
+                    true
+                }
+                _ => false,
+            },
         }
     }
     fn validate_category(&self, category: &Category, data: &Value) -> bool {
@@ -77,6 +97,62 @@ mod tests {
         assert!(Validator {}.validate_category(&category, &data1) == false);
         assert!(Validator {}.validate_category(&category, &data2) == true);
         assert!(Validator {}.validate_category(&category, &data3) == false);
+        Ok(())
+    }
+    #[test]
+    fn test_optional() -> ForceResult<()> {
+        let source = "測試 {數字 數?}";
+        let category = parse_category(source)?;
+        let data1 = json!({
+            "數": 1
+        });
+        let data2 = json!({ "數": null });
+        let data3 = json!({});
+        let data4 = json!({
+            "數": "1"
+        });
+        assert!(Validator {}.validate_category(&category, &data1) == true);
+        assert!(Validator {}.validate_category(&category, &data2) == true);
+        assert!(Validator {}.validate_category(&category, &data3) == true);
+        assert!(Validator {}.validate_category(&category, &data4) == false);
+        Ok(())
+    }
+    #[test]
+    fn test_array() -> ForceResult<()> {
+        let source = "測試 {數字 數[2~3]}";
+        let category = parse_category(source)?;
+        let data1 = json!({
+            "數": 1
+        });
+        let data2 = json!({ "數": null });
+        let data3 = json!({});
+        let data4 = json!({
+            "數": "1"
+        });
+        let data5 = json!({
+            "數": [1]
+        });
+        let data6 = json!({
+            "數": [1,2]
+        });
+        let data7 = json!({
+            "數": [1,2,3]
+        });
+        let data8 = json!({
+            "數": [1,2,3,4]
+        });
+        let data9 = json!({
+            "數": [1,2,"3"]
+        });
+        assert!(Validator {}.validate_category(&category, &data1) == false);
+        assert!(Validator {}.validate_category(&category, &data2) == false);
+        assert!(Validator {}.validate_category(&category, &data3) == false);
+        assert!(Validator {}.validate_category(&category, &data4) == false);
+        assert!(Validator {}.validate_category(&category, &data5) == false);
+        assert!(Validator {}.validate_category(&category, &data6) == true);
+        assert!(Validator {}.validate_category(&category, &data7) == true);
+        assert!(Validator {}.validate_category(&category, &data8) == false);
+        assert!(Validator {}.validate_category(&category, &data9) == false);
         Ok(())
     }
 }

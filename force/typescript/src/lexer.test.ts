@@ -1,7 +1,16 @@
 import { lexer } from './lexer';
 
+test('lexer 解析整數', () => {
+	lexer.reset('12345 123木頭人 木頭人321 123木頭人321');
+	expect(lexer.next()!.type!).toBe('integer');
+	expect(lexer.next()!.type!).toBe('identifier');
+	expect(lexer.next()!.type!).toBe('identifier');
+	expect(lexer.next()!.type!).toBe('identifier');
+	expect(lexer.next()).toBe(undefined);
+});
+
 test('lexer 解析特殊符號', () => {
-	lexer.reset('{}[],#:@');
+	lexer.reset('{}[],#:@?~');
 	expect(lexer.next()!.type!).toBe('left_curly_brace');
 	expect(lexer.next()!.type!).toBe('right_curly_brace');
 	expect(lexer.next()!.type!).toBe('left_square_bracket');
@@ -10,6 +19,8 @@ test('lexer 解析特殊符號', () => {
 	expect(lexer.next()!.type!).toBe('sharp');
 	expect(lexer.next()!.type!).toBe('colon');
 	expect(lexer.next()!.type!).toBe('at');
+	expect(lexer.next()!.type!).toBe('question_mark');
+	expect(lexer.next()!.type!).toBe('tilde');
 	expect(lexer.next()).toBe(undefined);
 });
 

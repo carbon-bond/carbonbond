@@ -1,6 +1,6 @@
 import { lexer } from './lexer';
 import * as moo from 'moo';
-import { Tag, Bondee, DataType, Category, Categories, Force } from './defs';
+import { Tag, Bondee, BasicDataType, DataType, Category, Categories, Force, Field } from './defs';
 
 function non_expect(expect: string, fact: moo.Token): Error {
 	return new Error(`預期 ${expect} ，但得到 ${JSON.stringify(fact)}`);
@@ -80,6 +80,15 @@ export class Parser {
 			return ret;
 		} else {
 			throw non_expect('identifier', this.cur());
+		}
+	}
+	get_integer(): number {
+		if (this.cur().type == 'integer') {
+			const ret = this.cur().value;
+			this.advance();
+			return parseInt(ret);
+		} else {
+			throw non_expect('integer', this.cur());
 		}
 	}
 	parse_tags(): Tag[] {
@@ -163,7 +172,7 @@ export class Parser {
 			}
 		}
 	}
-	parse_datatype(): DataType {
+	parse_datatype(): BasicDataType {
 		switch (this.cur().type) {
 			case 'number': {
 				this.advance();
@@ -236,6 +245,30 @@ export class Parser {
 			}
 		}
 	}
+	parse_field(): Field {
+		const basic_datatype = this.parse_datatype();
+		const name = this.get_identifier();
+		const datatype = ((): DataType => {
+			if (this.cur().type == 'question_mark') {
+				this.advance();
+				return {kind: 'optional', t: basic_datatype};
+			} else if (this.cur().type == 'left_square_bracket') {
+				this.advance();
+				const min = this.get_integer();
+				this.eat('tilde');
+				const max = this.get_integer();
+				this.eat('right_square_bracket');
+				return {
+					kind: 'array',
+					t: basic_datatype,
+					min, max,
+				};
+			} else {
+				return {kind: 'single', t: basic_datatype};
+			}
+		})();
+		return { name, datatype };
+	}
 	parse_category(): Category {
 		// 讀取分類名稱
 		const name = this.get_identifier();
@@ -251,9 +284,7 @@ export class Parser {
 			if (this.cur().type == 'right_curly_brace') {
 				break;
 			} else {
-				const datatype = this.parse_datatype();
-				const name = this.get_identifier();
-				fields.push({ datatype, name });
+				fields.push(this.parse_field());
 			}
 		}
 		this.eat('right_curly_brace');
@@ -298,8 +329,8 @@ export class Parser {
 
 		for (let [_key, category] of categories) {
 			for (let field of category.fields) {
-				if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
-					const bondee = field.datatype.bondee;
+				if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+					const bondee = field.datatype.t.bondee;
 					if (bondee.kind == 'choices') {
 						for (let c of bondee.category) {
 							if (categories.get(c) == undefined) {

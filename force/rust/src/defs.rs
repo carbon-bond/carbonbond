@@ -18,7 +18,7 @@ pub struct Tag {
 }
 
 #[derive(Debug, Clone)]
-pub enum DataType {
+pub enum BasicDataType {
     Bond(Bondee),
     TaggedBond(Bondee, Vec<Tag>),
     OneLine,
@@ -26,21 +26,54 @@ pub enum DataType {
     Number,
 }
 
-impl PartialEq for DataType {
-    fn eq(&self, other: &DataType) -> bool {
+impl PartialEq for BasicDataType {
+    fn eq(&self, other: &BasicDataType) -> bool {
         match (self, other) {
-            (DataType::Bond(bondee), DataType::Bond(other_bondee)) => bondee == other_bondee,
+            (BasicDataType::Bond(bondee), BasicDataType::Bond(other_bondee)) => {
+                bondee == other_bondee
+            }
             (
-                DataType::TaggedBond(bondee, tags),
-                DataType::TaggedBond(other_bondee, other_tags),
+                BasicDataType::TaggedBond(bondee, tags),
+                BasicDataType::TaggedBond(other_bondee, other_tags),
             ) => bondee == other_bondee && tags == other_tags,
-            (DataType::OneLine, DataType::OneLine) => true,
-            (DataType::Text(Some(regex)), DataType::Text(Some(other_regex))) => {
+            (BasicDataType::OneLine, BasicDataType::OneLine) => true,
+            (BasicDataType::Text(Some(regex)), BasicDataType::Text(Some(other_regex))) => {
                 regex.as_str() == other_regex.as_str()
             }
-            (DataType::Number, DataType::Number) => true,
+            (BasicDataType::Number, BasicDataType::Number) => true,
             _ => false,
         }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum DataType {
+    Optional(BasicDataType),
+    Single(BasicDataType),
+    Array {
+        t: BasicDataType,
+        min: usize,
+        max: usize,
+    },
+}
+
+impl DataType {
+    pub fn basic_type(&self) -> &BasicDataType {
+        match self {
+            DataType::Optional(t) => t,
+            DataType::Single(t) => t,
+            DataType::Array {
+                t,
+                min: _min,
+                max: _max,
+            } => t,
+        }
+    }
+}
+
+impl From<BasicDataType> for DataType {
+    fn from(t: BasicDataType) -> Self {
+        DataType::Single(t)
     }
 }
 

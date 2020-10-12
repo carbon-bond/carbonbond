@@ -1,3 +1,4 @@
+import { Category } from './defs';
 import { parse, parse_category } from './parser';
 
 test('解析簡單分類', () => {
@@ -7,8 +8,8 @@ test('解析簡單分類', () => {
 	const ans = {
 		name: '新聞',
 		fields: [
-			{ name: '記者', datatype: { kind: 'one_line' } },
-			{ name: '網址', datatype: { kind: 'one_line' } },
+			{ name: '記者',  datatype: { kind: 'single', t: { kind: 'one_line' } } },
+			{ name: '網址',  datatype: { kind: 'single', t: { kind: 'one_line' } } },
 		],
 		family: [ '轉載', '外部' ]
 	};
@@ -26,20 +27,23 @@ test('解析簡單分類', () => {
 test('解析鍵結候選', () => {
 	const source = '留言 { 鍵結[@批踢踢文章, @狄卡文章, 新聞] 原文 }';
 
-	const ans = {
+	const ans: Category = {
 		name: '留言',
 		fields: [
 			{
 				datatype: {
-					kind: 'bond',
-					bondee: {
-						kind: 'choices',
-						category: ['新聞'],
-						family: ['批踢踢文章', '狄卡文章']
-					}
+					kind: 'single',
+					t: {
+						kind: 'bond',
+						bondee: {
+							kind: 'choices',
+							category: ['新聞'],
+							family: ['批踢踢文章', '狄卡文章']
+						}
+					},
 				},
 				name: '原文'
-			},
+			}
 		],
 		family: []
 	};

@@ -106,8 +106,8 @@ pub(super) async fn create(
     let pool = get_pool();
 
     for field in category.fields {
-        match field.datatype {
-            force::DataType::Number => match &json[&field.name] {
+        match field.datatype.basic_type() {
+            force::BasicDataType::Number => match &json[&field.name] {
                 Value::Number(number) => {
                     sqlx::query!(
                         "INSERT INTO article_int_fields
@@ -123,23 +123,25 @@ pub(super) async fn create(
                 // validate 過，不可能發生
                 _ => {}
             },
-            force::DataType::OneLine | force::DataType::Text(_) => match &json[&field.name] {
-                Value::String(s) => {
-                    sqlx::query!(
-                        "INSERT INTO article_string_fields
+            force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
+                match &json[&field.name] {
+                    Value::String(s) => {
+                        sqlx::query!(
+                            "INSERT INTO article_string_fields
                         (article_id, name, value)
                         VALUES ($1, $2, $3)",
-                        article_id,
-                        field.name,
-                        s
-                    )
-                    .execute(pool)
-                    .await?;
+                            article_id,
+                            field.name,
+                            s
+                        )
+                        .execute(pool)
+                        .await?;
+                    }
+                    // validate 過，不可能發生
+                    _ => {}
                 }
-                // validate 過，不可能發生
-                _ => {}
-            },
-            force::DataType::Bond(_) => match &json[&field.name] {
+            }
+            force::BasicDataType::Bond(_) => match &json[&field.name] {
                 Value::Number(number) => {
                     sqlx::query!(
                         "INSERT INTO article_bond_fields

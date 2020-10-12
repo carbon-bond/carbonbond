@@ -8,7 +8,7 @@ export type Bondee = {
 	family: string[]
 } | { kind: 'all' };
 
-export type DataType = {
+export type BasicDataType = {
 	kind: 'bond',
 	bondee: Bondee
 } | {
@@ -22,6 +22,19 @@ export type DataType = {
 	regex: RegExp | undefined
 } | {
 	kind: 'number'
+};
+
+export type DataType = {
+	kind: 'optional',
+	t: BasicDataType
+} | {
+	kind: 'single',
+	t: BasicDataType
+} | {
+	kind: 'array',
+	t: BasicDataType,
+	min: number,
+	max: number
 };
 
 export interface Field {

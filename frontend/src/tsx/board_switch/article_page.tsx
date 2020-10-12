@@ -61,7 +61,7 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 					{
 						(() => {
 							const value = content[field.name];
-							if (field.datatype.kind == 'bond') {
+							if (field.datatype.t.kind == 'bond') {
 								return <div styleName="wrap">
 									<SimpleArticleCardById article_id={value} />
 								</div>;
@@ -148,8 +148,8 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		if (force) {
 			for (let [_, category] of force.categories) {
 				for (let field of category.fields) {
-					if (field.datatype.kind == 'bond' || field.datatype.kind == 'tagged_bond') {
-						let bondee = field.datatype.bondee;
+					if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+						let bondee = field.datatype.t.bondee;
 						if (bondee.kind == 'all'
 							|| bondee.category.includes(category_name)
 							|| bondee.family.filter(f => force.families.get(f)!.includes(category_name)).length > 0) {

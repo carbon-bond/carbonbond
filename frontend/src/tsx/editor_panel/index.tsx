@@ -104,9 +104,9 @@ const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element =
 			});
 		}
 	};
-	if (field.datatype.kind == 'text') {
+	if (field.datatype.t.kind == 'text') {
 		return Wrap( <textarea {...input_props} /> );
-	} else if (field.datatype.kind == 'number') {
+	} else if (field.datatype.t.kind == 'number') {
 		return Wrap( <input type="number" {...input_props} /> );
 	} else {
 		return Wrap( <input {...input_props} /> );
@@ -142,7 +142,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		// eslint-disable-next-line
 		let content: { [index: string]: any } = {};
 		for (let field of category.fields) {
-			if (field.datatype.kind == 'number' || field.datatype.kind == 'bond') {
+			if (field.datatype.t.kind == 'number' || field.datatype.t.kind == 'bond') {
 				content[field.name] = Number(editor_panel_data.content[field.name]);
 			} else {
 				content[field.name] = editor_panel_data.content[field.name];
