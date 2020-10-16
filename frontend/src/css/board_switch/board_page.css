@@ -3,7 +3,7 @@
     border-bottom: 1px var(--lighter-gray) solid;
     height: 100%;
     display: flex;
-    flex-direction: column;    
+    flex-direction: column;
     justify-content: flex-end;
     padding: 5px;
     position: relative;

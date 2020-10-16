@@ -9,15 +9,15 @@ impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
 }
 
-pub async fn search_article_meta(
+pub async fn search_article(
     author_name: Option<String>,
-    board_name: String,
+    board_name: Option<String>,
     category: Option<String>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     str_content: HashMap<String, String>,
     title: Option<String>,
-) -> Fallible<Vec<ArticleMeta>> {
+) -> Fallible<Vec<Article>> {
     let pool = get_pool();
     // XXX: 把這段長長的 join 寫成資料庫函式
     let meta = sqlx::query_as!(
@@ -27,13 +27,14 @@ pub async fn search_article_meta(
         INNER JOIN users on articles.author_id = users.id
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id
-        WHERE boards.board_name = $1
-        AND ($2 OR users.user_name = $3)
-        AND ($4 OR categories.category_name = $5)
-        AND ($6 OR articles.create_time < $7)
-        AND ($8 OR articles.create_time > $9)
-        AND ($10 OR articles.title ~ $11)
+        WHERE ($1 OR boards.board_name = $2)
+        AND ($3 OR users.user_name = $4)
+        AND ($5 OR categories.category_name = $6)
+        AND ($7 OR articles.create_time < $8)
+        AND ($9 OR articles.create_time > $10)
+        AND ($11 OR articles.title ~ $12)
         ",
+        board_name.is_none(),
         board_name,
         author_name.is_none(),
         author_name.unwrap_or_default(),
@@ -46,7 +47,14 @@ pub async fn search_article_meta(
         title.is_none(),
         title.unwrap_or_default()
     ).fetch_all(pool).await?;
-    Ok(meta)
+
+    // XXX: n + 1 問題
+    let mut articles = Vec::new();
+    for meta in meta.into_iter() {
+        let content = article_content::get_by_article_id(meta.id).await?;
+        articles.push(Article { meta, content });
+    }
+    Ok(articles)
 }
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
