@@ -31,6 +31,10 @@
                 & label {
                     display: block;
                     margin-top: 15px;
+                    & .dataType {
+                        color: var(--light-font-color);
+                        margin-left: 20px;
+                    }
                 }
                 & input {
                     height: var(--input-height);

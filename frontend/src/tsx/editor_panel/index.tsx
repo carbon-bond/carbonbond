@@ -82,10 +82,12 @@ const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element =
 
 	if (editor_panel_data == null) { return <></>; }
 
-
 	const Wrap = (element: JSX.Element): JSX.Element => {
 		return <div key={field.name} styleName="field">
-			<label htmlFor={field.name}>{field.name}</label>
+			<label htmlFor={field.name}>
+				{`${field.name}`}
+				<span styleName="dataType">{`${Force.show_data_type(field.datatype)}`}</span>
+			</label>
 			{element}
 			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
 		</div>;
