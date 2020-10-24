@@ -51,7 +51,8 @@ pub async fn search_article(
     // XXX: n + 1 問題
     let mut articles = Vec::new();
     for meta in meta.into_iter() {
-        let content = article_content::get_by_article_id(meta.id).await?;
+        let category = get_force(meta.board_id, &meta.category_name).await?;
+        let content = article_content::get_by_article_id(meta.id, &category).await?;
         articles.push(Article { meta, content });
     }
     Ok(articles)
@@ -78,7 +79,8 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
 pub async fn get_by_id(id: i64) -> Fallible<Article> {
     let pool = get_pool();
     let meta = get_meta_by_id(id).await?;
-    let content = article_content::get_by_article_id(id).await?;
+    let category = get_force(meta.board_id, &meta.category_name).await?;
+    let content = article_content::get_by_article_id(meta.id, &category).await?;
     Ok(Article { meta, content })
 }
 
@@ -109,7 +111,8 @@ pub async fn get_by_board_name(
     // XXX: n + 1 問題
     let mut articles = Vec::new();
     for meta in metas.into_iter() {
-        let content = article_content::get_by_article_id(meta.id).await?;
+        let category = get_force(meta.board_id, &meta.category_name).await?;
+        let content = article_content::get_by_article_id(meta.id, &category).await?;
         articles.push(Article { meta, content });
     }
     Ok(articles)
@@ -151,7 +154,7 @@ impl DBObject for Category {
     const TYPE: DataType = DataType::Category;
 }
 
-async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<Category> {
+async fn get_newest_category(board_id: i64, category_name: &String) -> Fallible<Category> {
     let pool = get_pool();
     let category = sqlx::query_as!(
         Category,
@@ -168,8 +171,14 @@ async fn get_newest_category(board_id: i64, category_name: String) -> Fallible<C
     Ok(category)
 }
 
+// TODO: 快取
+async fn get_force(board_id: i64, category_name: &String) -> Fallible<force::Category> {
+    let source = get_newest_category(board_id, category_name).await?.source;
+    let category = parse_category(&source)?;
+    Ok(category)
+}
+
 pub async fn check_bond(article_id: i64, board_id: i64, category_name: &str) -> Fallible<bool> {
-    let pool = get_pool();
     let meta = get_meta_by_id(article_id).await?;
     Ok(meta.category_name == category_name && meta.board_id == board_id)
 }
@@ -183,7 +192,7 @@ pub async fn create(
 ) -> Fallible<i64> {
     // TODO: 交易？
     let pool = get_pool();
-    let category = get_newest_category(board_id, category_name).await?;
+    let category = get_newest_category(board_id, &category_name).await?;
     let article_id = sqlx::query!(
         "
         INSERT INTO articles (author_id, board_id, title, category_id)

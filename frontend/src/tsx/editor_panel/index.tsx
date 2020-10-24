@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect, useMemo } = React;
 import { withRouter } from 'react-router-dom';
@@ -69,29 +70,19 @@ function EditorPanel(): JSX.Element | null {
 	}
 }
 
-// @ts-ignore
-const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field, validator } = props;
-	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const [ is_valid, setIsValid ] = useState<boolean>(true);
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	let content = editor_panel_data!.content;
+
 	useEffect(() => {
 		validator.validate_datatype(field.datatype, content[field.name]).then(res => setIsValid(res));
 	}, [field, content, validator]);
 
 	if (editor_panel_data == null) { return <></>; }
 
-	const Wrap = (element: JSX.Element): JSX.Element => {
-		return <div key={field.name} styleName="field">
-			<label htmlFor={field.name}>
-				{`${field.name}`}
-				<span styleName="dataType">{`${Force.show_data_type(field.datatype)}`}</span>
-			</label>
-			{element}
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
-		</div>;
-	};
 	const input_props = {
 		placeholder: field.name,
 		id: field.name,
@@ -107,11 +98,96 @@ const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element =
 		}
 	};
 	if (field.datatype.t.kind == 'text') {
-		return Wrap( <textarea {...input_props} /> );
+		return <>
+			<textarea {...input_props} />
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+		</>;
 	} else if (field.datatype.t.kind == 'number') {
-		return Wrap( <input type="number" {...input_props} /> );
+		return <>
+			<input type="number" {...input_props} />
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+		</>;
 	} else {
-		return Wrap( <input {...input_props} /> );
+		return <>
+			<input {...input_props} />
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+		</>;
+	}
+};
+
+const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+	const { field } = props;
+	const [ value, setValue ] = useState<string>('');
+	const [ is_valid, _setIsValid ] = useState<boolean>(true);
+	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	if (editor_panel_data == null) { return <></>; }
+
+	const show_list = (): JSX.Element => {
+		let list = editor_panel_data!.content[field.name];
+		console.log(`list = ${list}`);
+		if (list instanceof Array) {
+			return <div>{list.map(item => <div>{item}</div>)}</div>;
+		} else {
+			return <></>;
+		}
+	};
+
+	console.log(value);
+	const input_props = {
+		placeholder: field.name,
+		id: field.name,
+		value,
+		onChange: (evt: { target: { value: string } }) => {
+			setValue(evt.target.value);
+		},
+		onKeyDown: (evt: { key: string }) => {
+			if (is_valid && evt.key == 'Enter') {
+
+				const nextState = produce(editor_panel_data, nxt => {
+					if (editor_panel_data.content[field.name] instanceof Array) {
+						(nxt.content[field.name] as string[]).push(value);
+					} else {
+						nxt.content[field.name] = [value];
+					}
+				});
+				setEditorPanelData(nextState);
+				setValue('');
+				console.log('on enter');
+				// @ts-ignore
+				evt.preventDefault();
+			}
+		}
+	};
+	return <>
+		{show_list()}
+		<input {...input_props} />
+		{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+	</>;
+};
+
+// @ts-ignore
+const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+	const { field } = props;
+	const { editor_panel_data } = EditorPanelState.useContainer();
+
+	if (editor_panel_data == null) { return <></>; }
+
+	const Wrap = (element: JSX.Element): JSX.Element => {
+		return <div key={field.name} styleName="field">
+			<label htmlFor={field.name}>
+				{`${field.name}`}
+				<span styleName="dataType">{`${Force.show_data_type(field.datatype)}`}</span>
+			</label>
+			{element}
+		</div>;
+	};
+	if (field.datatype.kind == 'single') {
+		return Wrap(<SingleField {...props} />);
+	} else if (field.datatype.kind == 'optional') {
+		// TODO: 改爲可選
+		return Wrap(<SingleField {...props} />);
+	} else if (field.datatype.kind == 'array') {
+		return Wrap(<ArrayField {...props} />);
 	}
 };
 

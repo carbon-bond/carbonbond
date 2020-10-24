@@ -1,5 +1,5 @@
 :root {
-    --input-height: 40px;
+    --input-height: 32px;
 }
 .editorPanel {
     background: var(--background-color);

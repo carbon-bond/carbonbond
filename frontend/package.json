@@ -16,6 +16,7 @@
 		"date-fns": "^2.0.0-beta.2",
 		"emoji-mart": "^2.11.1",
 		"force": "../force/typescript/",
+		"immer": "^7.0.9",
 		"immutable": "^4.0.0-rc.12",
 		"long": "^4.0.0",
 		"normalize.css": "^8.0.1",

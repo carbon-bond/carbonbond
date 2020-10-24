@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use force::validate::ValidatorTrait;
-use force::{Bondee, Category};
+use force::{Bondee, Category, Field};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -33,9 +33,14 @@ impl DBObject for ArticleBondField {
     const TYPE: DataType = DataType::BondField;
 }
 
-pub async fn get_by_article_id(id: i64) -> Fallible<String> {
+pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String> {
     let pool = get_pool();
     let mut kvs: HashMap<String, Value> = HashMap::new();
+    for field in &category.fields {
+        if let force::DataType::Array { .. } = field.datatype {
+            kvs.insert(field.name.clone(), (Vec::new() as Vec<Value>).into());
+        }
+    }
     let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
         ArticleStringField,
         "
@@ -47,7 +52,14 @@ pub async fn get_by_article_id(id: i64) -> Fallible<String> {
     .fetch_all(pool)
     .await?;
     for field in string_fields.into_iter() {
-        kvs.insert(field.name, field.value.into());
+        match kvs.get_mut(&field.name) {
+            Some(array @ Value::Array(_)) => {
+                array.as_array_mut().unwrap().push(field.value.into());
+            }
+            _ => {
+                kvs.insert(field.name, field.value.into());
+            }
+        }
     }
     let int_fields: Vec<ArticleIntField> = sqlx::query_as!(
         ArticleIntField,
@@ -60,8 +72,14 @@ pub async fn get_by_article_id(id: i64) -> Fallible<String> {
     .fetch_all(pool)
     .await?;
     for field in int_fields.into_iter() {
-        // kvs.insert(field.name, Value::Number(field.value.into()));
-        kvs.insert(field.name, field.value.into());
+        match kvs.get_mut(&field.name) {
+            Some(array @ Value::Array(_)) => {
+                array.as_array_mut().unwrap().push(field.value.into());
+            }
+            _ => {
+                kvs.insert(field.name, field.value.into());
+            }
+        }
     }
     let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
         ArticleBondField,
@@ -74,8 +92,14 @@ pub async fn get_by_article_id(id: i64) -> Fallible<String> {
     .fetch_all(pool)
     .await?;
     for field in bond_fields.into_iter() {
-        // kvs.insert(field.name, Value::Number(field.value.into()));
-        kvs.insert(field.name, field.value.into());
+        match kvs.get_mut(&field.name) {
+            Some(array @ Value::Array(_)) => {
+                array.as_array_mut().unwrap().push(field.value.into());
+            }
+            _ => {
+                kvs.insert(field.name, field.value.into());
+            }
+        }
     }
     Ok(serde_json::to_string(&kvs)?)
 }
@@ -88,6 +112,82 @@ impl ValidatorTrait for Validator {
     fn validate_bond(&self, bondee: &Bondee, data: &Value) -> bool {
         true
     }
+}
+
+async fn insert_int_field(article_id: i64, field_name: &String, value: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "INSERT INTO article_int_fields
+                        (article_id, name, value)
+                        VALUES ($1, $2, $3)",
+        article_id,
+        field_name,
+        value
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn insert_string_field(article_id: i64, field_name: &String, value: &String) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "INSERT INTO article_string_fields
+                        (article_id, name, value)
+                        VALUES ($1, $2, $3)",
+        article_id,
+        field_name,
+        value
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn insert_bond_field(article_id: i64, field_name: &String, value: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "INSERT INTO article_bond_fields
+                        (article_id, name, value)
+                        VALUES ($1, $2, $3)",
+        article_id,
+        field_name,
+        value
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+async fn insert_field(article_id: i64, field: &Field, value: &Value) -> Fallible<()> {
+    match field.datatype.basic_type() {
+        force::BasicDataType::Number => match value {
+            Value::Number(number) => {
+                insert_int_field(article_id, &field.name, number.as_i64().unwrap()).await?
+            }
+            // validate 過，不可能發生
+            _ => {}
+        },
+        force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
+            match value {
+                Value::String(s) => insert_string_field(article_id, &field.name, s).await?,
+                // validate 過，不可能發生
+                _ => {}
+            }
+        }
+        force::BasicDataType::Bond(_) => match value {
+            Value::Number(number) => {
+                insert_bond_field(article_id, &field.name, number.as_i64().unwrap()).await?
+            }
+            // validate 過，不可能發生
+            _ => {}
+        },
+        _ => {
+            return Err(
+                ErrorCode::Other(format!("力語言尚未支援 {:?} 型別", field.datatype)).into(),
+            );
+        }
+    }
+    Ok(())
 }
 
 pub(super) async fn create(
@@ -103,65 +203,19 @@ pub(super) async fn create(
         return Err(ErrorCode::Other("文章不符合力語言定義".to_owned()).into());
     }
 
-    let pool = get_pool();
+    use force::DataType::*;
 
     for field in category.fields {
-        match field.datatype.basic_type() {
-            force::BasicDataType::Number => match &json[&field.name] {
-                Value::Number(number) => {
-                    sqlx::query!(
-                        "INSERT INTO article_int_fields
-                        (article_id, name, value)
-                        VALUES ($1, $2, $3)",
-                        article_id,
-                        field.name,
-                        number.as_i64().unwrap()
-                    )
-                    .execute(pool)
-                    .await?;
-                }
-                // validate 過，不可能發生
-                _ => {}
-            },
-            force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
-                match &json[&field.name] {
-                    Value::String(s) => {
-                        sqlx::query!(
-                            "INSERT INTO article_string_fields
-                        (article_id, name, value)
-                        VALUES ($1, $2, $3)",
-                            article_id,
-                            field.name,
-                            s
-                        )
-                        .execute(pool)
-                        .await?;
+        match &field.datatype {
+            Optional(_) | Single(_) => insert_field(article_id, &field, &json[&field.name]).await?,
+            Array { .. } => match &json[&field.name] {
+                Value::Array(values) => {
+                    for value in values {
+                        insert_field(article_id, &field, value).await?
                     }
-                    // validate 過，不可能發生
-                    _ => {}
                 }
-            }
-            force::BasicDataType::Bond(_) => match &json[&field.name] {
-                Value::Number(number) => {
-                    sqlx::query!(
-                        "INSERT INTO article_bond_fields
-                        (article_id, name, value)
-                        VALUES ($1, $2, $3)",
-                        article_id,
-                        field.name,
-                        number.as_i64().unwrap()
-                    )
-                    .execute(pool)
-                    .await?;
-                }
-                // validate 過，不可能發生
                 _ => {}
             },
-            _ => {
-                return Err(
-                    ErrorCode::Other(format!("力語言尚未支援 {:?} 型別", field.datatype)).into(),
-                );
-            }
         }
     }
     Ok(())
