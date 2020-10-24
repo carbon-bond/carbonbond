@@ -123,10 +123,24 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 	if (editor_panel_data == null) { return <></>; }
 
 	const show_list = (): JSX.Element => {
-		let list = editor_panel_data!.content[field.name];
+		let list = editor_panel_data.content[field.name];
 		console.log(`list = ${list}`);
 		if (list instanceof Array) {
-			return <div>{list.map(item => <div>{item}</div>)}</div>;
+			return <div>
+				{
+					list.map((item, index) => {
+						return <div>
+							{item}
+							<span styleName="deleteButton" onClick={() => {
+								const nextState = produce(editor_panel_data, nxt => {
+									(nxt.content[field.name] as string[]).splice(index, 1);
+								});
+								setEditorPanelData(nextState);
+							}}>✗</span>
+						</div>;
+					})
+				}
+			</div>;
 		} else {
 			return <></>;
 		}
