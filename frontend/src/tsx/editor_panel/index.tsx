@@ -11,10 +11,13 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Validator } from '../../ts/validator';
 import * as Force from 'force';
+import { SplitLine } from '../../tsx/board_switch/article_page';
 
 
 import '../../css/bottom_panel/bottom_panel.css';
 import '../../css/bottom_panel/editor.css';
+import { BasicDataType } from 'force';
+import { SimpleArticleCardById } from '../article_card';
 
 function EditorPanel(): JSX.Element | null {
 	const { is_open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
@@ -115,28 +118,41 @@ const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Ele
 	}
 };
 
+
+// eslint-disable-next-line
+function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
+	if (props.t.kind == 'text') {
+		return <div styleName="textValueWrap">
+			<SplitLine text={props.value} />
+		</div>;
+	} else if (props.t.kind == 'bond') {
+		return <SimpleArticleCardById article_id={Number(props.value)} />;
+	} else {
+		return <>{props.value}</>;
+	}
+}
+
 const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field } = props;
 	const [ value, setValue ] = useState<string>('');
-	const [ is_valid, _setIsValid ] = useState<boolean>(true);
+	const [ is_valid, setIsValid ] = useState<boolean>(true);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data == null) { return <></>; }
 
 	const show_list = (): JSX.Element => {
 		let list = editor_panel_data.content[field.name];
-		console.log(`list = ${list}`);
 		if (list instanceof Array) {
 			return <div>
 				{
 					list.map((item, index) => {
-						return <div>
-							{item}
+						return <div key={index}>
 							<span styleName="deleteButton" onClick={() => {
-								const nextState = produce(editor_panel_data, nxt => {
+								const next_state = produce(editor_panel_data, nxt => {
 									(nxt.content[field.name] as string[]).splice(index, 1);
 								});
-								setEditorPanelData(nextState);
+								setEditorPanelData(next_state);
 							}}>✗</span>
+							<ShowItem t={field.datatype.t} value={item} />
 						</div>;
 					})
 				}
@@ -146,37 +162,52 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 		}
 	};
 
-	console.log(value);
+	const push_data = (): void => {
+		if (is_valid) {
+			const next_state = produce(editor_panel_data, nxt => {
+				if (editor_panel_data.content[field.name] instanceof Array) {
+					(nxt.content[field.name] as string[]).push(value);
+				} else {
+					nxt.content[field.name] = [value];
+				}
+			});
+			setEditorPanelData(next_state);
+			setValue('');
+		}
+	};
+
+	const on_enter = (evt: { key: string }): void => {
+		if (evt.key == 'Enter') {
+			push_data();
+			// @ts-ignore
+			evt.preventDefault();
+		}
+	};
+
 	const input_props = {
 		placeholder: field.name,
 		id: field.name,
 		value,
 		onChange: (evt: { target: { value: string } }) => {
 			setValue(evt.target.value);
+			props.validator.validate_basic_datatype(field.datatype.t, evt.target.value)
+			.then(res => setIsValid(res));
 		},
-		onKeyDown: (evt: { key: string }) => {
-			if (is_valid && evt.key == 'Enter') {
-
-				const nextState = produce(editor_panel_data, nxt => {
-					if (editor_panel_data.content[field.name] instanceof Array) {
-						(nxt.content[field.name] as string[]).push(value);
-					} else {
-						nxt.content[field.name] = [value];
-					}
-				});
-				setEditorPanelData(nextState);
-				setValue('');
-				console.log('on enter');
-				// @ts-ignore
-				evt.preventDefault();
-			}
-		}
 	};
-	return <>
-		{show_list()}
-		<input {...input_props} />
-		{!is_valid && <InvalidMessage msg="不符力語言定義" />}
-	</>;
+	if (field.datatype.t.kind == 'text') {
+		return <>
+			{show_list()}
+			<button onClick={push_data}>+</button>
+			<textarea {...input_props} />
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+		</>;
+	} else {
+		return <>
+			{show_list()}
+			<input {...input_props} onKeyDown={on_enter} />
+			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+		</>;
+	}
 };
 
 // @ts-ignore
@@ -235,7 +266,11 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		let content: { [index: string]: any } = {};
 		for (let field of category.fields) {
 			if (field.datatype.t.kind == 'number' || field.datatype.t.kind == 'bond') {
-				content[field.name] = Number(editor_panel_data.content[field.name]);
+				if (field.datatype.kind == 'array') {
+					content[field.name] = (editor_panel_data.content[field.name] as string[]).map(Number);
+				} else {
+					content[field.name] = Number(editor_panel_data.content[field.name]);
+				}
 			} else {
 				content[field.name] = editor_panel_data.content[field.name];
 			}

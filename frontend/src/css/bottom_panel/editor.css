@@ -44,9 +44,13 @@
                     width: 100%;
                     height: 150px;
                 }
+                & .textValueWrap {
+                    border: 1px solid black;
+                    padding: 4px;
+                }
                 & .deleteButton {
                     cursor: pointer;
-                    margin-left: 5px;
+                    margin-right: 5px;
                     color: var(--red);
                 }
             }

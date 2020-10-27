@@ -123,7 +123,7 @@ pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source
+        SELECT DISTINCT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source
         FROM article_bond_fields
         INNER JOIN articles on articles.id = article_bond_fields.article_id
         INNER JOIN users on articles.author_id = users.id

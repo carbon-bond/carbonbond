@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { produce } from 'immer';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
@@ -6,7 +7,7 @@ import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArt
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
-import { parse_category } from 'force';
+import { parse_category, Field } from 'force';
 import { useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
 
@@ -36,7 +37,7 @@ function Comments(): JSX.Element {
 	return <></>;
 }
 
-function SplitLine(props: { text: string }): JSX.Element {
+export function SplitLine(props: { text: string }): JSX.Element {
 	let key = 0;
 	return <>{
 		props.text.split('\n').map(line => {
@@ -48,10 +49,35 @@ function SplitLine(props: { text: string }): JSX.Element {
 	</>;
 }
 
+// eslint-disable-next-line
+function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
+	const { field, value } = props;
+	if (field.datatype.t.kind == 'bond') {
+		return <div styleName="cardWrap">
+			<SimpleArticleCardById article_id={value} />
+		</div>;
+	} else {
+		return <SplitLine text={`${value}`} />;
+	}
+}
+
+// eslint-disable-next-line
+function ShowArrayField(props: { field: Field, value: any[] }): JSX.Element {
+	const ret = [];
+	for (let i = 0; i < props.value.length; i++) {
+		if (i > 0) {
+			ret.push(<hr />);
+		}
+		ret.push(<ShowSingleField field={props.field} value={props.value[i]} />);
+	}
+	return <>{ret}</>;
+}
+
 function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
 	const category = parse_category(article.meta.category_source);
 	const content = JSON.parse(article.content);
+	console.log(article.content);
 
 	return <div styleName="articleContent">
 		{
@@ -61,12 +87,11 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 					{
 						(() => {
 							const value = content[field.name];
-							if (field.datatype.t.kind == 'bond') {
-								return <div styleName="wrap">
-									<SimpleArticleCardById article_id={value} />
-								</div>;
+							if (field.datatype.kind == 'array') {
+								// @ts-ignore
+								return <ShowArrayField field={field} value={value} />;
 							} else {
-								return <SplitLine text={`${value}`} />;
+								return <ShowSingleField field={field} value={value} />;
 							}
 						})()
 					}
@@ -106,7 +131,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	// 	}
 	// }
 
-	function ReplyButton(props: { category_name: string, field_name: string }): JSX.Element {
+	function ReplyButton(props: { category_name: string, field_name: string, is_array: boolean }): JSX.Element {
 		const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 		const onClick = (): void => {
 			if (editor_panel_data == null ||
@@ -115,17 +140,22 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 					board,
 					category: props.category_name,
 					title: '',
-					content: { [props.field_name]: `${article.meta.id}` }
+					content: { [props.field_name]: props.is_array ? [`${article.meta.id}`] : `${article.meta.id}`}
 				});
 				openEditorPanel();
 			} else if (editor_panel_data.board.id == board.id && editor_panel_data.category == props.category_name) {
-				setEditorPanelData({
-					...editor_panel_data,
-					content: {
-						...editor_panel_data.content,
-						[props.field_name]: `${article.meta.id}`
+				const next_state = produce(editor_panel_data, nxt => {
+					if (props.is_array) {
+						if (nxt.content[props.field_name] instanceof Array) {
+							(nxt.content[props.field_name] as string[]).push(`${article.meta.id}`);
+						} else {
+							nxt.content[props.field_name] = [`${article.meta.id}`];
+						}
+					} else {
+						nxt.content[props.field_name] = `${article.meta.id}`;
 					}
 				});
+				setEditorPanelData(next_state);
 				openEditorPanel();
 			} else {
 				toast.error('尚在編輯其他文章，請關閉後再點擊');
@@ -139,6 +169,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	type FieldPath = {
 		category: string,
 		field: string,
+		is_array: boolean,
 	};
 
 	function ReplyButtons(): JSX.Element {
@@ -153,7 +184,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 						if (bondee.kind == 'all'
 							|| bondee.category.includes(category_name)
 							|| bondee.family.filter(f => force.families.get(f)!.includes(category_name)).length > 0) {
-							candidates.push({ category: category.name, field: field.name});
+							candidates.push({ category: category.name, field: field.name, is_array: field.datatype.kind == 'array'});
 						}
 					}
 				}
@@ -170,6 +201,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 							return <ReplyButton
 								category_name={fp.category}
 								field_name={fp.field}
+								is_array={fp.is_array}
 								key={key} />;
 						}) :
 						<></>

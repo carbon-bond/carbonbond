@@ -41,7 +41,6 @@ export class Validator extends force.ValidatorTrait {
 	async validate_number(data: any): Promise<boolean> {
 		if (data.length == 0) { return false; }
 		const n = Number(data);
-		console.log(`data = ${data}, 數字是 ${n}`);
 		return !isNaN(n) && Number.isInteger(n);
 	}
 }
