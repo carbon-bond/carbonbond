@@ -398,6 +398,7 @@ dependencies = [
  "force",
  "hyper",
  "hyper-staticfile",
+ "lazy_static",
  "log",
  "rand",
  "redis",

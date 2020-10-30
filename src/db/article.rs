@@ -3,10 +3,30 @@ use crate::api::model::{Article, ArticleMeta};
 use crate::custom_error::{DataType, Fallible};
 use chrono::{DateTime, Utc};
 use force::parse_category;
+use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::RwLock;
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
+}
+
+pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>> {
+    let mut categories = Vec::new();
+    let mut ids = Vec::new();
+    for meta in &metas {
+        let category = get_force(meta.board_id, &meta.category_name).await?;
+        categories.push(category);
+        ids.push(meta.id);
+    }
+    let contents = article_content::get_by_article_ids(ids, categories).await?;
+    let articles = metas
+        .into_iter()
+        .zip(contents.into_iter())
+        .map(|(meta, content)| Article { meta, content })
+        .collect::<Vec<Article>>();
+    Ok(articles)
 }
 
 pub async fn search_article(
@@ -20,7 +40,7 @@ pub async fn search_article(
 ) -> Fallible<Vec<Article>> {
     let pool = get_pool();
     // XXX: 把這段長長的 join 寫成資料庫函式
-    let meta = sqlx::query_as!(
+    let metas = sqlx::query_as!(
         ArticleMeta,
         "
         SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
@@ -47,15 +67,7 @@ pub async fn search_article(
         title.is_none(),
         title.unwrap_or_default()
     ).fetch_all(pool).await?;
-
-    // XXX: n + 1 問題
-    let mut articles = Vec::new();
-    for meta in meta.into_iter() {
-        let category = get_force(meta.board_id, &meta.category_name).await?;
-        let content = article_content::get_by_article_id(meta.id, &category).await?;
-        articles.push(Article { meta, content });
-    }
-    Ok(articles)
+    metas_to_articles(metas).await
 }
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
@@ -77,7 +89,6 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<Article> {
-    let pool = get_pool();
     let meta = get_meta_by_id(id).await?;
     let category = get_force(meta.board_id, &meta.category_name).await?;
     let content = article_content::get_by_article_id(meta.id, &category).await?;
@@ -108,14 +119,7 @@ pub async fn get_by_board_name(
     .fetch_all(pool)
     .await?;
 
-    // XXX: n + 1 問題
-    let mut articles = Vec::new();
-    for meta in metas.into_iter() {
-        let category = get_force(meta.board_id, &meta.category_name).await?;
-        let content = article_content::get_by_article_id(meta.id, &category).await?;
-        articles.push(Article { meta, content });
-    }
-    Ok(articles)
+    metas_to_articles(metas).await
 }
 
 pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
@@ -137,7 +141,6 @@ pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
     .fetch_all(pool)
     .await?;
 
-    // XXX: n + 1 問題
     Ok(metas)
 }
 
@@ -171,11 +174,32 @@ async fn get_newest_category(board_id: i64, category_name: &String) -> Fallible<
     Ok(category)
 }
 
-// TODO: 快取
-async fn get_force(board_id: i64, category_name: &String) -> Fallible<force::Category> {
-    let source = get_newest_category(board_id, category_name).await?.source;
-    let category = parse_category(&source)?;
-    Ok(category)
+lazy_static! {
+    static ref FORCE_CACHE: RwLock<HashMap<(i64, String), Arc<force::Category>>> =
+        RwLock::new(HashMap::new());
+}
+
+// NOTE: 實作更新看板力語言的時候，更新資料庫的同時也必須更新快取
+async fn get_force(board_id: i64, category_name: &String) -> Fallible<Arc<force::Category>> {
+    let exist = {
+        let cache = FORCE_CACHE.read().unwrap();
+        match cache.get(&(board_id, category_name.to_string())) {
+            None => None,
+            Some(category) => Some(category.clone()),
+        }
+    };
+    match exist {
+        Some(category) => Ok(category),
+        None => {
+            let source = get_newest_category(board_id, category_name).await?.source;
+            let category = Arc::new(parse_category(&source)?);
+            FORCE_CACHE
+                .write()
+                .unwrap()
+                .insert((board_id, category_name.to_string()), category.clone());
+            Ok(category)
+        }
+    }
 }
 
 pub async fn check_bond(article_id: i64, board_id: i64, category_name: &str) -> Fallible<bool> {
