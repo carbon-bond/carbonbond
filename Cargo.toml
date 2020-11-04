@@ -35,6 +35,10 @@ redis = { version = "0.17.0", optional = true, features = ["tokio-comp"] }
 force = { path = "./force/rust" }
 lazy_static = "1.4.0"
 
+[dependencies.openssl]
+version = "0.10.29"
+features = [ "vendored" ]
+
 [build-dependencies]
 toml = "0.5.6"
 chitin = { git = "https://github.com/carbon-bond/chitin", version = "0.2.0" }
