@@ -103,12 +103,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
         category_name: String,
-        title: String,
         content: String,
+        title: String,
     ) -> Result<i64, crate::custom_error::Error> {
-        println!(
+        log::debug!(
             "發表文章： 看板 {}, 分類 {}, 內容 {}",
-            board_id, category_name, content
+            board_id,
+            category_name,
+            content
         );
         let author_id = context.get_id_strict()?;
         let id = db::article::create(author_id, board_id, category_name, title, content).await?;
@@ -132,11 +134,11 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         context: &mut crate::Ctx,
         board_name: Option<String>,
         party_name: String,
-    ) -> Fallible<()> {
+    ) -> Fallible<i64> {
         let id = context.get_id_strict()?;
         log::debug!("{} 嘗試創建 {}", id, party_name);
-        db::party::create(&party_name, board_name, id).await?;
-        Ok(())
+        let id = db::party::create(&party_name, board_name, id).await?;
+        Ok(id)
     }
 }
 

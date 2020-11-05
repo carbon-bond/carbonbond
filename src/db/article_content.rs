@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{DataType, ErrorCode, Fallible};
+use crate::custom_error::{Contextable, DataType, ErrorCode, Fallible};
 use force::validate::ValidatorTrait;
 use force::{Bondee, Category, Field};
 use serde_json::Value;
@@ -253,6 +253,7 @@ async fn insert_bond_field(article_id: i64, field_name: &String, value: i64) -> 
     Ok(())
 }
 async fn insert_field(article_id: i64, field: &Field, value: &Value) -> Fallible<()> {
+    log::debug!("插入文章內容 {:?} {:?}", field, value);
     match field.datatype.basic_type() {
         force::BasicDataType::Number => match value {
             Value::Number(number) => {
@@ -290,7 +291,8 @@ pub(super) async fn create(
     content: &str,
     category: Category,
 ) -> Fallible<()> {
-    let json: Value = serde_json::from_str(content)?;
+    let json: Value =
+        serde_json::from_str(content).context(format!("反序列化失敗 `{}`", content))?;
 
     // 檢驗格式
     if (Validator { board_id }.validate_category(&category, &json) == false) {

@@ -54,7 +54,7 @@ pub enum UserQuery {
 pub enum PartyQuery {
     #[chitin(request, response = "super::model::Party")]
     QueryParty { party_name: String },
-    #[chitin(request, response = "()")]
+    #[chitin(request, response = "i64")]
     CreateParty {
         party_name: String,
         board_name: Option<String>,

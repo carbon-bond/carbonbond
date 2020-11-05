@@ -1,24 +1,35 @@
-import {parse, Category } from 'force';
+import { parse, Category } from 'force';
 import { unwrap } from '../src/ts/api/api';
 import { RootQueryFetcher } from '../src/ts/api/api_trait';
+import request from 'request';
+
 let path = require('path');
 let fs = require('fs');
 
+
 export class InjectFetcher extends RootQueryFetcher {
-	async fetchResult(query: Object): Promise<string> {
-		// TODO:
-		return JSON.stringify({Ok: 1});
-
-		const url = `http://${window.location.hostname}:${window.location.port}/api`;
-
-		const response = await fetch(url, {
-			body: JSON.stringify(query),
-			method: 'POST',
+	fetchResult(query: Object): Promise<string> {
+		let url = 'http://localhost:8080/api';
+		const jar = request.jar();
+		const cookie = request.cookie('id=1')!;
+		jar.setCookie(cookie, url);
+		return new Promise((resolve, reject) => {
+			request(
+				{
+					url,
+					jar,
+					method: 'POST',
+					json: query,
+				},
+				(err, _, body) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(JSON.stringify(body));
+					}
+				}
+			);
 		});
-
-		const text = await response.text();
-
-		return text;
 	}
 }
 
@@ -41,24 +52,31 @@ type BoardConfig = {
 export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
-	await Promise.all(boards.map(b => injectBoard(b)));
+	let party_id = unwrap(await API_FETCHER.createParty(null, `小工具專用黨-${Math.floor(Math.random() * 999999)}`));
+	await Promise.all(boards.map(b => injectBoard(b, party_id)));
 }
 
 type IDPosMap = { [pos: number]: number };
-async function injectBoard(board: BoardConfig): Promise<void> {
+async function injectBoard(board: BoardConfig, party_id: number): Promise<void> {
 	let force_str = board.force.join('\n');
 	let force = parse(force_str);
 	let categories = force.categories;
 	let id_pos_map: IDPosMap = {};
-	let board_id = unwrap(
-		await API_FETCHER.createBoard({
-			ruling_party_id: 1,
-			board_name: board.name,
-			title: '',
-			detail: '',
-			force: force_str,
-		})
-	);
+	let board_id: number;
+	try {
+		board_id = unwrap(
+			await API_FETCHER.createBoard({
+				ruling_party_id: party_id,
+				board_name: board.name,
+				title: '測試標題',
+				detail: '測試',
+				force: force_str,
+			})
+		);
+	} catch (_) {
+		let b = unwrap(await API_FETCHER.queryBoard(board.name));
+		board_id = b.id;
+	}
 	console.log(`創板成功 ${board.name} = ${board_id}`);
 	for (let i = 0; i < board.articles.length; i++) {
 		let article = board.articles[i];
@@ -67,6 +85,7 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 			throw `未知的分類 ${article.category}`;
 		}
 		let id = await injectArticle(board_id, article, category, id_pos_map);
+		console.log(`發文成功 ${article.title} = ${id}`);
 		id_pos_map[i] = id;
 	}
 }
@@ -110,11 +129,10 @@ async function injectArticle(
 		await API_FETCHER.createArticle(
 			board_id,
 			category.name,
+			JSON.stringify(article.content),
 			article.title,
-			JSON.stringify(article.content)
 		)
 	);
-	console.log(`發文成功 ${article.title} = ${id}`);
 	return id;
 }
 

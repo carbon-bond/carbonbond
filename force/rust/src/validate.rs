@@ -4,6 +4,7 @@ use serde_json::Value;
 pub trait ValidatorTrait {
     fn validate_bond(&self, bondee: &Bondee, data: &Value) -> bool;
     fn validate_basic_datatype(&self, data_type: &BasicDataType, data: &Value) -> bool {
+        log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
         match (data_type, data) {
             (BasicDataType::Number, Value::Number(n)) => n.is_i64(),
             (BasicDataType::OneLine, Value::String(s)) => !s.contains('\n'),

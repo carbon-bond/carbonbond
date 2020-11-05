@@ -217,6 +217,7 @@ pub async fn create(
     // TODO: 交易？
     let pool = get_pool();
     let category = get_newest_category(board_id, &category_name).await?;
+    let force_category = parse_category(&category.source)?;
     let article_id = sqlx::query!(
         "
         INSERT INTO articles (author_id, board_id, title, category_id)
@@ -230,12 +231,7 @@ pub async fn create(
     .fetch_one(pool)
     .await?
     .id;
-    article_content::create(
-        article_id,
-        board_id,
-        &content,
-        parse_category(&category.source)?,
-    )
-    .await?;
+    log::debug!("成功創建文章元資料");
+    article_content::create(article_id, board_id, &content, force_category).await?;
     Ok(article_id)
 }
