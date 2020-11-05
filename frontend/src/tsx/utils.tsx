@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-type InputEvent = React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>;
+type InputEvent = React.ChangeEvent<HTMLInputElement>
+	| React.ChangeEvent<HTMLTextAreaElement>
+	| React.ChangeEvent<HTMLSelectElement>;
 
 // 以返回的 value, onChange 綁定 input 的值
 function useInputValue(initialValue: string = '', onChange: (s: string) => void = () => { }): {
