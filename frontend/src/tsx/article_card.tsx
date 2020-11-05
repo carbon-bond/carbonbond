@@ -124,8 +124,24 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	}
 }
 
+function CommentCard(props: { meta: ArticleMeta }): JSX.Element {
+	const date_string =  relativeDate(new Date(props.meta.create_time));
+	return <div styleName="commentCard">
+		<div styleName="commentHeader">
+			<Link to={`/app/user/${props.meta.author_name}`}>
+				<div styleName="authorId">{props.meta.author_name}</div>
+			</Link>
+			<div styleName="articleTime">{date_string} {props.meta.category_name}</div>
+		</div>
+		<div>
+			{props.meta.title}
+		</div>
+	</div>;
+}
+
 export {
 	ArticleCard,
 	SimpleArticleCardById,
-	SimpleArticleCard
+	SimpleArticleCard,
+	CommentCard
 };

@@ -28,7 +28,7 @@ export type BasicDataType = {
 	kind: 'one_line'
 } | {
 	kind: 'text',
-	regex: RegExp | undefined
+	regex: string | undefined
 } | {
 	kind: 'number'
 };
@@ -41,7 +41,11 @@ export function show_basic_data_type(t: BasicDataType): string {
 	} else if (t.kind == 'one_line') {
 		return '單行';
 	} else if (t.kind == 'text') {
-		return `文本${t.regex == undefined ? '' : t.regex.toString()}`;
+		if (t.regex == undefined) {
+			return '文本';
+		} else {
+			return `文本\/${t.regex.toString()}\/`;
+		}
 	} else if (t.kind == 'number') {
 		return '數字';
 	}

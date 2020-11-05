@@ -32,13 +32,13 @@ export function BoardPage(props: Props): JSX.Element {
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [is_end, set_is_end] = React.useState<boolean>(false);
 
-	const { setBoard } = BoardCacheState.useContainer();
+	const { setCurBoard } = BoardCacheState.useContainer();
 	React.useEffect(() => {
-		setBoard({ id: props.board.id, board_name: props.board.board_name });
+		setCurBoard(props.board.board_name);
 		// return () => {
-		// 	setBoard(null);
+		// 	setCurBoard(null);
 		// };
-	}, [props.board, setBoard]);
+	}, [props.board, setCurBoard]);
 
 	React.useEffect(() => {
 		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {

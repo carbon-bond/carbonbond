@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { BoardName } from '../ts/api/api_trait';
 import { History } from 'history';
 import '../css/header.css';
 
-export function SearchBar(props: { cur_board: BoardName | null, history: History }): JSX.Element {
+export function SearchBar(props: { cur_board: string | null, history: History }): JSX.Element {
 	let [content, setContent] = React.useState('');
 	let [board, setBoard] = React.useState<string | null>(null);
 	function onSearch(board_name: string | null): void {
@@ -40,8 +39,8 @@ export function SearchBar(props: { cur_board: BoardName | null, history: History
 			{
 				(() => {
 					if (props.cur_board) {
-						return <option value={props.cur_board.board_name}>
-							{props.cur_board.board_name}
+						return <option value={props.cur_board}>
+							{props.cur_board}
 						</option>;
 					}
 				})()

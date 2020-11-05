@@ -18,7 +18,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
-	const { board } = BoardCacheState.useContainer();
+	const { cur_board } = BoardCacheState.useContainer();
 
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
@@ -155,7 +155,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			</div>;
 		}
 	}
-	let title = board ? board.board_name : '全站熱門'; // XXX: 全站熱門以外的？
+	let title = cur_board ? cur_board: '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
@@ -166,7 +166,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						<img src="/img/icon_with_text.png" alt="" />
 					</div>
 					<div styleName="location">{title}</div>
-					<SearchBar history={props.history} cur_board={board}/>
+					<SearchBar history={props.history} cur_board={cur_board}/>
 				</div>
 
 				<div styleName="rightSet">

@@ -2,6 +2,7 @@ use crate::lexer;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Bondee {
@@ -91,7 +92,7 @@ pub struct Category {
     pub fields: Vec<Field>,
 }
 
-pub type Categories = HashMap<String, Category>;
+pub type Categories = HashMap<String, Arc<Category>>;
 
 #[derive(Debug)]
 pub struct Force {

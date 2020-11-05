@@ -3,6 +3,7 @@ use crate::lexer::{lexer, Token};
 use logos::Span;
 use regex::Regex;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct Parser {
     tokens: Vec<(Token, Span)>,
@@ -166,8 +167,8 @@ impl Parser {
                 match self.cur.clone() {
                     Token::Regex(s) => {
                         self.advance();
-                        let regex =
-                            Regex::new(&s).map_err(|_e| ForceError::InvalidRegex { regex: s })?;
+                        let regex = Regex::new(&format!("(?s){}", s))
+                            .map_err(|_e| ForceError::InvalidRegex { regex: s })?;
                         Ok(BasicDataType::Text(Some(regex)))
                     }
                     _ => Ok(BasicDataType::Text(None)),
@@ -273,7 +274,7 @@ impl Parser {
             if let Token::End = self.cur {
                 break;
             } else {
-                let category = self.parse_category()?;
+                let category = Arc::new(self.parse_category()?);
                 categories.insert(category.name.clone(), category);
             }
         }
@@ -360,7 +361,7 @@ mod test {
         let force = parse(source)?;
         assert_eq!(force.categories.len(), 1);
 
-        let ans = &Category {
+        let ans = Category {
             name: "新聞".to_owned(),
             fields: vec![
                 Field {
@@ -375,8 +376,8 @@ mod test {
             family: vec!["轉載".to_owned(), "外部".to_owned()],
             source: source.to_owned(),
         };
-        assert_eq!(force.categories.get("新聞").unwrap(), ans);
-        assert_eq!(&parse_category(source).unwrap(), ans);
+        assert_eq!(**(force.categories.get("新聞").unwrap()), ans);
+        assert_eq!(parse_category(source).unwrap(), ans);
 
         assert_eq!(force.families.len(), 2);
         assert_eq!(force.families.get("轉載").unwrap().len(), 1);
@@ -410,7 +411,7 @@ mod test {
         let ans = &Category {
             name: "作文比賽".to_owned(),
             fields: vec![Field {
-                datatype: BasicDataType::Text(Some(Regex::new("我的志願是.+").unwrap())).into(),
+                datatype: BasicDataType::Text(Some(Regex::new("(?s)我的志願是.+").unwrap())).into(),
                 name: "文章".to_owned(),
             }],
             family: vec![],
