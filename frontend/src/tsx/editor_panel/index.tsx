@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Validator } from '../../ts/validator';
 import * as Force from 'force';
-import { SplitLine } from '../../tsx/board_switch/article_page';
+import { ShowText } from '../../tsx/board_switch/article_page';
 
 
 import '../../css/bottom_panel/bottom_panel.css';
@@ -123,7 +123,7 @@ const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Ele
 function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
 	if (props.t.kind == 'text') {
 		return <div styleName="textValueWrap">
-			<SplitLine text={props.value} />
+			<ShowText text={props.value} />
 		</div>;
 	} else if (props.t.kind == 'bond') {
 		return <SimpleArticleCardById article_id={Number(props.value)} />;

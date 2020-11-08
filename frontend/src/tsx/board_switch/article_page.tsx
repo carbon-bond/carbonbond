@@ -11,6 +11,7 @@ import { parse_category, Field, Force } from 'force';
 import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
 import * as force_util from '../../ts/force_util';
+import { isImageLink, isLink } from '../../ts/regex_util';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
@@ -124,13 +125,29 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 	</div>;
 }
 
-export function SplitLine(props: { text: string }): JSX.Element {
+export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
 	return <>{
 		props.text.split('\n').map(line => {
-			return line.length == 0 ?
-				<br key={key++}/>
-				: <p key={key++}>{line}</p>;
+			if (line.length == 0) {
+				// 換行
+				return <br key={key++} />;
+			} else if (isImageLink(line.trim())) {
+				return <>
+					<p key={key++}>
+						<a target="_blank" href={line}>
+							{line}
+							<img key={key++} src={line.trim()} width="100%" alt="圖片"/>
+						</a>
+					</p>
+				</>;
+			} else if (isLink(line.trim())) {
+				return <p key={key++}>
+					<a target="_blank" href={line}>{line}</a>
+				</p>;
+			} else {
+				return <p key={key++}>{line}</p>;
+			}
 		})
 	}
 	</>;
@@ -144,7 +161,7 @@ function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
 			<SimpleArticleCardById article_id={value} />
 		</div>;
 	} else {
-		return <SplitLine text={`${value}`} />;
+		return <ShowText text={`${value}`} />;
 	}
 }
 
