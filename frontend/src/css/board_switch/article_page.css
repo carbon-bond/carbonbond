@@ -39,9 +39,39 @@
 
 .replyCardList {
     margin-top: 20px;
+    margin-bottom: 5px;
+    & .listTitle {
+        margin-bottom: 10px;
+        cursor: pointer;
+        & .toggleButton {
+            margin-right: 5px;
+        }
+    }
 }
-.replyCardList > div:not(:first-child) {
+.replyCardList > div > div:not(:first-child) {
     border-top: 0px;
+}
+
+.comments {
+    margin-top: 20px;
+    margin-bottom: 5px;
+    & .listTitle {
+        margin-bottom: 10px;
+        cursor: pointer;
+        & .toggleButton {
+            margin-right: 5px;
+        }
+    }
+    & .contents {
+        border: 1px solid var(--light-gray);
+        & .selectedField {
+            color: var(--white);
+            background: var(--theme-color)
+        }
+        & textarea {
+            width: 100%;
+        }
+    }
 }
 
 .offset {

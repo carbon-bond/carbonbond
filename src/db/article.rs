@@ -1,7 +1,9 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta};
-use crate::custom_error::{DataType, Fallible};
+use crate::custom_error::{self, DataType, Fallible};
+use crate::db::board;
 use chrono::{DateTime, Utc};
+use force;
 use force::parse_category;
 use lazy_static::lazy_static;
 use serde_json::Value;
@@ -17,7 +19,7 @@ pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>
     let mut categories = Vec::new();
     let mut ids = Vec::new();
     for meta in &metas {
-        let category = get_force(meta.board_id, &meta.category_name).await?;
+        let category = get_force_category(meta.board_id, &meta.category_name).await?;
         categories.push(category);
         ids.push(meta.id);
     }
@@ -124,7 +126,7 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
 
 pub async fn get_by_id(id: i64) -> Fallible<Article> {
     let meta = get_meta_by_id(id).await?;
-    let category = get_force(meta.board_id, &meta.category_name).await?;
+    let category = get_force_category(meta.board_id, &meta.category_name).await?;
     let content = article_content::get_by_article_id(meta.id, &category).await?;
     Ok(Article { meta, content })
 }
@@ -156,7 +158,10 @@ pub async fn get_by_board_name(
     metas_to_articles(metas).await
 }
 
-pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
+pub async fn get_bonder_meta(
+    article_id: i64,
+    category_set: Vec<String>,
+) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
         ArticleMeta,
@@ -168,14 +173,22 @@ pub async fn get_bonder(article_id: i64) -> Fallible<Vec<ArticleMeta>> {
         INNER JOIN boards on articles.board_id = boards.id
         INNER JOIN categories on articles.category_id = categories.id
         WHERE article_bond_fields.value = $1
+        AND categories.category_name = ANY($2)
         ORDER BY articles.create_time DESC
         ",
         article_id,
+        &category_set
     )
     .fetch_all(pool)
     .await?;
 
     Ok(metas)
+}
+
+pub async fn get_bonder(article_id: i64, category_set: Vec<String>) -> Fallible<Vec<Article>> {
+    let pool = get_pool();
+    let metas = get_bonder_meta(article_id, category_set).await?;
+    metas_to_articles(metas).await
 }
 
 #[derive(Debug)]
@@ -209,29 +222,37 @@ async fn get_newest_category(board_id: i64, category_name: &String) -> Fallible<
 }
 
 lazy_static! {
-    static ref FORCE_CACHE: RwLock<HashMap<(i64, String), Arc<force::Category>>> =
-        RwLock::new(HashMap::new());
+    static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
 }
 
 // NOTE: 實作更新看板力語言的時候，更新資料庫的同時也必須更新快取
-async fn get_force(board_id: i64, category_name: &String) -> Fallible<Arc<force::Category>> {
+async fn get_force(board_id: i64) -> Fallible<Arc<force::Force>> {
     let exist = {
         let cache = FORCE_CACHE.read().unwrap();
-        match cache.get(&(board_id, category_name.to_string())) {
+        match cache.get(&board_id) {
             None => None,
             Some(category) => Some(category.clone()),
         }
     };
     match exist {
-        Some(category) => Ok(category),
+        Some(force) => Ok(force),
         None => {
-            let source = get_newest_category(board_id, category_name).await?.source;
-            let category = Arc::new(parse_category(&source)?);
-            FORCE_CACHE
-                .write()
-                .unwrap()
-                .insert((board_id, category_name.to_string()), category.clone());
-            Ok(category)
+            let force = Arc::new(force::parse(&board::get_by_id(board_id).await?.force)?);
+            FORCE_CACHE.write().unwrap().insert(board_id, force.clone());
+            Ok(force)
+        }
+    }
+}
+
+async fn get_force_category(
+    board_id: i64,
+    category_name: &String,
+) -> Fallible<Arc<force::Category>> {
+    let force = get_force(board_id).await?;
+    match force.categories.get(category_name) {
+        Some(category) => Ok(category.clone()),
+        None => {
+            Err(custom_error::ErrorCode::NotFound(DataType::Category, category_name.clone()).into())
         }
     }
 }

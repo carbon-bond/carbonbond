@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 use typescript_definitions::TypeScriptify;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub enum Bondee {
@@ -121,7 +122,7 @@ pub struct Category {
     pub fields: Vec<Field>,
 }
 
-pub type Categories = HashMap<String, Category>;
+pub type Categories = HashMap<String, Arc<Category>>;
 
 #[derive(Debug)]
 pub struct Force {

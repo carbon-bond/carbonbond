@@ -30,7 +30,6 @@ function EditorPanel(): JSX.Element | null {
 		}
 	}
 	function deleteEditor(): void {
-		// TODO: 跳視窗警告
 		let do_delete = true;
 		if (editor_panel_data ) {
 			if (editor_panel_data.title != '') {
@@ -81,7 +80,8 @@ const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Ele
 	let content = editor_panel_data!.content;
 
 	useEffect(() => {
-		validator.validate_datatype(field.datatype, content[field.name]).then(res => setIsValid(res));
+		validator.validate_datatype(field.datatype, content[field.name])
+		.then(res => setIsValid(res));
 	}, [field, content, validator]);
 
 	if (editor_panel_data == null) { return <></>; }

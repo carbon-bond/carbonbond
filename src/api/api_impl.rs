@@ -89,9 +89,18 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_bonder(
         &self,
         _context: &mut crate::Ctx,
+        category_set: Vec<String>,
+        id: i64,
+    ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
+        db::article::get_bonder(id, category_set).await
+    }
+    async fn query_bonder_meta(
+        &self,
+        _context: &mut crate::Ctx,
+        category_set: Vec<String>,
         id: i64,
     ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
-        db::article::get_bonder(id).await
+        db::article::get_bonder_meta(id, category_set).await
     }
     async fn query_article_meta(
         &self,
@@ -108,11 +117,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         content: String,
         title: String,
     ) -> Result<i64, crate::custom_error::Error> {
-        log::debug!(
-            "發表文章： 看板 {}, 分類 {}, 內容 {}",
-            board_id,
-            category_name,
-            content
+        println!(
+            "發表文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
+            board_id, category_name, title, content
         );
         let author_id = context.get_id_strict()?;
         let id = db::article::create(author_id, board_id, category_name, title, content).await?;

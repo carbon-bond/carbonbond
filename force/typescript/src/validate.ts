@@ -16,7 +16,9 @@ export abstract class ValidatorTrait {
 			return data.search('\n') == -1;
 		} else if (datatype.kind == 'text' && typeof data == 'string') {
 			if (datatype.regex) {
-				return datatype.regex.test(data);
+				let regex = new RegExp(datatype.regex, 'gs');
+				let res = regex.test(data);
+				return res;
 			} else {
 				return true;
 			}

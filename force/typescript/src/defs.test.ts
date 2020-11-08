@@ -28,7 +28,7 @@ test('基礎型別字串轉換', () => {
 	})).toBe('文本');
 	expect(defs.show_basic_data_type({
 		kind: 'text',
-		regex: new RegExp('abc?')
+		regex: 'abc?'
 	})).toBe('文本/abc?/');
 	expect(defs.show_basic_data_type({
 		kind: 'number',

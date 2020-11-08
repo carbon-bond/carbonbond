@@ -130,3 +130,18 @@
 .simpleArticleCard:hover {
     box-shadow: inset 0 0 2px var(--theme-color);
 }
+
+.commentCard {
+    margin: 5px 10px;
+    & .commentHeader {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 5px 0px;
+        font-size: 14px;
+        color: var(--light-font-color);
+        & .authorId {
+            text-decoration: underline;
+        }
+    }
+}

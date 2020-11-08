@@ -3,38 +3,125 @@ import { produce } from 'immer';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById, CommentCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
 import { toast } from 'react-toastify';
-import { parse_category, Field } from 'force';
-import { useForce } from '../../ts/cache';
+import { parse_category, Field, Force } from 'force';
+import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
+import * as force_util from '../../ts/force_util';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
 	const { article } = props;
-	// let [fetching, setFetching] = React.useState(true);
 	let [metas, setMetas] = React.useState<ArticleMeta[]>([]);
+	let [expanded, setExpanded] = React.useState<Boolean>(true);
 
 	React.useEffect(() => {
-		API_FETCHER.queryBonder(article.meta.id).then(data => {
+		get_force(article.meta.board_id)
+		.then(force => {
+			const big_members = force_util.get_big_members(force);
+			return API_FETCHER.queryBonderMeta(big_members, article.meta.id);
+		}).then(data => {
 			setMetas(unwrap(data));
-			// setFetching(false);
 		}).catch(err => {
 			toast.error(err);
-			// setFetching(false);
 		});
-	}, [article.meta.id]);
+	}, [article.meta.board_id, article.meta.id]);
 
 	return <div styleName="replyCardList">
-		{
-			metas.map(meta => <SimpleArticleCard key={meta.id} meta={meta} />)
-		}
-	</div>;
+		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
+			<span styleName="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
+			<span>{metas.length} 篇大回文</span>
+		</div>
+		<div>
+			{
+				expanded
+					? metas.map(meta => <SimpleArticleCard key={meta.id} meta={meta} />)
+					: null
+			}
+		</div>
+	</div> ;
 }
-function Comments(): JSX.Element {
-	return <></>;
+
+type FieldPath = {
+	category: string,
+	field: string,
+	is_array: boolean,
+};
+
+function get_bond_fields(force: Force, category_name: string): FieldPath[] {
+	let candidates: FieldPath[] = [];
+	for (let [_, category] of force.categories) {
+		for (let field of category.fields) {
+			if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+				let bondee = field.datatype.t.bondee;
+				if (bondee.kind == 'all'
+					|| bondee.category.includes(category_name)
+					|| bondee.family.filter(f => force.families.get(f)!.includes(category_name)).length > 0) {
+					candidates.push({ category: category.name, field: field.name, is_array: field.datatype.kind == 'array'});
+				}
+			}
+		}
+	}
+	return candidates;
+}
+
+function Comments(props: { article: Article, board: Board }): JSX.Element {
+	const { article, board } = props;
+	let [small_articles, setSmallArticles] = React.useState<Article[]>([]);
+	let [small_fields, setSmallFields] = React.useState<FieldPath[]>([]);
+	let [expanded, setExpanded] = React.useState<Boolean>(true);
+
+	const get_comment = ((): void => {
+		get_force(article.meta.board_id)
+		.then(force => {
+			const small_members = force_util.get_small_members(force);
+			let small_fields = get_bond_fields(force, article.meta.category_name).filter(fp => small_members.includes(fp.category));
+			setSmallFields(small_fields);
+			return API_FETCHER.queryBonder(small_members, article.meta.id);
+		}).then(data => {
+			setSmallArticles(unwrap(data));
+		}).catch(err => {
+			toast.error(err);
+		});
+	});
+
+	React.useEffect(get_comment, [article.meta.board_id, article.meta.id]);
+
+	function CommentButtons(): JSX.Element {
+		return <>{
+			small_fields.map(fp => {
+				const key = `${fp.category}#${fp.field}`;
+				return <ReplyButton
+					board={board}
+					article={article}
+					category_name={fp.category}
+					field_name={fp.field}
+					is_array={fp.is_array}
+					key={key} />;
+			})
+		}</>;
+	}
+	return <div styleName="comments">
+		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
+			<span styleName="toggleButton">{expanded ? '⯆' : '⯈'} </span>
+			<span>{small_articles.length} 則留言</span>
+		</div>
+		<div styleName="contents">
+			<div>
+				{
+					expanded
+						? small_articles.map(article => <CommentCard key={article.meta.id} meta={article.meta} />)
+						: null
+				}
+			</div>
+			<div>
+				<CommentButtons />
+			</div>
+		</div>
+	</div>;
 }
 
 export function SplitLine(props: { text: string }): JSX.Element {
@@ -77,7 +164,6 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
 	const category = parse_category(article.meta.category_source);
 	const content = JSON.parse(article.content);
-	console.log(article.content);
 
 	return <div styleName="articleContent">
 		{
@@ -101,94 +187,58 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 	</div>;
 }
 
+function ReplyButton(props: { board: Board, article: Article, category_name: string, field_name: string, is_array: boolean }): JSX.Element {
+	const { board, article } = props;
+	const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const onClick = (): void => {
+		if (editor_panel_data == null ||
+			editor_panel_data.category == '') {
+			setEditorPanelData({
+				board,
+				category: props.category_name,
+				title: '',
+				content: { [props.field_name]: props.is_array ? [`${article.meta.id}`] : `${article.meta.id}`}
+			});
+			openEditorPanel();
+		} else if (editor_panel_data.board.id == board.id && editor_panel_data.category == props.category_name) {
+			const next_state = produce(editor_panel_data, nxt => {
+				if (props.is_array) {
+					if (nxt.content[props.field_name] instanceof Array) {
+						(nxt.content[props.field_name] as string[]).push(`${article.meta.id}`);
+					} else {
+						nxt.content[props.field_name] = [`${article.meta.id}`];
+					}
+				} else {
+					nxt.content[props.field_name] = `${article.meta.id}`;
+				}
+			});
+			setEditorPanelData(next_state);
+			openEditorPanel();
+		} else {
+			toast.error('尚在編輯其他文章，請關閉後再點擊');
+		}
+	};
+	return <button onClick={onClick}>
+		{`${props.category_name}#${props.field_name}`}
+	</button>;
+}
+
 function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
 
-	let scrollHandler = React.useCallback(() => {
-		console.log('成功!!');
-	}, []);
+	let scrollHandler = React.useCallback(() => {}, []);
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
-	// const { editor_panel_data, openEditorPanel, addEdge }
-	// 	= EditorPanelState.useContainer();
-
 	const category_name = article.meta.category_name;
 
-	// function onReplyClick(transfuse: Transfuse): void {
-	// 	if (editor_panel_data) { // 有文章在編輯中
-	// 		try {
-	// 			addEdge(article, transfuse);
-	// 		} catch (e) {
-	// 			matchErrAndShow(e);
-	// 		}
-	// 	} else { // 發表新文章
-	// 		openEditorPanel({
-	// 			title: genReplyTitle(article.title),
-	// 			board_name,
-	// 			reply_to: { article, transfuse }
-	// 		}).catch(e => matchErrAndShow(e));
-	// 	}
-	// }
-
-	function ReplyButton(props: { category_name: string, field_name: string, is_array: boolean }): JSX.Element {
-		const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-		const onClick = (): void => {
-			if (editor_panel_data == null ||
-				editor_panel_data.category == '') {
-				setEditorPanelData({
-					board,
-					category: props.category_name,
-					title: '',
-					content: { [props.field_name]: props.is_array ? [`${article.meta.id}`] : `${article.meta.id}`}
-				});
-				openEditorPanel();
-			} else if (editor_panel_data.board.id == board.id && editor_panel_data.category == props.category_name) {
-				const next_state = produce(editor_panel_data, nxt => {
-					if (props.is_array) {
-						if (nxt.content[props.field_name] instanceof Array) {
-							(nxt.content[props.field_name] as string[]).push(`${article.meta.id}`);
-						} else {
-							nxt.content[props.field_name] = [`${article.meta.id}`];
-						}
-					} else {
-						nxt.content[props.field_name] = `${article.meta.id}`;
-					}
-				});
-				setEditorPanelData(next_state);
-				openEditorPanel();
-			} else {
-				toast.error('尚在編輯其他文章，請關閉後再點擊');
-			}
-		};
-		return <button onClick={onClick}>
-			{`${props.category_name}#${props.field_name}`}
-		</button>;
-	}
-
-	type FieldPath = {
-		category: string,
-		field: string,
-		is_array: boolean,
-	};
 
 	function ReplyButtons(): JSX.Element {
 		let [expanded, setExpanded] = React.useState<Boolean>(false);
 		const force = useForce(board.id);
 		let candidates: FieldPath[] = [];
 		if (force) {
-			for (let [_, category] of force.categories) {
-				for (let field of category.fields) {
-					if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
-						let bondee = field.datatype.t.bondee;
-						if (bondee.kind == 'all'
-							|| bondee.category.includes(category_name)
-							|| bondee.family.filter(f => force.families.get(f)!.includes(category_name)).length > 0) {
-							candidates.push({ category: category.name, field: field.name, is_array: field.datatype.kind == 'array'});
-						}
-					}
-				}
-			}
+			candidates = get_bond_fields(force, category_name);
 		}
 		return <div>
 			<button onClick={() => setExpanded(!expanded)}>鍵結到本文</button>
@@ -199,6 +249,8 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 						candidates.map(fp => {
 							const key = `${fp.category}#${fp.field}`;
 							return <ReplyButton
+								board={board}
+								article={article}
 								category_name={fp.category}
 								field_name={fp.field}
 								is_array={fp.is_array}
@@ -221,14 +273,13 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleContent article={article} />
 		<ArticleFooter />
 		<BigReplyList article={article}/>
-		<Comments />
+		<Comments article={article} board={board}/>
 	</div>;
 }
 
 type Props = RouteComponentProps<{ article_id?: string, board_name?: string }> & {
 	board: Board
 };
-
 
 export function ArticlePage(props: Props): JSX.Element {
 	let article_id = parseInt(props.match.params.article_id!);
