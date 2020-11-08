@@ -287,8 +287,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				API_FETCHER.createArticle(
 					board.id,
 					category.name,
-					editor_panel_data.title,
 					JSON.stringify(content),
+					editor_panel_data.title,
 				)
 			)
 			.then(data => unwrap(data))
