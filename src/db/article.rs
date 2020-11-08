@@ -32,7 +32,7 @@ pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>
 pub async fn search_article(
     author_name: Option<String>,
     board_name: Option<String>,
-    category: Option<String>,
+    category: Option<i64>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     str_content: HashMap<String, String>,
@@ -49,7 +49,7 @@ pub async fn search_article(
         INNER JOIN categories on articles.category_id = categories.id
         WHERE ($1 OR boards.board_name = $2)
         AND ($3 OR users.user_name = $4)
-        AND ($5 OR categories.category_name = $6)
+        AND ($5 OR categories.id = $6)
         AND ($7 OR articles.create_time < $8)
         AND ($9 OR articles.create_time > $10)
         AND ($11 OR articles.title ~ $12)

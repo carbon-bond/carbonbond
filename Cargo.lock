@@ -433,8 +433,8 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "chitin"
-version = "0.2.1"
-source = "git+https://github.com/carbon-bond/chitin#df1097b3f46a2073720d9eaf41c852a3bb2f735e"
+version = "0.2.3"
+source = "git+https://github.com/carbon-bond/chitin#a6f1ba4b3beff52105679c343dc81f91972cb332"
 dependencies = [
  "chitin_core",
  "chitin_derive",
@@ -443,8 +443,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_core"
-version = "0.2.1"
-source = "git+https://github.com/carbon-bond/chitin#df1097b3f46a2073720d9eaf41c852a3bb2f735e"
+version = "0.2.3"
+source = "git+https://github.com/carbon-bond/chitin#a6f1ba4b3beff52105679c343dc81f91972cb332"
 dependencies = [
  "Inflector",
  "proc-macro2 1.0.18",
@@ -454,8 +454,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_derive"
-version = "0.2.1"
-source = "git+https://github.com/carbon-bond/chitin#df1097b3f46a2073720d9eaf41c852a3bb2f735e"
+version = "0.2.3"
+source = "git+https://github.com/carbon-bond/chitin#a6f1ba4b3beff52105679c343dc81f91972cb332"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",
@@ -465,8 +465,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_model"
-version = "0.2.1"
-source = "git+https://github.com/carbon-bond/chitin#df1097b3f46a2073720d9eaf41c852a3bb2f735e"
+version = "0.2.3"
+source = "git+https://github.com/carbon-bond/chitin#a6f1ba4b3beff52105679c343dc81f91972cb332"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",
@@ -784,6 +784,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "typescript-definitions",
 ]
 
 [[package]]

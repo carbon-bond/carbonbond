@@ -1,7 +1,7 @@
 use chitin::*;
 #[chitin_model]
 mod model {
-    use chitin::chitin_util;
+    use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};

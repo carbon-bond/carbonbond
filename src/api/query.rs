@@ -87,7 +87,7 @@ pub enum ArticleQuery {
         board_name: Option<String>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-        category: Option<String>,
+        category: Option<i64>,
         title: Option<String>, // TODO: 模糊搜尋
         str_content: HashMap<String, String>,
     },
@@ -108,4 +108,7 @@ pub enum BoardQuery {
     CreateBoard { new_board: super::model::NewBoard },
     #[chitin(request, response = "Vec<super::model::BoardOverview>")]
     QueryHotBoards {},
+
+    #[chitin(request, response = "String")]
+    QueryCategoryById { id: i64 },
 }

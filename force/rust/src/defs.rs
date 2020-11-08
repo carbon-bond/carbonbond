@@ -1,9 +1,11 @@
 use crate::lexer;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
+use typescript_definitions::TypeScriptify;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub enum Bondee {
     All,
     Choices {
@@ -12,16 +14,44 @@ pub enum Bondee {
     },
 }
 // TODO: 處理輸能等等額外設定
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub struct Tag {
     pub name: String,
 }
 
-#[derive(Debug, Clone)]
+fn serialize_regex<S>(re: &Option<Regex>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    if let Some(re) = re {
+        s.serialize_str(&re.to_string())
+    } else {
+        s.serialize_none()
+    }
+}
+
+fn deserialize_regex<'de, D>(d: D) -> Result<Option<Regex>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: Option<&str> = serde::Deserialize::deserialize(d)?;
+    if let Some(s) = s {
+        let re = Regex::new(s).map_err(|e| serde::de::Error::custom(e.to_string()))?;
+        Ok(Some(re))
+    } else {
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, TypeScriptify)]
 pub enum BasicDataType {
     Bond(Bondee),
     TaggedBond(Bondee, Vec<Tag>),
     OneLine,
+    #[serde(
+        serialize_with = "serialize_regex",
+        deserialize_with = "deserialize_regex"
+    )]
     Text(Option<Regex>), // 正則表達式
     Number,
 }
@@ -46,7 +76,7 @@ impl PartialEq for BasicDataType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub enum DataType {
     Optional(BasicDataType),
     Single(BasicDataType),
@@ -77,13 +107,13 @@ impl From<BasicDataType> for DataType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub struct Field {
     pub datatype: DataType,
     pub name: String,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub struct Category {
     pub source: String,
     pub name: String,

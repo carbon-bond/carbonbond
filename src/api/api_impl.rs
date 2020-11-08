@@ -7,6 +7,7 @@ use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use force::Category;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -45,7 +46,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         author_name: Option<String>,
         board_name: Option<String>,
-        category: Option<String>,
+        category: Option<i64>,
         end_time: Option<DateTime<Utc>>,
         start_time: Option<DateTime<Utc>>,
         str_content: HashMap<String, String>,
@@ -196,6 +197,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
             .await?
             .assign_props()
             .await
+    }
+    async fn query_category_by_id(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<String, crate::custom_error::Error> {
+        let source = db::board::get_category_by_id(id).await?;
+        Ok(source)
     }
 }
 

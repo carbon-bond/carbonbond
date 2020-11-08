@@ -25,6 +25,14 @@ export function unwrap<T, E>(result: api_trait.Result<T, E>): T {
 	}
 }
 
+export function map<T, U>(option: api_trait.Option<T>, fn: (og: T) => U): api_trait.Option<U> {
+	if (option === null) {
+		return null;
+	} else {
+		return fn(option);
+	}
+}
+
 // 打印錯誤並回傳預設資料
 export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
 	if ('Ok' in result) {

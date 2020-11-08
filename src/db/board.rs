@@ -103,3 +103,12 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     super::party::change_board(board.ruling_party_id, board_id).await?;
     Ok(board_id)
 }
+
+pub async fn get_category_by_id(id: i64) -> Fallible<String> {
+    let pool = get_pool();
+    let category_str = sqlx::query!("SELECT source FROM categories WHERE id = $1", id)
+        .fetch_one(pool)
+        .await?
+        .source;
+    Ok(category_str)
+}
