@@ -89,7 +89,7 @@ pub enum ArticleQuery {
         end_time: Option<DateTime<Utc>>,
         category: Option<i64>,
         title: Option<String>, // TODO: 模糊搜尋
-        str_content: HashMap<String, String>,
+        content: String,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]

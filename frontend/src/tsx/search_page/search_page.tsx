@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { API_FETCHER, unwrap, map } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
 import { Article } from '../../ts/api/api_trait';
+import { produce } from 'immer';
 
 import '../../css/article_wrapper.css';
 import '../../css/layout.css';
@@ -36,6 +37,7 @@ function getQuery(name: string, query: queryString.ParsedQuery): string {
 }
 
 type CategoryEntry = { name: string, board_name: string, id: number };
+type SearchFields = { [name: string]: string | number };
 
 export function SearchPage(props: RouteComponentProps): JSX.Element {
 	const { cur_board, setCurBoard } = BoardCacheState.useContainer();
@@ -45,7 +47,11 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 	let search_board = used_board_value.input_props;
 	let setSearchBoard = React.useCallback(used_board_value.setValue, []);
 
-	let search_category = useInputValue('', onSearchCategoryChange).input_props;
+	let used_category_value = useInputValue('', onSearchCategoryChange);
+	let search_category = used_category_value.input_props;
+	let setSearchCategory = React.useCallback(used_category_value.setValue, []);
+
+	let [search_fields, setSearchFields] = React.useState<SearchFields>({});
 
 	let [url_board, setUrlBoard] = React.useState('');
 	let [articles, setArticles] = React.useState(new Array<Article>());
@@ -68,6 +74,17 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				let board = getQueryOpt('board', opt);
 				let author = getQueryOpt('author', opt);
 				let category = map(getQueryOpt('category', opt), parseInt);
+				let fields = map(getQueryOpt('fields', opt), s => {
+					let obj = JSON.parse(s);
+					if (typeof obj == 'object' && !Array.isArray(obj)) {
+						return JSON.stringify(obj);
+					} else {
+						throw `不合法的欄位值 ${s}`;
+					}
+				});
+				if (typeof fields != 'string') {
+					fields = '{}';
+				}
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
@@ -78,10 +95,12 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				}
 				if (category) {
 					setCurCategory(category);
+					setSearchCategory(category.toString());
 				} else {
 					setCurCategory(null);
+					setSearchCategory('');
 				}
-				return { title, board, author, category };
+				return { title, board, author, category, fields };
 			} catch (err) {
 				toast.error(err);
 				return err as string;
@@ -90,7 +109,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.searchArticle(query.author, query.board, query.category, null, null, {}, query.title).then(res => {
+		API_FETCHER.searchArticle(query.author, query.board, query.category, query.fields, null, null, query.title).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
@@ -110,7 +129,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				toast.error(e);
 			}
 		});
-	}, [setCurBoard, setSearchBoard, props.location.search]);
+	}, [setCurBoard, setSearchBoard, setSearchCategory, props.location.search]);
 	let opt = queryString.parse(props.location.search);
 	const author = useInputValue(getQueryOr('author', opt, '')).input_props;
 
@@ -130,6 +149,11 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 			opt.category = search_category.value;
 		} else {
 			delete opt.category;
+		}
+		if (search_fields !== {}) {
+			opt.fields = JSON.stringify(search_fields);
+		} else {
+			delete opt.fields;
 		}
 		props.history.push(`/app/search?${queryString.stringify(opt)}`);
 	}
@@ -175,30 +199,47 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 						})
 					}
 				</select><br/>
-				<CategoryBlock category_id={cur_category}/>
+				<CategoryBlock category_id={cur_category} inputs={search_fields} setInputs={t => setSearchFields(t)}/>
 				<button onClick={onSearch}>送出</button>
 			</div>
 		</div>
 	</div>;
 }
 
-function CategoryBlock(props: { category_id: number | null }): JSX.Element {
-	let category_id = props.category_id;
+type CategoryBlockProps = {
+	category_id: number | null,
+	inputs: SearchFields,
+	setInputs: (inputs: SearchFields) => void
+};
+function CategoryBlock(props: CategoryBlockProps): JSX.Element {
+	let { category_id, inputs }= props;
+	let setInputs = React.useCallback(t => props.setInputs(t), []);
 	let [category, setCategory] = React.useState<Category | null>(null);
+
+	function setField(name: string, e: React.ChangeEvent<HTMLInputElement>): void {
+		let new_inputs = produce(inputs, nxt => {
+			nxt[name] = e.target.value;
+		});
+		setInputs(new_inputs);
+	}
+
 	React.useEffect(() => {
 		if (typeof category_id != 'number') {
 			setCategory(null);
+			setInputs({});
 		} else {
 			API_FETCHER.queryCategoryById(category_id).then(res => {
 				try {
 					let category_src = unwrap(res);
 					setCategory(parse_category(category_src));
+					setInputs({});
 				} catch (err) {
 					toast.error(err);
 				}
 			});
 		}
-	}, [category_id]);
+	}, [category_id, setInputs]);
+
 	if (!category) {
 		return <></>;
 	} else {
@@ -206,9 +247,12 @@ function CategoryBlock(props: { category_id: number | null }): JSX.Element {
 		{
 			category.fields.map((field) => {
 				// TODO: 以 datatype 決定輸入型式
+				let name = field.name;
 				return <>
-					<label>{field.name}</label><br/>
-					<input type="text"/><br/>
+					<div key={`${category_id}${name}`}>
+						<label>{name}</label> <br />
+						<input type="text" onChange={e => setField(name, e)} /> <br />
+					</div>
 				</>;
 			})
 		}

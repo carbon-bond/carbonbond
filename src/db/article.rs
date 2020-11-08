@@ -4,6 +4,7 @@ use crate::custom_error::{DataType, Fallible};
 use chrono::{DateTime, Utc};
 use force::parse_category;
 use lazy_static::lazy_static;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -33,9 +34,9 @@ pub async fn search_article(
     author_name: Option<String>,
     board_name: Option<String>,
     category: Option<i64>,
+    content: HashMap<String, Value>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
-    str_content: HashMap<String, String>,
     title: Option<String>,
 ) -> Fallible<Vec<Article>> {
     let pool = get_pool();
@@ -67,6 +68,39 @@ pub async fn search_article(
         title.is_none(),
         title.unwrap_or_default()
     ).fetch_all(pool).await?;
+    // XXX: 用不定長 sql 優化之
+    let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
+    for (name, value) in content.iter() {
+        if let Value::String(value) = &value {
+            ids = sqlx::query!(
+                "
+                SELECT a.id FROM articles a WHERE EXISTS (
+                    SELECT 1 FROM article_string_fields f
+                    WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2
+                ) AND a.id = ANY($3)
+                ",
+                name,
+                value,
+                &ids
+            )
+            .fetch_all(pool)
+            .await?
+            .into_iter()
+            .map(|rec| rec.id)
+            .collect();
+        }
+    }
+    let metas = {
+        use std::collections::HashSet;
+        let set: HashSet<i64> = ids.into_iter().collect();
+        let mut filterd_metas = vec![];
+        for m in metas.into_iter() {
+            if set.contains(&m.id) {
+                filterd_metas.push(m);
+            }
+        }
+        filterd_metas
+    };
     metas_to_articles(metas).await
 }
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {

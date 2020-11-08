@@ -7,7 +7,7 @@ use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use force::Category;
+use force::Field;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -47,18 +47,19 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         author_name: Option<String>,
         board_name: Option<String>,
         category: Option<i64>,
+        content: String,
         end_time: Option<DateTime<Utc>>,
         start_time: Option<DateTime<Utc>>,
-        str_content: HashMap<String, String>,
         title: Option<String>,
     ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
+        let content: HashMap<String, serde_json::Value> = serde_json::from_str(&content)?;
         let meta = db::article::search_article(
             author_name,
             board_name,
             category,
+            content,
             end_time,
             start_time,
-            str_content,
             title,
         )
         .await?;
