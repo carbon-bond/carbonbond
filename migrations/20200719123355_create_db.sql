@@ -178,8 +178,8 @@ CREATE FUNCTION user_with_relations ()
     sentence text,
     energy bigint,
     hated_count bigint,
-    hating_count bigint,
     followed_count bigint,
+    hating_count bigint,
     following_count bigint
   )
   AS $$

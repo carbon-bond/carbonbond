@@ -2,10 +2,6 @@ use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{User, UserRelation, UserRelationKind};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use rand::{distributions::Alphanumeric, Rng};
-use sqlx::{
-    encode::Encode,
-    postgres::{PgRawBuffer, PgTypeInfo},
-};
 
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
@@ -132,26 +128,15 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
     }
 }
 
-impl sqlx::Type<sqlx::Postgres> for UserRelationKind {
-    fn type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("USER_RELATION_KIND")
-    }
-}
-impl Encode<sqlx::Postgres> for UserRelationKind {
-    fn encode(&self, buf: &mut PgRawBuffer) {
-        use std::io::Write;
-        write!(&mut *buf, "{}", self).unwrap();
-    }
-}
 pub async fn create_relation(relation: &UserRelation) -> Fallible {
     log::trace!("創造用戶關係");
     let pool = get_pool();
-    sqlx::query_unchecked!(
-        "INSERT INTO user_relations (from_user, to_user, kind) VALUES ($1, $2, $3)
-        on CONFLICT(from_user, to_user) DO UPDATE set kind=$3",
+    sqlx::query!(
+        "INSERT INTO user_relations (from_user, to_user, kind) VALUES ($1, $2, $3::text::user_relation_kind)
+        on CONFLICT(from_user, to_user) DO UPDATE set kind=$3::text::user_relation_kind",
         relation.from_user,
         relation.to_user,
-        relation.kind
+        relation.kind.to_string()
     )
     .execute(pool)
     .await?;

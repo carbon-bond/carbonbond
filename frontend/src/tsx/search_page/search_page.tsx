@@ -199,7 +199,8 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 						})
 					}
 				</select><br/>
-				<CategoryBlock category_id={cur_category} inputs={search_fields} setInputs={t => setSearchFields(t)}/>
+				<CategoryBlock category_id={cur_category} inputs={search_fields}
+					setInputs={React.useCallback(t => setSearchFields(t), [])} />
 				<button onClick={onSearch}>送出</button>
 			</div>
 		</div>
@@ -212,8 +213,7 @@ type CategoryBlockProps = {
 	setInputs: (inputs: SearchFields) => void
 };
 function CategoryBlock(props: CategoryBlockProps): JSX.Element {
-	let { category_id, inputs }= props;
-	let setInputs = React.useCallback(t => props.setInputs(t), []);
+	let { category_id, inputs, setInputs } = props;
 	let [category, setCategory] = React.useState<Category | null>(null);
 
 	function setField(name: string, e: React.ChangeEvent<HTMLInputElement>): void {

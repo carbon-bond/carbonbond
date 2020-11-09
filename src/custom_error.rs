@@ -24,6 +24,8 @@ mod inner {
         Party,
         #[display(fmt = "使用者")]
         User,
+        #[display(fmt = "通知")]
+        Notification,
         #[display(fmt = "註冊碼")]
         SignupToken,
     }

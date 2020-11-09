@@ -93,6 +93,26 @@ mod model {
         pub to_user: i64,
         pub kind: UserRelationKind,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Copy, Display, Debug)]
+    pub enum NotificationKind {
+        #[display(fmt = "follow")]
+        Follow,
+        #[display(fmt = "hate")]
+        Hate,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Notification {
+        pub id: i64,
+        pub kind: NotificationKind,
+        pub user_id: i64,
+        pub create_time: DateTime<Utc>,
+        pub board_name: Option<String>,
+        pub board_id: Option<i64>,
+        pub user2_name: Option<String>,
+        pub user2_id: Option<i64>,
+        pub article_title: Option<String>,
+        pub article_id: Option<i64>,
+    }
 }
 
 pub use model::*;

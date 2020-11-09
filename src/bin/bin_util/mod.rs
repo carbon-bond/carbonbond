@@ -66,7 +66,7 @@ BEGIN
   END LOOP;
 
   EXECUTE 'CREATE SCHEMA public';
-  ALTER USER {} SET search_path = public;
+  ALTER USER \"{}\" SET search_path = public;
 END $$;",
         conf.username
     );
