@@ -186,7 +186,6 @@ pub async fn get_bonder_meta(
 }
 
 pub async fn get_bonder(article_id: i64, category_set: Vec<String>) -> Fallible<Vec<Article>> {
-    let pool = get_pool();
     let metas = get_bonder_meta(article_id, category_set).await?;
     metas_to_articles(metas).await
 }

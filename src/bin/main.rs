@@ -18,6 +18,12 @@ fn index() -> &'static str {
     INDEX.get()
 }
 
+fn not_found() -> Response<Body> {
+    let mut not_found = Response::default();
+    *not_found.status_mut() = StatusCode::NOT_FOUND;
+    not_found
+}
+
 async fn on_request(
     req: Request<Body>,
     static_files: Static,
@@ -56,16 +62,23 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
             if req.uri().path().starts_with("/app") {
                 // html 檔案
                 Ok(Response::new(Body::from(index())))
+            } else if req.uri().path().starts_with("/avatar") {
+                // 大頭貼
+                let dirs = req.uri().path().split("/").collect::<Vec<&str>>();
+                if dirs.len() == 3 {
+                    let user_name = dirs[2];
+                    Ok(Response::new(Body::from(
+                        db::avatar::get_avatar(user_name).await?,
+                    )))
+                } else {
+                    Ok(not_found())
+                }
             } else {
                 log::trace!("靜態資源： {}", req.uri().path());
                 static_files.clone().serve(req).await.map_err(|e| e.into())
             }
         }
-        _ => {
-            let mut not_found = Response::default();
-            *not_found.status_mut() = StatusCode::NOT_FOUND;
-            Ok(not_found)
-        }
+        _ => Ok(not_found()),
     }
 }
 async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {

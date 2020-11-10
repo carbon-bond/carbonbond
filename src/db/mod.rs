@@ -5,6 +5,7 @@ use state::Storage;
 
 pub mod article;
 pub mod article_content;
+pub mod avatar;
 pub mod board;
 pub mod notification;
 pub mod party;

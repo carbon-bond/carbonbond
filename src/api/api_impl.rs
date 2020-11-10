@@ -335,6 +335,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         })
         .await
     }
+    async fn update_avatar(
+        &self,
+        context: &mut crate::Ctx,
+        image: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::avatar::update_avatar(id, image).await
+    }
 }
 
 #[derive(Default)]

@@ -41,12 +41,12 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		// XXX: 修好它
 		try {
 			if (previewData != null) {
-				// await ajaxOperation.UpdateProfile({ avatar: previewData.split(',')[1] });
+				unwrap(await API_FETCHER.updateAvatar(previewData.split(',')[1]));
 			}
 			setIsEditing(false);
 			location.reload();
 		} catch (err) {
-			// matchErrAndShow(err);
+			toast.error(err);
 		}
 		return {};
 	}

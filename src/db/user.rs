@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::{User, UserRelation, UserRelationKind};
+use crate::api::model::{User, UserRelation};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use rand::{distributions::Alphanumeric, Rng};
 

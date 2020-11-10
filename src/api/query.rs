@@ -50,6 +50,8 @@ pub enum UserQuery {
         target_user: i64,
         kind: super::model::UserRelationKind,
     },
+    #[chitin(request, response = "()")]
+    UpdateAvatar { image: String },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum PartyQuery {
