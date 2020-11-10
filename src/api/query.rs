@@ -1,7 +1,6 @@
 use chitin::*;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum RootQuery {
@@ -13,6 +12,8 @@ pub enum RootQuery {
     Article(ArticleQuery),
     #[chitin(router)]
     Board(BoardQuery),
+    #[chitin(router)]
+    Notification(NotificationQuery),
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum UserQuery {
@@ -113,4 +114,12 @@ pub enum BoardQuery {
 
     #[chitin(request, response = "String")]
     QueryCategoryById { id: i64 },
+}
+
+#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+pub enum NotificationQuery {
+    #[chitin(request, response = "Vec<super::model::Notification>")]
+    QueryNotificationByUser { all: bool },
+    #[chitin(request, response = "()")]
+    ReadNotification { id: i64 },
 }

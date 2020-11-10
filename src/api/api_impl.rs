@@ -16,6 +16,7 @@ pub struct RootQueryRouter {
     board_router: BoardQueryRouter,
     user_router: UserQueryRouter,
     party_router: PartyQueryRouter,
+    notification_router: NotificationQueryRouter,
 }
 #[async_trait]
 impl api_trait::RootQueryRouter for RootQueryRouter {
@@ -23,6 +24,7 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     type BoardQueryRouter = BoardQueryRouter;
     type UserQueryRouter = UserQueryRouter;
     type PartyQueryRouter = PartyQueryRouter;
+    type NotificationQueryRouter = NotificationQueryRouter;
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
     }
@@ -34,6 +36,9 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     }
     fn user_router(&self) -> &Self::UserQueryRouter {
         &self.user_router
+    }
+    fn notification_router(&self) -> &Self::NotificationQueryRouter {
+        &self.notification_router
     }
 }
 
@@ -329,5 +334,28 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
             to_user: target_user,
         })
         .await
+    }
+}
+
+#[derive(Default)]
+pub struct NotificationQueryRouter {}
+#[async_trait]
+impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
+    async fn query_notification_by_user(
+        &self,
+        context: &mut crate::Ctx,
+        all: bool,
+    ) -> Result<Vec<super::model::Notification>, crate::custom_error::Error> {
+        let user_id = context.get_id_strict()?;
+        let notificartions = db::notification::get_by_user(user_id, all).await?;
+        Ok(notificartions)
+    }
+    async fn read_notification(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let user_id = context.get_id_strict()?;
+        db::notification::read(id, user_id).await
     }
 }

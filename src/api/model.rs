@@ -4,6 +4,7 @@ mod model {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
+    use strum::EnumString;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -78,13 +79,15 @@ mod model {
         pub title: String,
         pub popularity: i64,
     }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Copy, Display, Debug)]
+    #[derive(
+        Serialize, Deserialize, TypeScriptify, Clone, Copy, EnumString, strum::ToString, Debug,
+    )]
     pub enum UserRelationKind {
-        #[display(fmt = "follow")]
+        #[strum(serialize = "follow")]
         Follow,
-        #[display(fmt = "hate")]
+        #[strum(serialize = "hate")]
         Hate,
-        #[display(fmt = "openly_hate")]
+        #[strum(serialize = "openly_hate")]
         OpenlyHate,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -93,11 +96,22 @@ mod model {
         pub to_user: i64,
         pub kind: UserRelationKind,
     }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Copy, Display, Debug)]
+    #[derive(
+        Serialize,
+        Deserialize,
+        TypeScriptify,
+        Clone,
+        Copy,
+        EnumString,
+        strum::ToString,
+        Debug,
+        Eq,
+        PartialEq,
+    )]
     pub enum NotificationKind {
-        #[display(fmt = "follow")]
+        #[strum(serialize = "follow")]
         Follow,
-        #[display(fmt = "hate")]
+        #[strum(serialize = "hate")]
         Hate,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -105,6 +119,7 @@ mod model {
         pub id: i64,
         pub kind: NotificationKind,
         pub user_id: i64,
+        pub read: bool,
         pub create_time: DateTime<Utc>,
         pub board_name: Option<String>,
         pub board_id: Option<i64>,
