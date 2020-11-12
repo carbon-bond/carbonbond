@@ -10,6 +10,7 @@ import { useInputValue } from '../utils';
 import '../../css/article_wrapper.css';
 import '../../css/user_page.css';
 import { toast } from 'react-toastify';
+import produce from 'immer';
 
 // TODO: 可剪裁非正方形的圖片
 function EditAvatar(props: { name: string }): JSX.Element {
@@ -38,7 +39,6 @@ function EditAvatar(props: { name: string }): JSX.Element {
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
 		e.preventDefault();
-		// XXX: 修好它
 		try {
 			if (preview_data != null) {
 				unwrap(await API_FETCHER.updateAvatar(preview_data.split(',')[1]));
@@ -100,7 +100,7 @@ function Avatar(props: { is_me: boolean, name: string }): JSX.Element {
 	}
 }
 
-function EditSentence(props: { sentence: string, refresh: Function }): JSX.Element {
+function EditSentence(props: { sentence: string, setSentence: Function }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue(props.sentence);
 	React.useEffect(() => {
@@ -108,9 +108,12 @@ function EditSentence(props: { sentence: string, refresh: Function }): JSX.Eleme
 	}, [props.sentence, setValue]);
 
 	async function updateSentence(): Promise<void> {
-		// XXX: 修好它
-		// await ajaxOperation.UpdateProfile({ sentence: input_props.value });
-		await props.refresh();
+		try {
+			await API_FETCHER.updateSentence(input_props.value);
+			props.setSentence(input_props.value);
+		} catch (err) {
+			toast.error(err);
+		}
 		setIsEditing(false);
 	}
 
@@ -135,9 +138,9 @@ function EditSentence(props: { sentence: string, refresh: Function }): JSX.Eleme
 	}
 }
 
-function Sentence(props: { is_me: boolean, sentence: string, refresh: Function }): JSX.Element {
+function Sentence(props: { is_me: boolean, sentence: string, setSentence: Function }): JSX.Element {
 	if (props.is_me) {
-		return <EditSentence sentence={props.sentence} refresh={props.refresh} />;
+		return <EditSentence sentence={props.sentence} setSentence={props.setSentence}/>;
 	} else if (props.sentence == '') {
 		return <div styleName="noSentence">
 			尚未設置一句話介紹
@@ -179,11 +182,6 @@ function EditItem(props: EditType): JSX.Element {
 
 const PAGE_SIZE: number = 10;
 
-type Profile = {
-	energy: number,
-	sentence: string,
-};
-
 // TODO: 分頁
 async function fetchArticles(
 	author_name: string,
@@ -199,7 +197,6 @@ function UserPage(props: Props): JSX.Element {
 	const { user_state } = UserState.useContainer();
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
-	const [profile, _setProfile] = React.useState<Profile>({ sentence: '', energy: 0 });
 	const [user, setUser] = React.useState<User | null>(null);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
@@ -218,19 +215,20 @@ function UserPage(props: Props): JSX.Element {
 		});
 	}, [user_name]);
 
-	function refreshProfile(): void {
-		// XXX: 修好
-		// fetchUserProfile(user_name).then(profile => {
-		// 	setProfile(profile);
-		// });
+	function setSentence(sentence: string): void {
+		let new_state = produce(user, nxt => {
+			if (nxt != null) {
+				nxt.sentence = sentence;
+			}
+		});
+		setUser(new_state);
 	}
+
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
 			API_FETCHER.createUserRelation(kind, user.id);
 		}
 	}
-
-	React.useEffect(refreshProfile, [user_name]);
 
 	const is_me = user_state.login && user_state.user_name == user_name;
 
@@ -242,7 +240,7 @@ function UserPage(props: Props): JSX.Element {
 			<Avatar is_me={is_me} name={user_name} />
 			<div styleName="abstract">
 				<div styleName="username">{user_name}</div>
-				<Sentence is_me={is_me} refresh={refreshProfile} sentence={profile.sentence} />
+				<Sentence is_me={is_me} sentence={user.sentence} setSentence={setSentence}/>
 				<div styleName="data">
 					<div styleName="energy">{user.energy} 鍵能</div>
 					<div styleName="trace">
