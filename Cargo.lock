@@ -408,6 +408,7 @@ dependencies = [
  "lazy_static",
  "log",
  "openssl",
+ "percent-encoding",
  "rand",
  "redis",
  "regex",

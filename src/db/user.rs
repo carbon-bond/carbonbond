@@ -142,3 +142,19 @@ pub async fn create_relation(relation: &UserRelation) -> Fallible {
     .await?;
     Ok(())
 }
+
+pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "
+        UPDATE users
+        SET sentence = $1
+        WHERE id = $2
+        ",
+        sentence,
+        id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}

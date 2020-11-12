@@ -52,6 +52,8 @@ pub enum UserQuery {
     },
     #[chitin(request, response = "()")]
     UpdateAvatar { image: String },
+    #[chitin(request, response = "()")]
+    UpdateSentence { sentence: String },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum PartyQuery {

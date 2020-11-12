@@ -36,6 +36,7 @@ force = { path = "./force/rust" }
 lazy_static = "1.4.0"
 strum = { version = "0.19", features = ["derive"] }
 base64 = "0.13.0"
+percent-encoding = "2.1.0"
 
 [dependencies.openssl]
 version = "0.10.29"

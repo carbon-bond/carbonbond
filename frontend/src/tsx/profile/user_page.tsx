@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 function EditAvatar(props: { name: string }): JSX.Element {
 	// const { user_state } = UserState.useContainer();
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
-	const [previewData, setPreviewData] = React.useState<string | null>(null);
+	const [preview_data, setPreviewData] = React.useState<string | null>(null);
 
 	function chooseAvatar(e: React.ChangeEvent<HTMLInputElement>): void {
 		e.preventDefault();
@@ -40,8 +40,8 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		e.preventDefault();
 		// XXX: 修好它
 		try {
-			if (previewData != null) {
-				unwrap(await API_FETCHER.updateAvatar(previewData.split(',')[1]));
+			if (preview_data != null) {
+				unwrap(await API_FETCHER.updateAvatar(preview_data.split(',')[1]));
 			}
 			setIsEditing(false);
 			location.reload();
@@ -66,8 +66,8 @@ function EditAvatar(props: { name: string }): JSX.Element {
 				}
 			}} >
 			{
-				previewData ?
-					<img src={previewData} height="144" width="144"></img> :
+				preview_data ?
+					<img src={preview_data} height="144" width="144"></img> :
 					<div>出了些問題......</div>
 			}
 			<div styleName="buttonSet">

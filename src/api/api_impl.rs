@@ -7,7 +7,6 @@ use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use force::Field;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -342,6 +341,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict()?;
         db::avatar::update_avatar(id, image).await
+    }
+    async fn update_sentence(
+        &self,
+        context: &mut crate::Ctx,
+        sentence: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::user::update_sentence(id, sentence).await
     }
 }
 

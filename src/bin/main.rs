@@ -67,9 +67,15 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
                 let dirs = req.uri().path().split("/").collect::<Vec<&str>>();
                 if dirs.len() == 3 {
                     let user_name = dirs[2];
-                    Ok(Response::new(Body::from(
-                        db::avatar::get_avatar(user_name).await?,
-                    )))
+                    match percent_encoding::percent_decode(user_name.as_bytes()).decode_utf8() {
+                        Ok(user_name) => {
+                            log::trace!("請求大頭貼： {}", user_name);
+                            Ok(Response::new(Body::from(
+                                db::avatar::get_avatar(&user_name).await?,
+                            )))
+                        }
+                        Err(_) => Ok(not_found()),
+                    }
                 } else {
                     Ok(not_found())
                 }
