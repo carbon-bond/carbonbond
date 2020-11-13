@@ -11,7 +11,7 @@ CREATE TABLE notifications (
   article_id bigint REFERENCES boards (id),
   kind notification_kind NOT NULL,
   quality bool, -- NULL 表中性，true 表捷報，false 表惡耗
-  read bool DEFAULT FALSE,
+  read bool NOT NULL DEFAULT FALSE,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 

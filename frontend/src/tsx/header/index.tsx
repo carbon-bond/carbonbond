@@ -4,14 +4,16 @@ import { RouteComponentProps } from 'react-router';
 import { toast } from 'react-toastify';
 import useOnClickOutside from 'use-onclickoutside';
 
-import '../css/header.css';
+import '../../css/header.css';
 
-import { API_FETCHER, unwrap } from '../ts/api/api';
-import { isEmail } from '../ts/regex_util';
-import { useInputValue } from './utils';
-import { UserState } from './global_state/user';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
+import { isEmail } from '../../ts/regex_util';
+import { useInputValue } from '../utils';
+import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { BoardCacheState } from './global_state/board_cache';
+import { BoardCacheState } from '../global_state/board_cache';
+import { NotificationIcon, NotificationQuality } from './notification';
+import { Notification } from '../../ts/api/api_trait';
 
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
@@ -133,13 +135,33 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	}
 	function UserStatus(): JSX.Element {
 		let ref = React.useRef(null);
-		useOnClickOutside(ref, () => setExtended(false));
+		let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
+		let [notifications, setNotifications] = React.useState<Notification[]>([]);
+		React.useEffect(() => {
+			API_FETCHER.queryNotificationByUser(true).then((res) => {
+				if ('Err' in res) {
+					toast.error(res.Err);
+					return;
+				}
+				setNotifications(res.Ok);
+			});
+		}, []);
+		useOnClickOutside(ref, () => {
+			setExtended(false);
+			setExpandingQuality(null);
+		});
 		if (user_state.login) {
 			return <>
-				<div styleName="icon">♡</div>
-				<div styleName="icon">☠</div>
-				<div styleName="icon">🗞️</div>
 				<div ref={ref} styleName="wrap">
+					<NotificationIcon icon={'♡'}
+						expanding_quality={expanding_quality} quality={NotificationQuality.Good}
+						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
+					<NotificationIcon icon={'🗞️'}
+						expanding_quality={expanding_quality} quality={NotificationQuality.Neutral}
+						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
+					<NotificationIcon icon={'☠'}
+						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
+						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
 					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
 						<img src={`/avatar/${user_state.user_name}`} />
 						<div styleName="userName">{user_state.user_name}</div>

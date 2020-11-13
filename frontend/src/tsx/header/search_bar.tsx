@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { History } from 'history';
-import '../css/header.css';
+import '../../css/header.css';
 
 export function SearchBar(props: { cur_board: string | null, history: History }): JSX.Element {
 	let [content, setContent] = React.useState('');
