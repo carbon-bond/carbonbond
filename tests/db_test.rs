@@ -62,6 +62,7 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
     let id = db::notification::create(
         user_id,
         NotificationKind::Follow,
+        Some(true),
         Some(user2_id),
         None,
         None,
@@ -70,7 +71,7 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
     let notifications = db::notification::get_by_user(user_id, false).await?;
     assert_eq!(notifications.len(), 1);
 
-    db::notification::read(id, user_id).await?;
+    db::notification::read(&[id], user_id).await?;
     let empty = db::notification::get_by_user(user_id, false).await?;
     assert_eq!(empty.len(), 0);
     let mut notifications = db::notification::get_by_user(user_id, true).await?;
@@ -79,6 +80,7 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
     assert_eq!(n.user2_name, Some("超級測試人".to_owned()));
     assert_eq!(n.read, true);
     assert_eq!(n.kind, NotificationKind::Follow);
+    assert_eq!(n.quality, Some(true));
 
     Ok(())
 }

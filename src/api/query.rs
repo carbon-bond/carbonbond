@@ -125,5 +125,5 @@ pub enum NotificationQuery {
     #[chitin(request, response = "Vec<super::model::Notification>")]
     QueryNotificationByUser { all: bool },
     #[chitin(request, response = "()")]
-    ReadNotification { id: i64 },
+    ReadNotifications { ids: Vec<i64> },
 }

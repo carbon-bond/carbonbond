@@ -1,6 +1,6 @@
 CREATE TYPE notification_kind AS ENUM (
-    'follow',
-    'hate'
+  'follow',
+  'hate'
 );
 
 CREATE TABLE notifications (
@@ -10,6 +10,8 @@ CREATE TABLE notifications (
   board_id bigint REFERENCES boards (id),
   article_id bigint REFERENCES boards (id),
   kind notification_kind NOT NULL,
-  read bool DEFAULT false,
+  quality bool, -- NULL 表中性，true 表捷報，false 表惡耗
+  read bool DEFAULT FALSE,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
+

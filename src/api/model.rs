@@ -120,6 +120,8 @@ mod model {
         pub kind: NotificationKind,
         pub user_id: i64,
         pub read: bool,
+        // Some(true) 表捷報，Some(false) 表惡耗，None 中性通知
+        pub quality: Option<bool>,
         pub create_time: DateTime<Utc>,
         pub board_name: Option<String>,
         pub board_id: Option<i64>,

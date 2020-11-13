@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{Notification, NotificationKind};
-use crate::custom_error::{DataType, ErrorCode, Fallible};
+use crate::custom_error::{DataType, Fallible};
 use std::str::FromStr;
 use std::string::ToString;
 
@@ -11,6 +11,7 @@ impl DBObject for Notification {
 pub async fn create(
     user_id: i64,
     kind: NotificationKind,
+    quality: Option<bool>,
     user2_id: Option<i64>,
     board_id: Option<i64>,
     article_id: Option<i64>,
@@ -18,15 +19,16 @@ pub async fn create(
     let pool = get_pool();
     let id = sqlx::query!(
         "
-        INSERT INTO notifications (user_id, user2_id, board_id, article_id, kind)
-        VALUES ($1, $2, $3, $4, $5::text::notification_kind)
+        INSERT INTO notifications (user_id, user2_id, board_id, article_id, kind, quality)
+        VALUES ($1, $2, $3, $4, $5::text::notification_kind, $6)
         RETURNING id
         ",
         user_id,
         user2_id,
         board_id,
         article_id,
-        kind.to_string()
+        kind.to_string(),
+        quality
     )
     .fetch_one(pool)
     .await?
@@ -43,6 +45,7 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
         pub kind: String,
         pub user_id: i64,
         pub read: bool,
+        pub quality: Option<bool>,
         pub create_time: DateTime<Utc>,
         pub board_name: Option<String>,
         pub board_id: Option<i64>,
@@ -74,6 +77,7 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
                 kind: NotificationKind::from_str(&n.kind)?,
                 user_id: n.user_id,
                 read: n.read,
+                quality: n.quality,
                 create_time: n.create_time,
                 board_name: n.board_name,
                 board_id: n.board_id,
@@ -86,14 +90,14 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
         .collect()
 }
 
-pub async fn read(id: i64, user_id: i64) -> Fallible {
+pub async fn read(ids: &[i64], user_id: i64) -> Fallible {
     let pool = get_pool();
     sqlx::query!(
         "
         UPDATE notifications SET read = true
-        WHERE id = $1 AND user_id = $2
+        WHERE id = ANY($1) AND user_id = $2
         ",
-        id,
+        ids,
         user_id
     )
     .execute(pool)

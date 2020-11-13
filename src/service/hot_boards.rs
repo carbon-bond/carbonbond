@@ -32,3 +32,10 @@ async fn compute_hot_boards() -> Fallible {
         .context("設定熱門看板失敗")?;
     Ok(())
 }
+
+pub async fn set_board_pop(user_id: i64, board_id: i64) -> Fallible {
+    board_pop::set_board_pop(user_id, board_id).await
+}
+pub async fn get_hot_boards() -> Fallible<Vec<i64>> {
+    hot_boards::get_hot_boards().await
+}

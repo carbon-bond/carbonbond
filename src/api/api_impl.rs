@@ -2,7 +2,7 @@ use super::{api_trait, model};
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::email;
-use crate::redis;
+use crate::service;
 use crate::util::HasBoardProps;
 use crate::Context;
 use async_trait::async_trait;
@@ -175,14 +175,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
         let board = db::board::get_by_name(&name).await?;
         if let Some(user_id) = context.get_id() {
-            redis::board_pop::set_board_pop(user_id, board.id).await?;
+            service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
         board.assign_props().await
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
         let board = db::board::get_by_id(id).await?;
         if let Some(user_id) = context.get_id() {
-            redis::board_pop::set_board_pop(user_id, board.id).await?;
+            service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
         board.assign_props().await
     }
@@ -204,7 +204,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         &self,
         _context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
-        let board_ids = redis::hot_boards::get_hot_boards().await?;
+        let board_ids = service::hot_boards::get_hot_boards().await?;
         db::board::get_overview(&board_ids)
             .await?
             .assign_props()
@@ -332,7 +332,21 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
             kind,
             to_user: target_user,
         })
-        .await
+        .await?;
+
+        use model::NotificationKind;
+        let noti =
+            |kind| service::notification::create(target_user, kind, Some(from_user), None, None);
+        match kind {
+            model::UserRelationKind::Follow => {
+                noti(NotificationKind::Follow).await?;
+            }
+            model::UserRelationKind::OpenlyHate => {
+                noti(NotificationKind::Hate).await?;
+            }
+            _ => (),
+        }
+        Ok(())
     }
     async fn update_avatar(
         &self,
@@ -365,12 +379,12 @@ impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
         let notificartions = db::notification::get_by_user(user_id, all).await?;
         Ok(notificartions)
     }
-    async fn read_notification(
+    async fn read_notifications(
         &self,
         context: &mut crate::Ctx,
-        id: i64,
+        ids: Vec<i64>,
     ) -> Result<(), crate::custom_error::Error> {
         let user_id = context.get_id_strict()?;
-        db::notification::read(id, user_id).await
+        db::notification::read(&ids, user_id).await
     }
 }
