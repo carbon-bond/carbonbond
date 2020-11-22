@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { API_FETCHER, unwrap, map } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
 import { Article } from '../../ts/api/api_trait';
+// import { DualSlider } from '../components/dual_slider'
 import { produce } from 'immer';
 
 import '../../css/article_wrapper.css';
@@ -37,7 +38,7 @@ function getQuery(name: string, query: queryString.ParsedQuery): string {
 }
 
 type CategoryEntry = { name: string, board_name: string, id: number };
-type SearchFields = { [name: string]: string | number };
+type SearchFields = { [name: string]: string | [number, number] };
 
 export function SearchPage(props: RouteComponentProps): JSX.Element {
 	const { cur_board, setCurBoard } = BoardCacheState.useContainer();
