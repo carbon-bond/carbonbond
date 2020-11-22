@@ -2,17 +2,17 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { toast } from 'react-toastify';
-import { API_FETCHER, unwrap, map } from '../../ts/api/api';
+import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
-import { Article } from '../../ts/api/api_trait';
-// import { DualSlider } from '../components/dual_slider'
+import { Article, HashMap, SearchField } from '../../ts/api/api_trait';
+import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
 import '../../css/article_wrapper.css';
 import '../../css/layout.css';
 import { useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, parse_category } from 'force';
+import { Category, parse_category, DataType } from 'force';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {
@@ -38,7 +38,7 @@ function getQuery(name: string, query: queryString.ParsedQuery): string {
 }
 
 type CategoryEntry = { name: string, board_name: string, id: number };
-type SearchFields = { [name: string]: string | [number, number] };
+type SearchFields = { [name: string]: SearchField };
 
 export function SearchPage(props: RouteComponentProps): JSX.Element {
 	const { cur_board, setCurBoard } = BoardCacheState.useContainer();
@@ -80,17 +80,15 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				let start_time = toDatetime(getQueryOpt('start_time', opt));
 				let end_time = toDatetime(getQueryOpt('end_time', opt));
 				let category = map(getQueryOpt('category', opt), parseInt);
-				let fields = map(getQueryOpt('fields', opt), s => {
+				let fields: HashMap<string, SearchField> = map_or_else(getQueryOpt('fields', opt), s => {
 					let obj = JSON.parse(s);
-					if (typeof obj == 'object' && !Array.isArray(obj)) {
-						return JSON.stringify(obj);
-					} else {
+					if (typeof obj != 'object' || Array.isArray(obj)) {
 						throw `不合法的欄位值 ${s}`;
 					}
+					return obj;
+				}, () => {
+					return {};
 				});
-				if (typeof fields != 'string') {
-					fields = '{}';
-				}
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
@@ -243,9 +241,13 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 	let { category_id, inputs, setInputs } = props;
 	let [category, setCategory] = React.useState<Category | null>(null);
 
-	function setField(name: string, e: React.ChangeEvent<HTMLInputElement>): void {
+	function setField(name: string, value: [number, number] | string): void {
 		let new_inputs = produce(inputs, nxt => {
-			nxt[name] = e.target.value;
+			if (typeof value == 'string') {
+				nxt[name] = {String: value};
+			} else {
+				nxt[name] = {Range: value};
+			}
 		});
 		setInputs(new_inputs);
 	}
@@ -273,16 +275,46 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 		return <>
 		{
 			category.fields.map((field) => {
-				// TODO: 以 datatype 決定輸入型式
+				let ty = extractFieldType(field.datatype);
+				if (ty == Type.None) {
+					return null;
+				}
 				let name = field.name;
 				return <>
 					<div key={`${category_id}${name}`}>
 						<label>{name}</label> <br />
-						<input type="text" onChange={e => setField(name, e)} /> <br />
+						{
+							(() => {
+								if (ty == Type.Number) {
+									return <DualSlider
+										range={[1, 20]}
+										onChange={r => setField(name, r)}
+										transform={n => Math.floor(n)}
+									/>;
+								} else {
+									return <input type="text" onChange={
+										e => setField(name, e.target.value)
+									} />;
+								}
+							})()
+						}
+						<br />
 					</div>
 				</>;
 			})
 		}
 		</>;
 	}
+}
+
+enum Type { Text, Number, None };
+function extractFieldType(ty: DataType): Type {
+	if (ty.kind == 'single') {
+		if (ty.t.kind == 'text') {
+			return Type.Text;
+		} else if (ty.t.kind == 'number') {
+			return Type.Number;
+		}
+	}
+	return Type.None;
 }

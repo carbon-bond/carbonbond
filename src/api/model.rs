@@ -130,6 +130,11 @@ mod model {
         pub article_title: Option<String>,
         pub article_id: Option<i64>,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum SearchField {
+        String(String),
+        Range((i64, i64)),
+    }
 }
 
 pub use model::*;

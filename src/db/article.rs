@@ -1,12 +1,11 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
-use crate::api::model::{Article, ArticleMeta};
+use crate::api::model::{Article, ArticleMeta, SearchField};
 use crate::custom_error::{self, DataType, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
 use force;
 use force::parse_category;
 use lazy_static::lazy_static;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -36,7 +35,7 @@ pub async fn search_article(
     author_name: Option<String>,
     board_name: Option<String>,
     category: Option<i64>,
-    content: HashMap<String, Value>,
+    content: HashMap<String, SearchField>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     title: Option<String>,
@@ -72,24 +71,45 @@ pub async fn search_article(
     ).fetch_all(pool).await?;
     // XXX: 用不定長 sql 優化之
     let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
-    for (name, value) in content.iter() {
-        if let Value::String(value) = &value {
-            ids = sqlx::query!(
-                "
-                SELECT a.id FROM articles a WHERE EXISTS (
-                    SELECT 1 FROM article_string_fields f
-                    WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2
-                ) AND a.id = ANY($3)
-                ",
-                name,
-                value,
-                &ids
-            )
-            .fetch_all(pool)
-            .await?
-            .into_iter()
-            .map(|rec| rec.id)
-            .collect();
+    for (name, value) in content.into_iter() {
+        match value {
+            SearchField::String(value) => {
+                ids = sqlx::query!(
+                    "
+                    SELECT a.id FROM articles a WHERE EXISTS (
+                        SELECT 1 FROM article_string_fields f
+                        WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2
+                    ) AND a.id = ANY($3)
+                    ",
+                    name,
+                    value,
+                    &ids
+                )
+                .fetch_all(pool)
+                .await?
+                .into_iter()
+                .map(|rec| rec.id)
+                .collect();
+            }
+            SearchField::Range((from, to)) => {
+                ids = sqlx::query!(
+                    "
+                    SELECT a.id FROM articles a WHERE EXISTS (
+                        SELECT 1 FROM article_int_fields f
+                        WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3
+                    ) AND a.id = ANY($4)
+                    ",
+                    name,
+                    from,
+                    to,
+                    &ids
+                )
+                .fetch_all(pool)
+                .await?
+                .into_iter()
+                .map(|rec| rec.id)
+                .collect();
+            }
         }
     }
     let metas = {

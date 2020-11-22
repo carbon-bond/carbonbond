@@ -54,9 +54,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         end_time: Option<DateTime<Utc>>,
         category: Option<i64>,
         title: Option<String>,
-        content: String,
+        content: HashMap<String, super::model::SearchField>,
     ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
-        let content: HashMap<String, serde_json::Value> = serde_json::from_str(&content)?;
         let meta = db::article::search_article(
             author_name,
             board_name,

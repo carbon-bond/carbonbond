@@ -33,6 +33,14 @@ export function map<T, U>(option: api_trait.Option<T>, fn: (og: T) => U): api_tr
 	}
 }
 
+export function map_or_else<T, U>(option: api_trait.Option<T>, fn: (og: T) => U, fn_default: () => U): U {
+	if (option === null) {
+		return fn_default();
+	} else {
+		return fn(option);
+	}
+}
+
 // 打印錯誤並回傳預設資料
 export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
 	if ('Ok' in result) {
