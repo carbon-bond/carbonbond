@@ -5,6 +5,8 @@ import '../../css/header.css';
 
 import {  API_FETCHER } from '../../ts/api/api';
 import { Notification, NotificationKind } from '../../ts/api/api_trait';
+import { DropDown } from '../components/drop_down';
+import { Row } from './index';
 import produce from 'immer';
 
 export enum NotificationQuality { Good, Bad, Neutral };
@@ -61,42 +63,47 @@ export function NotificationIcon(props: Props): JSX.Element {
 		}
 	}
 
-	return <>
-        <div styleName="icon" onClick={() => onClick()}>
-        	{props.icon}
-        	{
-        		(() => {
-        			if (unread_count > 0) {
-        				return <div styleName="unreadCount">{unread_count}</div>;
-        			}
-        		})()
-        	}
-        </div>
-        {
-        	(() => {
-        		if (props.expanding_quality == props.quality) {
-        			return <NotificationDropDown notifications={notifications}/>;
-        		}
-        	})()
-        }
-    </>;
+	return <DropDown
+		button={
+			<div styleName="icon">
+				{props.icon}
+				{
+					(() => {
+						if (unread_count > 0) {
+							return <div styleName="unreadCount">{unread_count}</div>;
+						}
+					})()
+				}
+			</div>
+		}
+		onExtended={onClick}
+		body={
+			((): null | JSX.Element => {
+				if (props.expanding_quality == props.quality) {
+					return <NotificationDropDown notifications={notifications} />;
+				}
+				return null;
+			})()
+		}
+	/>;
 }
 export function NotificationDropDown(props: { notifications: Notification[] }): JSX.Element {
 	return <div styleName="dropdown">
-		<div styleName="triangle"> </div>
 		<div styleName="features">
-			{
-				(() => {
-					if (props.notifications.length == 0) {
-						return <div>暫無通知</div>;
-					}
-				})()
-			}
-			{
-				props.notifications.map(n => {
-					return <NotificationBlock key={n.id} notification={n}/>;
-				})
-			}
+			<div styleName="notificationRow">
+				{
+					(() => {
+						if (props.notifications.length == 0) {
+							return <Row>暫無通知</Row>;
+						}
+					})()
+				}
+				{
+					props.notifications.map(n => {
+						return <NotificationBlock key={n.id} notification={n} />;
+					})
+				}
+			</div>
 		</div>
 	</div>;
 }
@@ -104,8 +111,8 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 	let n = props.notification;
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <div>{n.user2_name!}追蹤了你</div>;
+			return <Row>{n.user2_name!}追蹤了你</Row>;
 		case NotificationKind.Hate:
-			return <div>{n.user2_name!}仇視了你</div>;
+			return <Row>{n.user2_name!}仇視了你</Row>;
 	}
 }

@@ -1,0 +1,27 @@
+.wrap {
+    position: relative;
+    & .button {
+        height: 100%;
+        cursor: pointer;
+    }
+    & .body {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        z-index: 100;
+        & .triangle {
+            align-self: center;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 15 15 15;
+            border-color: transparent transparent var(--third-theme-color) transparent;
+        }
+        & div {
+            align-self: center;
+        }
+    }
+}

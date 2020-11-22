@@ -14,9 +14,21 @@ import { SearchBar } from './search_bar';
 import { BoardCacheState } from '../global_state/board_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
+import { DropDown } from '../components/drop_down';
+
+export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
+	return <div styleName="row" onClick={() => {
+		if (typeof props.onClick != 'undefined') {
+			props.onClick();
+		}
+	}}>
+		<div styleName="space" />
+		<div styleName="feature">{props.children}</div>
+		<div styleName="space" />
+	</div>;
+}
 
 function _Header(props: RouteComponentProps): JSX.Element {
-	const [extended, setExtended] = React.useState(false);
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
@@ -44,7 +56,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		try {
 			unwrap(await API_FETCHER.logout());
 			setLogout();
-			setExtended(false);
+			// setExtended(false);
 			toast('您已登出');
 		} catch (err) {
 			toast.error(err);
@@ -117,16 +129,15 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		}
 	}
 
-	function Dropdown(): JSX.Element {
-		if (extended && user_state.login) {
+	function DropdownBody(): JSX.Element {
+		if (user_state.login) {
 			return <div styleName="dropdown">
-				<div styleName="triangle"> </div>
 				<div styleName="features">
-					<div styleName="feature">🏯 我的個板</div>
-					<div styleName="feature" onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</div>
-					<div styleName="feature" onClick={() => props.history.push('/app/party')}>👥 我的政黨</div>
-					<div styleName="feature" onClick={() => logout_request()}>🏳 登出</div>
-					<div styleName="feature">⚙ 設定</div>
+					<Row>🏯 我的個板</Row>
+					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
+					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>👥 我的政黨</Row>
+					<Row onClick={() => logout_request()}>🏳 登出</Row>
+					<Row>⚙ 設定</Row>
 				</div>
 			</div>;
 		} else {
@@ -147,7 +158,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			});
 		}, []);
 		useOnClickOutside(ref, () => {
-			setExtended(false);
+			// setExtended(false);
 			setExpandingQuality(null);
 		});
 		if (user_state.login) {
@@ -162,12 +173,17 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<NotificationIcon icon={'☠'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
-					<div styleName="userInfo" onClick={() => setExtended(!extended)}>
-						<img src={`/avatar/${user_state.user_name}`} />
-						<div styleName="userName">{user_state.user_name}</div>
-						<div styleName="energy">☘ {user_state.energy}</div>
-					</div>
-					<Dropdown />
+
+					<div styleName="space"></div>
+					<DropDown
+						button={
+							<div styleName="userInfo">
+								<img src={`/avatar/${user_state.user_name}`} />
+								<div styleName="userName">{user_state.user_name}</div>
+								<div styleName="energy">☘ {user_state.energy}</div>
+							</div>}
+						body={<DropdownBody />}
+					/>
 				</div>
 			</>;
 		} else {
