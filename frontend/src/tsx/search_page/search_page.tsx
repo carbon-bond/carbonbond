@@ -70,9 +70,14 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		let opt = queryString.parse(props.location.search);
 		let query = (() => {
 			try {
+				function toDatetime(s: string | null): string | null {
+					return s == null ? null : new Date(s) as unknown as string;
+				}
 				let title = getQuery('title', opt);
 				let board = getQueryOpt('board', opt);
 				let author = getQueryOpt('author', opt);
+				let start_time = toDatetime(getQueryOpt('start_time', opt));
+				let end_time = toDatetime(getQueryOpt('end_time', opt));
 				let category = map(getQueryOpt('category', opt), parseInt);
 				let fields = map(getQueryOpt('fields', opt), s => {
 					let obj = JSON.parse(s);
@@ -100,7 +105,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 					setCurCategory(null);
 					setSearchCategory('');
 				}
-				return { title, board, author, category, fields };
+				return { title, board, author, category, fields, start_time, end_time };
 			} catch (err) {
 				toast.error(err);
 				return err as string;
@@ -109,7 +114,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.searchArticle(query.author, query.board, null, null, query.category, query.title, query.fields).then(res => {
+		API_FETCHER.searchArticle(query.author, query.board, query.start_time, query.end_time, query.category, query.title, query.fields).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
@@ -130,8 +135,11 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 			}
 		});
 	}, [setCurBoard, setSearchBoard, setSearchCategory, props.location.search]);
+
 	let opt = queryString.parse(props.location.search);
 	const author = useInputValue(getQueryOr('author', opt, '')).input_props;
+	const start_time = useInputValue(getQueryOr('start_time', opt, '')).input_props;
+	const end_time = useInputValue(getQueryOr('end_time', opt, '')).input_props;
 
 	function onSearch(): void {
 		let opt = queryString.parse(props.location.search);
@@ -145,6 +153,18 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		} else {
 			delete opt.board;
 		}
+
+		if (start_time.value.length > 0) {
+			opt.start_time = start_time.value;
+		} else {
+			delete opt.start_time;
+		}
+		if (end_time.value.length > 0) {
+			opt.end_time = end_time.value;
+		} else {
+			delete opt.end_time;
+		}
+
 		if (search_category.value.length > 0) {
 			opt.category = search_category.value;
 		} else {
@@ -188,6 +208,12 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 						})()
 					}
 				</select><br/>
+
+				<label>最早</label><br/>
+				<input type="date" {...start_time}/><br/>
+				<label>最晚</label><br/>
+				<input type="date" {...end_time}/><br/>
+
 				<label>分類</label><br/>
 				<select {...search_category}>
 					<option value="">全部分類</option>
