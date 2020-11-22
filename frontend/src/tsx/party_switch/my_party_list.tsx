@@ -97,8 +97,8 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			<br />
 			<button onClick={() => {
 				API_FETCHER.createParty(
+					party_name,
 					board_name.length == 0 ? null : board_name,
-					party_name
 				).then(res => {
 					unwrap(res);
 				}).then(() => {

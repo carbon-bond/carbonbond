@@ -50,11 +50,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         author_name: Option<String>,
         board_name: Option<String>,
-        category: Option<i64>,
-        content: String,
-        end_time: Option<DateTime<Utc>>,
         start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+        category: Option<i64>,
         title: Option<String>,
+        content: String,
     ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
         let content: HashMap<String, serde_json::Value> = serde_json::from_str(&content)?;
         let meta = db::article::search_article(
@@ -72,9 +72,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,
+        count: usize,
         author_name: Option<String>,
         board_name: Option<String>,
-        count: usize,
     ) -> Fallible<Vec<model::Article>> {
         // TODO: 支援 author_name
         match board_name {
@@ -93,16 +93,16 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_bonder(
         &self,
         _context: &mut crate::Ctx,
-        category_set: Vec<String>,
         id: i64,
+        category_set: Vec<String>,
     ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
         db::article::get_bonder(id, category_set).await
     }
     async fn query_bonder_meta(
         &self,
         _context: &mut crate::Ctx,
-        category_set: Vec<String>,
         id: i64,
+        category_set: Vec<String>,
     ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
         db::article::get_bonder_meta(id, category_set).await
     }
@@ -118,8 +118,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
         category_name: String,
-        content: String,
         title: String,
+        content: String,
     ) -> Result<i64, crate::custom_error::Error> {
         println!(
             "發表文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
@@ -145,8 +145,8 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
     async fn create_party(
         &self,
         context: &mut crate::Ctx,
-        board_name: Option<String>,
         party_name: String,
+        board_name: Option<String>,
     ) -> Fallible<i64> {
         let id = context.get_id_strict()?;
         log::debug!("{} 嘗試創建 {}", id, party_name);
@@ -239,9 +239,9 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn signup(
         &self,
         context: &mut crate::Ctx,
+        user_name: String,
         password: String,
         token: String,
-        user_name: String,
     ) -> Result<super::model::User, crate::custom_error::Error> {
         db::user::signup_with_token(&user_name, &password, &token).await?;
         self.login(context, password, user_name.clone())
@@ -284,8 +284,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn login(
         &self,
         context: &mut crate::Ctx,
-        password: String,
         user_name: String,
+        password: String,
     ) -> Fallible<Option<model::User>> {
         let user = db::user::login(&user_name, &password).await?;
         context.remember_id(user.id)?;
@@ -323,8 +323,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn create_user_relation(
         &self,
         context: &mut crate::Ctx,
-        kind: model::UserRelationKind,
         target_user: i64,
+        kind: model::UserRelationKind,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
         db::user::create_relation(&model::UserRelation {

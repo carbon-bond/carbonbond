@@ -52,7 +52,7 @@ type BoardConfig = {
 export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
-	let party_id = unwrap(await API_FETCHER.createParty(null, `小工具專用黨-${Math.floor(Math.random() * 999999)}`));
+	let party_id = unwrap(await API_FETCHER.createParty( `小工具專用黨-${Math.floor(Math.random() * 999999)}`, null));
 	await Promise.all(boards.map(b => injectBoard(b, party_id)));
 }
 
@@ -129,8 +129,8 @@ async function injectArticle(
 		await API_FETCHER.createArticle(
 			board_id,
 			category.name,
-			JSON.stringify(article.content),
 			article.title,
+			JSON.stringify(article.content),
 		)
 	);
 	return id;

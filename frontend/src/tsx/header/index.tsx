@@ -24,7 +24,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
-			let user = unwrap(await API_FETCHER.login(password, name));
+			let user = unwrap(await API_FETCHER.login(name, password));
 			setLogining(false);
 			if (user) {
 				setLogin({

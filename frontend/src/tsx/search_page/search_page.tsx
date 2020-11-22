@@ -109,7 +109,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.searchArticle(query.author, query.board, query.category, query.fields, null, null, query.title).then(res => {
+		API_FETCHER.searchArticle(query.author, query.board, null, null, query.category, query.title, query.fields).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};

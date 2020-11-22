@@ -187,7 +187,7 @@ async function fetchArticles(
 	author_name: string,
 	page_size: number,
 ): Promise<Article[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(author_name, null, page_size), []);
+	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null), []);
 }
 
 type Props = RouteComponentProps<{ user_name: string }>;
@@ -226,7 +226,7 @@ function UserPage(props: Props): JSX.Element {
 
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
-			API_FETCHER.createUserRelation(kind, user.id);
+			API_FETCHER.createUserRelation(user.id, kind);
 		}
 	}
 

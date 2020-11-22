@@ -23,7 +23,7 @@ async function fetchArticles(
 	board_name: string,
 	page_size: number,
 ): Promise<Article[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(null, board_name, page_size), []);
+	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null, board_name), []);
 }
 
 export function BoardPage(props: Props): JSX.Element {

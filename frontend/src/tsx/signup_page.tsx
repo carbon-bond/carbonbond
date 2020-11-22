@@ -23,7 +23,7 @@ export function SignupPage(props: Props): JSX.Element {
 			if (repeated_password != password) {
 				throw '兩次密碼輸入不同';
 			}
-			await API_FETCHER.signup(password, signup_token, name);
+			await API_FETCHER.signup(name, password, signup_token);
 			props.history.push('/app/');
 			getLoginState();
 			toast('註冊成功');
