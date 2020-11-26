@@ -45,16 +45,13 @@ pub async fn search_article(
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
-        INNER JOIN users on articles.author_id = users.id
-        INNER JOIN boards on articles.board_id = boards.id
-        INNER JOIN categories on articles.category_id = categories.id
-        WHERE ($1 OR boards.board_name = $2)
-        AND ($3 OR users.user_name = $4)
-        AND ($5 OR categories.id = $6)
-        AND ($7 OR articles.create_time < $8)
-        AND ($9 OR articles.create_time > $10)
-        AND ($11 OR articles.title ~ $12)
+        SELECT * FROM article_metas()
+        WHERE ($1 OR board_name = $2)
+        AND ($3 OR author_name = $4)
+        AND ($5 OR category_id = $6)
+        AND ($7 OR create_time < $8)
+        AND ($9 OR create_time > $10)
+        AND ($11 OR title ~ $12)
         ",
         board_name.is_none(),
         board_name,
@@ -68,7 +65,9 @@ pub async fn search_article(
         start_time.unwrap_or(Utc::now()),
         title.is_none(),
         title.unwrap_or_default()
-    ).fetch_all(pool).await?;
+    )
+    .fetch_all(pool)
+    .await?;
     // XXX: 用不定長 sql 優化之
     let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
     for (name, value) in content.into_iter() {
@@ -129,13 +128,7 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = sqlx::query_as!(
         ArticleMeta,
-        "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
-        INNER JOIN users on articles.author_id = users.id
-        INNER JOIN boards on articles.board_id = boards.id
-        INNER JOIN categories on articles.category_id = categories.id
-        WHERE articles.id = $1
-        ",
+        "SELECT * FROM article_metas() WHERE id = $1",
         id
     )
     .fetch_one(pool)
@@ -160,12 +153,9 @@ pub async fn get_by_board_name(
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source FROM articles
-        INNER JOIN users on articles.author_id = users.id
-        INNER JOIN boards on articles.board_id = boards.id
-        INNER JOIN categories on articles.category_id = categories.id
-        WHERE boards.board_name = $1
-        ORDER BY articles.create_time DESC
+        SELECT * FROM article_metas()
+        WHERE board_name = $1
+        ORDER BY create_time DESC
         LIMIT $2 OFFSET $3
         ",
         board_name,
@@ -186,15 +176,11 @@ pub async fn get_bonder_meta(
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT DISTINCT articles.*, users.user_name as author_name, boards.board_name, categories.category_name, categories.source as category_source
-        FROM article_bond_fields
-        INNER JOIN articles on articles.id = article_bond_fields.article_id
-        INNER JOIN users on articles.author_id = users.id
-        INNER JOIN boards on articles.board_id = boards.id
-        INNER JOIN categories on articles.category_id = categories.id
-        WHERE article_bond_fields.value = $1
-        AND categories.category_name = ANY($2)
-        ORDER BY articles.create_time DESC
+        SELECT DISTINCT a.* FROM article_metas() a
+        INNER JOIN article_bond_fields abf ON a.id = abf.article_id
+        WHERE abf.value = $1
+        AND category_name = ANY($2)
+        ORDER BY create_time DESC
         ",
         article_id,
         &category_set

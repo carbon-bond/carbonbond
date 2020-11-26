@@ -96,12 +96,14 @@ CREATE TABLE article_string_fields (
   name text NOT NULL,
   value text NOT NULL
 );
+
 CREATE TABLE article_int_fields (
   id bigserial PRIMARY KEY,
   article_id bigint REFERENCES articles (id) NOT NULL,
   name text NOT NULL,
   value bigint NOT NULL
 );
+
 CREATE TABLE article_bond_fields (
   id bigserial PRIMARY KEY,
   article_id bigint REFERENCES articles (id) NOT NULL,
@@ -149,7 +151,6 @@ CREATE TABLE party_members (
   -- board_id BIGINT REFERENCES boards(id),
   -- position SMALLINT NOT NULL, -- 0~3 的整數，表示該人在黨中的地位
   -- dedication_ratio SMALLINT NOT NULL, -- 10~100的整數，表示該人奉獻鍵能的比率
-
   party_id bigint REFERENCES parties (id) NOT NULL,
   create_time timestamptz NOT NULL DEFAULT NOW(),
   user_id bigint REFERENCES users (id) NOT NULL
@@ -226,6 +227,39 @@ BEGIN
         AND kind = 'follow') AS following_count
   FROM
     users;
+END
+$$
+LANGUAGE plpgsql;
+
+CREATE FUNCTION article_metas ()
+  RETURNS TABLE (
+    id bigint,
+    author_id bigint,
+    board_id bigint,
+    category_id bigint,
+    title text,
+    show_in_list boolean,
+    create_time timestamptz,
+
+    author_name text,
+    board_name text,
+    category_name text,
+    category_source text
+  )
+  AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    articles.*,
+    users.user_name AS author_name,
+    boards.board_name,
+    categories.category_name,
+    categories.source AS category_source
+  FROM
+    articles
+    INNER JOIN users ON articles.author_id = users.id
+    INNER JOIN boards ON articles.board_id = boards.id
+    INNER JOIN categories ON articles.category_id = categories.id;
 END
 $$
 LANGUAGE plpgsql;
