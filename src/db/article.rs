@@ -168,9 +168,31 @@ pub async fn get_by_board_name(
     metas_to_articles(metas).await
 }
 
+pub async fn get_bondee_meta(
+    article_id: i64,
+    category_set: &[String],
+) -> Fallible<Vec<ArticleMeta>> {
+    let pool = get_pool();
+    let metas = sqlx::query_as!(
+        ArticleMeta,
+        "
+        SELECT DISTINCT a.* FROM article_metas() a
+        INNER JOIN article_bond_fields abf ON a.id = abf.value
+        WHERE abf.article_id = $1
+        AND category_name = ANY($2)
+        ORDER BY create_time DESC
+        ",
+        article_id,
+        &category_set
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(metas)
+}
+
 pub async fn get_bonder_meta(
     article_id: i64,
-    category_set: Vec<String>,
+    category_set: &[String],
 ) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
@@ -191,7 +213,7 @@ pub async fn get_bonder_meta(
     Ok(metas)
 }
 
-pub async fn get_bonder(article_id: i64, category_set: Vec<String>) -> Fallible<Vec<Article>> {
+pub async fn get_bonder(article_id: i64, category_set: &[String]) -> Fallible<Vec<Article>> {
     let metas = get_bonder_meta(article_id, category_set).await?;
     metas_to_articles(metas).await
 }
