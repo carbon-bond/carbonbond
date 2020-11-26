@@ -5,11 +5,10 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
-import { useInputValue } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 
 import '../../css/article_wrapper.css';
 import '../../css/user_page.css';
-import { toast } from 'react-toastify';
 import produce from 'immer';
 
 // TODO: 可剪裁非正方形的圖片
@@ -46,7 +45,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 			setIsEditing(false);
 			location.reload();
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 		return {};
 	}
@@ -112,7 +111,7 @@ function EditSentence(props: { sentence: string, setSentence: Function }): JSX.E
 			await API_FETCHER.updateSentence(input_props.value);
 			props.setSentence(input_props.value);
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 		setIsEditing(false);
 	}
@@ -210,7 +209,7 @@ function UserPage(props: Props): JSX.Element {
 				setArticles(more_articles);
 				setUser(unwrap(user));
 			} catch (err) {
-				toast.error(err);
+				toastErr(err);
 			}
 		});
 	}, [user_name]);

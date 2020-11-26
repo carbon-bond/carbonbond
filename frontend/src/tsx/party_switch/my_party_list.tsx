@@ -8,7 +8,7 @@ import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
 
 import { EXILED_PARTY_NAME } from './index';
-import { toast } from 'react-toastify';
+import { toastErr } from '../utils';
 
 async function fetchPartyList(): Promise<Party[]> {
 	let party_list = unwrap_or(await API_FETCHER.queryMyPartyList(), []);
@@ -25,7 +25,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 		fetchPartyList().then(tree => {
 			setPartyList(tree);
 			setFetching(false);
-		}).catch(err => toast.error(err));
+		}).catch(err => toastErr(err));
 	}, []);
 
 	if (!user_state.login && !user_state.fetching) {
@@ -104,7 +104,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 				}).then(() => {
 					props.history.push(`/app/party/${party_name}`);
 				}).catch(err => {
-					toast.error(err);
+					toastErr(err);
 				});
 			}}>確認</button>
 		</div>

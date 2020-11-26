@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
 import { RouteComponentProps } from 'react-router';
-import { useInputValue } from './utils';
+import { toastErr, useInputValue } from './utils';
 import '../css/signup_page.css';
 import { API_FETCHER } from '../ts/api/api';
 import { Error } from '../ts/api/api_trait';
@@ -28,7 +28,7 @@ export function SignupPage(props: Props): JSX.Element {
 			getLoginState();
 			toast('註冊成功');
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 	}
 
@@ -41,7 +41,7 @@ export function SignupPage(props: Props): JSX.Element {
 					setErr(res.Err);
 				}
 			} catch (err) {
-				toast.error(err);
+				toastErr(err);
 			}
 		});
 	}, [signup_token]);

@@ -12,9 +12,9 @@ import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { Board } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
-import { toast } from 'react-toastify';
 
 import '../../css/board_switch/board_page.css';
+import { toastErr } from '../utils';
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
@@ -35,7 +35,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 		}).then(res => {
 			setSubscribeCount(unwrap_or(res, 0));
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 		}).finally(() => {
 			setFetching(false);
 		});

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
-import { toast } from 'react-toastify';
 import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
 import { Article, HashMap, SearchField } from '../../ts/api/api_trait';
@@ -10,7 +9,7 @@ import { produce } from 'immer';
 
 import '../../css/article_wrapper.css';
 import '../../css/layout.css';
-import { useInputValue } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
 import { Category, parse_category, DataType } from 'force';
 
@@ -106,7 +105,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				}
 				return { title, board, author, category, fields, start_time, end_time };
 			} catch (err) {
-				toast.error(err);
+				toastErr(err);
 				return err as string;
 			}
 		})();
@@ -130,7 +129,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				setArticles(articles);
 				setCategories(categories);
 			} catch (e) {
-				toast.error(e);
+				toastErr(e);
 			}
 		});
 	}, [setCurBoard, setSearchBoard, setSearchCategory, props.location.search]);
@@ -263,7 +262,7 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 					setCategory(parse_category(category_src));
 					setInputs({});
 				} catch (err) {
-					toast.error(err);
+					toastErr(err);
 				}
 			});
 		}

@@ -19,9 +19,11 @@ pub async fn query_graph(
     let mut articles_to_expand = vec![article_id];
     let mut graph = vec![];
     while articles_to_expand.len() > 0 && graph.len() < count {
+        log::trace!("對 {:?} 搜索", articles_to_expand);
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
             let metas = query_related(id, category_set).await?;
+            log::trace!("{} 搜到關聯 {:?}", id, metas);
             for meta in metas.into_iter() {
                 if !seen.contains(&meta.id) {
                     seen.insert(meta.id);

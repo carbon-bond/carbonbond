@@ -41,7 +41,6 @@ pub async fn search_article(
     title: Option<String>,
 ) -> Fallible<Vec<Article>> {
     let pool = get_pool();
-    // XXX: 把這段長長的 join 寫成資料庫函式
     let metas = sqlx::query_as!(
         ArticleMeta,
         "

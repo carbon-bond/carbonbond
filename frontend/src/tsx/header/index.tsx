@@ -8,7 +8,7 @@ import '../../css/header.css';
 
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { isEmail } from '../../ts/regex_util';
-import { useInputValue } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
 import { BoardCacheState } from '../global_state/board_cache';
@@ -48,7 +48,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				toast('帳號或密碼錯誤');
 			}
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 		return;
 	}
@@ -59,7 +59,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			// setExtended(false);
 			toast('您已登出');
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 		return {};
 	}
@@ -76,7 +76,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				unwrap(await API_FETCHER.sendSignupEmail(email));
 				setSignupSent(true);
 			} catch (err) {
-				toast.error(err);
+				toastErr(err);
 			}
 			return;
 		}
@@ -151,7 +151,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		React.useEffect(() => {
 			API_FETCHER.queryNotificationByUser(true).then((res) => {
 				if ('Err' in res) {
-					toast.error(res.Err);
+					toastErr(res.Err);
 					return;
 				}
 				setNotifications(res.Ok);

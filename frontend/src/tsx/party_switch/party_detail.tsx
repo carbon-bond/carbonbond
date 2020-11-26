@@ -9,8 +9,8 @@ import { useForm } from 'react-hook-form';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 
 import '../../css/party/party_detail.css';
-import { toast } from 'react-toastify';
 import { parse } from 'force';
+import { toastErr } from '../utils';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
 
@@ -29,7 +29,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			console.log(p);
 			setFetching(false);
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 		});
 	}, [party_name]);
 
@@ -84,7 +84,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 		})
 			.then(data => unwrap(data))
 			.then(() => props.rp.history.push(`/app/b/${data.board_name}`))
-			.catch(err => toast.error(err));
+			.catch(err => toastErr(err));
 	}
 	return <div styleName="createBoardBlock">
 		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>

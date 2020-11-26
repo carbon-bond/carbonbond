@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
-import { toast } from 'react-toastify';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { Board } from '../../ts/api/api_trait';
@@ -8,6 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/right_sidebar.css';
 import { SubscribedBoardsState } from '../global_state/subscribed_boards';
+import { toastErr } from '../utils';
 
 type Props = RouteComponentProps<{ board_name: string }> & {
 	board: Board
@@ -25,7 +25,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 			unwrap(await API_FETCHER.unsubscribeBoard(props.board.id));
 			unsubscribe(props.board.id);
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 	}
 	async function onSubscribeBoardClick(): Promise<void> {
@@ -40,7 +40,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 				popularity: 0
 			});
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 	}
 	function onEditClick(): void {

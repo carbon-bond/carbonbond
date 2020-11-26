@@ -1,5 +1,5 @@
 import * as api_trait from './api_trait';
-import { toast } from 'react-toastify';
+import { toastErr } from '../../tsx/utils';
 
 export class ApiFetcher extends api_trait.RootQueryFetcher {
 	async fetchResult(query: Object): Promise<string> {
@@ -46,7 +46,7 @@ export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
 	if ('Ok' in result) {
 		return result.Ok;
 	} else {
-		toast.error(JSON.stringify(result.Err));
+		toastErr(result.Err);
 		return alt;
 	}
 }

@@ -1,0 +1,29 @@
+[
+{
+    "name": "化學小老師",
+    "force": [
+"碳 {",
+    "鍵結[*] 手[0~4]",
+"}",
+"氫 {",
+    "鍵結[碳,氧] 手[0~1]",
+"}",
+"氧 {",
+    "鍵結[*] 手[0~2]",
+"}"
+],
+    "articles": [
+        { "title": "喝酒0", "category": "氧", "content": { "手": [] } },
+        { "title": "喝酒1", "category": "氫", "content": { "手": [0] } },
+        { "title": "喝酒2", "category": "碳", "content": { "手": [] } },
+        { "title": "喝酒3", "category": "碳", "content": { "手": [0, 2] } },
+        { "title": "喝酒4", "category": "氫", "content": { "手": [2] } },
+        { "title": "喝酒5", "category": "氫", "content": { "手": [2] } },
+        { "title": "喝酒6", "category": "氫", "content": { "手": [2] } },
+        { "title": "喝酒7", "category": "氫", "content": { "手": [3] } },
+        { "title": "喝酒8", "category": "氫", "content": { "手": [3] } },
+
+        { "title": "燒碳9", "category": "碳", "content": { "手": [] } },
+        { "title": "燒碳10", "category": "氧", "content": { "手": [9] } }
+    ]
+}]

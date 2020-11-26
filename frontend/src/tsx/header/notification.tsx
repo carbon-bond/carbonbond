@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { toast } from 'react-toastify';
 
 import '../../css/header.css';
 
@@ -8,6 +7,7 @@ import { Notification, NotificationKind } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
 import { Row } from './index';
 import produce from 'immer';
+import { toastErr } from '../utils';
 
 export enum NotificationQuality { Good, Bad, Neutral };
 
@@ -55,7 +55,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 			props.setExpandingQuality(props.quality);
 			API_FETCHER.readNotifications(notifications.map(n => n.id)).then(res => {
 				if ('Err' in res) {
-					toast.error(res.Err);
+					toastErr(res.Err);
 				} else {
 					setUnreadCount(0);
 				}

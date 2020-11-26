@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { toast } from 'react-toastify';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, ArticleMeta } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
+import { toastErr } from './utils';
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
@@ -111,7 +111,7 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 			setMeta(unwrap(data));
 			// setFetching(false);
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 			// setFetching(false);
 		});
 	}, [props.article_id]);

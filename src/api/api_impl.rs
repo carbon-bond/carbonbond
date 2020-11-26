@@ -128,6 +128,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let id = db::article::create(author_id, board_id, category_name, title, content).await?;
         Ok(id)
     }
+    async fn query_graph(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+        category_set: Vec<String>,
+    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
+        service::graph_view::query_graph(10, article_id, &category_set).await
+    }
 }
 
 #[derive(Default)]

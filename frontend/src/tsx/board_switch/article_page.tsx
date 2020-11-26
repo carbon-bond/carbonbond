@@ -6,12 +6,12 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById, CommentCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
-import { toast } from 'react-toastify';
 import { parse_category, Field, Force } from 'force';
 import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
 import * as force_util from '../../ts/force_util';
 import { isImageLink, isLink } from '../../ts/regex_util';
+import { toastErr } from '../utils';
 
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
@@ -27,7 +27,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 		}).then(data => {
 			setMetas(unwrap(data));
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 		});
 	}, [article.meta.board_id, article.meta.id]);
 
@@ -85,7 +85,7 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 		}).then(data => {
 			setSmallArticles(unwrap(data));
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 		});
 	});
 
@@ -232,7 +232,7 @@ function ReplyButton(props: { board: Board, article: Article, category_name: str
 			setEditorPanelData(next_state);
 			openEditorPanel();
 		} else {
-			toast.error('尚在編輯其他文章，請關閉後再點擊');
+			toastErr('尚在編輯其他文章，請關閉後再點擊');
 		}
 	};
 	return <button onClick={onClick}>
@@ -309,7 +309,7 @@ export function ArticlePage(props: Props): JSX.Element {
 			setArticle(unwrap(data));
 			setFetching(false);
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 			setFetching(false);
 		});
 	}, [article_id, board_name, props.history]);

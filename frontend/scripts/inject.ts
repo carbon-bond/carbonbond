@@ -98,6 +98,7 @@ async function injectArticle(
 	for (let field_name of Object.keys(article.content)) {
 		let field = category.fields.find((f) => f.name == field_name);
 		let content = article.content[field_name];
+		console.log(`處理欄位 ${field_name}： ${JSON.stringify(field)}`);
 		if (!field) {
 			throw `未知的欄位名 ${field_name}`;
 		}
@@ -114,11 +115,13 @@ async function injectArticle(
 			} else if (field.datatype.kind == 'array') {
 				if (!Array.isArray(content)) {
 					throw `${field_name} 應該是陣列`;
-				} else if (content.length == 0) {
+				} else {
 					for (let i = 0; i < content.length; i++) {
 						let c = content[i];
 						if (typeof c == 'number') {
 							content[i] = mapID(c, id_pos_map);
+						} else {
+							throw `${field_name}.${i} 應該是鍵結`;
 						}
 					}
 				}
@@ -138,6 +141,7 @@ async function injectArticle(
 
 function mapID(pos: number, id_pos_map: IDPosMap): number {
 	if (pos in id_pos_map) {
+		console.log(`對應成功：${pos} => ${id_pos_map[pos]}`);
 		return id_pos_map[pos];
 	}
 	throw `未知的文章序：${pos}`;

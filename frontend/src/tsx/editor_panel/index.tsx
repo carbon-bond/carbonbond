@@ -18,6 +18,7 @@ import '../../css/bottom_panel/bottom_panel.css';
 import '../../css/bottom_panel/editor.css';
 import { BasicDataType } from 'force';
 import { SimpleArticleCardById } from '../article_card';
+import { toastErr } from '../utils';
 
 function EditorPanel(): JSX.Element | null {
 	const { is_open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
@@ -279,7 +280,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		validator.validate_category(category, content)
 			.then(ok => {
 				if (!ok) {
-					toast.error('文章不符力語言格式，請檢查各欄位無誤再送出');
+					toastErr('文章不符力語言格式，請檢查各欄位無誤再送出');
 					return Promise.reject();
 				}
 			})
@@ -299,7 +300,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				setEditorPanelData(null);
 			})
 			.catch(err => {
-				toast.error(err);
+				toastErr(err);
 			});
 	};
 

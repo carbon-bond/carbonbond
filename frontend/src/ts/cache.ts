@@ -1,7 +1,7 @@
 import { Force, parse } from 'force';
 import { unwrap, API_FETCHER } from '../ts/api/api';
 import React from 'react';
-import { toast } from 'react-toastify';
+import { toastErr } from '../tsx/utils';
 
 export const get_force: (id: number) => Promise<Force> = (() => {
 	const cache = new Map<number, Force>();
@@ -25,7 +25,7 @@ export function useForce(id: number): Force | null {
 		get_force(id).then(data => {
 			setForce(data);
 		}).catch(err => {
-			toast.error(err);
+			toastErr(err);
 		});
 	}, [id]);
 

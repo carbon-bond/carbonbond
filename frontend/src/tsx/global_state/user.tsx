@@ -1,7 +1,7 @@
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import * as React from 'react';
-import { toast } from 'react-toastify';
 import { createContainer } from 'unstated-next';
+import { toastErr } from '../utils';
 const { useState } = React;
 
 type UserStateType = {
@@ -36,7 +36,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 				setUserState({ login: false, fetching: false });
 			}
 		} catch (err) {
-			toast.error(err);
+			toastErr(err);
 		}
 		return;
 	}
