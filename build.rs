@@ -15,6 +15,7 @@ use std::fs::File;
 use std::io::prelude::*;
 
 fn main() -> std::io::Result<()> {
+    println!("cargo:rerun-if-changed=PATH=config");
     // build server chitin
     env_logger::init();
     let mut server_file = File::create("src/api/api_trait.rs")?;
@@ -51,6 +52,8 @@ fn main() -> std::io::Result<()> {
         .write_all(RootQuery::codegen(&CodegenOption::Client { error: "Error" }).as_bytes())?;
     // set database url
     let conf = config::load_config(&None).unwrap();
+    log::info!("使用資料庫 url {}", conf.database.get_url());
+
     println!("cargo:rustc-env=DATABASE_URL={}", conf.database.get_url());
 
     Ok(())
