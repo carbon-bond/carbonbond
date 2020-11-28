@@ -104,6 +104,7 @@ async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> 
 async fn main() -> Fallible<()> {
     // 初始化紀錄器
     env_logger::init();
+    let prj_path = config::prj_path()?;
     // 載入設定
     let args_config = clap::load_yaml!("args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
@@ -115,9 +116,10 @@ async fn main() -> Fallible<()> {
     log::info!("初始化 redis 客戶端");
     redis::init().await.unwrap();
     log::info!("載入前端資源");
-    let static_files = Static::new("./frontend/static");
+    let static_files = Static::new(prj_path.join("./frontend/static"));
     log::info!("載入首頁");
-    let content = std::fs::read_to_string("./frontend/static/index.html").expect("讀取首頁失敗");
+    let content = std::fs::read_to_string(prj_path.join("./frontend/static/index.html"))
+        .expect("讀取首頁失敗");
     INDEX.set(content);
 
     log::info!("啟動伺服器");

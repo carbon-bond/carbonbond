@@ -16,6 +16,7 @@ use std::io::prelude::*;
 
 fn main() -> std::io::Result<()> {
     // build server chitin
+    env_logger::init();
     let mut server_file = File::create("src/api/api_trait.rs")?;
     server_file.write_all(b"use async_trait::async_trait;\n")?;
     server_file.write_all(b"use crate::api::query::*;\n")?;
