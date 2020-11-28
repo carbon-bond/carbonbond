@@ -133,7 +133,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
         category_set: Vec<String>,
-    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<super::model::Graph, crate::custom_error::Error> {
         service::graph_view::query_graph(10, article_id, &category_set).await
     }
 }

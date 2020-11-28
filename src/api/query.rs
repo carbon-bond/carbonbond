@@ -99,7 +99,7 @@ pub enum ArticleQuery {
         title: Option<String>,
         content: HashMap<String, super::model::SearchField>,
     },
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(request, response = "super::model::Graph")]
     QueryGraph {
         article_id: i64,
         category_set: Vec<String>,

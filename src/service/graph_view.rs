@@ -1,38 +1,44 @@
-use crate::api::model::ArticleMeta;
+use crate::api::model::{ArticleMeta, Graph};
 use crate::custom_error::Fallible;
 use crate::db;
-use std::collections::HashSet;
-
-async fn query_related(article_id: i64, category_set: &[String]) -> Fallible<Vec<ArticleMeta>> {
-    let mut metas = db::article::get_bondee_meta(article_id, &category_set).await?;
-    let mut metas2 = db::article::get_bonder_meta(article_id, &category_set).await?;
-    metas.append(&mut metas2); // XXX: 能不能省一次 DB
-    Ok(metas)
-}
+use std::collections::{HashMap, HashSet};
 
 pub async fn query_graph(
     count: usize,
     article_id: i64,
     category_set: &[String],
-) -> Fallible<Vec<ArticleMeta>> {
-    let mut seen = HashSet::<i64>::new();
+) -> Fallible<Graph> {
     let mut articles_to_expand = vec![article_id];
-    let mut graph = vec![];
-    while articles_to_expand.len() > 0 && graph.len() < count {
+    let mut nodes = HashMap::new();
+    let mut edges = HashSet::new();
+    while articles_to_expand.len() > 0 && nodes.len() < count {
         log::trace!("對 {:?} 搜索", articles_to_expand);
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
-            let metas = query_related(id, category_set).await?;
-            log::trace!("{} 搜到關聯 {:?}", id, metas);
-            for meta in metas.into_iter() {
-                if !seen.contains(&meta.id) {
-                    seen.insert(meta.id);
-                    articles_next.push(meta.id);
-                    graph.push(meta);
-                }
+            let bondee = db::article::get_bondee_meta(id, &category_set).await?;
+            let bonder = db::article::get_bonder_meta(id, &category_set).await?;
+            macro_rules! insert {
+                ($meta:ident) => {
+                    nodes.entry($meta.id).or_insert_with(|| {
+                        articles_next.push($meta.id);
+                        $meta
+                    });
+                };
+            }
+
+            for meta in bondee.into_iter() {
+                edges.insert((meta.id, id));
+                insert!(meta);
+            }
+            for meta in bonder.into_iter() {
+                edges.insert((id, meta.id));
+                insert!(meta);
             }
         }
         articles_to_expand = articles_next;
     }
-    Ok(graph)
+    Ok(Graph {
+        nodes: nodes.into_iter().map(|(_, v)| v).collect(),
+        edges: edges.into_iter().collect(),
+    })
 }
