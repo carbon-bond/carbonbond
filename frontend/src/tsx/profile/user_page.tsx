@@ -26,6 +26,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 
 		let reader = new FileReader();
 		let file = e.target.files[0];
+		e.target.value = '';
 
 		reader.onloadend = () => {
 			setPreviewData(reader.result as string); // 因爲使用 readAsDataURL ，故 result 爲字串
