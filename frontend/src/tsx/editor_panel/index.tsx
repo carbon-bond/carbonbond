@@ -75,14 +75,14 @@ function EditorPanel(): JSX.Element | null {
 
 const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field, validator } = props;
-	const [ is_valid, setIsValid ] = useState<boolean>(true);
+	const [ validate_info, setValidateInfo ] = useState<undefined | string>(undefined);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	let content = editor_panel_data!.content;
 
 	useEffect(() => {
 		validator.validate_datatype(field.datatype, content[field.name])
-		.then(res => setIsValid(res));
+		.then(res => setValidateInfo(res));
 	}, [field, content, validator]);
 
 	if (editor_panel_data == null) { return <></>; }
@@ -104,17 +104,17 @@ const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Ele
 	if (field.datatype.t.kind == 'text') {
 		return <>
 			<textarea {...input_props} />
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+			{validate_info && <InvalidMessage msg={validate_info} />}
 		</>;
 	} else if (field.datatype.t.kind == 'number') {
 		return <>
 			<input type="number" {...input_props} />
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+			{validate_info && <InvalidMessage msg={validate_info} />}
 		</>;
 	} else {
 		return <>
 			<input {...input_props} />
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+			{validate_info && <InvalidMessage msg={validate_info} />}
 		</>;
 	}
 };
@@ -136,7 +136,7 @@ function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
 const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field } = props;
 	const [ value, setValue ] = useState<string>('');
-	const [ is_valid, setIsValid ] = useState<boolean>(true);
+	const [ is_valid, setIsValid ] = useState<undefined | string>(undefined);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	if (editor_panel_data == null) { return <></>; }
 
@@ -278,8 +278,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		}
 		// XXX: 各個欄位 Field 組件中檢查過了，應嘗試快取該結果
 		validator.validate_category(category, content)
-			.then(ok => {
-				if (!ok) {
+			.then(info => {
+				if (info != undefined) {
 					toastErr('文章不符力語言格式，請檢查各欄位無誤再送出');
 					return Promise.reject();
 				}
