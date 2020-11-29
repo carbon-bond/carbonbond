@@ -32,13 +32,14 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
+type Node = { id: number, name: string, url: string, radius: number };
 type Graph = {
-	nodes: { id: number, name: string, url: string }[],
+	nodes: Node[],
 	edges: { target: number, source: number }[]
 };
 
 const width = 1200, height = 1200; // XXX: 不要寫死
-const radius = 30;
+const base_radius = 30;
 
 export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
@@ -54,7 +55,8 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 							return {
 								id: n.id,
 								url: `/app/b/${n.board_name}/a/${n.id}`,
-								name: `[${n.category_name}] ${n.title}`
+								name: `[${n.category_name}] ${n.title}`,
+								radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
 							};
 						}),
 						edges: g.edges.map(e => { return { source: e[1], target: e[0] }; })
@@ -92,7 +94,9 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.append('circle')
 			.style('fill', '#69b3a2')
 			.attr('id', d => 'a' + d.id)
-			.attr('r', radius);
+			.attr('r', d => d.radius)
+			.on('mouseover', mouseover)
+			.on('mouseout',  mouseout);
 		d3.select(`#a${props.meta.id}`).style('fill', 'pink');
 
 		let text = svg.append('g')
@@ -104,7 +108,9 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.append('text')
 			.text(function (d) {
 				return d.name;
-			});
+			})
+			.on('mouseover', mouseover)
+			.on('mouseout',  mouseout);
 
 		svg.append('defs')
 			.append('marker')
@@ -121,9 +127,11 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.attr('d', 'M1,1 L5,3 L1,5 Z')
 			.attr('fill', '#000');
 
+		// @ts-ignore
 		let simulation = d3.forceSimulation(graph.nodes)
 			.force('link', d3.forceLink()
 				.links(graph.edges)
+				// @ts-ignore
 				.id(d => d.id)
 			)
 			.force('charge', d3.forceManyBody().strength(-2000))
@@ -132,30 +140,34 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 
 		function ticked(): void {
 			link.attr('d', function (d) {
-				let dx = d.target.x - d.source.x,
-					dy = d.target.y - d.source.y,
+				// @ts-ignore
+				let dx = d.target.x - d.source.x, dy = d.target.y - d.source.y,
 					dr = Math.sqrt(dx * dx + dy * dy);
+				// @ts-ignore
 				return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + d.target.x + ',' + d.target.y;
 			});
 			link.attr('d', function (d) {
-				let pl = this.getTotalLength(),
-					r = radius + 3,
+				// @ts-ignore
+				let pl = this.getTotalLength(), r = d.target.radius + 3,
 					m = this.getPointAtLength(pl - r);
-				let dx = m.x - d.source.x,
-					dy = m.y - d.source.y,
+				// @ts-ignore
+				let dx = m.x - d.source.x, dy = m.y - d.source.y,
 					dr = Math.sqrt(dx * dx + dy * dy);
-
+				// @ts-ignore
 				return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + m.x + ',' + m.y;
 			});
 			let min_x = Number.MAX_SAFE_INTEGER, min_y = min_x;
 			node.attr('transform', d =>{
+				// @ts-ignore
 				min_x = Math.min(min_x, d.x);
+				// @ts-ignore
 				min_y = Math.min(min_y, d.y);
+				// @ts-ignore
 				return 'translate(' + d.x + ',' + d.y + ')';
 			});
-			text.attr('transform', d => 'translate(' + d.x + 3 + ',' + d.y + 3 + ')');
-			text.attr('color', d => 'translate(' + d.x + 3 + ',' + d.y + 3 + ')');
-			svg.attr('transform', `translate(${radius + 10 - min_x}, ${radius + 10 - min_y})`);
+			// @ts-ignore
+			text.attr('transform', d => `translate(${d.x - 10 - d.radius}, ${d.y})`);
+			svg.attr('transform', `translate(${base_radius + 10 - min_x}, ${base_radius + 10 - min_y})`);
 		}
 		simulation.tick(700);
 	}, [graph, props.meta.id]);
@@ -165,4 +177,17 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	return <>
 		<div ref={graph_div}></div>
 	</>;
+}
+
+// eslint-disable-next-line
+function mouseover(_evt: any, d: Node): void {
+	d3.select(`#a${d.id}`).transition()
+		.duration(400)
+		.attr('r', d.radius * 1.3);
+}
+// eslint-disable-next-line
+function mouseout(_evt: any, d: Node): void {
+	d3.select(`#a${d.id}`).transition()
+		.duration(400)
+		.attr('r', d.radius);
 }
