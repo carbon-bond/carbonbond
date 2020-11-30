@@ -1,0 +1,21 @@
+.title {
+    height: 30px;
+    line-height: 30px;
+    background: var(--gray);
+    color: white;
+    padding: 0px 20px;
+    /* & p {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, 0%);
+    } */
+}
+.body {
+    background: var(--background-color);
+    padding: 0px 20px 10px;
+}
+.buttonBar {
+    & button {
+        margin: 0px 5px;
+    }
+}

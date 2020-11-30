@@ -15,6 +15,7 @@ import { BoardCacheState } from '../global_state/board_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
+import { ModalButton, ModalWindow } from '../components/modal_window';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div styleName="row" onClick={() => {
@@ -80,28 +81,23 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			}
 			return;
 		}
-		if (signuping) {
-			return <div ref={ref_all} styleName="signupModal">
-				<div styleName="escape" onClick={() => setSignuping(false)}>✗</div>
+		let buttons: ModalButton[] = [];
+		buttons.push({ text: '寄發註冊信', handler: () => signup_request(email.value) });
+		buttons.push({ text: '✗', handler: () => setSignuping(false) });
+
+		function getBody(): JSX.Element {
+			return <div styleName="signupModal">
 				<input type="text" placeholder="😎 信箱" autoFocus {...email} />
-				{
-					(() => {
-						if (signup_sent) {
-							return <>
-								<p>已寄出註冊碼</p>
-								<button onClick={() => signup_request(email.value)}>再次寄發註冊信</button>
-							</>;
-						} else {
-							return <>
-								<button onClick={() => signup_request(email.value)}>寄發註冊信</button>
-							</>;
-						}
-					})()
-				}
 			</div>;
-		} else {
-			return <></>;
 		}
+
+		return <ModalWindow
+			title='註冊'
+			body={getBody()}
+			buttons={buttons}
+			visible={signuping}
+			setVisible={setSignuping}
+		/>
 	}
 	function LoginModal(): JSX.Element {
 		let name = useInputValue('').input_props;
@@ -117,16 +113,24 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			}
 		}
 
-		if (logining) {
-			return <div ref={ref_all} styleName="loginModal">
-				<div styleName="escape" onClick={() => setLogining(false)}>✗</div>
+		let buttons: ModalButton[] = [];
+		buttons.push({ text: '登入', handler: () => login_request(name.value, password.value) });
+		buttons.push({ text: '✗', handler: () => setLogining(false) });
+
+		function getBody(): JSX.Element {
+			return <div styleName="loginModal">
 				<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
 				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-				<button onClick={() => login_request(name.value, password.value)}>登入</button>
 			</div>;
-		} else {
-			return <></>;
 		}
+
+		return <ModalWindow
+			title='登入'
+			body={getBody()}
+			buttons={buttons}
+			visible={logining}
+			setVisible={setLogining}
+		/>
 	}
 
 	function DropdownBody(): JSX.Element {
