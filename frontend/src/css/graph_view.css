@@ -1,3 +1,4 @@
 .articleBlock {
     position: absolute;
+    transition: .2s;
 }

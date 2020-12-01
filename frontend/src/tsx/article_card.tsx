@@ -21,12 +21,12 @@ export function ArticleHeader(props: { user_name: string, board_name: string, da
 	</div>;
 }
 
-export function ArticleLine(props: { category_name: string, title: string, id: number }): JSX.Element {
+export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
 
 	return <div styleName="articleLine">
 		<span styleName="articleType">{props.category_name}</span>
 		<span styleName="articleTitle">{props.title}</span>
-		<Link  styleName="articleGraphViewIcon" to={`/app/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link  styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -75,7 +75,11 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 			<ArticleHeader user_name={user_name} board_name={props.article.meta.board_name} date={date} />
 			<div styleName="articleBody">
 				<div styleName="leftPart">
-					<ArticleLine category_name={category_name} title={props.article.meta.title} id={props.article.meta.id}/>
+					<ArticleLine
+						board_name={props.article.meta.board_name}
+						category_name={category_name}
+						title={props.article.meta.title}
+						id={props.article.meta.id} />
 					<div styleName="articleContent">
 						{props.article.content}
 					</div>
@@ -93,6 +97,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 	return <div styleName="simpleArticleCard">
 		<div key={meta.title}>
 			<ArticleLine
+				board_name={meta.board_name}
 				title={meta.title}
 				id={meta.id}
 				category_name={meta.category_name} />

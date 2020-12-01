@@ -31,7 +31,6 @@ import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { SearchPage } from './search_page/search_page';
-import { GraphView } from './graph_view/graph_view';
 import { toastErr } from './utils';
 
 // 配置全域提醒
@@ -54,9 +53,6 @@ function App(): JSX.Element {
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
 				} />
-				<Route exact path="/app/graph/:article_id" render={props => (
-					<GraphView {...props} />
-				)} />
 				<Route path="/app/user/:user_name" render={props =>
 					<UserPage {...props} />
 				} />

@@ -55,6 +55,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	let [curHovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
 	let [offset_y, setOffsetY] = React.useState(0);
+	let [opacity, setOpacity] = React.useState(0);
 	let graph_div = React.useRef(null);
 
 	function onHover(node: NodeWithXY): void {
@@ -62,6 +63,10 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			try {
 				let article = unwrap(res);
 				setCurHovering({ node, article });
+				setOpacity(0);
+				setTimeout(() => {
+					setOpacity(100);
+				});
 			} catch (err) {
 				toastErr(err);
 			}
@@ -220,9 +225,10 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	return <>
 		<div ref={graph_div} style={{ position: 'relative' }}>
 			{
-				curHovering == null ? null : <div style={{
+				curHovering == null ? null : <div key={curHovering.node.id} style={{
 					left: curHovering.node.x + offset_x + curHovering.node.radius,
 					top: curHovering.node.y + offset_y + curHovering.node.radius,
+					opacity,
 				}} styleName="articleBlock">
 					<ArticleCard article={curHovering.article}/>
 				</div>

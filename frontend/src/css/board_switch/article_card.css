@@ -64,7 +64,6 @@
 }
 .articleBtnItem {
     display: flex;
-    color: var(--light-font-color);
     white-space: nowrap;
     margin-right: 10px;
     cursor: pointer;

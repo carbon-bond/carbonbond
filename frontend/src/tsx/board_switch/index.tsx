@@ -15,6 +15,7 @@ import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/board_page.css';
 import { toastErr } from '../utils';
+import { GraphView } from './graph_view';
 
 type Props = RouteComponentProps<{ board_name: string }>;
 
@@ -80,6 +81,9 @@ export function BoardSwitch(props: Props): JSX.Element {
 						<Route exact path="/app/b/:board_name/a/:article_id" render={props =>
 							<ArticlePage {...props} board={board!}/>
 						} />
+						<Route exact path="/app/b/:board_name/graph/:article_id" render={props =>
+							<GraphView {...props}/>
+						} />
 						<Redirect to="/app" />
 					</Switch>
 				</div>
@@ -89,6 +93,9 @@ export function BoardSwitch(props: Props): JSX.Element {
 							<BoardSidebar {...props} board={board!} />
 						} />
 						<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
+							<ArticleSidebar />
+						} />
+						<Route exact path="/app/b/:board_name/graph/:article_id" render={() =>
 							<ArticleSidebar />
 						} />
 					</Switch>
