@@ -10,12 +10,20 @@
         transform: translate(-50%, 0%);
     } */
 }
+.escape {
+    cursor: pointer;
+    font-size: 28px;
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    color: red;
+}
 .body {
     background: var(--background-color);
     padding: 0px 20px 10px;
 }
 .buttonBar {
     & button {
-        margin: 0px 5px;
+        margin: 0px 10px 0px 0px;
     }
 }

@@ -36,11 +36,12 @@ export function ModalWindow(props: {
 		}} >
 
 		<div styleName="title">{props.title}</div>
+		<div styleName="escape" onClick={() => props.setVisible(false)}>✗</div>
 		<div styleName="body">
 			{props.body}
-		</div>
-		<div styleName="buttonBar">
-			{buttons}
+			<div styleName="buttonBar">
+				{buttons}
+			</div>
 		</div>
 	</ReactModal>;
 }
