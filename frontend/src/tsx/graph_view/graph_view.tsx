@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleMeta } from '../../ts/api/api_trait';
+import { Article, ArticleMeta } from '../../ts/api/api_trait';
+import { ArticleCard } from '../article_card';
 import { get_force } from '../../ts/cache';
 import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
@@ -43,12 +44,30 @@ type Graph = {
 const width = 1200, height = 1200; // XXX: 不要寫死
 const base_radius = 30;
 
+type NodeWithXY = { x: number, y: number } & Node;
+type ArticleWithNode = {
+	article: Article,
+	node: NodeWithXY
+};
+
 export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
-	let [curHovering, setCurHovering] = React.useState<Node & { x: number, y: number } | null>(null);
+	let [curHovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
 	let [offset_y, setOffsetY] = React.useState(0);
 	let graph_div = React.useRef(null);
+
+	function onHover(node: NodeWithXY): void {
+		API_FETCHER.queryArticle(node.id).then(res => {
+			try {
+				let article = unwrap(res);
+				setCurHovering({ node, article });
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}
+
 	React.useEffect(() => {
 		get_force(props.meta.board_id)
 			.then(force => {
@@ -103,7 +122,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.attr('r', d => d.radius)
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
-				setCurHovering(d);
+				onHover(d);
 				mouseover(d);
 			})
 			.on('mouseout', (_, d) => {
@@ -124,7 +143,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			})
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
-				setCurHovering(d);
+				onHover(d);
 				mouseover(d);
 			})
 			.on('mouseout', (_, d) => {
@@ -202,10 +221,10 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 		<div ref={graph_div} style={{ position: 'relative' }}>
 			{
 				curHovering == null ? null : <div style={{
-					left: curHovering.x + offset_x + curHovering.radius,
-					top: curHovering.y + offset_y + curHovering.radius,
+					left: curHovering.node.x + offset_x + curHovering.node.radius,
+					top: curHovering.node.y + offset_y + curHovering.node.radius,
 				}} styleName="articleBlock">
-					{JSON.stringify(curHovering.meta)}
+					<ArticleCard article={curHovering.article}/>
 				</div>
 			}
 		</div>

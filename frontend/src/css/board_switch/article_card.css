@@ -48,6 +48,11 @@
         font-size: 20px;
         /* font-weight: bold; */
     }
+    & .articleGraphViewIcon {
+        font-size: 20px;
+        position: relative;
+        z-index: 10;
+    }
 }
 
 .articleFooter {

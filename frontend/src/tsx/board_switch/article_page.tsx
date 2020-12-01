@@ -284,6 +284,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			board_name={article.meta.board_name}
 			date={new Date(article.meta.create_time)} />
 		<ArticleLine
+			id={article.meta.id}
 			category_name={category_name}
 			title={article.meta.title} />
 		<ReplyButtons />
