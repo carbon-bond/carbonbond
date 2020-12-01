@@ -82,12 +82,25 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			return;
 		}
 		let buttons: ModalButton[] = [];
-		buttons.push({ text: '寄發註冊信', handler: () => signup_request(email.value) });
+		buttons.push({ text: signup_sent ? '再次寄發註冊信' : '寄發註冊信', handler: () => signup_request(email.value) });
 		buttons.push({ text: '✗', handler: () => setSignuping(false) });
 
 		function getBody(): JSX.Element {
 			return <div styleName="signupModal">
 				<input type="text" placeholder="😎 信箱" autoFocus {...email} />
+				{
+					(() => {
+						if (signup_sent) {
+							return <>
+								<p>已寄出註冊碼</p>
+							</>;
+						} else {
+							return <>
+								<p>&nbsp;</p>
+							</>;
+						}
+					})()
+				}
 			</div>;
 		}
 
