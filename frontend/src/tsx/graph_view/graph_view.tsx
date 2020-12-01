@@ -7,6 +7,8 @@ import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
+import '../../css/graph_view.css';
+
 type Props = RouteComponentProps<{ article_id: string }>;
 
 export function GraphView(props: Props): JSX.Element {
@@ -32,7 +34,7 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
-type Node = { id: number, name: string, url: string, radius: number };
+type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
 type Graph = {
 	nodes: Node[],
 	edges: { target: number, source: number }[]
@@ -43,6 +45,9 @@ const base_radius = 30;
 
 export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
+	let [curHovering, setCurHovering] = React.useState<Node & { x: number, y: number } | null>(null);
+	let [offset_x, setOffsetX] = React.useState(0);
+	let [offset_y, setOffsetY] = React.useState(0);
 	let graph_div = React.useRef(null);
 	React.useEffect(() => {
 		get_force(props.meta.board_id)
@@ -56,6 +61,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 								id: n.id,
 								url: `/app/b/${n.board_name}/a/${n.id}`,
 								name: `[${n.category_name}] ${n.title}`,
+								meta: n,
 								radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
 							};
 						}),
@@ -95,8 +101,15 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.style('fill', '#69b3a2')
 			.attr('id', d => 'a' + d.id)
 			.attr('r', d => d.radius)
-			.on('mouseover', mouseover)
-			.on('mouseout',  mouseout);
+			.on('mouseover', (_, d) => {
+				// @ts-ignore
+				setCurHovering(d);
+				mouseover(d);
+			})
+			.on('mouseout', (_, d) => {
+				setCurHovering(null);
+				mouseout(d);
+			});
 		d3.select(`#a${props.meta.id}`).style('fill', 'pink');
 
 		let text = svg.append('g')
@@ -109,8 +122,15 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.text(function (d) {
 				return d.name;
 			})
-			.on('mouseover', mouseover)
-			.on('mouseout',  mouseout);
+			.on('mouseover', (_, d) => {
+				// @ts-ignore
+				setCurHovering(d);
+				mouseover(d);
+			})
+			.on('mouseout', (_, d) => {
+				setCurHovering(null);
+				mouseout(d);
+			});
 
 		svg.append('defs')
 			.append('marker')
@@ -157,7 +177,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 				return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + m.x + ',' + m.y;
 			});
 			let min_x = Number.MAX_SAFE_INTEGER, min_y = min_x;
-			node.attr('transform', d =>{
+			node.attr('transform', d => {
 				// @ts-ignore
 				min_x = Math.min(min_x, d.x);
 				// @ts-ignore
@@ -165,9 +185,13 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 				// @ts-ignore
 				return 'translate(' + d.x + ',' + d.y + ')';
 			});
+			let offset_x = base_radius + 10 - min_x;
+			let offset_y = base_radius + 10 - min_y;
 			// @ts-ignore
 			text.attr('transform', d => `translate(${d.x - 10 - d.radius}, ${d.y})`);
-			svg.attr('transform', `translate(${base_radius + 10 - min_x}, ${base_radius + 10 - min_y})`);
+			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
+			setOffsetX(offset_x);
+			setOffsetY(offset_y);
 		}
 		simulation.tick(700);
 	}, [graph, props.meta.id]);
@@ -175,18 +199,25 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 		return <></>;
 	}
 	return <>
-		<div ref={graph_div}></div>
+		<div ref={graph_div} style={{ position: 'relative' }}>
+			{
+				curHovering == null ? null : <div style={{
+					left: curHovering.x + offset_x + curHovering.radius,
+					top: curHovering.y + offset_y + curHovering.radius,
+				}} styleName="articleBlock">
+					{JSON.stringify(curHovering.meta)}
+				</div>
+			}
+		</div>
 	</>;
 }
 
-// eslint-disable-next-line
-function mouseover(_evt: any, d: Node): void {
+function mouseover(d: Node): void {
 	d3.select(`#a${d.id}`).transition()
 		.duration(400)
 		.attr('r', d.radius * 1.3);
 }
-// eslint-disable-next-line
-function mouseout(_evt: any, d: Node): void {
+function mouseout(d: Node): void {
 	d3.select(`#a${d.id}`).transition()
 		.duration(400)
 		.attr('r', d.radius);

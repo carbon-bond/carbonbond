@@ -5,7 +5,7 @@ import '../../css/components/modal_window.css';
 export type ModalButton = {
 	text: string,
 	handler: Function
-}
+};
 
 export function ModalWindow(props: {
 	title: string,
@@ -16,7 +16,7 @@ export function ModalWindow(props: {
 }): JSX.Element {
 	const buttons = [];
 	for (const x of props.buttons) {
-		buttons.push(<button onClick={() => {x.handler()}}>{x.text}</button>);
+		buttons.push(<button onClick={() => {x.handler();}}>{x.text}</button>);
 	}
 	return <ReactModal
 		isOpen={props.visible}
@@ -34,7 +34,7 @@ export function ModalWindow(props: {
 				padding: '2px'
 			}
 		}} >
-			
+
 		<div styleName="title">{props.title}</div>
 		<div styleName="body">
 			{props.body}

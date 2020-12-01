@@ -1,0 +1,11 @@
+.articleBlock {
+    position: absolute;
+    background-color: white;
+    border-radius: 3px;
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    width: 30%;
+    padding: 10px;
+    word-break: break-all;
+}

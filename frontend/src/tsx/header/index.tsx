@@ -92,12 +92,12 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		}
 
 		return <ModalWindow
-			title='註冊'
+			title="註冊"
 			body={getBody()}
 			buttons={buttons}
 			visible={signuping}
 			setVisible={setSignuping}
-		/>
+		/>;
 	}
 	function LoginModal(): JSX.Element {
 		let name = useInputValue('').input_props;
@@ -125,12 +125,12 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		}
 
 		return <ModalWindow
-			title='登入'
+			title="登入"
 			body={getBody()}
 			buttons={buttons}
 			visible={logining}
 			setVisible={setLogining}
-		/>
+		/>;
 	}
 
 	function DropdownBody(): JSX.Element {
