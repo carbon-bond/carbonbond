@@ -6,6 +6,7 @@ import { ArticleCard } from '../article_card';
 import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
+import { ModalButton, ModalWindow } from '../components/modal_window';
 
 import '../../css/article_wrapper.css';
 import '../../css/user_page.css';
@@ -198,6 +199,7 @@ function UserPage(props: Props): JSX.Element {
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [user, setUser] = React.useState<User | null>(null);
+	const [editing, setEditing] = React.useState(false);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
@@ -224,10 +226,52 @@ function UserPage(props: Props): JSX.Element {
 		setUser(new_state);
 	}
 
+	/*
+	function setInfomation(intro: string, gender: string, job: string, city: string): void {
+		let new_state = produce(user, nxt => {
+			if (nxt != null) {
+				nxt.intro = intro;
+				nxt.gender = gender;
+				nxt.job = job;
+				nxt.city = city;
+			}
+		});
+		setUser(new_state);
+	}
+	*/
+
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
 			API_FETCHER.createUserRelation(user.id, kind);
 		}
+	}
+
+	function EditModal(): JSX.Element {
+		let intro = useInputValue('').input_props;
+		let gender = useInputValue('').input_props;
+		let job = useInputValue('').input_props;
+		let city = useInputValue('').input_props;
+
+		function getBody(): JSX.Element {
+			return <div styleName="editModal">
+				<textarea placeholder="自我介紹" autoFocus {...intro} />
+				<input type="text" placeholder="性別" {...gender} />
+				<input type="text" placeholder="職業" {...job} />
+				<input type="text" placeholder="居住城市" {...city} />
+			</div>
+		}
+
+		let buttons: ModalButton[] = [];
+		buttons.push({ text: '儲存', handler: () => setEditing(false) });  // TODO webapi?
+		buttons.push({ text: '取消', handler: () => setEditing(false) });
+
+		return <ModalWindow
+			title="🖉 編輯我的資料"
+			body={getBody()}
+			buttons={buttons}
+			visible={editing}
+			setVisible={setEditing}
+		/>;
 	}
 
 	const is_me = user_state.login && user_state.user_name == user_name;
@@ -285,7 +329,7 @@ function UserPage(props: Props): JSX.Element {
 			<div styleName="detail">
 				{
 					user_state.login && user_state.user_name == user_name ?
-						<button styleName="editButton" onClick={() => alert('TODO')}>🖉 編輯我的資料</button> :
+						<button styleName="editButton" onClick={() => setEditing(true)}>🖉 編輯我的資料</button> :
 						<></>
 				}
 				<div>
@@ -298,6 +342,7 @@ function UserPage(props: Props): JSX.Element {
 				</div>
 			</div>
 		</div>
+		<EditModal />
 	</div>;
 }
 
