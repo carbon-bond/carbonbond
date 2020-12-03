@@ -16,8 +16,9 @@ export function ModalWindow(props: {
 }): JSX.Element {
 	const buttons = [];
 	for (const x of props.buttons) {
-		buttons.push(<button onClick={() => {x.handler();}}>{x.text}</button>);
+		buttons.push(<button key={x.text} onClick={() => {x.handler();}}>{x.text}</button>);
 	}
+	ReactModal.setAppElement('body');
 	return <ReactModal
 		isOpen={props.visible}
 		onRequestClose={() => props.setVisible(false)}
