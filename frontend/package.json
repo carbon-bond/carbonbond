@@ -9,7 +9,7 @@
 		"watch": "node build.js --watch",
 		"check-ts": "tsc --skipLibCheck",
 		"check-css": "stylelint '**/*.css'",
-		"inject": "ts-node scripts/inject.ts"
+		"inject": "ts-node --ignore \"node_modules/(?!force)\" scripts/inject.ts"
 	},
 	"dependencies": {
 		"@types/emoji-mart": "^2.8.4",
