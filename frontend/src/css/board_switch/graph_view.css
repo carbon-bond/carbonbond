@@ -2,3 +2,6 @@
     position: absolute;
     transition: .2s;
 }
+.svgBlock {
+    /* z-index: -99; */
+}

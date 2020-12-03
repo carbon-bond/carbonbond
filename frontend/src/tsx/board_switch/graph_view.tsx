@@ -8,7 +8,7 @@ import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
-import '../../css/graph_view.css';
+import '../../css/board_switch/graph_view.css';
 
 type Props = RouteComponentProps<{ article_id: string }>;
 
@@ -41,7 +41,7 @@ type Graph = {
 	edges: { target: number, source: number }[]
 };
 
-const width = 1200, height = 1200; // XXX: 不要寫死
+const width = 600, height = 1200; // XXX: 不要寫死
 const base_radius = 30;
 
 type NodeWithXY = { x: number, y: number } & Node;
@@ -223,7 +223,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 		return <></>;
 	}
 	return <>
-		<div ref={graph_div} style={{ position: 'relative' }}>
+		<div ref={graph_div} styleName="svgBlock" style={{ position: 'relative' }}>
 			{
 				curHovering == null ? null : <div key={curHovering.node.id} style={{
 					left: curHovering.node.x + offset_x + curHovering.node.radius,

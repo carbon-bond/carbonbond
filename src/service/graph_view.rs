@@ -1,4 +1,4 @@
-use crate::api::model::{ArticleMeta, Graph};
+use crate::api::model::Graph;
 use crate::custom_error::Fallible;
 use crate::db;
 use std::collections::{HashMap, HashSet};
@@ -11,6 +11,12 @@ pub async fn query_graph(
     let mut articles_to_expand = vec![article_id];
     let mut nodes = HashMap::new();
     let mut edges = HashSet::new();
+    let meta = db::article::get_meta_by_id(article_id).await?;
+    if category_set.contains(&meta.category_name) {
+        nodes.insert(meta.id, meta);
+    } else {
+        return Ok(Default::default());
+    }
     while articles_to_expand.len() > 0 && nodes.len() < count {
         log::trace!("對 {:?} 搜索", articles_to_expand);
         let mut articles_next = vec![];

@@ -135,7 +135,7 @@ mod model {
         String(String),
         Range((i64, i64)),
     }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct Graph {
         pub nodes: Vec<ArticleMeta>,
         pub edges: Vec<(i64, i64)>,
