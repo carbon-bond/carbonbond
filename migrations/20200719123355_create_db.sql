@@ -108,6 +108,7 @@ CREATE TABLE article_bond_fields (
   id bigserial PRIMARY KEY,
   article_id bigint REFERENCES articles (id) NOT NULL,
   name text NOT NULL,
+  energy smallint NOT NULL DEFAULT 0,
   value bigint REFERENCES articles (id) NOT NULL
 );
 
@@ -240,7 +241,6 @@ CREATE FUNCTION article_metas ()
     title text,
     show_in_list boolean,
     create_time timestamptz,
-
     author_name text,
     board_name text,
     category_name text,

@@ -73,4 +73,3 @@ doctest = false
 [features]
 default = ["sqlx", "hyper", "rust-argon2", "redis"]
 prepare = []
-

@@ -1,5 +1,5 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
-use crate::api::model::{Article, ArticleMeta, SearchField};
+use crate::api::model::{Article, ArticleMeta, Bond, SearchField};
 use crate::custom_error::{self, DataType, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
@@ -12,6 +12,52 @@ use std::sync::RwLock;
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
+}
+
+struct BondAndArticle {
+    id: i64,
+    board_id: i64,
+    board_name: String,
+    category_id: i64,
+    category_name: String,
+    category_source: String,
+    title: String,
+    author_id: i64,
+    author_name: String,
+    show_in_list: bool,
+    create_time: DateTime<chrono::Utc>,
+
+    from: i64,
+    to: i64,
+    bond_energy: i16,
+    name: String,
+    bond_id: i64,
+}
+impl BondAndArticle {
+    fn into(self) -> (Bond, ArticleMeta) {
+        (
+            Bond {
+                from: self.from,
+                to: self.to,
+                energy: self.bond_energy,
+                name: self.name,
+                id: self.bond_id,
+            },
+            ArticleMeta {
+                id: self.id,
+                board_id: self.board_id,
+                board_name: self.board_name,
+                category_id: self.category_id,
+                category_name: self.category_name,
+                category_source: self.category_source,
+                title: self.title,
+                author_id: self.author_id,
+                author_name: self.author_name,
+                show_in_list: self.show_in_list,
+                create_time: self.create_time,
+            },
+        )
+    }
 }
 
 pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>> {
@@ -167,15 +213,18 @@ pub async fn get_by_board_name(
     metas_to_articles(metas).await
 }
 
+// 指向 `article_id` 的文章
 pub async fn get_bondee_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<Vec<ArticleMeta>> {
+) -> Fallible<impl Iterator<Item = (Bond, ArticleMeta)>> {
     let pool = get_pool();
-    let metas = sqlx::query_as!(
-        ArticleMeta,
+    let data = sqlx::query_as!(
+        BondAndArticle,
         "
-        SELECT DISTINCT a.* FROM article_metas() a
+        SELECT DISTINCT
+        a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
+        FROM article_metas() a
         INNER JOIN article_bond_fields abf ON a.id = abf.value
         WHERE abf.article_id = $1
         AND category_name = ANY($2)
@@ -186,21 +235,23 @@ pub async fn get_bondee_meta(
     )
     .fetch_all(pool)
     .await?;
-    Ok(metas)
+    Ok(data.into_iter().map(|d| d.into()))
 }
 
+// `article_id` 鍵結到的文章
 pub async fn get_bonder_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<Vec<ArticleMeta>> {
+) -> Fallible<impl Iterator<Item = (Bond, ArticleMeta)>> {
     let pool = get_pool();
-    let metas = sqlx::query_as!(
-        ArticleMeta,
+    let data = sqlx::query_as!(
+        BondAndArticle,
         "
-        SELECT DISTINCT a.* FROM article_metas() a
+        SELECT DISTINCT
+        a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
+        FROM  article_metas() a
         INNER JOIN article_bond_fields abf ON a.id = abf.article_id
-        WHERE abf.value = $1
-        AND category_name = ANY($2)
+        WHERE abf.value = $1 AND category_name = ANY($2)
         ORDER BY create_time DESC
         ",
         article_id,
@@ -208,13 +259,12 @@ pub async fn get_bonder_meta(
     )
     .fetch_all(pool)
     .await?;
-
-    Ok(metas)
+    Ok(data.into_iter().map(|d| d.into()))
 }
 
 pub async fn get_bonder(article_id: i64, category_set: &[String]) -> Fallible<Vec<Article>> {
-    let metas = get_bonder_meta(article_id, category_set).await?;
-    metas_to_articles(metas).await
+    let iter = get_bonder_meta(article_id, category_set).await?;
+    metas_to_articles(iter.map(|(_, m)| m).collect()).await
 }
 
 #[derive(Debug)]

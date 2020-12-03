@@ -103,7 +103,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         id: i64,
         category_set: Vec<String>,
     ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
-        db::article::get_bonder_meta(id, &category_set).await
+        let iter = db::article::get_bonder_meta(id, &category_set).await?;
+        Ok(iter.map(|(_, m)| m).collect())
     }
     async fn query_article_meta(
         &self,

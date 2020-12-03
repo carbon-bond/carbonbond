@@ -1,7 +1,7 @@
 use crate::api::model::Graph;
 use crate::custom_error::Fallible;
 use crate::db;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 pub async fn query_graph(
     count: usize,
@@ -10,7 +10,7 @@ pub async fn query_graph(
 ) -> Fallible<Graph> {
     let mut articles_to_expand = vec![article_id];
     let mut nodes = HashMap::new();
-    let mut edges = HashSet::new();
+    let mut edges = HashMap::new();
     let meta = db::article::get_meta_by_id(article_id).await?;
     if category_set.contains(&meta.category_name) {
         nodes.insert(meta.id, meta);
@@ -24,27 +24,23 @@ pub async fn query_graph(
             let bondee = db::article::get_bondee_meta(id, &category_set).await?;
             let bonder = db::article::get_bonder_meta(id, &category_set).await?;
             macro_rules! insert {
-                ($meta:ident) => {
-                    nodes.entry($meta.id).or_insert_with(|| {
-                        articles_next.push($meta.id);
-                        $meta
-                    });
+                ($iter:ident) => {
+                    for (bond, meta) in $iter {
+                        edges.insert((bond.from, bond.to), bond);
+                        nodes.entry(meta.id).or_insert_with(|| {
+                            articles_next.push(meta.id);
+                            meta
+                        });
+                    }
                 };
             }
-
-            for meta in bondee.into_iter() {
-                edges.insert((meta.id, id));
-                insert!(meta);
-            }
-            for meta in bonder.into_iter() {
-                edges.insert((id, meta.id));
-                insert!(meta);
-            }
+            insert!(bondee);
+            insert!(bonder);
         }
         articles_to_expand = articles_next;
     }
     Ok(Graph {
         nodes: nodes.into_iter().map(|(_, v)| v).collect(),
-        edges: edges.into_iter().collect(),
+        edges: edges.into_iter().map(|(_, v)| v).collect(),
     })
 }

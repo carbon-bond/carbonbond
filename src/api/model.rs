@@ -135,10 +135,18 @@ mod model {
         String(String),
         Range((i64, i64)),
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Bond {
+        pub id: i64,
+        pub from: i64,
+        pub to: i64,
+        pub energy: i16,
+        pub name: String,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct Graph {
         pub nodes: Vec<ArticleMeta>,
-        pub edges: Vec<(i64, i64)>,
+        pub edges: Vec<Bond>,
     }
 }
 

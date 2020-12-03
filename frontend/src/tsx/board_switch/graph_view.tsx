@@ -35,10 +35,21 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
+function edgeColor(energy: number): string {
+	if (energy > 0) {
+		return 'blue';
+	} else if (energy < 0) {
+		return 'red';
+	} else {
+		return 'black';
+	}
+}
+
 type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
+type Edge = { target: number, source: number, color: string };
 type Graph = {
 	nodes: Node[],
-	edges: { target: number, source: number }[]
+	edges: Edge[]
 };
 
 const width = 600, height = 1200; // XXX: 不要寫死
@@ -89,7 +100,13 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 								radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
 							};
 						}),
-						edges: g.edges.map(e => { return { source: e[1], target: e[0] }; })
+						edges: g.edges.map(e => {
+							return {
+								source: e.from,
+								target: e.to,
+								color: edgeColor(e.energy)
+							};
+						})
 					});
 				});
 			}).catch(err => {
@@ -110,7 +127,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.enter()
 			.append('path')
 			.attr('fill', 'none')
-			.attr('stroke', 'black')
+			.attr('stroke', d => d.color)
 			.attr('stroke-width', 2)
 			.attr('marker-end', 'url(#arrow)');
 
