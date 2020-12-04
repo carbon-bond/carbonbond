@@ -1,14 +1,14 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta, Bond, SearchField};
-use crate::custom_error::{self, DataType, Fallible};
+use crate::custom_error::{self, DataType, Error, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
 use force;
 use force::parse_category;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
+use std::{collections::HashMap, mem::MaybeUninit};
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
@@ -60,7 +60,9 @@ impl BondAndArticle {
     }
 }
 
-pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>> {
+pub async fn metas_to_articles(
+    metas: Vec<ArticleMeta>,
+) -> Fallible<impl ExactSizeIterator<Item = Article>> {
     let mut categories = Vec::new();
     let mut ids = Vec::new();
     for meta in &metas {
@@ -69,12 +71,10 @@ pub async fn metas_to_articles(metas: Vec<ArticleMeta>) -> Fallible<Vec<Article>
         ids.push(meta.id);
     }
     let contents = article_content::get_by_article_ids(ids, categories).await?;
-    let articles = metas
+    Ok(metas
         .into_iter()
         .zip(contents.into_iter())
-        .map(|(meta, content)| Article { meta, content })
-        .collect::<Vec<Article>>();
-    Ok(articles)
+        .map(|(meta, content)| Article { meta, content }))
 }
 
 pub async fn search_article(
@@ -85,7 +85,7 @@ pub async fn search_article(
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     title: Option<String>,
-) -> Fallible<Vec<Article>> {
+) -> Fallible<impl ExactSizeIterator<Item = Article>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
         ArticleMeta,
@@ -193,7 +193,7 @@ pub async fn get_by_board_name(
     board_name: &str,
     offset: i64,
     limit: usize,
-) -> Fallible<Vec<Article>> {
+) -> Fallible<impl ExactSizeIterator<Item = Article>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
         ArticleMeta,
@@ -217,7 +217,7 @@ pub async fn get_by_board_name(
 pub async fn get_bondee_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<impl Iterator<Item = (Bond, ArticleMeta)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Bond, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
         BondAndArticle,
@@ -242,7 +242,7 @@ pub async fn get_bondee_meta(
 pub async fn get_bonder_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<impl Iterator<Item = (Bond, ArticleMeta)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Bond, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
         BondAndArticle,
@@ -262,9 +262,27 @@ pub async fn get_bonder_meta(
     Ok(data.into_iter().map(|d| d.into()))
 }
 
-pub async fn get_bonder(article_id: i64, category_set: &[String]) -> Fallible<Vec<Article>> {
+pub async fn get_bonder(
+    article_id: i64,
+    category_set: &[String],
+) -> Fallible<Vec<(Bond, Article)>> {
     let iter = get_bonder_meta(article_id, category_set).await?;
-    metas_to_articles(iter.map(|(_, m)| m).collect()).await
+    let mut ret = Vec::<(Bond, MaybeUninit<Article>)>::with_capacity(iter.len());
+    let metas: Vec<_> = iter
+        .map(|(bond, meta)| unsafe {
+            ret.push((bond, MaybeUninit::uninit().assume_init()));
+            meta
+        })
+        .collect();
+    let articles = metas_to_articles(metas).await?;
+    if articles.len() != ret.len() {
+        return Err(Error::new_internal("文章長度和元資料長度不匹配"));
+    }
+    for (i, article) in articles.enumerate() {
+        ret[i].1 = MaybeUninit::new(article);
+    }
+    // SAFETY: 每個元素都有了啦
+    Ok(unsafe { std::mem::transmute(ret) })
 }
 
 #[derive(Debug)]

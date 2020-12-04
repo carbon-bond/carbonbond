@@ -66,7 +66,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
         )
         .await?;
-        Ok(meta)
+        Ok(meta.collect())
     }
     async fn query_article_list(
         &self,
@@ -77,7 +77,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Fallible<Vec<model::Article>> {
         // TODO: 支援 author_name
         match board_name {
-            Some(name) => Ok(db::article::get_by_board_name(&name, 0, count).await?),
+            Some(name) => Ok(db::article::get_by_board_name(&name, 0, count)
+                .await?
+                .collect()),
             _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         }
     }
@@ -94,7 +96,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Vec<String>,
-    ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
+    ) -> Result<Vec<(super::model::Bond, super::model::Article)>, crate::custom_error::Error> {
         db::article::get_bonder(id, &category_set).await
     }
     async fn query_bonder_meta(
@@ -102,9 +104,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Vec<String>,
-    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
-        let iter = db::article::get_bonder_meta(id, &category_set).await?;
-        Ok(iter.map(|(_, m)| m).collect())
+    ) -> Result<Vec<(super::model::Bond, super::model::ArticleMeta)>, crate::custom_error::Error>
+    {
+        Ok(db::article::get_bonder_meta(id, &category_set)
+            .await?
+            .collect())
     }
     async fn query_article_meta(
         &self,

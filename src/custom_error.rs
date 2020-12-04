@@ -2,9 +2,17 @@ use chitin::*;
 #[chitin_model]
 mod inner {
     use chitin::chitin_util;
-    use serde::{Deserialize, Serialize};
+    use serde::{Deserialize, Serialize, Serializer};
     use std::error::Error as StdError;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
+
+    type BoxedErr = Option<Box<dyn StdError + Sync + Send + 'static>>;
+    fn serialize_err<S>(err: &BoxedErr, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        s.serialize_str(&format!("{:?}", err))
+    }
 
     #[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq, TypeScriptify)]
     pub enum DataType {
@@ -61,8 +69,8 @@ mod inner {
         /// 此錯誤代表其它無法預期的錯誤
         InternalError {
             msg: Vec<String>,
-            #[serde(skip_serializing)]
-            source: Option<Box<dyn StdError + Sync + Send + 'static>>,
+            #[serde(serialize_with = "serialize_err")]
+            source: BoxedErr,
         },
     }
 

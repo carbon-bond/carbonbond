@@ -3,9 +3,9 @@ import { produce } from 'immer';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, SimpleArticleCardById, CommentCard } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, BondCard, SimpleArticleCardById, CommentCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
-import { Article, ArticleMeta, Board } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Board, Bond } from '../../ts/api/api_trait';
 import { parse_category, Field, Force } from 'force';
 import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -16,8 +16,8 @@ import { toastErr } from '../utils';
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
 	const { article } = props;
-	let [metas, setMetas] = React.useState<ArticleMeta[]>([]);
-	let [expanded, setExpanded] = React.useState<Boolean>(true);
+	let [bonders, setBonders] = React.useState<[Bond, ArticleMeta][]>([]);
+	let [expanded, setExpanded] = React.useState<boolean>(true);
 
 	React.useEffect(() => {
 		get_force(article.meta.board_id)
@@ -25,23 +25,35 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 			const big_members = force_util.get_big_members(force);
 			return API_FETCHER.queryBonderMeta(article.meta.id, big_members);
 		}).then(data => {
-			setMetas(unwrap(data));
+			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
 		});
 	}, [article.meta.board_id, article.meta.id]);
 
+	function BonderCards(props: { bonders: [Bond, ArticleMeta][], expanded: boolean }): JSX.Element {
+		if (expanded) {
+			return <></>
+		}
+		return <>
+			{
+				props.bonders.map(([bond, meta]) => {
+					return <div>
+						<BondCard bond={bond}/>
+						<SimpleArticleCard key={meta.id} meta={meta} />
+					</div>;
+				})
+			}
+		</>;
+	}
+
 	return <div styleName="replyCardList">
 		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
 			<span styleName="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
-			<span>{metas.length} 篇大回文</span>
+			<span>{bonders.length} 篇大回文</span>
 		</div>
 		<div>
-			{
-				expanded
-					? metas.map(meta => <SimpleArticleCard key={meta.id} meta={meta} />)
-					: null
-			}
+			<BonderCards expanded={expanded} bonders={bonders} />
 		</div>
 	</div> ;
 }
@@ -71,9 +83,9 @@ function get_bond_fields(force: Force, category_name: string): FieldPath[] {
 
 function Comments(props: { article: Article, board: Board }): JSX.Element {
 	const { article, board } = props;
-	let [small_articles, setSmallArticles] = React.useState<Article[]>([]);
+	let [small_articles, setSmallArticles] = React.useState<[Bond, Article][]>([]);
 	let [small_fields, setSmallFields] = React.useState<FieldPath[]>([]);
-	let [expanded, setExpanded] = React.useState<Boolean>(true);
+	let [expanded, setExpanded] = React.useState<boolean>(true);
 
 	const get_comment = ((): void => {
 		get_force(article.meta.board_id)
@@ -114,7 +126,7 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 			<div>
 				{
 					expanded
-						? small_articles.map(article => <CommentCard key={article.meta.id} meta={article.meta} />)
+						? small_articles.map(([bond, article]) => <CommentCard key={article.meta.id} meta={article.meta} bond={bond}/>)
 						: null
 				}
 			</div>
@@ -251,7 +263,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 
 
 	function ReplyButtons(): JSX.Element {
-		let [expanded, setExpanded] = React.useState<Boolean>(false);
+		let [expanded, setExpanded] = React.useState<boolean>(false);
 		const force = useForce(board.id);
 		let candidates: FieldPath[] = [];
 		if (force) {

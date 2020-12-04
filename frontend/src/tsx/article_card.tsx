@@ -2,7 +2,7 @@ import * as React from 'react';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta } from '../ts/api/api_trait';
+import { Article, ArticleMeta, Bond } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
 
@@ -91,6 +91,15 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 	);
 }
 
+function BondCard(props: { bond: Bond }): JSX.Element {
+	let energy_icon = '😐';
+	if (props.bond.energy > 0) {
+		energy_icon = '😊';
+	} else if (props.bond.energy < 0) {
+		energy_icon = '😡';
+	}
+	return <div>TODO: 優化鍵結 {props.bond.name}({energy_icon})</div>;
+}
 function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
@@ -131,9 +140,10 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	}
 }
 
-function CommentCard(props: { meta: ArticleMeta }): JSX.Element {
+function CommentCard(props: { meta: ArticleMeta, bond: Bond }): JSX.Element {
 	const date_string =  relativeDate(new Date(props.meta.create_time));
 	return <div styleName="commentCard">
+		<BondCard bond={props.bond}/>
 		<div styleName="commentHeader">
 			<Link to={`/app/user/${props.meta.author_name}`}>
 				<div styleName="authorId">{props.meta.author_name}</div>
@@ -150,5 +160,6 @@ export {
 	ArticleCard,
 	SimpleArticleCardById,
 	SimpleArticleCard,
-	CommentCard
+	CommentCard,
+	BondCard
 };

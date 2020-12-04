@@ -78,9 +78,12 @@ pub enum ArticleQuery {
     QueryArticle { id: i64 },
     #[chitin(request, response = "super::model::ArticleMeta")]
     QueryArticleMeta { id: i64 },
-    #[chitin(request, response = "Vec<super::model::Article>")]
+    #[chitin(request, response = "Vec<(super::model::Bond, super::model::Article)>")]
     QueryBonder { id: i64, category_set: Vec<String> },
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(
+        request,
+        response = "Vec<(super::model::Bond, super::model::ArticleMeta)>"
+    )]
     QueryBonderMeta { id: i64, category_set: Vec<String> },
     #[chitin(request, response = "i64")]
     CreateArticle {
