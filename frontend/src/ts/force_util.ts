@@ -28,3 +28,5 @@ export function get_small_members(force: Force): string[] {
 export function get_big_members(force: Force): string[] {
 	return get_non_family_members(force, '小的');
 }
+
+export const SMALL = '小的';

@@ -41,6 +41,9 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     }
 }
 
+fn opt_slice<T>(opt: &Option<Vec<T>>) -> Option<&[T]> {
+    opt.as_ref().map(|v| v.as_ref())
+}
 #[derive(Default)]
 pub struct ArticleQueryRouter {}
 #[async_trait]
@@ -96,21 +99,27 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
+        hide_families: Option<Vec<String>>,
     ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
-        let category_set = category_set.as_ref().map(|v| v.as_ref());
-        Ok(db::article::get_bonder(id, category_set).await?.collect())
+        Ok(
+            db::article::get_bonder(id, opt_slice(&category_set), opt_slice(&hide_families))
+                .await?
+                .collect(),
+        )
     }
     async fn query_bonder_meta(
         &self,
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
+        hide_families: Option<Vec<String>>,
     ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
     {
-        let category_set = category_set.as_ref().map(|v| v.as_ref());
-        Ok(db::article::get_bonder_meta(id, category_set)
-            .await?
-            .collect())
+        Ok(
+            db::article::get_bonder_meta(id, opt_slice(&category_set), opt_slice(&hide_families))
+                .await?
+                .collect(),
+        )
     }
     async fn query_article_meta(
         &self,
@@ -140,9 +149,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
+        hide_families: Option<Vec<String>>,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
-        let category_set = category_set.as_ref().map(|v| v.as_ref());
-        service::graph_view::query_graph(10, article_id, category_set).await
+        service::graph_view::query_graph(
+            10,
+            article_id,
+            opt_slice(&category_set),
+            opt_slice(&hide_families),
+        )
+        .await
     }
 }
 

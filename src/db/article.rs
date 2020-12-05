@@ -1,14 +1,14 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta, Edge, SearchField};
-use crate::custom_error::{self, DataType, Error, Fallible};
+use crate::custom_error::{self, DataType, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
 use force;
 use force::parse_category;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
-use std::{collections::HashMap, mem::MaybeUninit};
 
 impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
@@ -26,6 +26,7 @@ struct BondAndArticle {
     author_name: String,
     show_in_list: bool,
     create_time: DateTime<chrono::Utc>,
+    category_families: Vec<String>,
 
     from: i64,
     to: i64,
@@ -50,6 +51,7 @@ impl BondAndArticle {
                 category_id: self.category_id,
                 category_name: self.category_name,
                 category_source: self.category_source,
+                category_families: self.category_families,
                 title: self.title,
                 author_id: self.author_id,
                 author_name: self.author_name,
@@ -189,7 +191,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     Ok(Article { meta, content })
 }
 
-const EMPTY_CATEGORIES: &[String] = &[];
+const EMPTY_SET: &[String] = &[];
 pub async fn get_by_board_name(
     board_name: &str,
     offset: i64,
@@ -214,10 +216,11 @@ pub async fn get_by_board_name(
     metas_to_articles(metas).await
 }
 
-// 指向 `article_id` 的文章
+// `article_id` 指向的文章
 pub async fn get_bondee_meta(
     article_id: i64,
     category_set: Option<&[String]>,
+    hide_families: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
@@ -229,21 +232,25 @@ pub async fn get_bondee_meta(
         INNER JOIN article_bond_fields abf ON a.id = abf.value
         WHERE abf.article_id = $1
         AND ($2 OR category_name = ANY($3))
+        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         ",
         article_id,
         category_set.is_none(),
-        category_set.unwrap_or(EMPTY_CATEGORIES)
+        category_set.unwrap_or(EMPTY_SET),
+        hide_families.is_none(),
+        hide_families.unwrap_or(EMPTY_SET)
     )
     .fetch_all(pool)
     .await?;
     Ok(data.into_iter().map(|d| d.into()))
 }
 
-// `article_id` 鍵結到的文章
+// 指向 `article_id` 的文章
 pub async fn get_bonder_meta(
     article_id: i64,
     category_set: Option<&[String]>,
+    hide_families: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
@@ -251,15 +258,18 @@ pub async fn get_bonder_meta(
         "
         SELECT DISTINCT
         a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
-        FROM  article_metas() a
+        FROM article_metas() a
         INNER JOIN article_bond_fields abf ON a.id = abf.article_id
         WHERE abf.value = $1
         AND ($2 OR category_name = ANY($3))
+        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         ",
         article_id,
         category_set.is_none(),
-        category_set.unwrap_or(EMPTY_CATEGORIES)
+        category_set.unwrap_or(EMPTY_SET),
+        hide_families.is_none(),
+        hide_families.unwrap_or(EMPTY_SET)
     )
     .fetch_all(pool)
     .await?;
@@ -269,8 +279,9 @@ pub async fn get_bonder_meta(
 pub async fn get_bonder(
     article_id: i64,
     category_set: Option<&[String]>,
+    hide_families: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
-    let iter = get_bonder_meta(article_id, category_set).await?;
+    let iter = get_bonder_meta(article_id, category_set, hide_families).await?;
     let mut bonds = Vec::<Edge>::with_capacity(iter.len());
     let metas: Vec<_> = iter
         .map(|(bond, meta)| {

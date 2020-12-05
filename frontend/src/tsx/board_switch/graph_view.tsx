@@ -3,7 +3,6 @@ import { RouteComponentProps } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Article, ArticleMeta } from '../../ts/api/api_trait';
 import { ArticleCard } from '../article_card';
-import { get_force } from '../../ts/cache';
 import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
@@ -85,35 +84,31 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		get_force(props.meta.board_id)
-			.then(force => {
-				const big_members = force_util.get_big_members(force);
-				return API_FETCHER.queryGraph(props.meta.id, big_members).then(res => {
-					let g = unwrap(res);
-					let counter = new LinkNumCounter();
-					setGraph({
-						nodes: g.nodes.map(n => {
-							return {
-								id: n.id,
-								url: `/app/b/${n.board_name}/a/${n.id}`,
-								name: `[${n.category_name}] ${n.title}`,
-								meta: n,
-								radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
-							};
-						}),
-						edges: g.edges.map(e => {
-							return {
-								source: e.from,
-								target: e.to,
-								color: edgeColor(e.energy),
-								linknum: counter.count(e.from, e.to)
-							};
-						})
-					});
-				});
-			}).catch(err => {
-				toastErr(err);
+		API_FETCHER.queryGraph(props.meta.id, null, [force_util.SMALL]).then(res => {
+			let g = unwrap(res);
+			let counter = new LinkNumCounter();
+			setGraph({
+				nodes: g.nodes.map(n => {
+					return {
+						id: n.id,
+						url: `/app/b/${n.board_name}/a/${n.id}`,
+						name: `[${n.category_name}] ${n.title}`,
+						meta: n,
+						radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
+					};
+				}),
+				edges: g.edges.map(e => {
+					return {
+						source: e.from,
+						target: e.to,
+						color: edgeColor(e.energy),
+						linknum: counter.count(e.from, e.to)
+					};
+				})
 			});
+		}).catch(err => {
+			toastErr(err);
+		});
 	}, [props.meta]);
 	React.useEffect(() => {
 		if (graph == null) {
@@ -250,7 +245,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 					top: curHovering.node.y + offset_y + curHovering.node.radius,
 					opacity,
 				}} styleName="articleBlock">
-					<ArticleCard article={curHovering.article}/>
+					<ArticleCard article={curHovering.article} />
 				</div>
 			}
 		</div>

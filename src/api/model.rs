@@ -65,6 +65,7 @@ mod model {
         pub author_id: i64,
         pub author_name: String,
         pub show_in_list: bool,
+        pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

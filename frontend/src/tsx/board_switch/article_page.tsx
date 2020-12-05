@@ -20,11 +20,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
 	React.useEffect(() => {
-		get_force(article.meta.board_id)
-		.then(force => {
-			const big_members = force_util.get_big_members(force);
-			return API_FETCHER.queryBonderMeta(article.meta.id, big_members);
-		}).then(data => {
+		API_FETCHER.queryBonderMeta(article.meta.id, null, [force_util.SMALL]).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
@@ -93,7 +89,7 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 			const small_members = force_util.get_small_members(force);
 			let small_fields = get_bond_fields(force, article.meta.category_name).filter(fp => small_members.includes(fp.category));
 			setSmallFields(small_fields);
-			return API_FETCHER.queryBonder(article.meta.id, small_members);
+			return API_FETCHER.queryBonder(article.meta.id, small_members, null); // XXX: 應該直接用分類族篩選，不要先搜出 small
 		}).then(data => {
 			setSmallArticles(unwrap(data));
 		}).catch(err => {

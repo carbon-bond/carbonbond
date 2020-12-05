@@ -237,7 +237,8 @@ CREATE FUNCTION article_metas ()
     author_name text,
     board_name text,
     category_name text,
-    category_source text
+    category_source text,
+    category_families text[]
   )
   AS $$
 BEGIN
@@ -247,7 +248,8 @@ BEGIN
     users.user_name AS author_name,
     boards.board_name,
     categories.category_name,
-    categories.source AS category_source
+    categories.source AS category_source,
+    categories.families AS category_families
   FROM
     articles
     INNER JOIN users ON articles.author_id = users.id

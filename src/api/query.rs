@@ -82,7 +82,7 @@ pub enum ArticleQuery {
     QueryBonder {
         id: i64,
         category_set: Option<Vec<String>>,
-        // familit_set: Vec<String>,
+        hide_families: Option<Vec<String>>,
     },
     #[chitin(
         request,
@@ -91,6 +91,7 @@ pub enum ArticleQuery {
     QueryBonderMeta {
         id: i64,
         category_set: Option<Vec<String>>,
+        hide_families: Option<Vec<String>>,
     },
     #[chitin(request, response = "i64")]
     CreateArticle {
@@ -113,6 +114,7 @@ pub enum ArticleQuery {
     QueryGraph {
         article_id: i64,
         category_set: Option<Vec<String>>,
+        hide_families: Option<Vec<String>>,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
