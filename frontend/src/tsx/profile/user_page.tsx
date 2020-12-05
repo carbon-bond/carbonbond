@@ -258,7 +258,7 @@ function UserPage(props: Props): JSX.Element {
 				<input type="text" placeholder="性別" {...gender} />
 				<input type="text" placeholder="職業" {...job} />
 				<input type="text" placeholder="居住城市" {...city} />
-			</div>
+			</div>;
 		}
 
 		let buttons: ModalButton[] = [];

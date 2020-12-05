@@ -33,7 +33,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 
 	function BonderCards(props: { bonders: [Bond, ArticleMeta][], expanded: boolean }): JSX.Element {
 		if (expanded) {
-			return <></>
+			return <></>;
 		}
 		return <>
 			{
