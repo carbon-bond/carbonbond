@@ -26,7 +26,8 @@ pub async fn query_graph(
             macro_rules! insert {
                 ($iter:ident) => {
                     for (bond, meta) in $iter {
-                        edges.insert((bond.from, bond.to), bond);
+                        log::trace!("與 {} 相關 {:?}-{:?}", id, bond, meta);
+                        edges.insert(bond.id, bond);
                         nodes.entry(meta.id).or_insert_with(|| {
                             articles_next.push(meta.id);
                             meta
@@ -40,7 +41,7 @@ pub async fn query_graph(
         articles_to_expand = articles_next;
     }
     Ok(Graph {
-        nodes: nodes.into_iter().map(|(_, v)| v).collect(),
         edges: edges.into_iter().map(|(_, v)| v).collect(),
+        nodes: nodes.into_iter().map(|(_, v)| v).collect(),
     })
 }

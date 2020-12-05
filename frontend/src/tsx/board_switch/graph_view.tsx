@@ -46,7 +46,7 @@ function edgeColor(energy: number): string {
 }
 
 type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
-type Edge = { target: number, source: number, color: string };
+type Edge = { target: number, source: number, color: string, linknum: number };
 type Graph = {
 	nodes: Node[],
 	edges: Edge[]
@@ -90,6 +90,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 				const big_members = force_util.get_big_members(force);
 				return API_FETCHER.queryGraph(props.meta.id, big_members).then(res => {
 					let g = unwrap(res);
+					let counter = new LinkNumCounter();
 					setGraph({
 						nodes: g.nodes.map(n => {
 							return {
@@ -104,7 +105,8 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 							return {
 								source: e.from,
 								target: e.to,
-								color: edgeColor(e.energy)
+								color: edgeColor(e.energy),
+								linknum: counter.count(e.from, e.to)
 							};
 						})
 					});
@@ -202,20 +204,21 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 		function ticked(): void {
 			link.attr('d', function (d) {
 				// @ts-ignore
-				let dx = d.target.x - d.source.x, dy = d.target.y - d.source.y,
-					dr = Math.sqrt(dx * dx + dy * dy);
-				// @ts-ignore
-				return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + d.target.x + ',' + d.target.y;
+				return `M${d.source.x},${d.source.y} ${d.target.x},${d.target.y}`;
 			});
 			link.attr('d', function (d) {
+				let curve_inv = 5;
+				let homogeneous = 0.2;
 				// @ts-ignore
 				let pl = this.getTotalLength(), r = d.target.radius + 3,
 					m = this.getPointAtLength(pl - r);
+				let order = Math.floor(d.linknum / 2);
 				// @ts-ignore
 				let dx = m.x - d.source.x, dy = m.y - d.source.y,
-					dr = Math.sqrt(dx * dx + dy * dy);
+					dr = Math.sqrt(dx * dx + dy * dy) * (curve_inv * homogeneous) / (order + homogeneous);
+				let direction = d.linknum % 2;
 				// @ts-ignore
-				return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + m.x + ',' + m.y;
+				return `M${d.source.x},${d.source.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
 			});
 			let min_x = Number.MAX_SAFE_INTEGER, min_y = min_x;
 			node.attr('transform', d => {
@@ -263,4 +266,20 @@ function mouseout(d: Node): void {
 	d3.select(`#a${d.id}`).transition()
 		.duration(400)
 		.attr('r', d.radius);
+}
+
+class LinkNumCounter {
+	private map: { [index: string]: number };
+	constructor() {
+		this.map = {};
+	}
+	count(node1: number, node2: number): number {
+		if (node1 > node2) {
+			return this.count(node2, node1);
+		}
+		let key = `${node1}-${node2}`;
+		let cnt = (this.map[key] | 0) + 1;
+		this.map[key] = cnt;
+		return cnt;
+	}
 }

@@ -265,24 +265,17 @@ pub async fn get_bonder_meta(
 pub async fn get_bonder(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<Vec<(Bond, Article)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Bond, Article)>> {
     let iter = get_bonder_meta(article_id, category_set).await?;
-    let mut ret = Vec::<(Bond, MaybeUninit<Article>)>::with_capacity(iter.len());
+    let mut bonds = Vec::<Bond>::with_capacity(iter.len());
     let metas: Vec<_> = iter
-        .map(|(bond, meta)| unsafe {
-            ret.push((bond, MaybeUninit::uninit().assume_init()));
+        .map(|(bond, meta)| {
+            bonds.push(bond);
             meta
         })
         .collect();
     let articles = metas_to_articles(metas).await?;
-    if articles.len() != ret.len() {
-        return Err(Error::new_internal("文章長度和元資料長度不匹配"));
-    }
-    for (i, article) in articles.enumerate() {
-        ret[i].1 = MaybeUninit::new(article);
-    }
-    // SAFETY: 每個元素都有了啦
-    Ok(unsafe { std::mem::transmute(ret) })
+    Ok(bonds.into_iter().zip(articles))
 }
 
 #[derive(Debug)]

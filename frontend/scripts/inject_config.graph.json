@@ -24,6 +24,11 @@
         { "title": "喝酒8", "category": "氫", "content": { "手": [3] } },
 
         { "title": "燒碳9", "category": "碳", "content": { "手": [] } },
-        { "title": "燒碳10", "category": "氧", "content": { "手": [9] } }
+        { "title": "燒碳10", "category": "氧", "content": { "手": [9] } },
+
+        { "title": "炔11", "category": "碳", "content": { "手": [] } },
+        { "title": "炔12", "category": "碳", "content": { "手": [11, 11, 11] } },
+        { "title": "炔13", "category": "氫", "content": { "手": [11] } },
+        { "title": "炔14", "category": "氫", "content": { "手": [12] } }
     ]
 }]
