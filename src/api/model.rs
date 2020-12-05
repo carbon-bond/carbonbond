@@ -18,6 +18,10 @@ mod model {
         pub followed_count: i64,
         pub hating_count: i64,
         pub following_count: i64,
+        pub introduction: String,
+        pub gender: String,
+        pub job: String,
+        pub city: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {

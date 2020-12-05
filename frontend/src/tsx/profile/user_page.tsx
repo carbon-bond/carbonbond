@@ -151,26 +151,45 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
-function ProfileDetail(props: { profile_name: string, user_state: UserStateType }): JSX.Element {
+function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
+	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
+	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
+	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
+	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
+
+	async function updateInformation(introduction: string, gender: string, job: string, city: string): Promise<{}> {
+		console.log('更新我的資料');
+		try {
+			await API_FETCHER.updateInformation(introduction, gender, job, city);
+			setIntroduction(introduction);
+			setGender(gender);
+			setJob(job);
+			setCity(city);
+			setEditing(false);
+		} catch (err) {
+			toastErr(err);
+		}
+		return {};
+	}
 
 	function EditModal(): JSX.Element {
-		let intro = useInputValue('').input_props;
-		let gender = useInputValue('').input_props;
-		let job = useInputValue('').input_props;
-		let city = useInputValue('').input_props;
+		let newIntroduction = useInputValue(introduction).input_props;
+		let newGender = useInputValue(gender).input_props;
+		let newJob = useInputValue(job).input_props;
+		let newCity = useInputValue(city).input_props;
 
 		function getBody(): JSX.Element {
 			return <div styleName="editModal">
-				<textarea placeholder="自我介紹" autoFocus {...intro} />
-				<input type="text" placeholder="性別" {...gender} />
-				<input type="text" placeholder="職業" {...job} />
-				<input type="text" placeholder="居住城市" {...city} />
+				<textarea placeholder="自我介紹" autoFocus {...newIntroduction} />
+				<input type="text" placeholder="性別" {...newGender} />
+				<input type="text" placeholder="職業" {...newJob} />
+				<input type="text" placeholder="居住城市" {...newCity} />
 			</div>;
 		}
 
 		let buttons: ModalButton[] = [];
-		buttons.push({ text: '儲存', handler: () => setEditing(false) });  // TODO webapi?
+		buttons.push({ text: '儲存', handler: () => updateInformation(newIntroduction.value, newGender.value, newJob.value, newCity.value) });
 		buttons.push({ text: '取消', handler: () => setEditing(false) });
 
 		return <ModalWindow
@@ -183,17 +202,20 @@ function ProfileDetail(props: { profile_name: string, user_state: UserStateType 
 	}
 
 	return <div styleName="detail">
-		{
-			props.user_state.login && props.user_state.user_name == props.profile_name ?
-			<button styleName="editButton" onClick={() => setEditing(true)}>🖉 編輯我的資料</button> :
-			<></>
-		}
 		<div>
 			<div styleName="introduction">
-				自我介紹（TODO）
+				<div styleName="title">自我介紹</div>
+				{
+					props.user_state.login && props.user_state.user_name == props.profile_user.user_name ?
+						<button styleName="editButton" onClick={() => setEditing(true)}>🖉</button> :
+					<></>
+				}
 			</div>
 			<div styleName="info">
-				性別、職業、居住城市...等（TODO）
+				<div styleName="item"><span styleName="key">自我介紹：</span> {introduction}</div>
+				<div styleName="item"><span styleName="key">性別：</span> {gender}</div>
+				<div styleName="item"><span styleName="key">職業：</span> {job}</div>
+				<div styleName="item"><span styleName="key">城市：</span> {city}</div>
 			</div>
 		</div>
 		<EditModal />
@@ -274,20 +296,6 @@ function UserPage(props: Props): JSX.Element {
 		setUser(new_state);
 	}
 
-	/*
-	function setInfomation(intro: string, gender: string, job: string, city: string): void {
-		let new_state = produce(user, nxt => {
-			if (nxt != null) {
-				nxt.intro = intro;
-				nxt.gender = gender;
-				nxt.job = job;
-				nxt.city = city;
-			}
-		});
-		setUser(new_state);
-	}
-	*/
-
 	function createUserRelation(kind: UserRelationKind): void {
 		if (user) {
 			API_FETCHER.createUserRelation(user.id, kind);
@@ -347,7 +355,7 @@ function UserPage(props: Props): JSX.Element {
 					))
 				}
 			</div>
-			<ProfileDetail profile_name={profile_name} user_state={user_state}/>
+			<ProfileDetail profile_user={user} user_state={user_state}/>
 		</div>
 	</div>;
 }

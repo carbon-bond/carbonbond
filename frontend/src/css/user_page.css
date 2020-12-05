@@ -108,8 +108,23 @@
            align-self: center; 
            cursor: pointer;
         }
-        & .introduction {}
-        & .info {}
+        & .introduction {
+            font-size: 20px;
+            display: flex;
+            flex-direction: row;
+            & .title {
+                flex-grow: 1;
+            }
+            & .editButton {}
+        }
+        & .info {
+            & .item {
+                margin: 10px 0px;
+                & .key{
+                    font-weight: bold;
+                }
+            }
+        }
     
     }
 }

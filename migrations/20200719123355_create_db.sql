@@ -10,6 +10,10 @@ CREATE TABLE users (
   user_name text NOT NULL UNIQUE,
   email text NOT NULL UNIQUE,
   sentence text NOT NULL DEFAULT '',
+  introduction text NOT NULL DEFAULT '',
+  gender text NOT NULL DEFAULT '',
+  job text NOT NULL DEFAULT '',
+  city text NOT NULL DEFAULT '',
   avatar bigint REFERENCES images (id) NULL,
   password_hashed bytea NOT NULL,
   salt bytea NOT NULL,
@@ -172,6 +176,10 @@ CREATE FUNCTION user_with_relations ()
     user_name text,
     sentence text,
     energy bigint,
+    introduction text,
+    gender text,
+    job text,
+    city text,
     hated_count bigint,
     followed_count bigint,
     hating_count bigint,
@@ -185,6 +193,10 @@ BEGIN
     users.user_name,
     users.sentence,
     users.energy,
+    users.introduction,
+    users.gender,
+    users.job,
+    users.city,
     (
       SELECT
         COUNT(*)

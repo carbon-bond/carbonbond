@@ -158,3 +158,22 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
     .await?;
     Ok(())
 }
+
+pub async fn update_info(id: i64, introduction: String, gender: String, job: String, city: String) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "
+        UPDATE users
+        SET (introduction, gender, job, city) = ($2, $3, $4, $5)
+        WHERE id = $1
+        ",
+        id,
+        introduction,
+        gender,
+        job,
+        city
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}

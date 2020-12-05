@@ -392,6 +392,10 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let id = context.get_id_strict()?;
         db::user::update_sentence(id, sentence).await
     }
+    async fn update_information(&self, context: &mut crate::Ctx, introduction: String, gender: String, job: String, city: String) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::user::update_info(id, introduction, gender, job, city).await
+    }
 }
 
 #[derive(Default)]
