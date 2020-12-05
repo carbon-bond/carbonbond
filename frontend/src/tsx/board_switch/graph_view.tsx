@@ -84,7 +84,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryGraph(props.meta.id, null, [force_util.SMALL]).then(res => {
+		API_FETCHER.queryGraph(props.meta.id, null, { BlackList: [force_util.SMALL] }).then(res => {
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			setGraph({

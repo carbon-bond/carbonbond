@@ -77,17 +77,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         count: usize,
         author_name: Option<String>,
         board_name: Option<String>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     ) -> Fallible<Vec<model::Article>> {
         // TODO: 支援 author_name
         match board_name {
-            Some(name) => {
-                Ok(
-                    db::article::get_by_board_name(&name, 0, count, opt_slice(&hide_families))
-                        .await?
-                        .collect(),
-                )
-            }
+            Some(name) => Ok(
+                db::article::get_by_board_name(&name, 0, count, &family_filter)
+                    .await?
+                    .collect(),
+            ),
             _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         }
     }
@@ -104,10 +102,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
         Ok(
-            db::article::get_bonder(id, opt_slice(&category_set), opt_slice(&hide_families))
+            db::article::get_bonder(id, opt_slice(&category_set), &family_filter)
                 .await?
                 .collect(),
         )
@@ -117,11 +115,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
     {
         Ok(
-            db::article::get_bonder_meta(id, opt_slice(&category_set), opt_slice(&hide_families))
+            db::article::get_bonder_meta(id, opt_slice(&category_set), &family_filter)
                 .await?
                 .collect(),
         )
@@ -154,15 +152,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
-        service::graph_view::query_graph(
-            10,
-            article_id,
-            opt_slice(&category_set),
-            opt_slice(&hide_families),
-        )
-        .await
+        service::graph_view::query_graph(10, article_id, opt_slice(&category_set), &family_filter)
+            .await
     }
 }
 

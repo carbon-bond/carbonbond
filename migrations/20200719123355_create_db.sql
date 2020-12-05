@@ -225,7 +225,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-CREATE FUNCTION article_metas ()
+CREATE FUNCTION article_metas (is_black_list boolean, family_filter text[])
   RETURNS TABLE (
     id bigint,
     author_id bigint,
@@ -254,7 +254,11 @@ BEGIN
     articles
     INNER JOIN users ON articles.author_id = users.id
     INNER JOIN boards ON articles.board_id = boards.id
-    INNER JOIN categories ON articles.category_id = categories.id;
+    INNER JOIN categories ON articles.category_id = categories.id
+  WHERE (is_black_list
+    AND NOT categories.families && family_filter)
+    OR (NOT is_black_list
+      AND categories.families && family_filter);
 END
 $$
 LANGUAGE plpgsql;

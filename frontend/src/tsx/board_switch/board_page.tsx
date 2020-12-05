@@ -24,7 +24,8 @@ async function fetchArticles(
 	board_name: string,
 	page_size: number,
 ): Promise<Article[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null, board_name, [force_util.SMALL]), []);
+	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null,
+		board_name, { BlackList: [force_util.SMALL] }), []);
 }
 
 export function BoardPage(props: Props): JSX.Element {

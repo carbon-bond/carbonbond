@@ -1,5 +1,5 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
-use crate::api::model::{Article, ArticleMeta, Edge, SearchField};
+use crate::api::model::{Article, ArticleMeta, Edge, FamilyFilter, SearchField};
 use crate::custom_error::{self, DataType, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
@@ -14,6 +14,7 @@ impl DBObject for ArticleMeta {
     const TYPE: DataType = DataType::Article;
 }
 
+#[derive(Debug)]
 struct BondAndArticle {
     id: i64,
     board_id: i64,
@@ -62,6 +63,15 @@ impl BondAndArticle {
     }
 }
 
+const EMPTY_SET: &[String] = &[];
+fn filter_tuple(filter: &FamilyFilter) -> (bool, &[String]) {
+    match filter {
+        FamilyFilter::BlackList(f) => (true, f),
+        FamilyFilter::WhiteList(f) => (false, f),
+        FamilyFilter::None => (true, EMPTY_SET),
+    }
+}
+
 pub async fn metas_to_articles(
     metas: Vec<ArticleMeta>,
 ) -> Fallible<impl ExactSizeIterator<Item = Article>> {
@@ -92,7 +102,7 @@ pub async fn search_article(
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT * FROM article_metas()
+        SELECT * FROM article_metas(true, '{}')
         WHERE ($1 OR board_name = $2)
         AND ($3 OR author_name = $4)
         AND ($5 OR category_id = $6)
@@ -175,7 +185,7 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = sqlx::query_as!(
         ArticleMeta,
-        "SELECT * FROM article_metas() WHERE id = $1",
+        "SELECT * FROM article_metas(true, '{}') WHERE id = $1",
         id
     )
     .fetch_one(pool)
@@ -191,28 +201,27 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     Ok(Article { meta, content })
 }
 
-const EMPTY_SET: &[String] = &[];
 pub async fn get_by_board_name(
     board_name: &str,
     offset: i64,
     limit: usize,
-    hide_families: Option<&[String]>,
+    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = Article>> {
     let pool = get_pool();
+    let family_filter = filter_tuple(family_filter);
     let metas = sqlx::query_as!(
         ArticleMeta,
         "
-        SELECT * FROM article_metas()
+        SELECT * FROM article_metas($4, $5)
         WHERE board_name = $1
-        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         LIMIT $2 OFFSET $3
         ",
         board_name,
         limit as i64,
         offset,
-        hide_families.is_none(),
-        hide_families.unwrap_or(EMPTY_SET)
+        family_filter.0,
+        family_filter.1
     )
     .fetch_all(pool)
     .await?;
@@ -224,26 +233,26 @@ pub async fn get_by_board_name(
 pub async fn get_bondee_meta(
     article_id: i64,
     category_set: Option<&[String]>,
-    hide_families: Option<&[String]>,
+    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
+    let family_filter = filter_tuple(family_filter);
     let data = sqlx::query_as!(
         BondAndArticle,
         "
         SELECT DISTINCT
         a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
-        FROM article_metas() a
+        FROM article_metas($4, $5) a
         INNER JOIN article_bond_fields abf ON a.id = abf.value
         WHERE abf.article_id = $1
         AND ($2 OR category_name = ANY($3))
-        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         ",
         article_id,
         category_set.is_none(),
         category_set.unwrap_or(EMPTY_SET),
-        hide_families.is_none(),
-        hide_families.unwrap_or(EMPTY_SET)
+        family_filter.0,
+        family_filter.1
     )
     .fetch_all(pool)
     .await?;
@@ -254,26 +263,26 @@ pub async fn get_bondee_meta(
 pub async fn get_bonder_meta(
     article_id: i64,
     category_set: Option<&[String]>,
-    hide_families: Option<&[String]>,
+    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
+    let family_filter = filter_tuple(family_filter);
     let data = sqlx::query_as!(
         BondAndArticle,
         "
         SELECT DISTINCT
         a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
-        FROM article_metas() a
+        FROM article_metas($4, $5) a
         INNER JOIN article_bond_fields abf ON a.id = abf.article_id
         WHERE abf.value = $1
         AND ($2 OR category_name = ANY($3))
-        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         ",
         article_id,
         category_set.is_none(),
         category_set.unwrap_or(EMPTY_SET),
-        hide_families.is_none(),
-        hide_families.unwrap_or(EMPTY_SET)
+        family_filter.0,
+        family_filter.1
     )
     .fetch_all(pool)
     .await?;
@@ -283,9 +292,9 @@ pub async fn get_bonder_meta(
 pub async fn get_bonder(
     article_id: i64,
     category_set: Option<&[String]>,
-    hide_families: Option<&[String]>,
+    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
-    let iter = get_bonder_meta(article_id, category_set, hide_families).await?;
+    let iter = get_bonder_meta(article_id, category_set, family_filter).await?;
     let mut bonds = Vec::<Edge>::with_capacity(iter.len());
     let metas: Vec<_> = iter
         .map(|(bond, meta)| {

@@ -73,7 +73,7 @@ pub enum ArticleQuery {
         count: usize,
         author_name: Option<String>,
         board_name: Option<String>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     },
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },
@@ -83,7 +83,7 @@ pub enum ArticleQuery {
     QueryBonder {
         id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     },
     #[chitin(
         request,
@@ -92,7 +92,7 @@ pub enum ArticleQuery {
     QueryBonderMeta {
         id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     },
     #[chitin(request, response = "i64")]
     CreateArticle {
@@ -115,7 +115,7 @@ pub enum ArticleQuery {
     QueryGraph {
         article_id: i64,
         category_set: Option<Vec<String>>,
-        hide_families: Option<Vec<String>>,
+        family_filter: super::model::FamilyFilter,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]

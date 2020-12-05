@@ -149,6 +149,12 @@ mod model {
         pub nodes: Vec<ArticleMeta>,
         pub edges: Vec<Edge>,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum FamilyFilter {
+        WhiteList(Vec<String>),
+        BlackList(Vec<String>),
+        None,
+    }
 
     #[chitin_model_use]
     use force::instance_defs::Bond;

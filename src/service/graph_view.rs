@@ -1,16 +1,16 @@
-use crate::api::model::Graph;
+use crate::api::model::{FamilyFilter, Graph};
 use crate::custom_error::Fallible;
 use crate::db;
 use std::collections::HashMap;
 
-fn should_show(families: &[String], hide_families: Option<&[String]>) -> bool {
-    if let Some(hide_families) = hide_families {
-        for f in families.iter() {
-            if hide_families.contains(f) {
-                return false;
-            }
-        }
-    }
+fn should_show(families: &[String], filter: &FamilyFilter) -> bool {
+    // if let Some(hide_families) = hide_families {
+    //     for f in families.iter() {
+    //         if hide_families.contains(f) {
+    //             return false;
+    //         }
+    //     }
+    // }
     true
 }
 
@@ -18,13 +18,13 @@ pub async fn query_graph(
     count: usize,
     article_id: i64,
     category_set: Option<&[String]>,
-    hide_families: Option<&[String]>,
+    family_filer: &FamilyFilter,
 ) -> Fallible<Graph> {
     log::debug!(
         "詢問鳥瞰圖，中心點為 {}，分類為 {:?}，忽略分類族{:?}",
         article_id,
         category_set,
-        hide_families
+        family_filer
     );
     let mut articles_to_expand = vec![article_id];
     let mut nodes = HashMap::new();
@@ -34,7 +34,7 @@ pub async fn query_graph(
     if category_set.map_or(false, |c| !c.contains(&meta.category_name)) {
         return Ok(Default::default());
     }
-    if !should_show(&meta.category_families, hide_families) {
+    if !should_show(&meta.category_families, family_filer) {
         return Ok(Default::default());
     }
     nodes.insert(meta.id, meta);
@@ -43,8 +43,8 @@ pub async fn query_graph(
         log::trace!("對 {:?} 搜索", articles_to_expand);
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
-            let bondee = db::article::get_bondee_meta(id, category_set, hide_families).await?;
-            let bonder = db::article::get_bonder_meta(id, category_set, hide_families).await?;
+            let bondee = db::article::get_bondee_meta(id, category_set, family_filer).await?;
+            let bonder = db::article::get_bonder_meta(id, category_set, family_filer).await?;
             macro_rules! insert {
                 ($iter:ident) => {
                     for (bond, meta) in $iter {
