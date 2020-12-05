@@ -1,14 +1,31 @@
 .title {
+    background-color: var(--sub-theme-color);
     height: 30px;
-    line-height: 30px;
-    background: var(--gray);
-    color: white;
-    padding: 0px 20px;
-    /* & p {
-        position: absolute;
-        top: 50%;
-        transform: translate(-50%, 0%);
-    } */
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    & .leftSet {
+        font-size: 18px;
+        margin-left: 4px;
+    }
+    & .middleSet {
+        flex-grow: 1;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    & .rightSet {
+        font-size: 22px;
+        margin-right: 4px;
+        display: flex;
+        flex-direction: row;
+        & .button {
+            width: 25px;
+        }
+    }
 }
 .escape {
     cursor: pointer;
