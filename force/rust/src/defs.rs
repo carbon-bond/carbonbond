@@ -3,8 +3,8 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
-use typescript_definitions::TypeScriptify;
 use std::sync::Arc;
+use typescript_definitions::TypeScriptify;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub enum Bondee {
@@ -14,6 +14,7 @@ pub enum Bondee {
         family: Vec<String>,
     },
 }
+
 // TODO: 處理輸能等等額外設定
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub struct Tag {

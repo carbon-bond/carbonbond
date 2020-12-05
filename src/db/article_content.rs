@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{Contextable, DataType, ErrorCode, Fallible};
 use force::validate::ValidatorTrait;
-use force::{Bondee, Category, Field};
+use force::{instance_defs::Bond, Bondee, Category, Field};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -203,7 +203,7 @@ struct Validator {
 }
 
 impl ValidatorTrait for Validator {
-    fn validate_bond(&self, bondee: &Bondee, data: &Value) -> bool {
+    fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool {
         true
     }
 }
@@ -238,21 +238,22 @@ async fn insert_string_field(article_id: i64, field_name: &String, value: &Strin
     Ok(())
 }
 
-async fn insert_bond_field(article_id: i64, field_name: &String, value: i64) -> Fallible<()> {
+async fn insert_bond_field(article_id: i64, field_name: &String, bond: &Bond) -> Fallible<()> {
     let pool = get_pool();
     sqlx::query!(
         "INSERT INTO article_bond_fields
-                        (article_id, name, value)
-                        VALUES ($1, $2, $3)",
+                        (article_id, name, value, energy)
+                        VALUES ($1, $2, $3, $4)",
         article_id,
         field_name,
-        value
+        bond.target_article,
+        bond.energy
     )
     .execute(pool)
     .await?;
     Ok(())
 }
-async fn insert_field(article_id: i64, field: &Field, value: &Value) -> Fallible<()> {
+async fn insert_field(article_id: i64, field: &Field, value: Value) -> Fallible<()> {
     log::debug!("插入文章內容 {:?} {:?}", field, value);
     match field.datatype.basic_type() {
         force::BasicDataType::Number => match value {
@@ -264,15 +265,13 @@ async fn insert_field(article_id: i64, field: &Field, value: &Value) -> Fallible
         },
         force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
             match value {
-                Value::String(s) => insert_string_field(article_id, &field.name, s).await?,
+                Value::String(s) => insert_string_field(article_id, &field.name, &s).await?,
                 // validate 過，不可能發生
                 _ => {}
             }
         }
-        force::BasicDataType::Bond(_) => match value {
-            Value::Number(number) => {
-                insert_bond_field(article_id, &field.name, number.as_i64().unwrap()).await?
-            }
+        force::BasicDataType::Bond(_) => match serde_json::from_value::<Bond>(value) {
+            Ok(bond) => insert_bond_field(article_id, &field.name, &bond).await?,
             // validate 過，不可能發生
             _ => {}
         },
@@ -291,7 +290,7 @@ pub(super) async fn create(
     content: &str,
     category: Category,
 ) -> Fallible<()> {
-    let json: Value =
+    let mut json: Value =
         serde_json::from_str(content).context(format!("反序列化失敗 `{}`", content))?;
 
     // 檢驗格式
@@ -301,10 +300,14 @@ pub(super) async fn create(
 
     use force::DataType::*;
 
+    let json = json.as_object_mut().unwrap();
+
     for field in category.fields {
+        // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
+        let value = json.remove(&field.name).unwrap();
         match &field.datatype {
-            Optional(_) | Single(_) => insert_field(article_id, &field, &json[&field.name]).await?,
-            Array { .. } => match &json[&field.name] {
+            Optional(_) | Single(_) => insert_field(article_id, &field, value).await?,
+            Array { .. } => match value {
                 Value::Array(values) => {
                     for value in values {
                         insert_field(article_id, &field, value).await?

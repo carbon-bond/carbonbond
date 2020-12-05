@@ -1,8 +1,9 @@
+use crate::instance_defs::Bond;
 use crate::*;
 use serde_json::Value;
 
 pub trait ValidatorTrait {
-    fn validate_bond(&self, bondee: &Bondee, data: &Value) -> bool;
+    fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool;
     fn validate_basic_datatype(&self, data_type: &BasicDataType, data: &Value) -> bool {
         log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
         match (data_type, data) {
@@ -10,7 +11,17 @@ pub trait ValidatorTrait {
             (BasicDataType::OneLine, Value::String(s)) => !s.contains('\n'),
             (BasicDataType::Text(None), Value::String(_)) => true,
             (BasicDataType::Text(Some(regex)), Value::String(s)) => regex.is_match(s),
-            (BasicDataType::Bond(bondee), data) => self.validate_bond(bondee, data),
+            (BasicDataType::Bond(bondee), data) => {
+                let bond: Bond = match serde_json::from_value(data.clone()) {
+                    Ok(b) => b,
+                    Err(e) => {
+                        log::error!("解析鍵結錯誤 {}", e);
+                        return false;
+                    }
+                };
+                // XXX: 檢查鍵能和標籤
+                self.validate_bond(bondee, &bond)
+            }
             _ => false,
         }
     }
@@ -50,7 +61,7 @@ mod tests {
     use serde_json::json;
     struct Validator {}
     impl ValidatorTrait for Validator {
-        fn validate_bond(&self, _bondee: &Bondee, _data: &Value) -> bool {
+        fn validate_bond(&self, _bondee: &Bondee, _data: &Bond) -> bool {
             true // 測試中不檢查
         }
     }

@@ -136,7 +136,7 @@ mod model {
         Range((i64, i64)),
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Bond {
+    pub struct Edge {
         pub id: i64,
         pub from: i64,
         pub to: i64,
@@ -146,8 +146,11 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct Graph {
         pub nodes: Vec<ArticleMeta>,
-        pub edges: Vec<Bond>,
+        pub edges: Vec<Edge>,
     }
+
+    #[chitin_model_use]
+    use force::instance_defs::Bond;
 }
 
 pub use model::*;

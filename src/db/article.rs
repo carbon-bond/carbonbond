@@ -1,5 +1,5 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
-use crate::api::model::{Article, ArticleMeta, Bond, SearchField};
+use crate::api::model::{Article, ArticleMeta, Edge, SearchField};
 use crate::custom_error::{self, DataType, Error, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
@@ -34,9 +34,9 @@ struct BondAndArticle {
     bond_id: i64,
 }
 impl BondAndArticle {
-    fn into(self) -> (Bond, ArticleMeta) {
+    fn into(self) -> (Edge, ArticleMeta) {
         (
-            Bond {
+            Edge {
                 from: self.from,
                 to: self.to,
                 energy: self.bond_energy,
@@ -217,7 +217,7 @@ pub async fn get_by_board_name(
 pub async fn get_bondee_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<impl ExactSizeIterator<Item = (Bond, ArticleMeta)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
         BondAndArticle,
@@ -242,7 +242,7 @@ pub async fn get_bondee_meta(
 pub async fn get_bonder_meta(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<impl ExactSizeIterator<Item = (Bond, ArticleMeta)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
         BondAndArticle,
@@ -265,9 +265,9 @@ pub async fn get_bonder_meta(
 pub async fn get_bonder(
     article_id: i64,
     category_set: &[String],
-) -> Fallible<impl ExactSizeIterator<Item = (Bond, Article)>> {
+) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
     let iter = get_bonder_meta(article_id, category_set).await?;
-    let mut bonds = Vec::<Bond>::with_capacity(iter.len());
+    let mut bonds = Vec::<Edge>::with_capacity(iter.len());
     let metas: Vec<_> = iter
         .map(|(bond, meta)| {
             bonds.push(bond);

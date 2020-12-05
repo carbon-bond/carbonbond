@@ -77,7 +77,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 				setOpacity(0);
 				setTimeout(() => {
 					setOpacity(100);
-				});
+				}, 10);
 			} catch (err) {
 				toastErr(err);
 			}

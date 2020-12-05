@@ -5,7 +5,7 @@ import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, BondCard, SimpleArticleCardById, CommentCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
-import { Article, ArticleMeta, Board, Bond } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Board, Edge } from '../../ts/api/api_trait';
 import { parse_category, Field, Force } from 'force';
 import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -16,7 +16,7 @@ import { toastErr } from '../utils';
 function BigReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
 	const { article } = props;
-	let [bonders, setBonders] = React.useState<[Bond, ArticleMeta][]>([]);
+	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
 	React.useEffect(() => {
@@ -31,7 +31,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 		});
 	}, [article.meta.board_id, article.meta.id]);
 
-	function BonderCards(props: { bonders: [Bond, ArticleMeta][], expanded: boolean }): JSX.Element {
+	function BonderCards(props: { bonders: [Edge, ArticleMeta][], expanded: boolean }): JSX.Element {
 		if (expanded) {
 			return <></>;
 		}
@@ -83,7 +83,7 @@ function get_bond_fields(force: Force, category_name: string): FieldPath[] {
 
 function Comments(props: { article: Article, board: Board }): JSX.Element {
 	const { article, board } = props;
-	let [small_articles, setSmallArticles] = React.useState<[Bond, Article][]>([]);
+	let [small_articles, setSmallArticles] = React.useState<[Edge, Article][]>([]);
 	let [small_fields, setSmallFields] = React.useState<FieldPath[]>([]);
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 

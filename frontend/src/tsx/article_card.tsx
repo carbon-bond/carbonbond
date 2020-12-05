@@ -2,7 +2,7 @@ import * as React from 'react';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Bond } from '../ts/api/api_trait';
+import { Article, ArticleMeta, Edge } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
 
@@ -91,7 +91,7 @@ function ArticleCard(props: { article: Article }): JSX.Element {
 	);
 }
 
-function BondCard(props: { bond: Bond }): JSX.Element {
+function BondCard(props: { bond: Edge }): JSX.Element {
 	let energy_icon = '😐';
 	if (props.bond.energy > 0) {
 		energy_icon = '😊';
@@ -140,7 +140,7 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	}
 }
 
-function CommentCard(props: { meta: ArticleMeta, bond: Bond }): JSX.Element {
+function CommentCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	const date_string =  relativeDate(new Date(props.meta.create_time));
 	return <div styleName="commentCard">
 		<BondCard bond={props.bond}/>

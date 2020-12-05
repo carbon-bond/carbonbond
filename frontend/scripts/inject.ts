@@ -1,11 +1,10 @@
 import { parse, Category } from 'force';
 import { unwrap } from '../src/ts/api/api';
-import { RootQueryFetcher } from '../src/ts/api/api_trait';
+import { Bond, RootQueryFetcher } from '../src/ts/api/api_trait';
 import request from 'request';
 
 let path = require('path');
 let fs = require('fs');
-
 
 export class InjectFetcher extends RootQueryFetcher {
 	fetchResult(query: Object): Promise<string> {
@@ -36,12 +35,13 @@ export class InjectFetcher extends RootQueryFetcher {
 let API_FETCHER = new InjectFetcher();
 
 
-type ArticleConent = number | string | number[] | string[];
+type ArticleConentElt = number | string | Bond;
+type ArticleContent = ArticleConentElt[] | ArticleConentElt;
 
 type ArticleConfig = {
   title: string;
   category: string;
-  content: { [key: string]: ArticleConent };
+  content: { [key: string]: ArticleContent };
 };
 type BoardConfig = {
   name: string;
@@ -107,22 +107,15 @@ async function injectArticle(
 			if (field.datatype.kind == 'single') {
 				if (Array.isArray(content)) {
 					throw `${field_name} 應該是單元`;
-				} else if (typeof content == 'number') {
-					article.content[field_name] = mapID(content, id_pos_map);
-				} else {
-					throw `${field_name} 應該是鍵結`;
 				}
+				article.content[field_name] = mapIDAsBond(content, id_pos_map);
 			} else if (field.datatype.kind == 'array') {
 				if (!Array.isArray(content)) {
 					throw `${field_name} 應該是陣列`;
 				} else {
 					for (let i = 0; i < content.length; i++) {
 						let c = content[i];
-						if (typeof c == 'number') {
-							content[i] = mapID(c, id_pos_map);
-						} else {
-							throw `${field_name}.${i} 應該是鍵結`;
-						}
+						content[i] = mapIDAsBond(c, id_pos_map);
 					}
 				}
 			}
@@ -139,12 +132,23 @@ async function injectArticle(
 	return id;
 }
 
-function mapID(pos: number, id_pos_map: IDPosMap): number {
-	if (pos in id_pos_map) {
-		console.log(`對應成功：${pos} => ${id_pos_map[pos]}`);
-		return id_pos_map[pos];
+function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
+	if (typeof arg == 'number') {
+		return { target_article: mapID(arg), energy: 0, tag: null };
+	} else if (typeof arg == 'object') {
+		arg.target_article = mapID(arg.target_article);
+		return arg;
+	} else {
+		throw `應該是鍵結，得到 ${arg}`;
 	}
-	throw `未知的文章序：${pos}`;
+
+	function mapID(pos: number): number {
+		if (pos in id_pos_map) {
+			console.log(`對應成功：${pos} => ${id_pos_map[pos]}`);
+			return id_pos_map[pos];
+		}
+		throw `未知的文章序：${arg}`;
+	}
 }
 
 if (process.argv.length > 2) {
