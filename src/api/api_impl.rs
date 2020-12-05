@@ -95,18 +95,20 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         id: i64,
-        category_set: Vec<String>,
+        category_set: Option<Vec<String>>,
     ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
-        Ok(db::article::get_bonder(id, &category_set).await?.collect())
+        let category_set = category_set.as_ref().map(|v| v.as_ref());
+        Ok(db::article::get_bonder(id, category_set).await?.collect())
     }
     async fn query_bonder_meta(
         &self,
         _context: &mut crate::Ctx,
         id: i64,
-        category_set: Vec<String>,
+        category_set: Option<Vec<String>>,
     ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
     {
-        Ok(db::article::get_bonder_meta(id, &category_set)
+        let category_set = category_set.as_ref().map(|v| v.as_ref());
+        Ok(db::article::get_bonder_meta(id, category_set)
             .await?
             .collect())
     }
@@ -137,9 +139,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         context: &mut crate::Ctx,
         article_id: i64,
-        category_set: Vec<String>,
+        category_set: Option<Vec<String>>,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
-        service::graph_view::query_graph(10, article_id, &category_set).await
+        let category_set = category_set.as_ref().map(|v| v.as_ref());
+        service::graph_view::query_graph(10, article_id, category_set).await
     }
 }
 

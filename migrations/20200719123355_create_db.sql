@@ -71,6 +71,7 @@ CREATE TABLE categories (
   category_name text NOT NULL,
   version bigint,
   source text NOT NULL,
+  families text[] NOT NULL DEFAULT '{}',
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -110,14 +111,6 @@ CREATE TABLE article_bond_fields (
   name text NOT NULL,
   energy smallint NOT NULL DEFAULT 0,
   value bigint REFERENCES articles (id) NOT NULL
-);
-
--- 連接關係
-CREATE TABLE edges (
-  id bigserial PRIMARY KEY,
-  from_node bigint REFERENCES articles (id) NOT NULL,
-  to_node bigint REFERENCES articles (id) NOT NULL,
-  transfuse smallint NOT NULL
 );
 
 -- 政黨

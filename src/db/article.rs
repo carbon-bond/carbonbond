@@ -189,6 +189,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     Ok(Article { meta, content })
 }
 
+const EMPTY_CATEGORIES: &[String] = &[];
 pub async fn get_by_board_name(
     board_name: &str,
     offset: i64,
@@ -216,7 +217,7 @@ pub async fn get_by_board_name(
 // 指向 `article_id` 的文章
 pub async fn get_bondee_meta(
     article_id: i64,
-    category_set: &[String],
+    category_set: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
@@ -227,11 +228,12 @@ pub async fn get_bondee_meta(
         FROM article_metas() a
         INNER JOIN article_bond_fields abf ON a.id = abf.value
         WHERE abf.article_id = $1
-        AND category_name = ANY($2)
+        AND ($2 OR category_name = ANY($3))
         ORDER BY create_time DESC
         ",
         article_id,
-        &category_set
+        category_set.is_none(),
+        category_set.unwrap_or(EMPTY_CATEGORIES)
     )
     .fetch_all(pool)
     .await?;
@@ -241,7 +243,7 @@ pub async fn get_bondee_meta(
 // `article_id` 鍵結到的文章
 pub async fn get_bonder_meta(
     article_id: i64,
-    category_set: &[String],
+    category_set: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
     let data = sqlx::query_as!(
@@ -251,11 +253,13 @@ pub async fn get_bonder_meta(
         a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
         FROM  article_metas() a
         INNER JOIN article_bond_fields abf ON a.id = abf.article_id
-        WHERE abf.value = $1 AND category_name = ANY($2)
+        WHERE abf.value = $1
+        AND ($2 OR category_name = ANY($3))
         ORDER BY create_time DESC
         ",
         article_id,
-        &category_set
+        category_set.is_none(),
+        category_set.unwrap_or(EMPTY_CATEGORIES)
     )
     .fetch_all(pool)
     .await?;
@@ -264,7 +268,7 @@ pub async fn get_bonder_meta(
 
 pub async fn get_bonder(
     article_id: i64,
-    category_set: &[String],
+    category_set: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
     let iter = get_bonder_meta(article_id, category_set).await?;
     let mut bonds = Vec::<Edge>::with_capacity(iter.len());
@@ -285,6 +289,7 @@ pub struct Category {
     pub category_name: String,
     pub version: i64,
     pub source: String,
+    pub families: Vec<String>,
     pub create_time: chrono::DateTime<chrono::Utc>,
 }
 impl DBObject for Category {

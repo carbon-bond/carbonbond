@@ -88,13 +88,14 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     for (name, category) in &force.categories {
         let _category_id = sqlx::query!(
             "
-        INSERT INTO categories (board_id, category_name, version, source)
-        VALUES ($1, $2, 1, $3)
+        INSERT INTO categories (board_id, category_name, version, source, families)
+        VALUES ($1, $2, 1, $3, $4)
         RETURNING id
         ",
             board_id,
             name,
-            category.source
+            category.source,
+            &category.family
         )
         .fetch_one(pool)
         .await?

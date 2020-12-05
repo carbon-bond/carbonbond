@@ -79,12 +79,19 @@ pub enum ArticleQuery {
     #[chitin(request, response = "super::model::ArticleMeta")]
     QueryArticleMeta { id: i64 },
     #[chitin(request, response = "Vec<(super::model::Edge, super::model::Article)>")]
-    QueryBonder { id: i64, category_set: Vec<String> },
+    QueryBonder {
+        id: i64,
+        category_set: Option<Vec<String>>,
+        // familit_set: Vec<String>,
+    },
     #[chitin(
         request,
         response = "Vec<(super::model::Edge, super::model::ArticleMeta)>"
     )]
-    QueryBonderMeta { id: i64, category_set: Vec<String> },
+    QueryBonderMeta {
+        id: i64,
+        category_set: Option<Vec<String>>,
+    },
     #[chitin(request, response = "i64")]
     CreateArticle {
         board_id: i64,
@@ -105,7 +112,7 @@ pub enum ArticleQuery {
     #[chitin(request, response = "super::model::Graph")]
     QueryGraph {
         article_id: i64,
-        category_set: Vec<String>,
+        category_set: Option<Vec<String>>,
     },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
