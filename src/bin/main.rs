@@ -52,8 +52,9 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
             };
             let body = hyper::body::to_bytes(body).await?;
 
-            let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
-                .map_err(|e| Error::new_logic(ErrorCode::ParsingJson, &e))?;
+            let query: query::RootQuery = serde_json::from_slice(&body.to_vec()).map_err(|e| {
+                ErrorCode::ParsingJson.context(format!("解析請求 {:?} 錯誤 {}", body, e,))
+            })?;
             let resp = on_api(query, &mut context).await?;
             context.resp.body_mut().push_str(&resp);
             Ok(context.resp.map(|s| Body::from(s)))

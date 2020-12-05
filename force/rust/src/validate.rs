@@ -47,6 +47,7 @@ pub trait ValidatorTrait {
     }
     fn validate_category(&self, category: &Category, data: &Value) -> bool {
         for field in &category.fields {
+            log::trace!("驗證力語言欄位 {:?} => {:?}", field, data[&field.name]);
             if self.validate_datatype(&field.datatype, &data[&field.name]) == false {
                 return false;
             }

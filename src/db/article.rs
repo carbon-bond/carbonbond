@@ -375,5 +375,6 @@ pub async fn create(
     .id;
     log::debug!("成功創建文章元資料");
     article_content::create(article_id, board_id, &content, force_category).await?;
+    // XXX: 記得交易
     Ok(article_id)
 }

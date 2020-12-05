@@ -290,8 +290,11 @@ pub(super) async fn create(
     content: &str,
     category: Category,
 ) -> Fallible<()> {
-    let mut json: Value =
-        serde_json::from_str(content).context(format!("反序列化失敗 `{}`", content))?;
+    let mut json: Value = serde_json::from_str(content).map_err(|err| {
+        ErrorCode::ParsingJson
+            .context("文章內容反序列化失敗")
+            .context(err)
+    })?;
 
     // 檢驗格式
     if (Validator { board_id }.validate_category(&category, &json) == false) {

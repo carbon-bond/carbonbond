@@ -54,7 +54,8 @@
         "title": "碳鍵的優越性在於",
         "category": "解答",
         "content": {
-            "內文": "戰！"
+            "內文": "戰！",
+            "問題": { "energy": 1, "target_article": 0 }
         }
     },
     {
