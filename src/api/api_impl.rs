@@ -77,12 +77,17 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         count: usize,
         author_name: Option<String>,
         board_name: Option<String>,
+        hide_families: Option<Vec<String>>,
     ) -> Fallible<Vec<model::Article>> {
         // TODO: 支援 author_name
         match board_name {
-            Some(name) => Ok(db::article::get_by_board_name(&name, 0, count)
-                .await?
-                .collect()),
+            Some(name) => {
+                Ok(
+                    db::article::get_by_board_name(&name, 0, count, opt_slice(&hide_families))
+                        .await?
+                        .collect(),
+                )
+            }
             _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         }
     }

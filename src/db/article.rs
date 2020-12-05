@@ -196,6 +196,7 @@ pub async fn get_by_board_name(
     board_name: &str,
     offset: i64,
     limit: usize,
+    hide_families: Option<&[String]>,
 ) -> Fallible<impl ExactSizeIterator<Item = Article>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
@@ -203,12 +204,15 @@ pub async fn get_by_board_name(
         "
         SELECT * FROM article_metas()
         WHERE board_name = $1
+        AND ($4 OR NOT category_families && $5)
         ORDER BY create_time DESC
         LIMIT $2 OFFSET $3
         ",
         board_name,
         limit as i64,
-        offset
+        offset,
+        hide_families.is_none(),
+        hide_families.unwrap_or(EMPTY_SET)
     )
     .fetch_all(pool)
     .await?;

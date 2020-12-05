@@ -188,7 +188,7 @@ async function fetchArticles(
 	author_name: string,
 	page_size: number,
 ): Promise<Article[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null), []);
+	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null, null), []);
 }
 
 type Props = RouteComponentProps<{ user_name: string }>;

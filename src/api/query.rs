@@ -73,6 +73,7 @@ pub enum ArticleQuery {
         count: usize,
         author_name: Option<String>,
         board_name: Option<String>,
+        hide_families: Option<Vec<String>>,
     },
     #[chitin(request, response = "super::model::Article")]
     QueryArticle { id: i64 },

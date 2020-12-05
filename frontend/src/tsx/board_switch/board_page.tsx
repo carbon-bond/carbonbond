@@ -9,6 +9,7 @@ import { Article, Board } from '../../ts/api/api_trait';
 import '../../css/article_wrapper.css';
 import '../../css/board_switch/board_page.css';
 import { BoardCacheState } from '../global_state/board_cache';
+import * as force_util from '../../ts/force_util';
 
 const PAGE_SIZE: number = 10;
 
@@ -23,7 +24,7 @@ async function fetchArticles(
 	board_name: string,
 	page_size: number,
 ): Promise<Article[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null, board_name), []);
+	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null, board_name, [force_util.SMALL]), []);
 }
 
 export function BoardPage(props: Props): JSX.Element {
