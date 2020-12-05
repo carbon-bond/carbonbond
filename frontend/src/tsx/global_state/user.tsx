@@ -4,7 +4,7 @@ import { createContainer } from 'unstated-next';
 import { toastErr } from '../utils';
 const { useState } = React;
 
-type UserStateType = {
+export type UserStateType = {
 	login: false, fetching: boolean
 } | {
 	login: true,

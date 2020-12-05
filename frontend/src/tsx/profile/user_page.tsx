@@ -4,7 +4,7 @@ import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
-import { UserState } from '../global_state/user';
+import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 
@@ -151,6 +151,55 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
+function ProfileDetail(props: { profile_name: string, user_state: UserStateType }): JSX.Element {
+	const [editing, setEditing] = React.useState(false);
+
+	function EditModal(): JSX.Element {
+		let intro = useInputValue('').input_props;
+		let gender = useInputValue('').input_props;
+		let job = useInputValue('').input_props;
+		let city = useInputValue('').input_props;
+
+		function getBody(): JSX.Element {
+			return <div styleName="editModal">
+				<textarea placeholder="自我介紹" autoFocus {...intro} />
+				<input type="text" placeholder="性別" {...gender} />
+				<input type="text" placeholder="職業" {...job} />
+				<input type="text" placeholder="居住城市" {...city} />
+			</div>;
+		}
+
+		let buttons: ModalButton[] = [];
+		buttons.push({ text: '儲存', handler: () => setEditing(false) });  // TODO webapi?
+		buttons.push({ text: '取消', handler: () => setEditing(false) });
+
+		return <ModalWindow
+			title="🖉 編輯我的資料"
+			body={getBody()}
+			buttons={buttons}
+			visible={editing}
+			setVisible={setEditing}
+		/>;
+	}
+
+	return <div styleName="detail">
+		{
+			props.user_state.login && props.user_state.user_name == props.profile_name ?
+			<button styleName="editButton" onClick={() => setEditing(true)}>🖉 編輯我的資料</button> :
+			<></>
+		}
+		<div>
+			<div styleName="introduction">
+				自我介紹（TODO）
+			</div>
+			<div styleName="info">
+				性別、職業、居住城市...等（TODO）
+			</div>
+		</div>
+		<EditModal />
+	</div>;
+}
+
 /*
 type EditType = { type: 'radio',  name: string, options: string[] }
 | { type: 'text', name: string };
@@ -191,22 +240,21 @@ async function fetchArticles(
 	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null, 'None'), []);
 }
 
-type Props = RouteComponentProps<{ user_name: string }>;
+type Props = RouteComponentProps<{ profile_name: string }>;
 
 function UserPage(props: Props): JSX.Element {
-	const user_name = props.match.params.user_name;
+	const profile_name = props.match.params.profile_name;
 	const { user_state } = UserState.useContainer();
 
 	const [articles, setArticles] = React.useState<Article[]>([]);
 	const [user, setUser] = React.useState<User | null>(null);
-	const [editing, setEditing] = React.useState(false);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
 		Promise.all([
-			fetchArticles(user_name, PAGE_SIZE),
-			API_FETCHER.queryUser(user_name)
+			fetchArticles(profile_name, PAGE_SIZE),
+			API_FETCHER.queryUser(profile_name)
 		]).then(([more_articles, user]) => {
 			try {
 				setArticles(more_articles);
@@ -215,7 +263,7 @@ function UserPage(props: Props): JSX.Element {
 				toastErr(err);
 			}
 		});
-	}, [user_name]);
+	}, [profile_name]);
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(user, nxt => {
@@ -246,44 +294,17 @@ function UserPage(props: Props): JSX.Element {
 		}
 	}
 
-	function EditModal(): JSX.Element {
-		let intro = useInputValue('').input_props;
-		let gender = useInputValue('').input_props;
-		let job = useInputValue('').input_props;
-		let city = useInputValue('').input_props;
 
-		function getBody(): JSX.Element {
-			return <div styleName="editModal">
-				<textarea placeholder="自我介紹" autoFocus {...intro} />
-				<input type="text" placeholder="性別" {...gender} />
-				<input type="text" placeholder="職業" {...job} />
-				<input type="text" placeholder="居住城市" {...city} />
-			</div>;
-		}
-
-		let buttons: ModalButton[] = [];
-		buttons.push({ text: '儲存', handler: () => setEditing(false) });  // TODO webapi?
-		buttons.push({ text: '取消', handler: () => setEditing(false) });
-
-		return <ModalWindow
-			title="🖉 編輯我的資料"
-			body={getBody()}
-			buttons={buttons}
-			visible={editing}
-			setVisible={setEditing}
-		/>;
-	}
-
-	const is_me = user_state.login && user_state.user_name == user_name;
+	const is_me = user_state.login && user_state.user_name == profile_name;
 
 	if (!user) {
 		return <></>;
 	}
 	return <div>
 		<div styleName="up">
-			<Avatar is_me={is_me} name={user_name} />
+			<Avatar is_me={is_me} name={profile_name} />
 			<div styleName="abstract">
-				<div styleName="username">{user_name}</div>
+				<div styleName="username">{profile_name}</div>
 				<Sentence is_me={is_me} sentence={user.sentence} setSentence={setSentence}/>
 				<div styleName="data">
 					<div styleName="energy">{user.energy} 鍵能</div>
@@ -300,7 +321,7 @@ function UserPage(props: Props): JSX.Element {
 			<div styleName="operation">
 				<div styleName="links">
 					{
-						user_state.login && user_state.user_name != user_name ?
+						user_state.login && user_state.user_name != profile_name ?
 							<div styleName="relation">
 								<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
 									追蹤
@@ -311,7 +332,7 @@ function UserPage(props: Props): JSX.Element {
 							</div> :
 							<></>
 					}
-					<a href={`/app/user_board/${user_name}`}>個板</a>
+					<a href={`/app/user_board/${profile_name}`}>個板</a>
 					<a>私訊</a>
 				</div>
 			</div>
@@ -326,23 +347,8 @@ function UserPage(props: Props): JSX.Element {
 					))
 				}
 			</div>
-			<div styleName="detail">
-				{
-					user_state.login && user_state.user_name == user_name ?
-						<button styleName="editButton" onClick={() => setEditing(true)}>🖉 編輯我的資料</button> :
-						<></>
-				}
-				<div>
-					<div styleName="introduction">
-						自我介紹（TODO）
-					</div>
-					<div styleName="info">
-						性別、職業、居住城市...等（TODO）
-					</div>
-				</div>
-			</div>
+			<ProfileDetail profile_name={profile_name} user_state={user_state}/>
 		</div>
-		<EditModal />
 	</div>;
 }
 

@@ -53,7 +53,7 @@ function App(): JSX.Element {
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
 				} />
-				<Route path="/app/user/:user_name" render={props =>
+				<Route path="/app/user/:profile_name" render={props =>
 					<UserPage {...props} />
 				} />
 				<Route path="/app/b/:board_name" render={props =>
