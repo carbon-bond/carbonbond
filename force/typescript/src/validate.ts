@@ -28,7 +28,7 @@ export abstract class ValidatorTrait {
 		}
 	}
 	async validate_basic_datatype(datatype: BasicDataType, data: any): Promise<string | undefined> {
-		if (datatype.kind == 'number' && typeof data == 'number') {
+		if (datatype.kind == 'number') {
 			return (await this.validate_number(data));
 		} else if (datatype.kind == 'one_line' && typeof data == 'string') {
 			if (data.search('\n') == -1) {

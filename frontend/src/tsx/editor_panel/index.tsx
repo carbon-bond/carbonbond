@@ -106,11 +106,6 @@ const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Ele
 			<textarea {...input_props} />
 			{validate_info && <InvalidMessage msg={validate_info} />}
 		</>;
-	} else if (field.datatype.t.kind == 'number') {
-		return <>
-			<input type="number" {...input_props} />
-			{validate_info && <InvalidMessage msg={validate_info} />}
-		</>;
 	} else {
 		return <>
 			<input {...input_props} />
