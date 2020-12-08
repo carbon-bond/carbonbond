@@ -10,10 +10,20 @@
 "}",
 "氧 {",
     "鍵結[*] 手[0~2]",
+    "鍵結[*] 離子鍵[0~2]",
+"}",
+"氮 {",
+    "鍵結[*] 手[0~3]",
+"}",
+"硫 {",
+    "鍵結[*] 手[0~2]",
+"}",
+"磷 {",
+    "鍵結[*] 手[0~2]",
 "}"
 ],
     "articles": [
-        { "title": "喝酒0", "category": "氧", "content": { "手": [] } },
+        { "title": "喝酒0", "category": "氧", "content": { "手": [], "離子鍵": [] } },
         { "title": "喝酒1", "category": "氫", "content": { "手": [0] } },
         { "title": "喝酒2", "category": "碳", "content": { "手": [] } },
         { "title": "喝酒3", "category": "碳", "content": { "手": [0, 2] } },
@@ -24,7 +34,7 @@
         { "title": "喝酒8", "category": "氫", "content": { "手": [3] } },
 
         { "title": "燒碳9", "category": "碳", "content": { "手": [] } },
-        { "title": "燒碳10", "category": "氧", "content": { "手": [9] } },
+        { "title": "燒碳10", "category": "氧", "content": { "手": [9], "離子鍵": [] } },
 
         { "title": "炔11", "category": "碳", "content": { "手": [] } },
         { "title": "炔12", "category": "碳", "content": { "手": [11, 11, 11] } },

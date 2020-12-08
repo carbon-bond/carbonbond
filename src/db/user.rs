@@ -159,7 +159,13 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
     Ok(())
 }
 
-pub async fn update_info(id: i64, introduction: String, gender: String, job: String, city: String) -> Fallible<()> {
+pub async fn update_info(
+    id: i64,
+    introduction: String,
+    gender: String,
+    job: String,
+    city: String,
+) -> Fallible<()> {
     let pool = get_pool();
     sqlx::query!(
         "

@@ -100,18 +100,7 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 	React.useEffect(get_comment, [article.meta.board_id, article.meta.id]);
 
 	function CommentButtons(): JSX.Element {
-		return <>{
-			small_fields.map(fp => {
-				const key = `${fp.category}#${fp.field}`;
-				return <ReplyButton
-					board={board}
-					article={article}
-					category_name={fp.category}
-					field_name={fp.field}
-					is_array={fp.is_array}
-					key={key} />;
-			})
-		}</>;
+		return <ReplyArea candidates={small_fields} article={article} board={board}/>;
 	}
 	return <div styleName="comments">
 		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
@@ -212,7 +201,7 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 	</div>;
 }
 
-function ReplyButton(props: { board: Board, article: Article, category_name: string, field_name: string, is_array: boolean }): JSX.Element {
+function ReplyButton(props: { hide_field?: boolean, board: Board, article: Article, category_name: string, field_name: string, is_array: boolean }): JSX.Element {
 	const { board, article } = props;
 	const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const onClick = (): void => {
@@ -244,45 +233,90 @@ function ReplyButton(props: { board: Board, article: Article, category_name: str
 		}
 	};
 	return <button onClick={onClick}>
-		{`${props.category_name}#${props.field_name}`}
+		{props.hide_field ? props.category_name : `${props.category_name}#${props.field_name}`}
 	</button>;
+}
+
+function ReplyArea(props: { candidates: FieldPath[], board: Board, article: Article }): JSX.Element {
+	type Candidate = { field_path: FieldPath, hide_field: boolean };
+	let { board, article } = props;
+	let candidates = [...props.candidates];
+	// XXX: 要不要直接將同個分類收合？
+	const MAX_DISPLAY = 5;
+	function collect(candidates: FieldPath[]): Candidate[] {
+		let map: { [category: string]: number } = {};
+		for (let c of candidates) {
+			if (!(c.category in map)) {
+				map[c.category] = 0;
+			}
+			map[c.category]++;
+		}
+		let ret = new Array<Candidate>();
+		for (let candidate of candidates) {
+			let hide_field = map[candidate.category] == 1;
+			ret.push({ field_path: candidate, hide_field });
+		}
+		return ret;
+	}
+	let showing = collect(candidates.splice(0, MAX_DISPLAY));
+	let hiding = collect(candidates);
+	let [expanded, setExpanded] = React.useState<boolean>(false);
+	function Expander(): JSX.Element {
+		if (Object.keys(hiding).length == 0) {
+			return <></>;
+		} else if (expanded) {
+			return <button onClick={() => setExpanded(false)}>-顯示較少</button>;
+		} else {
+			return <button onClick={() => setExpanded(true)}>+顯示更多</button>;
+		}
+	}
+	function ReplyList(props: { candidates: Candidate[] }): JSX.Element {
+		return <>
+			{
+				// XXX: 這個 key 可能會被惡意製造成重複的
+				props.candidates.map(t => {
+					let fp = t.field_path;
+					let hide_field = t.hide_field;
+					const key = `${fp.category}#${fp.field}`;
+					return <ReplyButton
+						board={board}
+						article={article}
+						category_name={fp.category}
+						field_name={fp.field}
+						is_array={fp.is_array}
+						hide_field={hide_field}
+						key={key} />;
+				})}
+		</>;
+	}
+	return <div>
+		<ReplyList candidates={showing} />
+		<Expander />
+		{
+			expanded ? <span><br/><ReplyList candidates={hiding} /></span> : <></>
+		}
+	</div>;
 }
 
 function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
 
-	let scrollHandler = React.useCallback(() => {}, []);
+	let scrollHandler = React.useCallback(() => { }, []);
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
 	const category_name = article.meta.category_name;
 
-
 	function ReplyButtons(): JSX.Element {
-		let [expanded, setExpanded] = React.useState<boolean>(false);
 		const force = useForce(board.id);
 		let candidates: FieldPath[] = [];
 		if (force) {
 			candidates = get_bond_fields(force, category_name);
 		}
 		return <div>
-			<button onClick={() => setExpanded(!expanded)}>鍵結到本文</button>
+			<div> 🙋️鍵結到本文 </div>
 			<div styleName="offset">
-				{
-					expanded ?
-					// XXX: 這個 key 可能會被惡意製造成重複的
-						candidates.map(fp => {
-							const key = `${fp.category}#${fp.field}`;
-							return <ReplyButton
-								board={board}
-								article={article}
-								category_name={fp.category}
-								field_name={fp.field}
-								is_array={fp.is_array}
-								key={key} />;
-						}) :
-						<></>
-				}
+				<ReplyArea candidates={candidates} article={article} board={board} />
 			</div>
 		</div>;
 	}
@@ -299,8 +333,8 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ReplyButtons />
 		<ArticleContent article={article} />
 		<ArticleFooter />
-		<BigReplyList article={article}/>
-		<Comments article={article} board={board}/>
+		<BigReplyList article={article} />
+		<Comments article={article} board={board} />
 	</div>;
 }
 
@@ -328,7 +362,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
-			return <ArticleDisplayPage article={article} board={props.board}/>;
+			return <ArticleDisplayPage article={article} board={props.board} />;
 		} else {
 			return <Redirect to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
 		}
