@@ -6,7 +6,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, BondCard, SimpleArticleCardById, CommentCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board, Edge } from '../../ts/api/api_trait';
-import { parse_category, Field, Force } from 'force';
+import { parse_category, Field, Force, Category } from 'force';
 import { get_force, useForce } from '../../ts/cache';
 import { EditorPanelState } from '../global_state/editor_panel';
 import * as force_util from '../../ts/force_util';
@@ -100,7 +100,12 @@ function Comments(props: { article: Article, board: Board }): JSX.Element {
 	React.useEffect(get_comment, [article.meta.board_id, article.meta.id]);
 
 	function CommentButtons(): JSX.Element {
-		return <ReplyArea candidates={small_fields} article={article} board={board}/>;
+		let force = useForce(board.id);
+		if (force) {
+			return <ReplyArea force={force} candidates={small_fields} article={article} board={board}/>;
+		} else {
+			return <></>;
+		}
 	}
 	return <div styleName="comments">
 		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
@@ -201,21 +206,30 @@ function ArticleContent(props: { article: Article }): JSX.Element {
 	</div>;
 }
 
-function ReplyButton(props: { hide_field?: boolean, board: Board, article: Article, category_name: string, field_name: string, is_array: boolean }): JSX.Element {
+function ReplyButton(props: { hide_field?: boolean, board: Board, article: Article, category: Category, field_name: string, is_array: boolean }): JSX.Element {
 	const { board, article } = props;
 	const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const onClick = (): void => {
-		if (editor_panel_data == null ||
-			editor_panel_data.category == '') {
-			setEditorPanelData({
-				board,
-				category: props.category_name,
-				title: '',
-				content: { [props.field_name]: props.is_array ? [`${article.meta.id}`] : `${article.meta.id}`}
+		// 若原本編輯器沒資料或是沒設定分類
+		// 先設定分類並根據分類初始化編輯器資料
+		if (editor_panel_data && (editor_panel_data.board.id != board.id || editor_panel_data.category != props.category.name)) {
+			toastErr('尚在編輯其他文章，請關閉後再點擊');
+		} else {
+			let data = editor_panel_data == null ?
+				{
+					board: props.board,
+					category: '',
+					title: '',
+					content: {},
+				} :
+				editor_panel_data;
+			data = produce(data, nxt => {
+				if (nxt.category == '') {
+					nxt.category = props.category.name;
+					nxt.content = force_util.new_content(props.category);
+				}
 			});
-			openEditorPanel();
-		} else if (editor_panel_data.board.id == board.id && editor_panel_data.category == props.category_name) {
-			const next_state = produce(editor_panel_data, nxt => {
+			data = produce(data, nxt => {
 				if (props.is_array) {
 					if (nxt.content[props.field_name] instanceof Array) {
 						(nxt.content[props.field_name] as string[]).push(`${article.meta.id}`);
@@ -226,20 +240,18 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 					nxt.content[props.field_name] = `${article.meta.id}`;
 				}
 			});
-			setEditorPanelData(next_state);
+			setEditorPanelData(data);
 			openEditorPanel();
-		} else {
-			toastErr('尚在編輯其他文章，請關閉後再點擊');
 		}
 	};
 	return <button onClick={onClick}>
-		{props.hide_field ? props.category_name : `${props.category_name}#${props.field_name}`}
+		{props.hide_field ? props.category.name : `${props.category.name}#${props.field_name}`}
 	</button>;
 }
 
-function ReplyArea(props: { candidates: FieldPath[], board: Board, article: Article }): JSX.Element {
+function ReplyArea(props: { force: Force, candidates: FieldPath[], board: Board, article: Article }): JSX.Element {
 	type Candidate = { field_path: FieldPath, hide_field: boolean };
-	let { board, article } = props;
+	let { board, article, force } = props;
 	let candidates = [...props.candidates];
 	// XXX: 要不要直接將同個分類收合？
 	const MAX_DISPLAY = 5;
@@ -277,11 +289,12 @@ function ReplyArea(props: { candidates: FieldPath[], board: Board, article: Arti
 				props.candidates.map(t => {
 					let fp = t.field_path;
 					let hide_field = t.hide_field;
+					let category = force.categories.get(fp.category)!;
 					const key = `${fp.category}#${fp.field}`;
 					return <ReplyButton
 						board={board}
 						article={article}
-						category_name={fp.category}
+						category={category}
 						field_name={fp.field}
 						is_array={fp.is_array}
 						hide_field={hide_field}
@@ -315,9 +328,13 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		}
 		return <div>
 			<div> 🙋️鍵結到本文 </div>
-			<div styleName="offset">
-				<ReplyArea candidates={candidates} article={article} board={board} />
-			</div>
+			{
+				force ?
+					<div styleName="offset">
+						<ReplyArea force={force} candidates={candidates} article={article} board={board} />
+					</div> :
+					<></>
+			}
 		</div>;
 	}
 	return <div styleName="articlePage">

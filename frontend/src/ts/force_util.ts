@@ -1,4 +1,4 @@
-import { Force } from 'force';
+import { Category, Force } from 'force';
 
 // 取得一個力語言定義中所有屬於 family 分類族的分類
 export function get_family_members(force: Force, family: string): string[] {
@@ -19,6 +19,19 @@ export function get_non_family_members(force: Force, family: string): string[] {
 		}
 	}
 	return non_members;
+}
+
+// 創造一個符合力語言型別的空實例
+export function new_content(category: Category): { [index: string]: string | string[] } {
+	let content: { [index: string]: string | string[] } = {};
+	for (let field of category.fields) {
+		if (field.datatype.kind == 'array') {
+			content[field.name] = [];
+		} else {
+			content[field.name] = '';
+		}
+	}
+	return content;
 }
 
 export function get_small_members(force: Force): string[] {

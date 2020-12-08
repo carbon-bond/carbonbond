@@ -19,6 +19,7 @@ import '../../css/bottom_panel/editor.css';
 import { BasicDataType } from 'force';
 import { SimpleArticleCardById } from '../article_card';
 import { toastErr } from '../utils';
+import { new_content } from '../../ts/force_util';
 
 function EditorPanel(): JSX.Element | null {
 	const { is_open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
@@ -131,8 +132,15 @@ function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
 const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
 	const { field } = props;
 	const [ value, setValue ] = useState<string>('');
-	const [ is_valid, setIsValid ] = useState<undefined | string>(undefined);
+	const [ input_validate_info, setInputValidateInfo ] = useState<undefined | string>(undefined);
+	const [ array_validate_info, setArrayValidateInfo ] = useState<undefined | string>(undefined);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+
+	useEffect(() => {
+		props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name])
+		.then(info => setArrayValidateInfo(info));
+	});
+
 	if (editor_panel_data == null) { return <></>; }
 
 	const show_list = (): JSX.Element => {
@@ -159,7 +167,7 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 	};
 
 	const push_data = (): void => {
-		if (is_valid) {
+		if (input_validate_info == undefined) {
 			const next_state = produce(editor_panel_data, nxt => {
 				if (editor_panel_data.content[field.name] instanceof Array) {
 					(nxt.content[field.name] as string[]).push(value);
@@ -169,6 +177,8 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 			});
 			setEditorPanelData(next_state);
 			setValue('');
+			props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name])
+			.then(info => setArrayValidateInfo(info));
 		}
 	};
 
@@ -187,21 +197,23 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 		onChange: (evt: { target: { value: string } }) => {
 			setValue(evt.target.value);
 			props.validator.validate_basic_datatype(field.datatype.t, evt.target.value)
-			.then(res => setIsValid(res));
+			.then(res => setInputValidateInfo(res));
 		},
 	};
 	if (field.datatype.t.kind == 'text') {
 		return <>
+			{array_validate_info && <InvalidMessage msg={array_validate_info} />}
 			{show_list()}
-			<button onClick={push_data}>+</button>
+			<button type="button" onClick={push_data}>+</button>
 			<textarea {...input_props} />
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+			{input_validate_info && <InvalidMessage msg={input_validate_info} />}
 		</>;
 	} else {
 		return <>
+			{array_validate_info && <InvalidMessage msg={array_validate_info} />}
 			{show_list()}
 			<input {...input_props} onKeyDown={on_enter} />
-			{!is_valid && <InvalidMessage msg="不符力語言定義" />}
+			{input_validate_info && <InvalidMessage msg={input_validate_info} />}
 		</>;
 	}
 };
@@ -327,12 +339,9 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					styleName="category"
 					value={editor_panel_data.category}
 					onChange={(evt) => {
-						let content: {[index: string]: string} = {};
 						let category = force.categories.get(evt.target.value)!;
-						for (let field of category.fields) {
-							content[field.name] = '';
-						}
-						setEditorPanelData({ ...editor_panel_data, content, category: evt.target.value });
+						let content = new_content(category);
+						setEditorPanelData({ ...editor_panel_data, category: category.name, content });
 					}}
 				>
 					<option value="" disabled hidden>文章分類</option>

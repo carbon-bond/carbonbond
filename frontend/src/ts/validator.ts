@@ -42,7 +42,6 @@ export class Validator extends force.ValidatorTrait {
 	}
 	// eslint-disable-next-line
 	async validate_number(data: any): Promise<string | undefined> {
-		console.log(`validate ${data}`);
 		if (data.length == 0) { return '不可爲空'; }
 		const n = Number(data);
 		if (isNaN(n)) {
