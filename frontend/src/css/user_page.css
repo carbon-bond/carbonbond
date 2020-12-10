@@ -141,19 +141,37 @@
     height: 350px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    & .label {
+        position: relative;
+        width: 100%;
+        margin: 5px 0px 0px;
+    }
     & textarea {
         position: relative;
         width: 100%;
         height: 120px;
-        margin: 10px;
+        margin: 0px 0px 5px;
         resize: none;
     }
-    & input {
+    & input[type="text"] {
         position: relative;
         width: 100%;
         height: 40px;
-        margin: 10px;
+        margin: 0px 0px 5px;
+    }
+    & input[type="radio"] {
+        float: left;
+        clear: none;
+        margin: 2px 0 0 2px;
+    }
+    & .gender {
+        float: left;
+        clear: none;
+        & label {
+            float: left;
+            clear: none;
+            display: block;
+            padding: 0px 1em 0px 8px;
+        }
     }
 }

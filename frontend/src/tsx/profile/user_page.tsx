@@ -173,17 +173,39 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		return {};
 	}
 
+	React.useEffect(() => {
+		if (props.profile_user) {
+			setIntroduction(props.profile_user.introduction);
+			setGender(props.profile_user.gender);
+			setJob(props.profile_user.job);
+			setCity(props.profile_user.city);
+		}
+	}, [props.profile_user]);
+
 	function EditModal(): JSX.Element {
 		let newIntroduction = useInputValue(introduction).input_props;
 		let newGender = useInputValue(gender).input_props;
 		let newJob = useInputValue(job).input_props;
 		let newCity = useInputValue(city).input_props;
 
+		function onValueChange(event): void {
+			newGender.value = event.target.value;
+		}
+
 		function getBody(): JSX.Element {
 			return <div styleName="editModal">
+				<div styleName="label">自我介紹</div>
 				<textarea placeholder="自我介紹" autoFocus {...newIntroduction} />
-				<input type="text" placeholder="性別" {...newGender} />
+				<div styleName="label">性別</div>
+				<div styleName="gender">
+					<input type="radio" name="gender" value="男" defaultChecked={gender === '男'} onChange={onValueChange}/>
+					<label>男</label>
+					<input type="radio" name="gender" value="女" defaultChecked={gender === '女'} onChange={onValueChange}/>
+					<label>女</label>
+				</div>
+				<div styleName="label">職業</div>
 				<input type="text" placeholder="職業" {...newJob} />
+				<div styleName="label">居住城市</div>
 				<input type="text" placeholder="居住城市" {...newCity} />
 			</div>;
 		}
@@ -212,10 +234,12 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				}
 			</div>
 			<div styleName="info">
-				<div styleName="item"><span styleName="key">自我介紹：</span> {introduction}</div>
-				<div styleName="item"><span styleName="key">性別：</span> {gender}</div>
-				<div styleName="item"><span styleName="key">職業：</span> {job}</div>
-				<div styleName="item"><span styleName="key">城市：</span> {city}</div>
+				<div styleName="item">{introduction}</div>
+			</div>
+			<div styleName="info">
+				<div styleName="item">性別<span styleName="key">{gender}</span></div>
+				<div styleName="item">職業為<span styleName="key">{job}</span></div>
+				<div styleName="item">現居<span styleName="key">{city}</span></div>
 			</div>
 		</div>
 		<EditModal />
