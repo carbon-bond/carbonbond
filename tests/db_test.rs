@@ -1,9 +1,10 @@
 use carbonbond::{
     api::model,
     config,
-    custom_error::{DataType, ErrorCode, Fallible},
+    custom_error::{DataType, Error, ErrorCode, Fallible},
     db,
 };
+use force::error::ValidationErrorCode;
 
 async fn setup() {
     std::env::set_var("MODE", "test");
@@ -32,10 +33,10 @@ async fn user_test() -> Fallible<(i64, i64)> {
         .unwrap_err()
         .code()
         .unwrap();
-    assert_eq!(
-        code,
-        ErrorCode::NotFound(DataType::User, "測試人2".to_owned())
-    );
+    match code {
+        ErrorCode::NotFound(DataType::User, s) => (assert_eq!(s, "測試人2")),
+        _ => panic!(),
+    }
 
     db::user::login("測試人", "測試密碼")
         .await
@@ -125,7 +126,17 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         ),
     )
     .await;
-    res.expect_err("不符合力語言定義也能過？");
+    let err = match res {
+        Err(Error::LogicError { code, .. }) => match code {
+            ErrorCode::ForceValidate { err } => err,
+            _ => panic!(),
+        },
+        _ => panic!(),
+    };
+    match err.code {
+        ValidationErrorCode::BondFail => (),
+        _ => panic!(),
+    }
     // XXX: 力語言報錯夠強後就可以直接檢查錯誤種類
     let articles =
         db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?;

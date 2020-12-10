@@ -1,6 +1,6 @@
 use crate::error::{
     Error,
-    ValidationError::{self, *},
+    ValidationErrorCode::{self, *},
 };
 use crate::instance_defs::Bond;
 use crate::*;
@@ -15,7 +15,7 @@ pub trait ValidatorTrait {
         &self,
         data_type: &BasicDataType,
         data: &Value,
-    ) -> Result<Option<ValidationError>, Self::OtherError> {
+    ) -> Result<Option<ValidationErrorCode>, Self::OtherError> {
         log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
         macro_rules! ret {
             ($err:expr) => {
@@ -59,7 +59,7 @@ pub trait ValidatorTrait {
         &self,
         data_type: &DataType,
         data: &Value,
-    ) -> Result<Option<ValidationError>, Self::OtherError> {
+    ) -> Result<Option<ValidationErrorCode>, Self::OtherError> {
         match data_type {
             DataType::Optional(t) => {
                 if !data.is_null() {
@@ -112,7 +112,7 @@ pub trait ValidatorTrait {
 mod tests {
     use super::*;
     use serde_json::json;
-    impl PartialEq for ValidationError {
+    impl PartialEq for ValidationErrorCode {
         fn eq(&self, other: &Self) -> bool {
             // XXX: 這樣定義相等不曉得會不會出問題…
             format!("{:?}", self) == format!("{:?}", other)

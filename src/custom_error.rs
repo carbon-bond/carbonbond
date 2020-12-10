@@ -2,19 +2,20 @@ use chitin::*;
 #[chitin_model]
 mod inner {
     use chitin::chitin_util;
-    use serde::{Deserialize, Serialize, Serializer};
+    use force::error::ValidationError as ForceValidateError;
+    use serde::{Serialize, Serializer};
     use std::error::Error as StdError;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
 
     type BoxedErr = Option<Box<dyn StdError + Sync + Send + 'static>>;
-    fn serialize_err<S>(err: &BoxedErr, s: S) -> Result<S::Ok, S::Error>
+    fn serialize_err<E: std::fmt::Debug, S>(err: &E, s: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         s.serialize_str(&format!("{:?}", err))
     }
 
-    #[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq, TypeScriptify)]
+    #[derive(Serialize, Display, Debug, PartialEq, Eq, TypeScriptify)]
     pub enum DataType {
         #[display(fmt = "分類")]
         Category,
@@ -38,7 +39,7 @@ mod inner {
         SignupToken,
     }
 
-    #[derive(Serialize, Deserialize, Clone, Display, Debug, PartialEq, Eq, TypeScriptify)]
+    #[derive(Serialize, Display, Debug, TypeScriptify)]
     pub enum ErrorCode {
         #[display(fmt = "尚未登入")]
         NeedLogin,
@@ -50,6 +51,11 @@ mod inner {
         DuplicateRegister,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
+        #[display(fmt = "力語言驗證： {:?}", err)]
+        ForceValidate {
+            #[serde(serialize_with = "serialize_err")]
+            err: ForceValidateError,
+        },
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]
@@ -86,9 +92,9 @@ mod inner {
                 code,
             }
         }
-        pub fn code(&self) -> Option<ErrorCode> {
+        pub fn code(self) -> Option<ErrorCode> {
             match self {
-                Error::LogicError { code, .. } => Some(code.clone()),
+                Error::LogicError { code, .. } => Some(code),
                 _ => None,
             }
         }

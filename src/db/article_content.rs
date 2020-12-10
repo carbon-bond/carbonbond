@@ -1,6 +1,9 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{Contextable, DataType, Error, ErrorCode, Fallible};
-use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
+use force::{
+    error::Error as ForceError, instance_defs::Bond, validate::ValidatorTrait, Bondee, Category,
+    Field,
+};
 use serde_json::Value;
 use sqlx::{executor::Executor, Postgres};
 use std::collections::HashMap;
@@ -344,7 +347,11 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
 
     // 檢驗格式
     let validator = Validator { board_id };
-    validator.validate_category(&category, &json).await?;
+    match validator.validate_category(&category, &json).await {
+        Ok(()) => (),
+        Err(ForceError::Validation(err)) => return Err(ErrorCode::ForceValidate { err }.into()),
+        Err(e) => return Err(e.into()),
+    }
 
     use force::DataType::*;
 

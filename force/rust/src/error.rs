@@ -4,23 +4,25 @@ use serde_json::{value::Number, Error as JsonError, Value};
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 #[derive(Debug)]
 pub enum Error<OtherError> {
-    Validation {
-        field_name: String,
-        err: ValidationError,
-    },
+    Validation(ValidationError),
     Other(OtherError),
 }
 impl<E> Error<E> {
-    pub fn validation_err(self) -> Option<(String, ValidationError)> {
+    pub fn validation_err(self) -> Option<(String, ValidationErrorCode)> {
         match self {
-            Error::Validation { field_name, err } => Some((field_name, err)),
+            Error::Validation(ValidationError { field_name, code }) => Some((field_name, code)),
             _ => None,
         }
     }
 }
 
 #[derive(Debug)]
-pub enum ValidationError {
+pub struct ValidationError {
+    pub field_name: String,
+    pub code: ValidationErrorCode,
+}
+#[derive(Debug)]
+pub enum ValidationErrorCode {
     NotI64(Number),
     NotOneline(String),
     RegexFail(Regex, String),
@@ -34,13 +36,13 @@ pub enum ValidationError {
     },
     BondFail,
 }
-impl ValidationError {
+impl ValidationErrorCode {
     pub(crate) fn to_res<T, E, S: AsRef<str>>(self, field_name: S) -> Result<T, Error<E>> {
         let field_name = field_name.as_ref().to_owned();
-        Err(Error::Validation {
+        Err(Error::Validation(ValidationError {
             field_name,
-            err: self,
-        })
+            code: self,
+        }))
     }
 }
 
