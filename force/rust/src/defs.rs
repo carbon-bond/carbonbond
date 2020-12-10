@@ -6,8 +6,9 @@ use std::fmt;
 use std::sync::Arc;
 use typescript_definitions::TypeScriptify;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TypeScriptify)]
 pub enum Bondee {
+    // XXX: 輸能？
     All,
     Choices {
         category: Vec<String>,

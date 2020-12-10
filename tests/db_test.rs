@@ -16,6 +16,7 @@ async fn setup() {
     child.wait().unwrap();
     config::init(None);
     db::init().await.unwrap();
+    env_logger::init();
 }
 
 async fn user_test() -> Fallible<(i64, i64)> {
@@ -48,11 +49,18 @@ async fn party_test(chairman_id: i64) -> Fallible<i64> {
     db::party::create("測試無法黨", None, chairman_id).await
 }
 async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
+    let force = "
+大文章 {
+    文本 內文
+}
+小留言 @ [小的] {
+    鍵結[大文章] 本體
+}";
     db::board::create(&model::NewBoard {
         board_name: "測試板".to_string(),
         title: "整合測試測起來！".to_string(),
         detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
-        force: "".to_owned(),
+        force: force.to_owned(),
         ruling_party_id,
     })
     .await
@@ -85,6 +93,46 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
     Ok(())
 }
 
+async fn article_test(user_id: i64, board_id: i64) -> Fallible {
+    let post = |category: &str, title: &str, content: &str| {
+        db::article::create(
+            user_id,
+            board_id,
+            category.to_owned(),
+            title.to_owned(),
+            content.to_owned(),
+        )
+    };
+    let big_id = post("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
+        .await
+        .unwrap();
+    let small_id = post(
+        "小留言",
+        "會通過",
+        &format!(
+            "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
+            big_id
+        ),
+    )
+    .await
+    .unwrap();
+    let res = post(
+        "小留言",
+        "會通過才有鬼",
+        &format!(
+            "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
+            small_id
+        ),
+    )
+    .await;
+    res.expect_err("不符合力語言定義也能過？");
+    // XXX: 力語言報錯夠強後就可以直接檢查錯誤種類
+    let articles =
+        db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?;
+    assert_eq!(articles.len(), 2, "文章不是兩篇！？");
+    Ok(())
+}
+
 #[tokio::test]
 async fn test_db() -> Fallible<()> {
     setup().await;
@@ -92,9 +140,11 @@ async fn test_db() -> Fallible<()> {
     println!("結束用戶測試");
     let party = party_test(user).await?;
     println!("結束政黨測試");
-    let _board = board_test(party).await?;
+    let board = board_test(party).await?;
     println!("結束看板測試");
     notification_test(user, user2).await?;
     println!("結束通知測試");
+    article_test(user, board).await?;
+    println!("結束文章測試");
     Ok(())
 }

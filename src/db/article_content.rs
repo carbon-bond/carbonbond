@@ -3,6 +3,7 @@ use crate::custom_error::{Contextable, DataType, ErrorCode, Fallible};
 use force::validate::ValidatorTrait;
 use force::{instance_defs::Bond, Bondee, Category, Field};
 use serde_json::Value;
+use sqlx::{executor::Executor, Postgres};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -202,14 +203,44 @@ struct Validator {
     board_id: i64,
 }
 
+#[async_trait::async_trait]
 impl ValidatorTrait for Validator {
-    fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool {
-        true
+    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool {
+        //XXX: 鍵能
+        match bondee {
+            Bondee::All => true,
+            Bondee::Choices { category, family } => {
+                match super::article::get_meta_by_id(data.target_article).await {
+                    Err(_) => false, // XXX: 錯誤處理
+                    Ok(meta) => {
+                        if category.contains(&meta.category_name) {
+                            return true;
+                        }
+                        for f in &meta.category_families {
+                            if family.contains(f) {
+                                return true;
+                            }
+                        }
+                        log::trace!(
+                            "鍵結不合力語言定義：定義為{:?}，得到{:?}，指向文章{:?}",
+                            bondee,
+                            data,
+                            meta
+                        );
+                        false
+                    }
+                }
+            }
+        }
     }
 }
 
-async fn insert_int_field(article_id: i64, field_name: &String, value: i64) -> Fallible<()> {
-    let pool = get_pool();
+async fn insert_int_field<C: Executor<Database = Postgres>>(
+    conn: &mut C,
+    article_id: i64,
+    field_name: &String,
+    value: i64,
+) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_int_fields
                         (article_id, name, value)
@@ -218,13 +249,17 @@ async fn insert_int_field(article_id: i64, field_name: &String, value: i64) -> F
         field_name,
         value
     )
-    .execute(pool)
+    .execute(conn)
     .await?;
     Ok(())
 }
 
-async fn insert_string_field(article_id: i64, field_name: &String, value: &String) -> Fallible<()> {
-    let pool = get_pool();
+async fn insert_string_field<C: Executor<Database = Postgres>>(
+    conn: &mut C,
+    article_id: i64,
+    field_name: &String,
+    value: &String,
+) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_string_fields
                         (article_id, name, value)
@@ -233,13 +268,17 @@ async fn insert_string_field(article_id: i64, field_name: &String, value: &Strin
         field_name,
         value
     )
-    .execute(pool)
+    .execute(conn)
     .await?;
     Ok(())
 }
 
-async fn insert_bond_field(article_id: i64, field_name: &String, bond: &Bond) -> Fallible<()> {
-    let pool = get_pool();
+async fn insert_bond_field<C: Executor<Database = Postgres>>(
+    conn: &mut C,
+    article_id: i64,
+    field_name: &String,
+    bond: &Bond,
+) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_bond_fields
                         (article_id, name, value, energy)
@@ -249,29 +288,34 @@ async fn insert_bond_field(article_id: i64, field_name: &String, bond: &Bond) ->
         bond.target_article,
         bond.energy
     )
-    .execute(pool)
+    .execute(conn)
     .await?;
     Ok(())
 }
-async fn insert_field(article_id: i64, field: &Field, value: Value) -> Fallible<()> {
+async fn insert_field<C: Executor<Database = Postgres>>(
+    conn: &mut C,
+    article_id: i64,
+    field: &Field,
+    value: Value,
+) -> Fallible<()> {
     log::debug!("插入文章內容 {:?} {:?}", field, value);
     match field.datatype.basic_type() {
         force::BasicDataType::Number => match value {
             Value::Number(number) => {
-                insert_int_field(article_id, &field.name, number.as_i64().unwrap()).await?
+                insert_int_field(conn, article_id, &field.name, number.as_i64().unwrap()).await?
             }
             // validate 過，不可能發生
             _ => {}
         },
         force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
             match value {
-                Value::String(s) => insert_string_field(article_id, &field.name, &s).await?,
+                Value::String(s) => insert_string_field(conn, article_id, &field.name, &s).await?,
                 // validate 過，不可能發生
                 _ => {}
             }
         }
         force::BasicDataType::Bond(_) => match serde_json::from_value::<Bond>(value) {
-            Ok(bond) => insert_bond_field(article_id, &field.name, &bond).await?,
+            Ok(bond) => insert_bond_field(conn, article_id, &field.name, &bond).await?,
             // validate 過，不可能發生
             _ => {}
         },
@@ -284,7 +328,8 @@ async fn insert_field(article_id: i64, field: &Field, value: Value) -> Fallible<
     Ok(())
 }
 
-pub(super) async fn create(
+pub(super) async fn create<C: Executor<Database = Postgres>>(
+    conn: &mut C,
     article_id: i64,
     board_id: i64,
     content: &str,
@@ -297,7 +342,11 @@ pub(super) async fn create(
     })?;
 
     // 檢驗格式
-    if (Validator { board_id }.validate_category(&category, &json) == false) {
+    if (Validator { board_id }
+        .validate_category(&category, &json)
+        .await
+        == false)
+    {
         return Err(ErrorCode::Other("文章不符合力語言定義".to_owned()).into());
     }
 
@@ -309,11 +358,11 @@ pub(super) async fn create(
         // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
         let value = json.remove(&field.name).unwrap();
         match &field.datatype {
-            Optional(_) | Single(_) => insert_field(article_id, &field, value).await?,
+            Optional(_) | Single(_) => insert_field(conn, article_id, &field, value).await?,
             Array { .. } => match value {
                 Value::Array(values) => {
                     for value in values {
-                        insert_field(article_id, &field, value).await?
+                        insert_field(conn, article_id, &field, value).await?
                     }
                 }
                 _ => {}

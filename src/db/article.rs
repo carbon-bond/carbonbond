@@ -385,8 +385,7 @@ pub async fn create(
     title: String,
     content: String,
 ) -> Fallible<i64> {
-    // TODO: 交易？
-    let pool = get_pool();
+    let mut conn = get_pool().begin().await?;
     let category = get_newest_category(board_id, &category_name).await?;
     let force_category = parse_category(&category.source)?;
     let article_id = sqlx::query!(
@@ -399,11 +398,11 @@ pub async fn create(
         title,
         category.id,
     )
-    .fetch_one(pool)
+    .fetch_one(&mut conn)
     .await?
     .id;
     log::debug!("成功創建文章元資料");
-    article_content::create(article_id, board_id, &content, force_category).await?;
-    // XXX: 記得交易
+    article_content::create(&mut conn, article_id, board_id, &content, force_category).await?;
+    conn.commit().await?;
     Ok(article_id)
 }
