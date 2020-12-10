@@ -135,7 +135,7 @@
 "}",
 "回應 {",
     "文本 內文",
-    "鍵結[*] 本體",
+    "鍵結[新聞] 本體",
 "}"
 ],
     "articles": [{
@@ -173,6 +173,20 @@
         "content": {
             "本體": { "target_article": 0, "energy": -1 },
             "低能指數": 7
+        }
+    },{
+        "title": "d能到不會發文",
+        "category": "回應",
+        "content": {
+            "本體": { "target_article": 2, "energy": -1 },
+            "文本": "AAAA"
+        }
+    },{
+        "title": "d能到不會發文2",
+        "category": "小複雜留言",
+        "content": {
+            "本體": { "target_article": 4, "energy": -1 },
+            "低能指數": 1
         }
     }]
 }]
