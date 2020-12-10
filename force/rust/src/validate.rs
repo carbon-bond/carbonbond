@@ -1,13 +1,22 @@
+use crate::error::Error;
 use crate::instance_defs::Bond;
 use crate::*;
 use serde_json::Value;
 
+type Res<E> = Result<bool, Error<E>>;
+
 #[async_trait::async_trait]
 pub trait ValidatorTrait {
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool;
-    async fn validate_basic_datatype(&self, data_type: &BasicDataType, data: &Value) -> bool {
+    type OtherError;
+    // XXX: 是否弄個 get_article 就好？
+    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<bool, Self::OtherError>;
+    async fn validate_basic_datatype(
+        &self,
+        data_type: &BasicDataType,
+        data: &Value,
+    ) -> Res<Self::OtherError> {
         log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
-        match (data_type, data) {
+        let res = match (data_type, data) {
             (BasicDataType::Number, Value::Number(n)) => n.is_i64(),
             (BasicDataType::OneLine, Value::String(s)) => !s.contains('\n'),
             (BasicDataType::Text(None), Value::String(_)) => true,
@@ -16,48 +25,54 @@ pub trait ValidatorTrait {
                 let bond: Bond = match serde_json::from_value(data.clone()) {
                     Ok(b) => b,
                     Err(e) => {
-                        log::error!("解析鍵結錯誤 {}", e);
-                        return false;
+                        return Err(Error::Json(e));
                     }
                 };
                 // XXX: 檢查鍵能和標籤
-                self.validate_bond(bondee, &bond).await
+                match self.validate_bond(bondee, &bond).await {
+                    Ok(b) => b,
+                    Err(e) => return Err(Error::Other(e)),
+                }
             }
             _ => false,
-        }
+        };
+        Ok(res)
     }
-    async fn validate_datatype(&self, data_type: &DataType, data: &Value) -> bool {
-        match data_type {
-            DataType::Optional(t) => data.is_null() || self.validate_basic_datatype(t, data).await,
-            DataType::Single(t) => self.validate_basic_datatype(t, data).await,
+    async fn validate_datatype(&self, data_type: &DataType, data: &Value) -> Res<Self::OtherError> {
+        let res = match data_type {
+            DataType::Optional(t) => {
+                data.is_null() || self.validate_basic_datatype(t, data).await?
+            }
+            DataType::Single(t) => self.validate_basic_datatype(t, data).await?,
             DataType::Array { t, min, max } => match data {
                 Value::Array(values) => {
                     if values.len() < *min || values.len() > *max {
-                        return false;
+                        return Ok(false);
                     }
                     for value in values {
-                        if !self.validate_basic_datatype(t, value).await {
-                            return false;
+                        if !self.validate_basic_datatype(t, value).await? {
+                            return Ok(false);
                         }
                     }
                     true
                 }
                 _ => false,
             },
-        }
+        };
+        Ok(res)
     }
-    async fn validate_category(&self, category: &Category, data: &Value) -> bool {
+    async fn validate_category(&self, category: &Category, data: &Value) -> Res<Self::OtherError> {
         for field in &category.fields {
             log::trace!("驗證力語言欄位 {:?} => {:?}", field, data[&field.name]);
             if self
                 .validate_datatype(&field.datatype, &data[&field.name])
-                .await
+                .await?
                 == false
             {
-                return false;
+                return Ok(false);
             }
         }
-        true
+        Ok(true)
     }
 }
 
@@ -67,7 +82,8 @@ mod tests {
     use serde_json::json;
     struct Validator {}
     impl ValidatorTrait for Validator {
-        async fn validate_bond(&self, _bondee: &Bondee, _data: &Bond) -> bool {
+        type OtherError = ();
+        async fn validate_bond(&self, _bondee: &Bondee, _data: &Bond) -> Result<bool, ()> {
             true // 測試中不檢查
         }
     }

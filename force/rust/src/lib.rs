@@ -1,4 +1,5 @@
 pub mod defs;
+pub mod error;
 pub mod instance_defs;
 pub mod lexer;
 pub mod parser;

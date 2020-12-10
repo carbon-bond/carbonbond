@@ -1,7 +1,6 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{Contextable, DataType, ErrorCode, Fallible};
-use force::validate::ValidatorTrait;
-use force::{instance_defs::Bond, Bondee, Category, Field};
+use crate::custom_error::{Contextable, DataType, Error, ErrorCode, Fallible};
+use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde_json::Value;
 use sqlx::{executor::Executor, Postgres};
 use std::collections::HashMap;
@@ -205,20 +204,21 @@ struct Validator {
 
 #[async_trait::async_trait]
 impl ValidatorTrait for Validator {
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> bool {
+    type OtherError = Error;
+    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<bool, Error> {
         //XXX: 鍵能
-        match bondee {
+        let res = match bondee {
             Bondee::All => true,
             Bondee::Choices { category, family } => {
                 match super::article::get_meta_by_id(data.target_article).await {
                     Err(_) => false, // XXX: 錯誤處理
                     Ok(meta) => {
                         if category.contains(&meta.category_name) {
-                            return true;
+                            return Ok(true);
                         }
                         for f in &meta.category_families {
                             if family.contains(f) {
-                                return true;
+                                return Ok(true);
                             }
                         }
                         log::trace!(
@@ -231,7 +231,8 @@ impl ValidatorTrait for Validator {
                     }
                 }
             }
-        }
+        };
+        Ok(res)
     }
 }
 
@@ -342,11 +343,8 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
     })?;
 
     // 檢驗格式
-    if (Validator { board_id }
-        .validate_category(&category, &json)
-        .await
-        == false)
-    {
+    let validator = Validator { board_id };
+    if !validator.validate_category(&category, &json).await? {
         return Err(ErrorCode::Other("文章不符合力語言定義".to_owned()).into());
     }
 
