@@ -344,9 +344,7 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
 
     // 檢驗格式
     let validator = Validator { board_id };
-    if !validator.validate_category(&category, &json).await? {
-        return Err(ErrorCode::Other("文章不符合力語言定義".to_owned()).into());
-    }
+    validator.validate_category(&category, &json).await?;
 
     use force::DataType::*;
 

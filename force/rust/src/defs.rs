@@ -46,7 +46,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, TypeScriptify)]
+#[derive(Debug, Serialize, Deserialize, TypeScriptify, Clone)]
 pub enum BasicDataType {
     Bond(Bondee),
     TaggedBond(Bondee, Vec<Tag>),
@@ -79,7 +79,7 @@ impl PartialEq for BasicDataType {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, TypeScriptify)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TypeScriptify)]
 pub enum DataType {
     Optional(BasicDataType),
     Single(BasicDataType),
