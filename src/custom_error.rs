@@ -51,11 +51,9 @@ mod inner {
         DuplicateRegister,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
-        #[display(fmt = "力語言驗證： {:?}", err)]
-        ForceValidate {
-            #[serde(serialize_with = "serialize_err")]
-            err: ForceValidateError,
-        },
+        #[display(fmt = "力語言驗證： {:?}", "_0")]
+        #[serde(serialize_with = "serialize_err")]
+        ForceValidate(ForceValidateError),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]

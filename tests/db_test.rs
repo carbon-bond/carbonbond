@@ -128,7 +128,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     .await;
     let err = match res {
         Err(Error::LogicError { code, .. }) => match code {
-            ErrorCode::ForceValidate { err } => err,
+            ErrorCode::ForceValidate(err) => err,
             _ => panic!(),
         },
         _ => panic!(),
@@ -137,7 +137,18 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         ValidationErrorCode::BondFail => (),
         _ => panic!(),
     }
-    // XXX: 力語言報錯夠強後就可以直接檢查錯誤種類
+
+    let res = post(
+        "小留言",
+        "會通過才有鬼2",
+        &format!("{{ \"本體\": {{ \"target_article\": 99999, \"energy\": 1 }} }}"),
+    )
+    .await;
+    match res {
+        Err(Error::InternalError { .. }) => (),
+        _ => panic!(),
+    }
+
     let articles =
         db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?;
     assert_eq!(articles.len(), 2, "文章不是兩篇！？");

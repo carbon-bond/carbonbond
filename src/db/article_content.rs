@@ -213,26 +213,37 @@ impl ValidatorTrait for Validator {
         let res = match bondee {
             Bondee::All => true,
             Bondee::Choices { category, family } => {
-                match super::article::get_meta_by_id(data.target_article).await {
-                    Err(_) => false, // XXX: 錯誤處理
-                    Ok(meta) => {
-                        if category.contains(&meta.category_name) {
-                            return Ok(true);
-                        }
-                        for f in &meta.category_families {
-                            if family.contains(f) {
-                                return Ok(true);
+                let meta = match super::article::get_meta_by_id(data.target_article).await {
+                    Err(e) => {
+                        if let Error::LogicError { code, .. } = &e {
+                            if let ErrorCode::NotFound(..) = code {
+                                log::trace!("找不到鍵結文章：{}", data.target_article);
+                                return Ok(false);
                             }
                         }
-                        log::trace!(
-                            "鍵結不合力語言定義：定義為{:?}，得到{:?}，指向文章{:?}",
-                            bondee,
-                            data,
-                            meta
-                        );
-                        false
+                        return Err(e);
+                    }
+                    Ok(m) => m,
+                };
+                if meta.board_id != self.board_id {
+                    log::trace!("鍵結指向不同看板：{} -> {}", self.board_id, meta.board_id);
+                    return Ok(false);
+                }
+                if category.contains(&meta.category_name) {
+                    return Ok(true);
+                }
+                for f in &meta.category_families {
+                    if family.contains(f) {
+                        return Ok(true);
                     }
                 }
+                log::trace!(
+                    "鍵結不合力語言定義：定義為{:?}，得到{:?}，指向文章{:?}",
+                    bondee,
+                    data,
+                    meta
+                );
+                false
             }
         };
         Ok(res)
@@ -349,8 +360,8 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
     let validator = Validator { board_id };
     match validator.validate_category(&category, &json).await {
         Ok(()) => (),
-        Err(ForceError::Validation(err)) => return Err(ErrorCode::ForceValidate { err }.into()),
-        Err(e) => return Err(e.into()),
+        Err(ForceError::Validation(err)) => return Err(ErrorCode::ForceValidate(err).into()),
+        Err(ForceError::Other(err)) => return Err(err),
     }
 
     use force::DataType::*;
