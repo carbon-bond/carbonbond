@@ -188,7 +188,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		let newJob = useInputValue(job).input_props;
 		let newCity = useInputValue(city).input_props;
 
-		function onValueChange(event): void {
+		function onValueChange(event: { target: { value: string } }): void {
 			newGender.value = event.target.value;
 		}
 
