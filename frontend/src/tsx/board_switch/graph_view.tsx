@@ -34,13 +34,17 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
+let GREY = 'rgb(80, 80, 80)';
+let GREEN = '#69b3a2';
+let FONT_SIZE = 12;
+
 function edgeColor(energy: number): string {
 	if (energy > 0) {
 		return 'blue';
 	} else if (energy < 0) {
 		return 'red';
 	} else {
-		return 'black';
+		return GREY;
 	}
 }
 
@@ -126,6 +130,8 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
 			.attr('stroke-width', 2)
+			.style('stroke', GREEN)
+			.attr('opacity', 0.5)
 			.attr('marker-end', 'url(#arrow)');
 
 		let node = svg.append('g')
@@ -136,7 +142,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.append('svg:a')
 			.attr('xlink:href', d => d.url)
 			.append('circle')
-			.style('fill', '#69b3a2')
+			.style('fill', GREEN)
 			.attr('id', d => 'a' + d.id)
 			.attr('r', d => d.radius)
 			.on('mouseover', (_, d) => {
@@ -148,7 +154,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 				setCurHovering(null);
 				mouseout(d);
 			});
-		d3.select(`#a${props.meta.id}`).style('fill', 'pink');
+		d3.select(`#a${props.meta.id}`).style('fill', '#d34c4c');
 
 		let text = svg.append('g')
 			.selectAll('text')
@@ -157,6 +163,8 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.append('svg:a')
 			.attr('xlink:href', d => d.url)
 			.append('text')
+			.attr('fill', GREY)
+			.style('font-size', FONT_SIZE)
 			.text(function (d) {
 				return d.name;
 			})
@@ -183,7 +191,7 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.append('path')
 			.attr('stroke', 'none')
 			.attr('d', 'M1,1 L5,3 L1,5 Z')
-			.attr('fill', '#000');
+			.attr('fill', GREEN);
 
 		// @ts-ignore
 		let simulation = d3.forceSimulation(graph.nodes)
@@ -226,8 +234,11 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			});
 			let offset_x = base_radius + 10 - min_x;
 			let offset_y = base_radius + 10 - min_y;
-			// @ts-ignore
-			text.attr('transform', d => `translate(${d.x - 10 - d.radius}, ${d.y})`);
+			text.attr('transform', function (d) {
+				let len = this.getComputedTextLength();
+				// @ts-ignore
+				return `translate(${d.x - len/2}, ${d.y + d.radius + FONT_SIZE})`;
+			});
 			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
 			setOffsetX(offset_x);
 			setOffsetY(offset_y);

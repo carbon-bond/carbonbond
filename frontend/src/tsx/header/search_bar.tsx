@@ -6,6 +6,9 @@ export function SearchBar(props: { cur_board: string | null, history: History })
 	let [content, setContent] = React.useState('');
 	let [board, setBoard] = React.useState<string | null>(null);
 	function onSearch(board_name: string | null): void {
+		if (content.length == 0) {
+			return;
+		}
 		if (board_name) {
 			console.log(`於看板 ${board_name} 搜 ${content}`);
 			props.history.push(`/app/search?title=${content}&board=${board_name}`);

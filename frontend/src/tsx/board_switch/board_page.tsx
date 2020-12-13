@@ -69,8 +69,8 @@ export function BoardPage(props: Props): JSX.Element {
 
 	return <>
 		{
-			articles.map((article, idx) => (
-				<div styleName="articleWrapper" key={`article-${idx}`}>
+			articles.map((article, pos) => (
+				<div styleName="articleWrapper" key={`${article.meta.id}-${pos}`}>
 					<ArticleCard article={article} />
 				</div>
 			))
