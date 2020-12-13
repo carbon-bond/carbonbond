@@ -28,7 +28,7 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		return <GraphViewInner meta={article_meta} />;
+		return <GraphViewInner meta={article_meta} {...props} />;
 	} else {
 		return <></>;
 	}
@@ -64,7 +64,7 @@ type ArticleWithNode = {
 	node: NodeWithXY
 };
 
-export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
+export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProps ): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
 	let [curHovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
@@ -139,12 +139,14 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.selectAll('g')
 			.data(graph.nodes)
 			.enter()
-			.append('svg:a')
-			.attr('xlink:href', d => d.url)
 			.append('circle')
 			.style('fill', GREEN)
+			.style('cursor', 'pointer')
 			.attr('id', d => 'a' + d.id)
 			.attr('r', d => d.radius)
+			.on('mousedown', (_, d) => {
+				props.history.push(d.url);
+			})
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
 				onHover(d);
@@ -160,13 +162,15 @@ export function GraphViewInner(props: { meta: ArticleMeta }): JSX.Element {
 			.selectAll('text')
 			.data(graph.nodes)
 			.enter()
-			.append('svg:a')
-			.attr('xlink:href', d => d.url)
 			.append('text')
 			.attr('fill', GREY)
+			.style('cursor', 'pointer')
 			.style('font-size', FONT_SIZE)
 			.text(function (d) {
 				return d.name;
+			})
+			.on('mousedown', (_, d) => {
+				props.history.push(d.url);
 			})
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
