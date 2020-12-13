@@ -40,6 +40,14 @@ mod inner {
     }
 
     #[derive(Serialize, Display, Debug, TypeScriptify)]
+    pub enum BondError {
+        Custom(Box<Error>),
+        TargetNotFound,
+        TargetNotSameBoard(i64),
+        TargetViolateCategory,
+        TargetViolateEnergy,
+    }
+    #[derive(Serialize, Display, Debug, TypeScriptify)]
     pub enum ErrorCode {
         #[display(fmt = "尚未登入")]
         NeedLogin,
@@ -53,7 +61,7 @@ mod inner {
         ParsingJson,
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
-        ForceValidate(ForceValidateError),
+        ForceValidate(ForceValidateError<BondError>),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]

@@ -1,10 +1,10 @@
 use carbonbond::{
     api::model,
     config,
-    custom_error::{DataType, Error, ErrorCode, Fallible},
+    custom_error::{BondError, DataType, Error, ErrorCode, Fallible},
     db,
 };
-use force::error::ValidationErrorCode;
+use force::error::{ValidationError, ValidationErrorCode};
 
 async fn setup() {
     std::env::set_var("MODE", "test");
@@ -126,15 +126,24 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         ),
     )
     .await;
-    let err = match res {
-        Err(Error::LogicError { code, .. }) => match code {
-            ErrorCode::ForceValidate(err) => err,
-            _ => panic!(),
-        },
-        _ => panic!(),
-    };
-    match err.code {
-        ValidationErrorCode::BondFail => (),
+
+    fn unwrap_bond_err<T>(res: Result<T, Error>) -> BondError {
+        if let Err(Error::LogicError {
+            code:
+                ErrorCode::ForceValidate(ValidationError {
+                    code: ValidationErrorCode::Other(e),
+                    ..
+                }),
+            ..
+        }) = res
+        {
+            return e;
+        }
+        panic!();
+    }
+
+    match unwrap_bond_err(res) {
+        BondError::TargetViolateCategory => (),
         _ => panic!(),
     }
 
@@ -144,8 +153,8 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         &format!("{{ \"本體\": {{ \"target_article\": 99999, \"energy\": 1 }} }}"),
     )
     .await;
-    match res {
-        Err(Error::InternalError { .. }) => (),
+    match unwrap_bond_err(res) {
+        BondError::TargetNotFound => (),
         _ => panic!(),
     }
 

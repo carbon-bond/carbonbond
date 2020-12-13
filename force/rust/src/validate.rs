@@ -1,25 +1,27 @@
 use crate::error::{
-    Error,
+    ValidationError,
     ValidationErrorCode::{self, *},
 };
 use crate::instance_defs::Bond;
 use crate::*;
 use serde_json::Value;
 
+type Res<E> = Result<(), ValidationErrorCode<E>>;
+
 #[async_trait::async_trait]
 pub trait ValidatorTrait {
     type OtherError;
     // XXX: 是否弄個 get_article 就好？
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<bool, Self::OtherError>;
+    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<(), Self::OtherError>;
     async fn validate_basic_datatype(
         &self,
         data_type: &BasicDataType,
         data: &Value,
-    ) -> Result<Option<ValidationErrorCode>, Self::OtherError> {
+    ) -> Res<Self::OtherError> {
         log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
         macro_rules! ret {
             ($err:expr) => {
-                return Ok(Some($err))
+                return Err($err);
             };
         }
         match (data_type, data) {
@@ -47,19 +49,16 @@ pub trait ValidatorTrait {
                     }
                 };
                 // XXX: 檢查鍵能和標籤
-                if !self.validate_bond(bondee, &bond).await? {
-                    ret!(BondFail);
+                match self.validate_bond(bondee, &bond).await {
+                    Ok(()) => (),
+                    Err(e) => ret!(Other(e)),
                 }
             }
             _ => ret!(TypeMismatch(data_type.clone(), data.clone())),
         }
-        Ok(None)
+        Ok(())
     }
-    async fn validate_datatype(
-        &self,
-        data_type: &DataType,
-        data: &Value,
-    ) -> Result<Option<ValidationErrorCode>, Self::OtherError> {
+    async fn validate_datatype(&self, data_type: &DataType, data: &Value) -> Res<Self::OtherError> {
         match data_type {
             DataType::Optional(t) => {
                 if !data.is_null() {
@@ -70,38 +69,39 @@ pub trait ValidatorTrait {
             DataType::Array { t, min, max } => match data {
                 Value::Array(values) => {
                     if values.len() < *min || values.len() > *max {
-                        return Ok(Some(ArrayLengthMismatch {
+                        return Err(ArrayLengthMismatch {
                             max: *max,
                             min: *min,
                             actual: values.len(),
-                        }));
+                        });
                     }
                     for value in values {
-                        let opt = self.validate_basic_datatype(t, value).await?;
-                        if opt.is_some() {
-                            return Ok(opt);
-                        }
+                        self.validate_basic_datatype(t, value).await?;
                     }
                 }
-                _ => return Ok(Some(NotArray(data.clone()))),
+                _ => return Err(NotArray(data.clone())),
             },
         };
-        Ok(None)
+        Ok(())
     }
     async fn validate_category(
         &self,
         category: &Category,
         data: &Value,
-    ) -> Result<(), Error<Self::OtherError>> {
+    ) -> Result<(), ValidationError<Self::OtherError>> {
         for field in &category.fields {
             log::trace!("驗證力語言欄位 {:?} => {:?}", field, data[&field.name]);
             match self
                 .validate_datatype(&field.datatype, &data[&field.name])
                 .await
             {
-                Err(e) => return Err(Error::Other(e)),
-                Ok(Some(e)) => return e.to_res(&field.name),
-                Ok(None) => (),
+                Err(code) => {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code,
+                    })
+                }
+                Ok(()) => (),
             }
         }
         Ok(())
@@ -112,23 +112,32 @@ pub trait ValidatorTrait {
 mod tests {
     use super::*;
     use serde_json::json;
-    impl PartialEq for ValidationErrorCode {
+    impl<E: std::fmt::Debug> PartialEq for ValidationErrorCode<E> {
         fn eq(&self, other: &Self) -> bool {
             // XXX: 這樣定義相等不曉得會不會出問題…
             format!("{:?}", self) == format!("{:?}", other)
         }
     }
+
     struct Validator;
     #[async_trait::async_trait]
     impl ValidatorTrait for Validator {
         type OtherError = ();
-        async fn validate_bond(&self, _bondee: &Bondee, _data: &Bond) -> Result<bool, ()> {
-            Ok(true) // 測試中不檢查
+        async fn validate_bond(&self, _bondee: &Bondee, _data: &Bond) -> Result<(), ()> {
+            Ok(()) // 測試中不檢查
         }
     }
     impl Validator {
         async fn validate(&self, category: &Category, data: &Value) -> bool {
             self.validate_category(category, data).await.is_ok()
+        }
+        async fn err_tuple(
+            &self,
+            category: &Category,
+            data: &Value,
+        ) -> (String, ValidationErrorCode<()>) {
+            let err = self.validate_category(category, data).await.unwrap_err();
+            (err.field_name, err.code)
         }
     }
     #[tokio::test]
@@ -142,12 +151,7 @@ mod tests {
         let data2 = json!({ "文字": &bad_string });
         assert!(Validator.validate(&category, &data1).await);
         assert_eq!(
-            Validator
-                .validate_category(&category, &data2)
-                .await
-                .unwrap_err()
-                .validation_err()
-                .unwrap(),
+            Validator.err_tuple(&category, &data2).await,
             ("文字".to_owned(), NotOneline(bad_string))
         );
         Ok(())

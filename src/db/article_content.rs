@@ -1,9 +1,6 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
-use force::{
-    error::Error as ForceError, instance_defs::Bond, validate::ValidatorTrait, Bondee, Category,
-    Field,
-};
+use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
+use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde_json::Value;
 use sqlx::{executor::Executor, Postgres};
 use std::collections::HashMap;
@@ -207,34 +204,34 @@ struct Validator {
 
 #[async_trait::async_trait]
 impl ValidatorTrait for Validator {
-    type OtherError = Error;
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<bool, Error> {
+    type OtherError = BondError;
+    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<(), Self::OtherError> {
         //XXX: 鍵能
-        let res = match bondee {
-            Bondee::All => true,
-            Bondee::Choices { category, family } => {
-                let meta = match super::article::get_meta_by_id(data.target_article).await {
-                    Err(e) => {
-                        if let Error::LogicError { code, .. } = &e {
-                            if let ErrorCode::NotFound(..) = code {
-                                log::trace!("找不到鍵結文章：{}", data.target_article);
-                                return Ok(false);
-                            }
-                        }
-                        return Err(e);
+        let meta = match super::article::get_meta_by_id(data.target_article).await {
+            Err(e) => {
+                if let Error::LogicError { code, .. } = &e {
+                    if let ErrorCode::NotFound(..) = code {
+                        log::trace!("找不到鍵結文章：{}", data.target_article);
+                        return Err(BondError::TargetNotFound);
                     }
-                    Ok(m) => m,
-                };
-                if meta.board_id != self.board_id {
-                    log::trace!("鍵結指向不同看板：{} -> {}", self.board_id, meta.board_id);
-                    return Ok(false);
                 }
+                return Err(BondError::Custom(Box::new(e)));
+            }
+            Ok(m) => m,
+        };
+        if meta.board_id != self.board_id {
+            return Err(BondError::TargetNotSameBoard(meta.board_id));
+        }
+        // XXX: 鍵能錯誤
+        match bondee {
+            Bondee::All => Ok(()),
+            Bondee::Choices { category, family } => {
                 if category.contains(&meta.category_name) {
-                    return Ok(true);
+                    return Ok(());
                 }
                 for f in &meta.category_families {
                     if family.contains(f) {
-                        return Ok(true);
+                        return Ok(());
                     }
                 }
                 log::trace!(
@@ -243,10 +240,9 @@ impl ValidatorTrait for Validator {
                     data,
                     meta
                 );
-                false
+                Err(BondError::TargetViolateCategory)
             }
-        };
-        Ok(res)
+        }
     }
 }
 
@@ -360,8 +356,7 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
     let validator = Validator { board_id };
     match validator.validate_category(&category, &json).await {
         Ok(()) => (),
-        Err(ForceError::Validation(err)) => return Err(ErrorCode::ForceValidate(err).into()),
-        Err(ForceError::Other(err)) => return Err(err),
+        Err(err) => return Err(ErrorCode::ForceValidate(err).into()),
     }
 
     use force::DataType::*;
