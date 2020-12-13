@@ -3,7 +3,7 @@ use crate::custom_error::Fallible;
 use crate::db;
 use std::collections::HashMap;
 
-fn should_show(families: &[String], filter: &FamilyFilter) -> bool {
+fn should_show(_families: &[String], _filter: &FamilyFilter) -> bool {
     // if let Some(hide_families) = hide_families {
     //     for f in families.iter() {
     //         if hide_families.contains(f) {

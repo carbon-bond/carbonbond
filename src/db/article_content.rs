@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{Contextable, DataType, Error, ErrorCode, Fallible};
+use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use force::{
     error::Error as ForceError, instance_defs::Bond, validate::ValidatorTrait, Bondee, Category,
     Field,

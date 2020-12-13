@@ -3,7 +3,7 @@ use carbonbond::{
     api::api_trait::RootQueryRouter,
     api::query,
     config,
-    custom_error::{Contextable, Error, ErrorCode, Fallible},
+    custom_error::{Contextable, ErrorCode, Fallible},
     db, redis,
     service::hot_boards,
     Ctx,

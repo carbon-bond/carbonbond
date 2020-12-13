@@ -50,7 +50,7 @@ pub struct ArticleQueryRouter {}
 impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn search_article(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         author_name: Option<String>,
         board_name: Option<String>,
         start_time: Option<DateTime<Utc>>,
@@ -73,9 +73,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     }
     async fn query_article_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         count: usize,
-        author_name: Option<String>,
+        _author_name: Option<String>,
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,
     ) -> Fallible<Vec<model::Article>> {
@@ -152,7 +152,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     }
     async fn query_graph(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
@@ -193,7 +193,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_board_list(
         &self,
         _context: &mut crate::Ctx,
-        count: usize,
+        _count: usize,
     ) -> Fallible<Vec<model::Board>> {
         db::board::get_all().await?.assign_props().await
     }
@@ -219,7 +219,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn create_board(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         new_board: model::NewBoard,
     ) -> Fallible<i64> {
         Ok(db::board::create(&new_board).await?)
@@ -243,7 +243,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn query_category_by_id(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         id: i64,
     ) -> Result<String, crate::custom_error::Error> {
         let source = db::board::get_category_by_id(id).await?;
