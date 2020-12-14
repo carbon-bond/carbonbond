@@ -13,6 +13,7 @@
         grid-row-end: 3;
         display: flex;
         flex-direction: row;
+        position: relative;
         & .mainBody {
             overflow-Y: auto;
             height: 100%;

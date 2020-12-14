@@ -27,6 +27,7 @@ export function SearchBar(props: { cur_board: string | null, history: History })
 	}
 	return <div styleName="searchPart">
 		<input placeholder="搜尋"
+			size={1}
 			onChange={onChange} onKeyDown={onKeyDown} value={content} />
 		<select onChange={(evt) => {
 			let name = evt.target.value;
