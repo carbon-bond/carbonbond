@@ -34,6 +34,8 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
+let NODE_OPACITY = 0.9;
+let NODE_OPACITY_DIM = 0.3;
 let GREY = 'rgb(80, 80, 80)';
 let GREEN = '#69b3a2';
 let FONT_SIZE = 12;
@@ -50,9 +52,11 @@ function edgeColor(energy: number): string {
 
 type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
 type Edge = { target: number, source: number, color: string, linknum: number };
+type EdgeMap = { [from: number]: { [to: number]: boolean } };
 type Graph = {
 	nodes: Node[],
-	edges: Edge[]
+	edges: Edge[],
+	edge_map: EdgeMap
 };
 
 const width = 600, height = 1200; // XXX: 不要寫死
@@ -64,9 +68,49 @@ type ArticleWithNode = {
 	node: NodeWithXY
 };
 
+function hasRelation(graph: Graph, n1: number, n2: number, second_chance?: boolean): boolean {
+	if (n1 == n2) {
+		return true;
+	}
+	let map = graph.edge_map;
+	let inner = map[n1];
+	if (inner) {
+		if (inner[n2]) {
+			return true;
+		}
+	}
+	if (!second_chance) {
+		return hasRelation(graph, n2, n1, true);
+	} else {
+		return false;
+	}
+}
+function getHighlighted(graph: Graph | null, center: Node): { [id: number]: boolean } {
+	let highlighted: { [id: number]: boolean } = {};
+	if (graph == null) {
+		return highlighted;
+	}
+	for (let n of graph.nodes) {
+		if (hasRelation(graph, center.id, n.id)) {
+			highlighted[n.id] = true;
+		}
+	}
+	return highlighted;
+}
+function buildEdgeMap(edges: Edge[]): EdgeMap {
+	let map: EdgeMap = {};
+	for (let e of edges) {
+		if (!(e.source in map)) {
+			map[e.source] = {};
+		}
+		map[e.source][e.target] = true;
+	}
+	return map;
+}
+
 export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProps ): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
-	let [curHovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
+	let [cur_hovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
 	let [offset_y, setOffsetY] = React.useState(0);
 	let [opacity, setOpacity] = React.useState(0);
@@ -91,25 +135,24 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 		API_FETCHER.queryGraph(props.meta.id, null, { BlackList: [force_util.SMALL] }).then(res => {
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
-			setGraph({
-				nodes: g.nodes.map(n => {
-					return {
-						id: n.id,
-						url: `/app/b/${n.board_name}/a/${n.id}`,
-						name: `[${n.category_name}] ${n.title}`,
-						meta: n,
-						radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
-					};
-				}),
-				edges: g.edges.map(e => {
-					return {
-						source: e.from,
-						target: e.to,
-						color: edgeColor(e.energy),
-						linknum: counter.count(e.from, e.to)
-					};
-				})
+			let nodes = g.nodes.map(n => {
+				return {
+					id: n.id,
+					url: `/app/b/${n.board_name}/a/${n.id}`,
+					name: `[${n.category_name}] ${n.title}`,
+					meta: n,
+					radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
+				};
 			});
+			let edges = g.edges.map(e => {
+				return {
+					source: e.from,
+					target: e.to,
+					color: edgeColor(e.energy),
+					linknum: counter.count(e.from, e.to)
+				};
+			});
+			setGraph({ nodes, edges, edge_map: buildEdgeMap(edges) });
 		}).catch(err => {
 			toastErr(err);
 		});
@@ -141,6 +184,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.enter()
 			.append('circle')
 			.style('fill', GREEN)
+			.style('opacity', NODE_OPACITY)
 			.style('cursor', 'pointer')
 			.attr('id', d => 'a' + d.id)
 			.attr('r', d => d.radius)
@@ -150,12 +194,8 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
 				onHover(d);
-				mouseover(d);
 			})
-			.on('mouseout', (_, d) => {
-				setCurHovering(null);
-				mouseout(d);
-			});
+			.on('mouseout', () => setCurHovering(null));
 		d3.select(`#a${props.meta.id}`).style('fill', '#d34c4c');
 
 		let text = svg.append('g')
@@ -175,12 +215,8 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
 				onHover(d);
-				mouseover(d);
 			})
-			.on('mouseout', (_, d) => {
-				setCurHovering(null);
-				mouseout(d);
-			});
+			.on('mouseout', () => setCurHovering(null));
 
 		svg.append('defs')
 			.append('marker')
@@ -216,16 +252,16 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			link.attr('d', function (d) {
 				let curve_inv = 5;
 				let homogeneous = 0.2;
+				let pl = this.getTotalLength();
 				// @ts-ignore
-				let pl = this.getTotalLength(), r = d.target.radius + 3,
-					m = this.getPointAtLength(pl - r);
+				let m = this.getPointAtLength(pl - d.target.radius), s = this.getPointAtLength(d.source.radius);
 				let order = Math.floor(d.linknum / 2);
 				// @ts-ignore
 				let dx = m.x - d.source.x, dy = m.y - d.source.y,
 					dr = Math.sqrt(dx * dx + dy * dy) * (curve_inv * homogeneous) / (order + homogeneous);
 				let direction = d.linknum % 2;
 				// @ts-ignore
-				return `M${d.source.x},${d.source.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
+				return `M${s.x},${s.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
 			});
 			let min_x = Number.MAX_SAFE_INTEGER, min_y = min_x;
 			node.attr('transform', d => {
@@ -248,34 +284,53 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			setOffsetY(offset_y);
 		}
 		simulation.tick(700);
-	}, [graph, props.meta.id]);
+	}, [graph, props.meta.id, props.history]);
+
+	React.useEffect(() => {
+		if (graph == null) {
+			return;
+		}
+		if (cur_hovering == null) {
+			// TODO:
+			for (let node of graph.nodes) {
+				d3.select(`#a${node.id}`).transition()
+					.duration(400)
+					.attr('r', node.radius)
+					.style('opacity', NODE_OPACITY);
+			}
+		} else {
+			let highlighted = getHighlighted(graph, cur_hovering.node);
+			for (let node of graph.nodes) {
+				if (highlighted[node.id]) {
+					d3.select(`#a${node.id}`).transition()
+						.duration(400)
+						.attr('r', node.radius * 1.2)
+						.style('opacity', 1);
+				} else {
+					d3.select(`#a${node.id}`).transition()
+						.duration(400)
+						.style('opacity', NODE_OPACITY_DIM);
+				}
+			}
+		}
+	}, [cur_hovering, graph]);
+
 	if (graph == null) {
 		return <></>;
 	}
 	return <>
 		<div ref={graph_div} styleName="svgBlock" style={{ position: 'relative' }}>
 			{
-				curHovering == null ? null : <div key={curHovering.node.id} style={{
-					left: curHovering.node.x + offset_x + curHovering.node.radius,
-					top: curHovering.node.y + offset_y + curHovering.node.radius,
+				cur_hovering == null ? null : <div key={cur_hovering.node.id} style={{
+					left: cur_hovering.node.x + offset_x + cur_hovering.node.radius,
+					top: cur_hovering.node.y + offset_y + cur_hovering.node.radius,
 					opacity,
 				}} styleName="articleBlock">
-					<ArticleCard article={curHovering.article} />
+					<ArticleCard article={cur_hovering.article} />
 				</div>
 			}
 		</div>
 	</>;
-}
-
-function mouseover(d: Node): void {
-	d3.select(`#a${d.id}`).transition()
-		.duration(400)
-		.attr('r', d.radius * 1.3);
-}
-function mouseout(d: Node): void {
-	d3.select(`#a${d.id}`).transition()
-		.duration(400)
-		.attr('r', d.radius);
 }
 
 class LinkNumCounter {
