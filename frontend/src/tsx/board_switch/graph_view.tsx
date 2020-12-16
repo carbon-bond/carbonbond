@@ -164,8 +164,9 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			return;
 		}
 		let width = graph_div.current.offsetWidth;
-		let height = graph_div.current.offsetHeight;
-		console.log(width, height);
+		let full_height = document.getElementsByTagName('body')[0].clientHeight;
+		let height = full_height - computeOffsetTop(graph_div.current);
+
 		let svg_super = d3.select(graph_div.current).append('svg')
 			.attr('width', width)
 			.attr('height', height);
@@ -283,15 +284,14 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				// @ts-ignore
 				return 'translate(' + d.x + ',' + d.y + ')';
 			});
-			let offset_x = base_radius + 10 - min_x;
-			let offset_y = base_radius + 10 - min_y;
 			text.attr('transform', function (d) {
 				let len = this.getComputedTextLength();
 				// @ts-ignore
 				return `translate(${d.x - len/2}, ${d.y + d.radius + FONT_SIZE})`;
 			});
-			setInitOffsetX(offset_x);
-			setInitOffsetY(offset_y);
+
+			setInitOffsetX(0); // NOTE: 預留空間可以調整起始座標
+			setInitOffsetY(0);
 		}
 		simulation.tick(700);
 	}, [graph, props.meta.id, props.history]);
@@ -299,7 +299,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	React.useEffect(() => {
 		d3.select('#canvas')
 		.transition()
-		.duration(40)
+		.duration(50)
 		.attr('transform', `translate(${offset_x + init_offset_x * scale}, ${offset_y + init_offset_y * scale})scale(${scale})`);
 	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
@@ -371,17 +371,33 @@ function makeZoomable(
 	onTransform: (t: { offset_x: number, offset_y: number, scale: number }) => void
 ): d3.Selection<SVGGElement, unknown, null, undefined> {
 	let g = svg.append('g');
+	let speed = 1;
 	let zoom = d3.zoom()
 		.scaleExtent([0.5, 5])
 		.on('zoom', function (event) {
-			let t = [event.transform.x, event.transform.y];
+			let scale = event.transform.k * speed + (1 - speed);
+			let t = event.transform;
 			onTransform({
-				offset_x: t[0],
-				offset_y: t[1],
-				scale: event.transform.k,
+				offset_x: t.x * (speed),
+				offset_y: t.y * (speed),
+				scale,
 			});
 		});
 	// @ts-ignore
 	svg.call(zoom);
 	return g;
+}
+
+function computeOffsetTop(elt: HTMLElement | null): number {
+	let offsetTop = 0;
+	while (elt) {
+		offsetTop += elt.offsetTop;
+		let e = elt.offsetParent;
+		if (e && 'offsetTop' in e) {
+			elt = e;
+		} else {
+			break;
+		}
+	}
+	return offsetTop;
 }
