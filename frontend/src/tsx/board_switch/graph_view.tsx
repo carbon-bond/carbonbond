@@ -275,12 +275,23 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				// @ts-ignore
 				return `M${s.x},${s.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
 			});
-			let min_x = Number.MAX_SAFE_INTEGER, min_y = min_x;
+			let offset_x = 0, offset_y = 0;
 			node.attr('transform', d => {
-				// @ts-ignore
-				min_x = Math.min(min_x, d.x);
-				// @ts-ignore
-				min_y = Math.min(min_y, d.y);
+				if (props.meta.id == d.id) {
+					// @ts-ignore
+					let [x, y, diameter] = [d.x, d.y, d.radius * 2];
+					// 避免當前文章跑出畫面外
+					if (x - diameter < 0) {
+						offset_x = -x + diameter;
+					} else if (x + diameter > width) {
+						offset_x = width - x - diameter;
+					}
+					if (y - diameter < 0) {
+						offset_y = -y + diameter;
+					} else if (y + diameter > height) {
+						offset_y = height - y - diameter;
+					}
+				}
 				// @ts-ignore
 				return 'translate(' + d.x + ',' + d.y + ')';
 			});
@@ -290,8 +301,9 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				return `translate(${d.x - len/2}, ${d.y + d.radius + FONT_SIZE})`;
 			});
 
-			setInitOffsetX(0); // NOTE: 預留空間可以調整起始座標
-			setInitOffsetY(0);
+			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
+			setInitOffsetX(offset_x);
+			setInitOffsetY(offset_y);
 		}
 		simulation.tick(700);
 	}, [graph, props.meta.id, props.history]);
