@@ -8,7 +8,7 @@
     height: 600px; /* XXX: 應使它撐到螢幕底端 */
     margin: auto;
     background-color: var(--light-gray);
-    & svg {
+    & svg:active {
         cursor: move;
     }
 }

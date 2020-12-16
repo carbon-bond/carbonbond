@@ -170,7 +170,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.attr('width', width)
 			.attr('height', height);
 
-		let svg = makeZoomable(svg_super, height, width, (t) => {
+		let svg = makeZoomable(svg_super, (t) => {
 			setOffsetX(t.offset_x);
 			setOffsetY(t.offset_y);
 			setScale(t.scale);
@@ -297,7 +297,10 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	}, [graph, props.meta.id, props.history]);
 
 	React.useEffect(() => {
-		d3.select('#canvas').attr('transform', `translate(${offset_x + init_offset_x * scale}, ${offset_y + init_offset_y * scale})scale(${scale})`);
+		d3.select('#canvas')
+		.transition()
+		.duration(40)
+		.attr('transform', `translate(${offset_x + init_offset_x * scale}, ${offset_y + init_offset_y * scale})scale(${scale})`);
 	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
 	React.useEffect(() => {
@@ -365,30 +368,17 @@ class LinkNumCounter {
 
 function makeZoomable(
 	svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-	height: number,
-	width: number,
 	onTransform: (t: { offset_x: number, offset_y: number, scale: number }) => void
 ): d3.Selection<SVGGElement, unknown, null, undefined> {
 	let g = svg.append('g');
-	let s = 1;
 	let zoom = d3.zoom()
-		.scaleExtent([1, 10])
+		.scaleExtent([0.5, 5])
 		.on('zoom', function (event) {
 			let t = [event.transform.x, event.transform.y];
-			s = event.transform.k;
-			let h = 0;
-			t[0] = Math.min(
-				(width / height) * (s - 1),
-				Math.max(width * (1 - s), t[0])
-			);
-			t[1] = Math.min(
-				h * (s - 1) + h * s,
-				Math.max(height * (1 - s) - h * s, t[1])
-			);
 			onTransform({
 				offset_x: t[0],
 				offset_y: t[1],
-				scale: s,
+				scale: event.transform.k,
 			});
 		});
 	// @ts-ignore
