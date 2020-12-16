@@ -4,4 +4,11 @@
 }
 .svgBlock {
     /* z-index: -99; */
+    width: 95%;
+    height: 600px; /* XXX: 應使它撐到螢幕底端 */
+    margin: auto;
+    background-color: var(--light-gray);
+    & svg {
+        cursor: move;
+    }
 }

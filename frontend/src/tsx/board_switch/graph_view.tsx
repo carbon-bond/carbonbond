@@ -59,7 +59,6 @@ type Graph = {
 	edge_map: EdgeMap
 };
 
-const width = 600, height = 1200; // XXX: 不要寫死
 const base_radius = 30;
 
 type NodeWithXY = { x: number, y: number } & Node;
@@ -113,8 +112,11 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	let [cur_hovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
 	let [offset_y, setOffsetY] = React.useState(0);
+	let [init_offset_x, setInitOffsetX] = React.useState(0);
+	let [init_offset_y, setInitOffsetY] = React.useState(0);
+	let [scale, setScale] = React.useState(1);
 	let [opacity, setOpacity] = React.useState(0);
-	let graph_div = React.useRef(null);
+	let graph_div = React.useRef<HTMLDivElement | null>(null);
 
 	function onHover(node: NodeWithXY): void {
 		API_FETCHER.queryArticle(node.id).then(res => {
@@ -158,12 +160,21 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 		});
 	}, [props.meta]);
 	React.useEffect(() => {
-		if (graph == null) {
+		if (graph == null || graph_div.current == null) {
 			return;
 		}
-		let svg = d3.select(graph_div.current).append('svg')
+		let width = graph_div.current.offsetWidth;
+		let height = graph_div.current.offsetHeight;
+		console.log(width, height);
+		let svg_super = d3.select(graph_div.current).append('svg')
 			.attr('width', width)
 			.attr('height', height);
+
+		let svg = makeZoomable(svg_super, height, width, (t) => {
+			setOffsetX(t.offset_x);
+			setOffsetY(t.offset_y);
+			setScale(t.scale);
+		}).attr('id', 'canvas');
 
 		let link = svg.append('g')
 			.selectAll('path')
@@ -279,12 +290,15 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				// @ts-ignore
 				return `translate(${d.x - len/2}, ${d.y + d.radius + FONT_SIZE})`;
 			});
-			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
-			setOffsetX(offset_x);
-			setOffsetY(offset_y);
+			setInitOffsetX(offset_x);
+			setInitOffsetY(offset_y);
 		}
 		simulation.tick(700);
 	}, [graph, props.meta.id, props.history]);
+
+	React.useEffect(() => {
+		d3.select('#canvas').attr('transform', `translate(${offset_x + init_offset_x * scale}, ${offset_y + init_offset_y * scale})scale(${scale})`);
+	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
 	React.useEffect(() => {
 		if (graph == null) {
@@ -322,8 +336,8 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 		<div ref={graph_div} styleName="svgBlock" style={{ position: 'relative' }}>
 			{
 				cur_hovering == null ? null : <div key={cur_hovering.node.id} style={{
-					left: cur_hovering.node.x + offset_x + cur_hovering.node.radius,
-					top: cur_hovering.node.y + offset_y + cur_hovering.node.radius,
+					left: (cur_hovering.node.x + cur_hovering.node.radius + init_offset_x) * scale + offset_x,
+					top: (cur_hovering.node.y + cur_hovering.node.radius + init_offset_y) * scale + offset_y,
 					opacity,
 				}} styleName="articleBlock">
 					<ArticleCard article={cur_hovering.article} />
@@ -347,4 +361,37 @@ class LinkNumCounter {
 		this.map[key] = cnt;
 		return cnt;
 	}
+}
+
+function makeZoomable(
+	svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+	height: number,
+	width: number,
+	onTransform: (t: { offset_x: number, offset_y: number, scale: number }) => void
+): d3.Selection<SVGGElement, unknown, null, undefined> {
+	let g = svg.append('g');
+	let s = 1;
+	let zoom = d3.zoom()
+		.scaleExtent([1, 10])
+		.on('zoom', function (event) {
+			let t = [event.transform.x, event.transform.y];
+			s = event.transform.k;
+			let h = 0;
+			t[0] = Math.min(
+				(width / height) * (s - 1),
+				Math.max(width * (1 - s), t[0])
+			);
+			t[1] = Math.min(
+				h * (s - 1) + h * s,
+				Math.max(height * (1 - s) - h * s, t[1])
+			);
+			onTransform({
+				offset_x: t[0],
+				offset_y: t[1],
+				scale: s,
+			});
+		});
+	// @ts-ignore
+	svg.call(zoom);
+	return g;
 }
