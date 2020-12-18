@@ -223,15 +223,13 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		/>;
 	}
 
+	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+
 	return <div styleName="detail">
 		<div>
 			<div styleName="introduction">
 				<div styleName="title">自我介紹</div>
-				{
-					props.user_state.login && props.user_state.user_name == props.profile_user.user_name ?
-						<button styleName="editButton" onClick={() => setEditing(true)}>🖉</button> :
-					<></>
-				}
+				{is_me && <button styleName="editButton" onClick={() => setEditing(true)}>🖉</button>}
 			</div>
 			<div styleName="info">
 				<div styleName="item">{introduction}</div>
@@ -246,35 +244,62 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	</div>;
 }
 
-/*
-type EditType = { type: 'radio',  name: string, options: string[] }
-| { type: 'text', name: string };
+function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
 
-function EditItem(props: EditType): JSX.Element {
-	switch (props.type) {
-		case 'radio': {
-			return <div>
-				{props.name}
-				{
-					props.options.map(option => {
-						let id = `${props.name}-${option}`;
-						return <div>
-							<input type="radio" name={props.name} id={id} key={option} value={option} />
-							<label htmlFor={id}>{option}</label>
-						</div>;
-					})
-				}
-			</div>;
-		}
-		case 'text': {
-			return <div>
-				{props.name}
-				<input type="text" name={props.name} />
-			</div>;
+	function setSentence(sentence: string): void {
+		let new_state = produce(props.profile_user, nxt => {
+			if (nxt != null) {
+				nxt.sentence = sentence;
+			}
+		});
+		props.setProfileUser(new_state);
+	}
+
+	function createUserRelation(kind: UserRelationKind): void {
+		if (props.profile_user) {
+			API_FETCHER.createUserRelation(props.profile_user.id, kind);
 		}
 	}
+
+	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+
+	return <div styleName="up">
+		<Avatar is_me={is_me} name={props.profile_user.user_name} />
+		<div styleName="abstract">
+			<div styleName="username">{props.profile_user.user_name}</div>
+			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={setSentence}/>
+			<div styleName="data">
+				<div styleName="energy">{props.profile_user.energy} 鍵能</div>
+				<div styleName="trace">
+					<p>被 {props.profile_user.followed_count} 人追蹤</p>
+					<p>追蹤 {props.profile_user.following_count} 人</p>
+				</div>
+				<div styleName="hate">
+					<p>被 {props.profile_user.hated_count} 人仇視</p>
+					<p>仇視 {props.profile_user.hating_count} 人</p>
+				</div>
+			</div>
+		</div>
+		<div styleName="operation">
+			<div styleName="links">
+				{
+					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
+						<div styleName="relation">
+							<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
+								追蹤
+							</button>
+							<button onClick={() => createUserRelation(UserRelationKind.Hate)}>
+								仇視
+							</button>
+						</div> :
+						<></>
+				}
+				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
+				<a>私訊</a>
+			</div>
+		</div>
+	</div>;
 }
-*/
 
 const PAGE_SIZE: number = 10;
 
@@ -311,64 +336,14 @@ function UserPage(props: Props): JSX.Element {
 		});
 	}, [profile_name]);
 
-	function setSentence(sentence: string): void {
-		let new_state = produce(user, nxt => {
-			if (nxt != null) {
-				nxt.sentence = sentence;
-			}
-		});
-		setUser(new_state);
-	}
-
-	function createUserRelation(kind: UserRelationKind): void {
-		if (user) {
-			API_FETCHER.createUserRelation(user.id, kind);
-		}
-	}
 
 
-	const is_me = user_state.login && user_state.user_name == profile_name;
 
 	if (!user) {
 		return <></>;
 	}
 	return <div>
-		<div styleName="up">
-			<Avatar is_me={is_me} name={profile_name} />
-			<div styleName="abstract">
-				<div styleName="username">{profile_name}</div>
-				<Sentence is_me={is_me} sentence={user.sentence} setSentence={setSentence}/>
-				<div styleName="data">
-					<div styleName="energy">{user.energy} 鍵能</div>
-					<div styleName="trace">
-						<p>被 {user.followed_count} 人追蹤</p>
-						<p>追蹤 {user.following_count} 人</p>
-					</div>
-					<div styleName="hate">
-						<p>被 {user.hated_count} 人仇視</p>
-						<p>仇視 {user.hating_count} 人</p>
-					</div>
-				</div>
-			</div>
-			<div styleName="operation">
-				<div styleName="links">
-					{
-						user_state.login && user_state.user_name != profile_name ?
-							<div styleName="relation">
-								<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
-									追蹤
-								</button>
-								<button onClick={() => createUserRelation(UserRelationKind.Hate)}>
-									仇視
-								</button>
-							</div> :
-							<></>
-					}
-					<a href={`/app/user_board/${profile_name}`}>個板</a>
-					<a>私訊</a>
-				</div>
-			</div>
-		</div>
+		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state}/>
 		<div styleName="down">
 			<div styleName="works">
 				{
