@@ -38,13 +38,16 @@ let NODE_OPACITY = 0.9;
 let NODE_OPACITY_DIM = 0.3;
 let GREY = 'rgb(80, 80, 80)';
 let GREEN = '#69b3a2';
+let YELLOW = '#FFB51E';
+let BLUE = '#5B71E3';
+let RED = '#d34c4c';
 let FONT_SIZE = 12;
 
 function edgeColor(energy: number): string {
 	if (energy > 0) {
-		return 'blue';
+		return BLUE;
 	} else if (energy < 0) {
-		return 'red';
+		return RED;
 	} else {
 		return GREEN;
 	}
@@ -68,7 +71,7 @@ type Graph = {
 	edge_map: EdgeMap
 };
 
-const base_radius = 50;
+const base_radius = 30;
 
 type NodeWithXY = { x: number, y: number } & Node;
 
@@ -136,7 +139,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {
-				let radius = (n.energy / (1 + Math.abs(n.energy) + 1) / 2 * 0.6 + 0.4) * base_radius;
+				let radius = ((n.energy / (1 + Math.abs(n.energy)) + 1) / 2 * 0.7 + 0.3) * base_radius;
 				return {
 					id: n.id,
 					url: `/app/b/${n.board_name}/a/${n.id}`,
@@ -185,7 +188,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
 			.attr('stroke-width', 2)
-			.attr('opacity', 0.5)
+			.attr('opacity', 0.7)
 			.attr('marker-end', d => `url(#${d.marker_id})`);
 
 		let node = svg.append('g')
@@ -194,7 +197,9 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.data(graph.nodes)
 			.enter()
 			.append('circle')
-			.style('fill', GREEN)
+			.style('fill', d => {
+				return d.id == props.meta.id ? YELLOW : GREEN;
+			})
 			.style('opacity', NODE_OPACITY)
 			.style('cursor', 'pointer')
 			.attr('id', d => 'a' + d.id)
@@ -207,7 +212,6 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				onHover(d);
 			})
 			.on('mouseout', () => setCurHovering(null));
-		d3.select(`#a${props.meta.id}`).style('fill', '#d34c4c');
 
 		let text = svg.append('g')
 			.selectAll('text')
