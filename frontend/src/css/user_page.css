@@ -87,6 +87,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
+    min-height: 1000px;
     & .works {
         width: 67%;
         & .navigateBar {
