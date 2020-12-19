@@ -4,9 +4,8 @@
 }
 .svgBlock {
     /* z-index: -99; */
-    width: 95%;
-    margin: auto;
-    background-color: var(--light-gray);
+    width: 100%;
+    background-color: var(--lightest-gray);
     & svg:active {
         cursor: move;
     }

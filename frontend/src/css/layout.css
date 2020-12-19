@@ -37,12 +37,12 @@
                     & .mainContent {
                         width: 600px; /* XXX: 為何寫死？ */
                     }
-                    & .rightSideBar {
-                        padding: 10px 20px 10px 0px;
-                        width: 335px; /* XXX: 為何寫死？ */
-                    }
                 }
             }
         }
     }
+}
+.rightSideBar {
+    padding: 10px 20px;
+    width: 335px; /* XXX: 為何寫死？ */
 }

@@ -187,7 +187,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.append('path')
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
-			.attr('stroke-width', 2)
+			.attr('stroke-width', 3)
 			.attr('opacity', 0.7)
 			.attr('marker-end', d => `url(#${d.marker_id})`);
 

@@ -72,35 +72,46 @@ export function BoardSwitch(props: Props): JSX.Element {
 					</div>
 				</div>
 			</div>
-			<div className="switchContent">
-				<div className="mainContent">
-					<Switch>
-						<Route exact path="/app/b/:board_name" render={props =>
-							<BoardPage {...props} board={board!} />
-						} />
-						<Route exact path="/app/b/:board_name/a/:article_id" render={props =>
-							<ArticlePage {...props} board={board!}/>
-						} />
-						<Route exact path="/app/b/:board_name/graph/:article_id" render={props =>
-							<GraphView {...props}/>
-						} />
-						<Redirect to="/app" />
-					</Switch>
-				</div>
-				<div className="rightSideBar">
-					<Switch>
-						<Route exact path="/app/b/:board_name" render={props =>
-							<BoardSidebar {...props} board={board!} />
-						} />
-						<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
+			<Switch>
+				<Route exact path="/app/b/:board_name/graph/:article_id" render={props =>
+					<div style={{ display: 'flex', flexDirection: 'row' }}>
+						<div style={{ flex: 1 }}>
+							<GraphView {...props} />
+						</div>
+						<div className="rightSideBar">
 							<ArticleSidebar />
-						} />
-						<Route exact path="/app/b/:board_name/graph/:article_id" render={() =>
-							<ArticleSidebar />
-						} />
-					</Switch>
-				</div>
-			</div>
+						</div>
+					</div>
+				} />
+				<Route render={() => <SwitchContent board={board!} />} />
+			</Switch>
 		</div>;
 	}
+}
+
+function SwitchContent(props: { board: Board }): JSX.Element {
+	let board = props.board;
+	return <div className="switchContent">
+		<div className="mainContent">
+			<Switch>
+				<Route exact path="/app/b/:board_name" render={props =>
+					<BoardPage {...props} board={board} />
+				} />
+				<Route exact path="/app/b/:board_name/a/:article_id" render={props =>
+					<ArticlePage {...props} board={board} />
+				} />
+				<Redirect to="/app" />
+			</Switch>
+		</div>
+		<div className="rightSideBar">
+			<Switch>
+				<Route exact path="/app/b/:board_name" render={props =>
+					<BoardSidebar {...props} board={board} />
+				} />
+				<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
+					<ArticleSidebar />
+				} />
+			</Switch>
+		</div>
+	</div>;
 }

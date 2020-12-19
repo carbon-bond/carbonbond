@@ -293,8 +293,8 @@ async fn insert_bond_field<C: Executor<Database = Postgres>>(
 ) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_bond_fields
-                        (article_id, name, value, energy)
-                        VALUES ($1, $2, $3, $4)",
+        (article_id, name, value, energy)
+        VALUES ($1, $2, $3, $4)",
         article_id,
         field_name,
         bond.target_article,
