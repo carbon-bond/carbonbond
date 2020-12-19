@@ -89,6 +89,31 @@
     align-items: flex-start;
     & .works {
         width: 67%;
+        & .navigateBar {
+            width: 600px;
+            margin: 10px auto 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            font-size: 20px;
+            & .navigateTab {
+                cursor: pointer;
+                padding: 0px 40px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            & .navigateTabActive {
+                font-weight: bold;
+                border-bottom: 2px solid var(--blue);
+            }
+        }
+        & .switchContent {
+            width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
     }
     & .detail {
         margin-top: 20px;
@@ -100,7 +125,7 @@
         & > div > div {
             padding: 6px 0px;
         }
-        width: 33%;
+        width: 300px;
         padding: 10px;
         background: var(--background-color);
         font-size: 14px;

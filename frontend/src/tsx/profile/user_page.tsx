@@ -301,14 +301,92 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	</div>;
 }
 
-const PAGE_SIZE: number = 10;
+function ProfileWorks(props: {profile_user: User, user_state: UserStateType}): JSX.Element {
+	const [selectTab, setSelectTab] = React.useState<number>(0);
+	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
-// TODO: 分頁
+	React.useEffect(() => {
+		console.log('profileWorks useEffect');
+		Promise.all([
+			fetchArticles(props.profile_user.user_name),
+		]).then(([more_articles]) => {
+			console.log('profileWorks useEffect then');
+			try {
+				setArticles(more_articles);
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [props.profile_user.user_name]);
+
+	function handleSelectTab(tabIndex: number): void {
+		switch (tabIndex) {
+			case 0:
+				Promise.all([
+					fetchArticles(props.profile_user.user_name),
+				]).then(([more_articles]) => {
+					try {
+						setArticles(more_articles);
+					} catch (err) {
+						toastErr(err);
+					}
+				});
+				setSelectTab(0);
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
+			case 3:
+				break;
+			default:
+				break;
+		}
+	}
+
+	return <div styleName="works">
+		<div styleName="navigateBar">
+			<div styleName={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => {handleSelectTab(0);}}>文章</div>
+			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(1);}}>留言</div>
+			<div styleName={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(2);}}>收藏</div>
+			<div styleName={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(3);}}>人際關係</div>
+		</div>
+		<div styleName="switchContent">
+			{selectTab == 0 && <Articles articles={articles}/>}
+			{selectTab == 1 && <Comments/>}
+			{selectTab == 2 && <Collections/>}
+			{selectTab == 3 && <Friendships/>}
+		</div>
+	</div>;
+}
+
+function Articles(props: {articles: ArticleMeta[]}): JSX.Element {
+	return <div>
+		{props.articles.map((article, idx) => (
+			<div styleName="articleWrapper" key={`article-${idx}`}>
+				<ArticleCard article={article} />
+			</div>
+		))}
+	</div>;
+}
+
+function Comments(): JSX.Element {
+	return <div>Comments</div>;
+}
+
+function Collections(): JSX.Element {
+	return <div>Collections</div>;
+}
+
+function Friendships(): JSX.Element {
+	return <div>Friendships</div>;
+}
+
+
 async function fetchArticles(
 	author_name: string,
-	page_size: number,
 ): Promise<ArticleMeta[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null, 'None'), []);
+	return unwrap_or(await API_FETCHER.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;
@@ -317,18 +395,13 @@ function UserPage(props: Props): JSX.Element {
 	const profile_name = props.match.params.profile_name;
 	const { user_state } = UserState.useContainer();
 
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	const [user, setUser] = React.useState<User | null>(null);
-	// TODO: 分頁
-	// const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
 		Promise.all([
-			fetchArticles(profile_name, PAGE_SIZE),
 			API_FETCHER.queryUser(profile_name)
-		]).then(([more_articles, user]) => {
+		]).then(([user]) => {
 			try {
-				setArticles(more_articles);
 				setUser(unwrap(user));
 			} catch (err) {
 				toastErr(err);
@@ -336,24 +409,13 @@ function UserPage(props: Props): JSX.Element {
 		});
 	}, [profile_name]);
 
-
-
-
 	if (!user) {
 		return <></>;
 	}
 	return <div>
 		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state}/>
 		<div styleName="down">
-			<div styleName="works">
-				{
-					articles.map((article, idx) => (
-						<div styleName="articleWrapper" key={`article-${idx}`}>
-							<ArticleCard article={article} />
-						</div>
-					))
-				}
-			</div>
+			<ProfileWorks profile_user={user} user_state={user_state}/>
 			<ProfileDetail profile_user={user} user_state={user_state}/>
 		</div>
 	</div>;
