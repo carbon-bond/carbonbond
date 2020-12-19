@@ -113,11 +113,14 @@
     width: 100%;
 }
 .articleContent {
+    display: inline-block;
+    word-wrap: break-word;
+    white-space: pre-wrap;
     color: var(--font-color);
     font-size: 16px;
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
 }
 

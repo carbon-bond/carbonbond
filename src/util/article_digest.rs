@@ -5,6 +5,8 @@ use force::{
 };
 use serde_json::{Map, Value};
 
+const MAX_TXT: usize = 200;
+
 #[derive(Debug, Default)]
 struct Buff {
     max_txt: usize,
@@ -28,11 +30,17 @@ impl Buff {
         macro_rules! truncate {
             ($s:expr, $count:expr) => {
                 let diff = self.max_txt - $count;
+                if diff <= 0 {
+                    return;
+                }
                 match $s.char_indices().nth(diff) {
                     None => (),
-                    Some((idx, _)) => $s.truncate(idx),
+                    Some((idx, _)) => {
+                        $s.truncate(idx);
+                        $s.push_str("...");
+                    }
                 }
-                $count += $s.len();
+                $count += $s.chars().count();
             };
         }
         match value {
@@ -91,7 +99,7 @@ impl Buff {
 pub fn create_article_digest(mut content: Value, category: Category) -> Fallible<String> {
     use force::DataType::*;
     let mut buff = Buff {
-        max_txt: 500,
+        max_txt: MAX_TXT,
         ..Buff::default()
     };
     let json = content.as_object_mut().unwrap();

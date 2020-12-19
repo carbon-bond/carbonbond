@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { Article, ArticleMeta } from '../../ts/api/api_trait';
+import { ArticleMeta } from '../../ts/api/api_trait';
 import { ArticleCard } from '../article_card';
 import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
@@ -62,10 +62,6 @@ type Graph = {
 const base_radius = 30;
 
 type NodeWithXY = { x: number, y: number } & Node;
-type ArticleWithNode = {
-	article: Article,
-	node: NodeWithXY
-};
 
 function hasRelation(graph: Graph, n1: number, n2: number, second_chance?: boolean): boolean {
 	if (n1 == n2) {
@@ -109,7 +105,7 @@ function buildEdgeMap(edges: Edge[]): EdgeMap {
 
 export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProps ): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
-	let [cur_hovering, setCurHovering] = React.useState<null | ArticleWithNode>(null);
+	let [cur_hovering, setCurHovering] = React.useState<null | NodeWithXY>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
 	let [offset_y, setOffsetY] = React.useState(0);
 	let [init_offset_x, setInitOffsetX] = React.useState(0);
@@ -119,18 +115,11 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	let graph_div = React.useRef<HTMLDivElement | null>(null);
 
 	function onHover(node: NodeWithXY): void {
-		API_FETCHER.queryArticle(node.id).then(res => {
-			try {
-				let article = unwrap(res);
-				setCurHovering({ node, article });
-				setOpacity(0);
-				setTimeout(() => {
-					setOpacity(100);
-				}, 10);
-			} catch (err) {
-				toastErr(err);
-			}
-		});
+		setCurHovering(node);
+		setOpacity(0);
+		setTimeout(() => {
+			setOpacity(100);
+		}, 10);
 	}
 
 	React.useEffect(() => {
@@ -328,7 +317,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 					.style('opacity', NODE_OPACITY);
 			}
 		} else {
-			let highlighted = getHighlighted(graph, cur_hovering.node);
+			let highlighted = getHighlighted(graph, cur_hovering);
 			for (let node of graph.nodes) {
 				if (highlighted[node.id]) {
 					d3.select(`#a${node.id}`).transition()
@@ -350,12 +339,12 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	return <>
 		<div ref={graph_div} styleName="svgBlock" style={{ position: 'relative' }}>
 			{
-				cur_hovering == null ? null : <div key={cur_hovering.node.id} style={{
-					left: (cur_hovering.node.x + cur_hovering.node.radius + init_offset_x) * scale + offset_x,
-					top: (cur_hovering.node.y + cur_hovering.node.radius + init_offset_y) * scale + offset_y,
+				cur_hovering == null ? null : <div key={cur_hovering.id} style={{
+					left: (cur_hovering.x + cur_hovering.radius + init_offset_x) * scale + offset_x,
+					top: (cur_hovering.y + cur_hovering.radius + init_offset_y) * scale + offset_y,
 					opacity,
 				}} styleName="articleBlock">
-					<ArticleCard article={cur_hovering.article} />
+					<ArticleCard article={cur_hovering.meta} />
 				</div>
 			}
 		</div>

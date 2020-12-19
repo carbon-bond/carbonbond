@@ -58,7 +58,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category: Option<i64>,
         title: Option<String>,
         content: HashMap<String, super::model::SearchField>,
-    ) -> Result<Vec<super::model::Article>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
         let meta = db::article::search_article(
             author_name,
             board_name,
@@ -69,7 +69,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
         )
         .await?;
-        Ok(meta.collect())
+        Ok(meta)
     }
     async fn query_article_list(
         &self,
@@ -78,14 +78,12 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _author_name: Option<String>,
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,
-    ) -> Fallible<Vec<model::Article>> {
+    ) -> Fallible<Vec<model::ArticleMeta>> {
         // TODO: 支援 author_name
         match board_name {
-            Some(name) => Ok(
-                db::article::get_by_board_name(&name, 0, count, &family_filter)
-                    .await?
-                    .collect(),
-            ),
+            Some(name) => {
+                Ok(db::article::get_by_board_name(&name, 0, count, &family_filter).await?)
+            }
             _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         }
     }

@@ -99,7 +99,7 @@ pub async fn search_article(
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
     title: Option<String>,
-) -> Fallible<impl ExactSizeIterator<Item = Article>> {
+) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = sqlx::query_as!(
         ArticleMeta,
@@ -181,7 +181,7 @@ pub async fn search_article(
         }
         filterd_metas
     };
-    metas_to_articles(metas).await
+    Ok(metas)
 }
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
@@ -208,7 +208,7 @@ pub async fn get_by_board_name(
     offset: i64,
     limit: usize,
     family_filter: &FamilyFilter,
-) -> Fallible<impl ExactSizeIterator<Item = Article>> {
+) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let metas = sqlx::query_as!(
@@ -227,8 +227,7 @@ pub async fn get_by_board_name(
     )
     .fetch_all(pool)
     .await?;
-
-    metas_to_articles(metas).await
+    Ok(metas)
 }
 
 // `article_id` 指向的文章

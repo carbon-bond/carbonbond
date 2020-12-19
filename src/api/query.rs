@@ -75,7 +75,7 @@ pub enum PartyQuery {
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum ArticleQuery {
-    #[chitin(request, response = "Vec<super::model::Article>")]
+    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
     QueryArticleList {
         count: usize,
         author_name: Option<String>,
@@ -108,7 +108,7 @@ pub enum ArticleQuery {
         title: String,
         content: String,
     },
-    #[chitin(request, response = "Vec<super::model::Article>")]
+    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
     SearchArticle {
         author_name: Option<String>,
         board_name: Option<String>,

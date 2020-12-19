@@ -4,7 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
-import { Article, Board } from '../../ts/api/api_trait';
+import { Board, ArticleMeta } from '../../ts/api/api_trait';
 
 import '../../css/article_wrapper.css';
 import '../../css/board_switch/board_page.css';
@@ -23,7 +23,7 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 async function fetchArticles(
 	board_name: string,
 	page_size: number,
-): Promise<Article[]> {
+): Promise<ArticleMeta[]> {
 	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null,
 		board_name, { BlackList: [force_util.SMALL] }), []);
 }
@@ -31,7 +31,7 @@ async function fetchArticles(
 export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.board.board_name;
 
-	const [articles, setArticles] = React.useState<Article[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	const [is_end, set_is_end] = React.useState<boolean>(false);
 
 	const { setCurBoard } = BoardCacheState.useContainer();
@@ -70,7 +70,7 @@ export function BoardPage(props: Props): JSX.Element {
 	return <>
 		{
 			articles.map((article, pos) => (
-				<div styleName="articleWrapper" key={`${article.meta.id}-${pos}`}>
+				<div styleName="articleWrapper" key={`${article.id}-${pos}`}>
 					<ArticleCard article={article} />
 				</div>
 			))

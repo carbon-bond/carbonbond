@@ -3,7 +3,7 @@ import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
-import { Article, HashMap, SearchField } from '../../ts/api/api_trait';
+import { ArticleMeta, HashMap, SearchField } from '../../ts/api/api_trait';
 import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
@@ -54,7 +54,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 	let [search_fields, setSearchFields] = React.useState<SearchFields>({});
 
 	let [url_board, setUrlBoard] = React.useState('');
-	let [articles, setArticles] = React.useState(new Array<Article>());
+	let [articles, setArticles] = React.useState(new Array<ArticleMeta>());
 	let [categories, setCategories] = React.useState(new Array<CategoryEntry>());
 
 	function onSearchCategoryChange(category_id_str: string): void {
@@ -117,10 +117,10 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
 				for (let article of articles) {
-					category_map[article.meta.category_id] = {
-						id: article.meta.category_id,
-						name: article.meta.category_name,
-						board_name: article.meta.board_name
+					category_map[article.category_id] = {
+						id: article.category_id,
+						name: article.category_name,
+						board_name: article.board_name
 					};
 				}
 				let categories = Object.keys(category_map).map(id => {
@@ -182,7 +182,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
                 <>
                     {
                     	articles.map(article => {
-                    		return <div styleName="articleWrapper" key={`article-${article.meta.id}`}>
+                    		return <div styleName="articleWrapper" key={`article-${article.id}`}>
                     			<ArticleCard article={article} />
                     		</div>;
                     	})

@@ -3,7 +3,7 @@ import ReactModal from 'react-modal';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
-import { Article, UserRelationKind, User } from '../../ts/api/api_trait';
+import { UserRelationKind, User, ArticleMeta } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -282,7 +282,7 @@ const PAGE_SIZE: number = 10;
 async function fetchArticles(
 	author_name: string,
 	page_size: number,
-): Promise<Article[]> {
+): Promise<ArticleMeta[]> {
 	return unwrap_or(await API_FETCHER.queryArticleList(page_size, author_name, null, 'None'), []);
 }
 
@@ -292,7 +292,7 @@ function UserPage(props: Props): JSX.Element {
 	const profile_name = props.match.params.profile_name;
 	const { user_state } = UserState.useContainer();
 
-	const [articles, setArticles] = React.useState<Article[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	const [user, setUser] = React.useState<User | null>(null);
 	// TODO: 分頁
 	// const [is_end, set_is_end] = React.useState<boolean>(false);

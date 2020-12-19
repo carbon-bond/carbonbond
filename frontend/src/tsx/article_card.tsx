@@ -2,9 +2,10 @@ import * as React from 'react';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Edge } from '../ts/api/api_trait';
+import { ArticleMeta, Edge } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
+import { parse_category } from 'force';
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
@@ -57,32 +58,58 @@ export function ArticleFooter(): JSX.Element {
 	</div>;
 }
 
-function ArticleCard(props: { article: Article }): JSX.Element {
-
-	const date = new Date(props.article.meta.create_time);
+function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+	const date = new Date(props.article.create_time);
 	let user_name = '';
 	let category_name = '';
 	try {
-		user_name = props.article.meta.author_name;
-		category_name = props.article.meta.category_name;
+		user_name = props.article.author_name;
+		category_name = props.article.category_name;
 	} catch {
 		user_name = '未知';
 		category_name = '未知';
 	}
-	const url = `/app/b/${props.article.meta.board_name}/a/${props.article.meta.id}`;
+	const url = `/app/b/${props.article.board_name}/a/${props.article.id}`;
+
+	const category = parse_category(props.article.category_source);
+	// eslint-disable-next-line
+	let content: { [name: string]: any } = JSON.parse(props.article.digest);
+	function Content(): JSX.Element[] {
+		let show_name = Object.keys(content).length > 1;
+		// eslint-disable-next-line
+		function formatValue(value: any): string {
+			if (Array.isArray(value)) {
+				return value.map(v => formatValue(v)).join('\n');
+			} else if (typeof value == 'string') {
+				return value.trim();
+			} else if (typeof value == 'number') {
+				return value.toString();
+			}
+			return '';
+		}
+		return category.fields.map(field => {
+			let inner = formatValue(content[field.name]);
+			if (inner.length == 0) {
+				return <></>;
+			}
+			return <>
+				{show_name ? <h4>{field.name}</h4> : null}
+				<pre styleName="articleContent">{inner}</pre>
+			</>;
+		});
+	}
+
 	return (
 		<div styleName="articleContainer">
-			<ArticleHeader user_name={user_name} board_name={props.article.meta.board_name} date={date} />
+			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
 			<div styleName="articleBody">
 				<div styleName="leftPart">
 					<ArticleLine
-						board_name={props.article.meta.board_name}
+						board_name={props.article.board_name}
 						category_name={category_name}
-						title={props.article.meta.title}
-						id={props.article.meta.id} />
-					<div styleName="articleContent">
-						{props.article.content}
-					</div>
+						title={props.article.title}
+						id={props.article.id} />
+					{Content()}
 				</div>
 			</div>
 			<ArticleFooter />
