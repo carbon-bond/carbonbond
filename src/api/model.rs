@@ -68,7 +68,7 @@ mod model {
         pub title: String,
         pub author_id: i64,
         pub author_name: String,
-        pub show_in_list: bool,
+        pub digest: String,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
     }

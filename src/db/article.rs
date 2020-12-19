@@ -1,11 +1,13 @@
 use super::{article_content, get_pool, DBObject, ToFallible};
 use crate::api::model::{Article, ArticleMeta, Edge, FamilyFilter, SearchField};
-use crate::custom_error::{self, DataType, Fallible};
+use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
 use force;
 use force::parse_category;
 use lazy_static::lazy_static;
+use serde_json::Value;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -25,7 +27,7 @@ struct BondAndArticle {
     title: String,
     author_id: i64,
     author_name: String,
-    show_in_list: bool,
+    digest: String,
     create_time: DateTime<chrono::Utc>,
     category_families: Vec<String>,
 
@@ -56,7 +58,7 @@ impl BondAndArticle {
                 title: self.title,
                 author_id: self.author_id,
                 author_name: self.author_name,
-                show_in_list: self.show_in_list,
+                digest: self.digest,
                 create_time: self.create_time,
             },
         )
@@ -385,9 +387,15 @@ pub async fn create(
     title: String,
     content: String,
 ) -> Fallible<i64> {
-    let mut conn = get_pool().begin().await?;
+    let content: Value = serde_json::from_str(&content).map_err(|err| {
+        ErrorCode::ParsingJson
+            .context("文章內容反序列化失敗")
+            .context(err)
+    })?;
+
     let category = get_newest_category(board_id, &category_name).await?;
     let force_category = parse_category(&category.source)?;
+    let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
         INSERT INTO articles (author_id, board_id, title, category_id)
@@ -402,7 +410,25 @@ pub async fn create(
     .await?
     .id;
     log::debug!("成功創建文章元資料");
-    article_content::create(&mut conn, article_id, board_id, &content, force_category).await?;
+
+    article_content::create(
+        &mut conn,
+        article_id,
+        board_id,
+        Cow::Borrowed(&content),
+        &force_category,
+    )
+    .await?;
+
+    let digest = crate::util::create_article_digest(content, force_category)?;
+    sqlx::query!(
+        "UPDATE articles SET digest = $1 where id = $2",
+        digest,
+        article_id
+    )
+    .execute(&mut conn)
+    .await?;
+
     conn.commit().await?;
     Ok(article_id)
 }

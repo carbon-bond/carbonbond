@@ -88,7 +88,7 @@ CREATE TABLE articles (
   board_id bigint REFERENCES boards (id) NOT NULL,
   category_id bigint REFERENCES categories (id) NOT NULL,
   title text NOT NULL,
-  show_in_list boolean NOT NULL DEFAULT TRUE,
+  digest text NOT NULL DEFAULT '',
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -244,7 +244,7 @@ CREATE FUNCTION article_metas (is_black_list boolean, family_filter text[])
     board_id bigint,
     category_id bigint,
     title text,
-    show_in_list boolean,
+    digest text,
     create_time timestamptz,
     author_name text,
     board_name text,

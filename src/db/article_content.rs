@@ -3,6 +3,7 @@ use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde_json::Value;
 use sqlx::{executor::Executor, Postgres};
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -343,35 +344,33 @@ pub(super) async fn create<C: Executor<Database = Postgres>>(
     conn: &mut C,
     article_id: i64,
     board_id: i64,
-    content: &str,
-    category: Category,
+    content: Cow<'_, Value>,
+    category: &Category,
 ) -> Fallible<()> {
-    let mut json: Value = serde_json::from_str(content).map_err(|err| {
-        ErrorCode::ParsingJson
-            .context("文章內容反序列化失敗")
-            .context(err)
-    })?;
-
     // 檢驗格式
     let validator = Validator { board_id };
-    match validator.validate_category(&category, &json).await {
+    match validator
+        .validate_category(&category, content.as_ref())
+        .await
+    {
         Ok(()) => (),
         Err(err) => return Err(ErrorCode::ForceValidate(err).into()),
     }
 
     use force::DataType::*;
 
-    let json = json.as_object_mut().unwrap();
+    let mut content = content.into_owned();
+    let json = content.as_object_mut().unwrap();
 
-    for field in category.fields {
+    for field in category.fields.iter() {
         // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
         let value = json.remove(&field.name).unwrap();
-        match &field.datatype {
-            Optional(_) | Single(_) => insert_field(conn, article_id, &field, value).await?,
+        match field.datatype {
+            Optional(_) | Single(_) => insert_field(conn, article_id, field, value).await?,
             Array { .. } => match value {
                 Value::Array(values) => {
                     for value in values {
-                        insert_field(conn, article_id, &field, value).await?
+                        insert_field(conn, article_id, field, value).await?
                     }
                 }
                 _ => {}
