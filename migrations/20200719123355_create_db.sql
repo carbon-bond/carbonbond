@@ -89,6 +89,7 @@ CREATE TABLE articles (
   category_id bigint REFERENCES categories (id) NOT NULL,
   title text NOT NULL,
   digest text NOT NULL DEFAULT '',
+  energy int NOT NULL DEFAULT 0,
   create_time timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -245,6 +246,7 @@ CREATE FUNCTION article_metas (is_black_list boolean, family_filter text[])
     category_id bigint,
     title text,
     digest text,
+    energy int,
     create_time timestamptz,
     author_name text,
     board_name text,

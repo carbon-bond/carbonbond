@@ -1,5 +1,8 @@
 mod bin_util;
-use carbonbond::{config::load_config, custom_error::Fallible};
+use carbonbond::{
+    config::{load_config, prj_path},
+    custom_error::Fallible,
+};
 use sqlx_beta::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};
 use sqlx_beta::{any::Any, AnyConnection, Connection};
 use structopt::StructOpt;
@@ -36,7 +39,7 @@ async fn main() -> Fallible<()> {
             log::info!("創建資料庫：{}", url);
             Any::create_database(&url).await?;
         }
-        let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
+        let migrator = Migrator::new(prj_path()?.join("./migrations")).await?;
         let mut conn = AnyConnection::connect(&url).await?;
         conn.ensure_migrations_table().await?;
 

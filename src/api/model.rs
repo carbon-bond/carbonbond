@@ -60,6 +60,7 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
+        pub energy: i32,
         pub board_id: i64,
         pub board_name: String,
         pub category_id: i64,

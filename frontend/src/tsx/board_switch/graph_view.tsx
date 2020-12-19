@@ -46,12 +46,21 @@ function edgeColor(energy: number): string {
 	} else if (energy < 0) {
 		return 'red';
 	} else {
-		return GREY;
+		return GREEN;
+	}
+}
+function markerID(energy: number): string {
+	if (energy > 0) {
+		return 'arrow-like';
+	} else if (energy < 0) {
+		return 'arrow-fuck';
+	} else {
+		return 'arrow';
 	}
 }
 
 type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
-type Edge = { target: number, source: number, color: string, linknum: number };
+type Edge = { target: number, source: number, color: string, marker_id: string, linknum: number };
 type EdgeMap = { [from: number]: { [to: number]: boolean } };
 type Graph = {
 	nodes: Node[],
@@ -59,7 +68,7 @@ type Graph = {
 	edge_map: EdgeMap
 };
 
-const base_radius = 30;
+const base_radius = 50;
 
 type NodeWithXY = { x: number, y: number } & Node;
 
@@ -127,12 +136,13 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {
+				let radius = (n.energy / (1 + Math.abs(n.energy) + 1) / 2 * 0.6 + 0.4) * base_radius;
 				return {
 					id: n.id,
 					url: `/app/b/${n.board_name}/a/${n.id}`,
 					name: `[${n.category_name}] ${n.title}`,
 					meta: n,
-					radius: (Math.random() * 0.75 + 0.25) * base_radius // XXX: 根據鍵能判斷
+					radius,
 				};
 			});
 			let edges = g.edges.map(e => {
@@ -140,6 +150,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 					source: e.from,
 					target: e.to,
 					color: edgeColor(e.energy),
+					marker_id: markerID(e.energy),
 					linknum: counter.count(e.from, e.to)
 				};
 			});
@@ -174,9 +185,8 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
 			.attr('stroke-width', 2)
-			.style('stroke', GREEN)
 			.attr('opacity', 0.5)
-			.attr('marker-end', 'url(#arrow)');
+			.attr('marker-end', d => `url(#${d.marker_id})`);
 
 		let node = svg.append('g')
 			.attr('class', 'nodes')
@@ -219,20 +229,9 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			})
 			.on('mouseout', () => setCurHovering(null));
 
-		svg.append('defs')
-			.append('marker')
-			.attr('id', 'arrow')
-			.attr('markerUnits', 'strokeWidth')
-			.attr('markerWidth', 12)
-			.attr('markerHeight', 12)
-			.attr('viewBox', '0 0 12 12')
-			.attr('refX', 3)
-			.attr('refY', 3)
-			.attr('orient', 'auto')
-			.append('path')
-			.attr('stroke', 'none')
-			.attr('d', 'M1,1 L5,3 L1,5 Z')
-			.attr('fill', GREEN);
+		addMarker(svg, markerID(0), edgeColor(0));
+		addMarker(svg, markerID(1), edgeColor(1));
+		addMarker(svg, markerID(-1), edgeColor(-1));
 
 		// @ts-ignore
 		let simulation = d3.forceSimulation(graph.nodes)
@@ -365,6 +364,27 @@ class LinkNumCounter {
 		this.map[key] = cnt;
 		return cnt;
 	}
+}
+
+function addMarker(
+	svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+	id: string,
+	color: string,
+): void {
+	svg.append('defs')
+			.append('marker')
+			.attr('id', id)
+			.attr('markerUnits', 'strokeWidth')
+			.attr('markerWidth', 12)
+			.attr('markerHeight', 12)
+			.attr('viewBox', '0 0 12 12')
+			.attr('refX', 3)
+			.attr('refY', 3)
+			.attr('orient', 'auto')
+			.append('path')
+			.attr('stroke', 'none')
+			.attr('d', 'M1,1 L5,3 L1,5 Z')
+			.attr('fill', color);
 }
 
 function makeZoomable(

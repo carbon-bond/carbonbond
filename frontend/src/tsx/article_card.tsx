@@ -31,12 +31,12 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 	</div>;
 }
 
-export function ArticleFooter(): JSX.Element {
+export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
 				<i> ☘ </i>
-				<span styleName="num">4218</span>鍵能
+				<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
 				<i> 🗯 </i>
@@ -112,7 +112,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 					{Content()}
 				</div>
 			</div>
-			<ArticleFooter />
+			<ArticleFooter article={props.article} />
 			<Link styleName="overlay" to={url}> </Link >
 		</div>
 	);

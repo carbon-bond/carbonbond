@@ -349,7 +349,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			title={article.meta.title} />
 		<ReplyButtons />
 		<ArticleContent article={article} />
-		<ArticleFooter />
+		<ArticleFooter  article={article.meta}/>
 		<BigReplyList article={article} />
 		<Comments article={article} board={board} />
 	</div>;

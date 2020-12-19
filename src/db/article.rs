@@ -7,6 +7,7 @@ use force;
 use force::parse_category;
 use lazy_static::lazy_static;
 use serde_json::Value;
+use sqlx::{executor::Executor, Postgres};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -19,6 +20,7 @@ impl DBObject for ArticleMeta {
 #[derive(Debug)]
 struct BondAndArticle {
     id: i64,
+    energy: i32,
     board_id: i64,
     board_name: String,
     category_id: i64,
@@ -49,6 +51,7 @@ impl BondAndArticle {
             },
             ArticleMeta {
                 id: self.id,
+                energy: self.energy,
                 board_id: self.board_id,
                 board_name: self.board_name,
                 category_id: self.category_id,
@@ -342,7 +345,7 @@ lazy_static! {
     static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
 }
 
-// NOTE: 實作更新看板力語言的時候，更新資料庫的同時也必須更新快取
+// FIXME: 實作更新看板力語言的時候，更新資料庫的同時也必須更新快取
 async fn get_force(board_id: i64) -> Fallible<Arc<force::Force>> {
     let exist = {
         let cache = FORCE_CACHE.read().unwrap();
@@ -372,11 +375,6 @@ async fn get_force_category(
             Err(custom_error::ErrorCode::NotFound(DataType::Category, category_name.clone()).into())
         }
     }
-}
-
-pub async fn check_bond(article_id: i64, board_id: i64, category_name: &str) -> Fallible<bool> {
-    let meta = get_meta_by_id(article_id).await?;
-    Ok(meta.category_name == category_name && meta.board_id == board_id)
 }
 
 pub async fn create(
@@ -430,4 +428,19 @@ pub async fn create(
 
     conn.commit().await?;
     Ok(article_id)
+}
+
+pub(super) async fn update_energy<C: Executor<Database = Postgres>>(
+    conn: &mut C,
+    id: i64,
+    energy: i16,
+) -> Fallible {
+    sqlx::query!(
+        "UPDATE articles SET energy = energy + $1 WHERE id = $2",
+        energy as i32,
+        id
+    )
+    .execute(conn)
+    .await?;
+    Ok(())
 }

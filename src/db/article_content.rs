@@ -300,8 +300,9 @@ async fn insert_bond_field<C: Executor<Database = Postgres>>(
         bond.target_article,
         bond.energy
     )
-    .execute(conn)
+    .execute(&mut *conn)
     .await?;
+    super::article::update_energy(conn, bond.target_article, bond.energy).await?;
     Ok(())
 }
 async fn insert_field<C: Executor<Database = Postgres>>(
