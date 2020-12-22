@@ -3,7 +3,7 @@ import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { ArticleMeta, Edge } from '../ts/api/api_trait';
-import { API_FETCHER, unwrap } from '../ts/api/api';
+import { API_FETCHER, unwrap, unwrap_or } from '../ts/api/api';
 import { toastErr } from './utils';
 import { parse_category } from 'force';
 
@@ -32,6 +32,42 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 }
 
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
+	const [favorite, setFavorite] = React.useState<boolean>(false);
+
+	async function fetchFavorites(): Promise<ArticleMeta[]> {
+		return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+	}
+
+	Promise.all([
+		fetchFavorites(),
+	]).then(([more_favorites]) => {
+		try {
+			setFavorite(more_favorites.some(article => article.id == props.article.id));
+		} catch (err) {
+			toastErr(err);
+		}
+	});
+
+	async function onFavoriteArticleClick(): Promise<void> {
+		if (favorite) {
+			console.log('按下取消收藏');
+			try {
+				unwrap(await API_FETCHER.unfavoriteArticle(props.article.id));
+				setFavorite(false);
+			} catch (err) {
+				toastErr(err);
+			}
+		} else {
+			console.log('按下收藏');
+			try {
+				unwrap(await API_FETCHER.favoriteArticle(props.article.id));
+				setFavorite(true);
+			} catch (err) {
+				toastErr(err);
+			}
+		}
+	}
+
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
@@ -46,9 +82,9 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				<i> ⮕ </i>
 				<span styleName="num">18</span>篇大回文
 			</div>
-			<div styleName="articleBtnItem">
-				<i> ★ </i>
-				收藏
+			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
+				{favorite ? <i> 🌟 </i>: <i> ★ </i> }
+				{favorite ? '取消收藏' : '收藏'}
 			</div>
 			<div styleName="articleBtnItem">
 				<i> 📎 </i>

@@ -8,6 +8,7 @@ pub mod article_content;
 pub mod article_statistics;
 pub mod avatar;
 pub mod board;
+pub mod favorite;
 pub mod notification;
 pub mod party;
 pub mod subscribed_boards;

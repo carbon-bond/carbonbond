@@ -303,6 +303,13 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let id = context.get_id_strict()?;
         db::party::get_by_member_id(id).await
     }
+    async fn query_my_favorite_article_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Fallible<Vec<model::ArticleMeta>> {
+        let id = context.get_id_strict()?;
+        db::favorite::get_article_by_user_id(id).await
+    }
     async fn query_user(
         &self,
         _context: &mut crate::Ctx,
@@ -348,6 +355,23 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict()?;
         db::subscribed_boards::subscribe(id, board_id).await
+    }
+    async fn favorite_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        let favorite_id = db::favorite::favorite(id, article_id).await?;
+        Ok(favorite_id)
+    }
+    async fn unfavorite_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict()?;
+        db::favorite::unfavorite(id, article_id).await
     }
     async fn create_user_relation(
         &self,

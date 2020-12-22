@@ -34,6 +34,12 @@ mod model {
         pub create_time: DateTime<Utc>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Favorite {
+        pub id: i64,
+        pub user_id: i64,
+        pub article_id: i64,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
         pub id: i64,
         pub board_name: String,

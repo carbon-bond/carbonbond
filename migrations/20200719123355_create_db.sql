@@ -238,6 +238,14 @@ END
 $$
 LANGUAGE plpgsql;
 
+-- 收藏
+CREATE TABLE favorite_articles (
+  id bigserial PRIMARY KEY,
+  user_id bigint REFERENCES users (id) NOT NULL,
+  article_id bigint REFERENCES articles (id) NOT NULL,
+  UNIQUE (user_id, article_id)
+);
+
 CREATE FUNCTION article_metas (is_black_list boolean, family_filter text[])
   RETURNS TABLE (
     id bigint,

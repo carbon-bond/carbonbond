@@ -304,8 +304,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 function ProfileWorks(props: {profile_user: User, user_state: UserStateType}): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [favorites, setFavorites] = React.useState<ArticleMeta[]>([]);
 
 	React.useEffect(() => {
+		// TODO detect which tab is currently selected and only need to update that tab's data
 		console.log('profileWorks useEffect');
 		Promise.all([
 			fetchArticles(props.profile_user.user_name),
@@ -331,30 +333,39 @@ function ProfileWorks(props: {profile_user: User, user_state: UserStateType}): J
 						toastErr(err);
 					}
 				});
-				setSelectTab(0);
 				break;
 			case 1:
 				break;
 			case 2:
+				Promise.all([
+					fetchFavorites(),
+				]).then(([more_favorites]) => {
+					try {
+						setFavorites(more_favorites);
+					} catch (err) {
+						toastErr(err);
+					}
+				});
 				break;
 			case 3:
 				break;
 			default:
 				break;
 		}
+		setSelectTab(tabIndex);
 	}
 
 	return <div styleName="works">
 		<div styleName="navigateBar">
 			<div styleName={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => {handleSelectTab(0);}}>文章</div>
-			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(1);}}>留言</div>
-			<div styleName={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(2);}}>收藏</div>
-			<div styleName={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => {setSelectTab(3);}}>人際關係</div>
+			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => {handleSelectTab(1);}}>留言</div>
+			<div styleName={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => {handleSelectTab(2);}}>收藏</div>
+			<div styleName={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => {handleSelectTab(3);}}>人際關係</div>
 		</div>
 		<div styleName="switchContent">
 			{selectTab == 0 && <Articles articles={articles}/>}
 			{selectTab == 1 && <Comments/>}
-			{selectTab == 2 && <Collections/>}
+			{selectTab == 2 && <Articles articles={favorites}/>}
 			{selectTab == 3 && <Friendships/>}
 		</div>
 	</div>;
@@ -374,10 +385,6 @@ function Comments(): JSX.Element {
 	return <div>Comments</div>;
 }
 
-function Collections(): JSX.Element {
-	return <div>Collections</div>;
-}
-
 function Friendships(): JSX.Element {
 	return <div>Friendships</div>;
 }
@@ -387,6 +394,10 @@ async function fetchArticles(
 	author_name: string,
 ): Promise<ArticleMeta[]> {
 	return unwrap_or(await API_FETCHER.searchArticle(author_name, null, null, null, null, null, new Map()), []);
+}
+
+async function fetchFavorites(): Promise<ArticleMeta[]> {
+	return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;

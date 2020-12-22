@@ -22,6 +22,8 @@ pub enum UserQuery {
     QueryMe {},
     #[chitin(request, response = "Vec<super::model::Party>")]
     QueryMyPartyList {},
+    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    QueryMyFavoriteArticleList {},
 
     #[chitin(request, response = "()")]
     SendSignupEmail { email: String },
@@ -46,6 +48,10 @@ pub enum UserQuery {
     SubscribeBoard { board_id: i64 },
     #[chitin(request, response = "()")]
     UnsubscribeBoard { board_id: i64 },
+    #[chitin(request, response = "i64")]
+    FavoriteArticle { article_id: i64 },
+    #[chitin(request, response = "()")]
+    UnfavoriteArticle { article_id: i64 },
     #[chitin(request, response = "()")]
     CreateUserRelation {
         target_user: i64,
