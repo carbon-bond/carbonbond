@@ -73,6 +73,10 @@ mod model {
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
+    pub struct ArticleStatistics {
+        pub replies: i64,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         pub meta: ArticleMeta,
