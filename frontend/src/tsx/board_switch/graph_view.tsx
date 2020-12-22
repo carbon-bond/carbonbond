@@ -17,7 +17,7 @@ enum RadiusMode {
 };
 type Panel = {
 	radius_mode: RadiusMode
-}
+};
 
 export function GraphView(props: Props): JSX.Element {
 	let article_id = parseInt(props.match.params.article_id);
@@ -37,18 +37,19 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		let radios: [string, RadiusMode][] = [["鍵能", RadiusMode.Energy], ["鍵能絕對值", RadiusMode.AbsEnergy], ["回應數", RadiusMode.Reply]];
+		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['回應數', RadiusMode.Reply]];
 		return <div styleName="wrapper">
 			<div styleName="panel">
 				<h3>文章半徑</h3>
 				<hr/>
 				<div onChange={e => {
 					// @ts-ignore
-					setRadiusMode(e.target.value)
+					setRadiusMode(e.target.value);
 				}}>
 					{radios.map(([name, value]) => {
 						return <>
-							<input type="radio" value={value} name="radius-mode" checked={radius_mode == value} />
+							<input type="radio" value={value} key={value}
+								name="radius-mode" defaultChecked={RadiusMode.Energy == value} />
 							{name}
 							<br/>
 						</>;
@@ -154,6 +155,14 @@ function buildEdgeMap(edges: Edge[]): EdgeMap {
 	return map;
 }
 
+
+function useRefD3<E extends d3.BaseType, D>(): React.MutableRefObject<
+	d3.Selection<E, D, SVGGElement, unknown> |
+	null
+	> {
+	return React.useRef(null);
+}
+
 export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & RouteComponentProps ): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
 	let [cur_hovering, setCurHovering] = React.useState<null | NodeWithXY>(null);
@@ -164,7 +173,9 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	let [scale, setScale] = React.useState(1);
 	let [opacity, setOpacity] = React.useState(0);
 	let graph_div = React.useRef<HTMLDivElement | null>(null);
-	let node_ref = React.useRef<d3.Selection<SVGCircleElement, Node, SVGGElement, unknown> | null>(null);
+	let node_ref = useRefD3<SVGCircleElement, Node>();
+	let link_ref = useRefD3<SVGPathElement, Edge>();
+	let text_ref = useRefD3<SVGTextElement, Node>();
 
 	function onHover(node: NodeWithXY): void {
 		setCurHovering(node);
@@ -200,14 +211,76 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			toastErr(err);
 		});
 	}, [props.meta]);
+
+	function getWidthHeight(): [number, number] {
+		let width = graph_div.current!.offsetWidth;
+		let full_height = document.getElementsByTagName('body')[0].clientHeight;
+		let height = full_height - computeOffsetTop(graph_div.current);
+		return [width, height];
+	}
+
+	let redraw = React.useCallback((mode = RadiusMode.Energy) => {
+		let [width, height] = getWidthHeight();
+		let link = link_ref.current!;
+		let node = node_ref.current!;
+		let text = text_ref.current!;
+
+		link.attr('d', function (d) {
+			// @ts-ignore
+			return `M${d.source.x},${d.source.y} ${d.target.x},${d.target.y}`;
+		});
+		link.attr('d', function (d) {
+			let curve_inv = 5;
+			let homogeneous = 0.2;
+			let pl = this.getTotalLength();
+			// @ts-ignore
+			let m = this.getPointAtLength(pl - computeRadius(d.target.meta, mode) * 1.2);
+			// @ts-ignore
+			let s = this.getPointAtLength(computeRadius(d.source.meta, mode));
+			let order = Math.floor(d.linknum / 2);
+			// @ts-ignore
+			let dx = m.x - d.source.x, dy = m.y - d.source.y,
+				dr = Math.sqrt(dx * dx + dy * dy) * (curve_inv * homogeneous) / (order + homogeneous);
+			let direction = d.linknum % 2;
+			// @ts-ignore
+			return `M${s.x},${s.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
+		});
+		let offset_x = 0, offset_y = 0;
+		node.attr('transform', d => {
+			if (props.meta.id == d.id) {
+				// @ts-ignore
+				let [x, y, diameter] = [d.x, d.y, computeRadius(d.meta, mode) * 2];
+				// 避免當前文章跑出畫面外
+				if (x - diameter < 0) {
+					offset_x = -x + diameter;
+				} else if (x + diameter > width) {
+					offset_x = width - x - diameter;
+				}
+				if (y - diameter < 0) {
+					offset_y = -y + diameter;
+				} else if (y + diameter > height) {
+					offset_y = height - y - diameter;
+				}
+			}
+			// @ts-ignore
+			return 'translate(' + d.x + ',' + d.y + ')';
+		});
+		text.attr('transform', function (d) {
+			let len = this.getComputedTextLength();
+			// @ts-ignore
+			return `translate(${d.x - len / 2}, ${d.y + computeRadius(d.meta, mode) + FONT_SIZE})`;
+		});
+
+		setInitOffsetX(offset_x);
+		setInitOffsetY(offset_y);
+
+	}, [link_ref, node_ref, text_ref, props.meta.id]);
+
 	React.useEffect(() => {
 		if (graph == null || graph_div.current == null) {
 			return;
 		}
-		let width = graph_div.current.offsetWidth;
-		let full_height = document.getElementsByTagName('body')[0].clientHeight;
-		let height = full_height - computeOffsetTop(graph_div.current);
-
+		let [width, height] = getWidthHeight();
 		let svg_super = d3.select(graph_div.current).append('svg')
 			.attr('width', width)
 			.attr('height', height);
@@ -217,6 +290,18 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			setOffsetY(t.offset_y);
 			setScale(t.scale);
 		}).attr('id', 'canvas');
+
+		let link = svg.append('g')
+			.selectAll('path')
+			.data(graph.edges)
+			.enter()
+			.append('path')
+			.attr('fill', 'none')
+			.attr('stroke', d => d.color)
+			.attr('stroke-width', 3)
+			.attr('opacity', 0.7)
+			.attr('marker-end', d => `url(#${d.marker_id})`);
+		link_ref.current = link;
 
 		let node = svg.append('g')
 			.attr('class', 'nodes')
@@ -241,18 +326,6 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			.on('mouseout', () => setCurHovering(null));
 		node_ref.current = node;
 
-		let link = svg.append('g')
-			.selectAll('path')
-			.data(graph.edges)
-			.enter()
-			.append('path')
-			.attr('fill', 'none')
-			.attr('stroke', d => d.color)
-			.attr('stroke-width', 3)
-			.attr('opacity', 0.7)
-			.attr('marker-end', d => `url(#${d.marker_id})`);
-
-
 		let text = svg.append('g')
 			.selectAll('text')
 			.data(graph.nodes)
@@ -272,6 +345,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 				onHover(d);
 			})
 			.on('mouseout', () => setCurHovering(null));
+		text_ref.current = text;
 
 		addMarker(svg, markerID(0), edgeColor(0));
 		addMarker(svg, markerID(1), edgeColor(1));
@@ -286,59 +360,9 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			)
 			.force('charge', d3.forceManyBody().strength(-2000))
 			.force('center', d3.forceCenter(width / 2, height / 2))
-			.on('end', ticked);
-
-		function ticked(): void {
-			link.attr('d', function (d) {
-				// @ts-ignore
-				return `M${d.source.x},${d.source.y} ${d.target.x},${d.target.y}`;
-			});
-			link.attr('d', function (d) {
-				let curve_inv = 5;
-				let homogeneous = 0.2;
-				let pl = this.getTotalLength();
-				// @ts-ignore
-				let m = this.getPointAtLength(pl - base_radius), s = this.getPointAtLength(base_radius);
-				let order = Math.floor(d.linknum / 2);
-				// @ts-ignore
-				let dx = m.x - d.source.x, dy = m.y - d.source.y,
-					dr = Math.sqrt(dx * dx + dy * dy) * (curve_inv * homogeneous) / (order + homogeneous);
-				let direction = d.linknum % 2;
-				// @ts-ignore
-				return `M${s.x},${s.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
-			});
-			let offset_x = 0, offset_y = 0;
-			node.attr('transform', d => {
-				if (props.meta.id == d.id) {
-					// @ts-ignore
-					let [x, y, diameter] = [d.x, d.y, base_radius * 2];
-					// 避免當前文章跑出畫面外
-					if (x - diameter < 0) {
-						offset_x = -x + diameter;
-					} else if (x + diameter > width) {
-						offset_x = width - x - diameter;
-					}
-					if (y - diameter < 0) {
-						offset_y = -y + diameter;
-					} else if (y + diameter > height) {
-						offset_y = height - y - diameter;
-					}
-				}
-				// @ts-ignore
-				return 'translate(' + d.x + ',' + d.y + ')';
-			});
-			text.attr('transform', function (d) {
-				let len = this.getComputedTextLength();
-				// @ts-ignore
-				return `translate(${d.x - len/2}, ${d.y + base_radius + FONT_SIZE})`;
-			});
-
-			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
-			setInitOffsetX(offset_x);
-			setInitOffsetY(offset_y);
-		}
+			.on('end', () => redraw());
 		simulation.tick(700);
-	}, [graph, props.meta.id, props.history]);
+	}, [graph, props.meta.id, props.history, redraw, link_ref, node_ref, text_ref]);
 
 	React.useEffect(() => {
 		d3.select('#canvas')
@@ -348,20 +372,24 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
 	React.useEffect(() => {
+		if (!graph_div.current) {
+			return;
+		}
 		node_ref.current?.transition()
-		.duration(100)
+		.duration(200)
 		.attr('r', d => computeRadius(d.meta, props.panel.radius_mode));
-	}, [props.panel.radius_mode]);
+		redraw(props.panel.radius_mode);
+	}, [props.panel.radius_mode, node_ref, redraw]);
 
 	React.useEffect(() => {
 		if (graph == null) {
 			return;
 		}
 		if (cur_hovering == null) {
-			// TODO:
 			for (let node of graph.nodes) {
 				d3.select(`#a${node.id}`).transition()
 					.duration(400)
+					.attr('r', computeRadius(node.meta, props.panel.radius_mode))
 					.style('opacity', NODE_OPACITY);
 			}
 		} else {
@@ -370,6 +398,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 				if (highlighted[node.id]) {
 					d3.select(`#a${node.id}`).transition()
 						.duration(400)
+						.attr('r', computeRadius(node.meta, props.panel.radius_mode) * 1.2)
 						.style('opacity', 1);
 				} else {
 					d3.select(`#a${node.id}`).transition()
@@ -378,7 +407,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 				}
 			}
 		}
-	}, [cur_hovering, graph]);
+	}, [cur_hovering, graph, props.panel.radius_mode]);
 
 	if (graph == null) {
 		return <></>;
