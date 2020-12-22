@@ -10,10 +10,19 @@ import * as d3 from 'd3';
 import '../../css/board_switch/graph_view.css';
 
 type Props = RouteComponentProps<{ article_id: string }>;
+enum RadiusMode {
+	Energy,
+	AbsEnergy,
+	Reply,
+};
+type Panel = {
+	radius_mode: RadiusMode
+}
 
 export function GraphView(props: Props): JSX.Element {
 	let article_id = parseInt(props.match.params.article_id);
 	let [article_meta, setArticleMeta] = React.useState<ArticleMeta | null>(null);
+	let [radius_mode, setRadiusMode] = React.useState(RadiusMode.Energy);
 	React.useEffect(() => {
 		if (Number.isNaN(article_id)) {
 			toastErr(`${props.match.params.article_id} 不是合法的文章 id`);
@@ -28,7 +37,26 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		return <GraphViewInner meta={article_meta} {...props} />;
+		let radios: [string, RadiusMode][] = [["鍵能", RadiusMode.Energy], ["鍵能絕對值", RadiusMode.AbsEnergy], ["回應數", RadiusMode.Reply]];
+		return <div styleName="wrapper">
+			<div styleName="panel">
+				<h3>文章半徑</h3>
+				<hr/>
+				<div onChange={e => {
+					// @ts-ignore
+					setRadiusMode(e.target.value)
+				}}>
+					{radios.map(([name, value]) => {
+						return <>
+							<input type="radio" value={value} name="radius-mode" checked={radius_mode == value} />
+							{name}
+							<br/>
+						</>;
+					})}
+				</div>
+			</div>
+			<GraphViewInner panel={{ radius_mode }} meta={article_meta} {...props} />
+		</div>;
 	} else {
 		return <></>;
 	}
@@ -62,7 +90,20 @@ function markerID(energy: number): string {
 	}
 }
 
-type Node = { id: number, name: string, url: string, radius: number, meta: ArticleMeta };
+const base_radius = 20;
+function computeRadius(meta: ArticleMeta, mode: RadiusMode = RadiusMode.Energy): number {
+	let value = 0;
+	if (mode == RadiusMode.Energy) {
+		value = meta.energy;
+	} else if (mode == RadiusMode.AbsEnergy) {
+		value = Math.abs(meta.energy);
+	} else {
+		value = 1;
+	}
+	return ((value / (1 + Math.abs(value)) + 1) * 0.7 + 0.3) * base_radius;
+}
+
+type Node = { id: number, name: string, url: string, meta: ArticleMeta };
 type Edge = { target: number, source: number, color: string, marker_id: string, linknum: number };
 type EdgeMap = { [from: number]: { [to: number]: boolean } };
 type Graph = {
@@ -70,8 +111,6 @@ type Graph = {
 	edges: Edge[],
 	edge_map: EdgeMap
 };
-
-const base_radius = 30;
 
 type NodeWithXY = { x: number, y: number } & Node;
 
@@ -115,7 +154,7 @@ function buildEdgeMap(edges: Edge[]): EdgeMap {
 	return map;
 }
 
-export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProps ): JSX.Element {
+export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & RouteComponentProps ): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
 	let [cur_hovering, setCurHovering] = React.useState<null | NodeWithXY>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
@@ -125,6 +164,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	let [scale, setScale] = React.useState(1);
 	let [opacity, setOpacity] = React.useState(0);
 	let graph_div = React.useRef<HTMLDivElement | null>(null);
+	let node_ref = React.useRef<d3.Selection<SVGCircleElement, Node, SVGGElement, unknown> | null>(null);
 
 	function onHover(node: NodeWithXY): void {
 		setCurHovering(node);
@@ -139,13 +179,11 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {
-				let radius = ((n.energy / (1 + Math.abs(n.energy)) + 1) / 2 * 0.7 + 0.3) * base_radius;
 				return {
 					id: n.id,
 					url: `/app/b/${n.board_name}/a/${n.id}`,
 					name: `[${n.category_name}] ${n.title}`,
 					meta: n,
-					radius,
 				};
 			});
 			let edges = g.edges.map(e => {
@@ -180,17 +218,6 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			setScale(t.scale);
 		}).attr('id', 'canvas');
 
-		let link = svg.append('g')
-			.selectAll('path')
-			.data(graph.edges)
-			.enter()
-			.append('path')
-			.attr('fill', 'none')
-			.attr('stroke', d => d.color)
-			.attr('stroke-width', 3)
-			.attr('opacity', 0.7)
-			.attr('marker-end', d => `url(#${d.marker_id})`);
-
 		let node = svg.append('g')
 			.attr('class', 'nodes')
 			.selectAll('g')
@@ -203,7 +230,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			.style('opacity', NODE_OPACITY)
 			.style('cursor', 'pointer')
 			.attr('id', d => 'a' + d.id)
-			.attr('r', d => d.radius)
+			.attr('r', d => computeRadius(d.meta))
 			.on('mousedown', (_, d) => {
 				props.history.push(d.url);
 			})
@@ -212,6 +239,19 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				onHover(d);
 			})
 			.on('mouseout', () => setCurHovering(null));
+		node_ref.current = node;
+
+		let link = svg.append('g')
+			.selectAll('path')
+			.data(graph.edges)
+			.enter()
+			.append('path')
+			.attr('fill', 'none')
+			.attr('stroke', d => d.color)
+			.attr('stroke-width', 3)
+			.attr('opacity', 0.7)
+			.attr('marker-end', d => `url(#${d.marker_id})`);
+
 
 		let text = svg.append('g')
 			.selectAll('text')
@@ -258,7 +298,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				let homogeneous = 0.2;
 				let pl = this.getTotalLength();
 				// @ts-ignore
-				let m = this.getPointAtLength(pl - d.target.radius), s = this.getPointAtLength(d.source.radius);
+				let m = this.getPointAtLength(pl - base_radius), s = this.getPointAtLength(base_radius);
 				let order = Math.floor(d.linknum / 2);
 				// @ts-ignore
 				let dx = m.x - d.source.x, dy = m.y - d.source.y,
@@ -271,7 +311,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			node.attr('transform', d => {
 				if (props.meta.id == d.id) {
 					// @ts-ignore
-					let [x, y, diameter] = [d.x, d.y, d.radius * 2];
+					let [x, y, diameter] = [d.x, d.y, base_radius * 2];
 					// 避免當前文章跑出畫面外
 					if (x - diameter < 0) {
 						offset_x = -x + diameter;
@@ -290,7 +330,7 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			text.attr('transform', function (d) {
 				let len = this.getComputedTextLength();
 				// @ts-ignore
-				return `translate(${d.x - len/2}, ${d.y + d.radius + FONT_SIZE})`;
+				return `translate(${d.x - len/2}, ${d.y + base_radius + FONT_SIZE})`;
 			});
 
 			svg.attr('transform', `translate(${offset_x}, ${offset_y})`);
@@ -308,6 +348,12 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
 	React.useEffect(() => {
+		node_ref.current?.transition()
+		.duration(100)
+		.attr('r', d => computeRadius(d.meta, props.panel.radius_mode));
+	}, [props.panel.radius_mode]);
+
+	React.useEffect(() => {
 		if (graph == null) {
 			return;
 		}
@@ -316,7 +362,6 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 			for (let node of graph.nodes) {
 				d3.select(`#a${node.id}`).transition()
 					.duration(400)
-					.attr('r', node.radius)
 					.style('opacity', NODE_OPACITY);
 			}
 		} else {
@@ -325,7 +370,6 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 				if (highlighted[node.id]) {
 					d3.select(`#a${node.id}`).transition()
 						.duration(400)
-						.attr('r', node.radius * 1.2)
 						.style('opacity', 1);
 				} else {
 					d3.select(`#a${node.id}`).transition()
@@ -342,13 +386,20 @@ export function GraphViewInner(props: { meta: ArticleMeta } & RouteComponentProp
 	return <>
 		<div ref={graph_div} styleName="svgBlock" style={{ position: 'relative' }}>
 			{
-				cur_hovering == null ? null : <div key={cur_hovering.id} style={{
-					left: (cur_hovering.x + cur_hovering.radius + init_offset_x) * scale + offset_x,
-					top: (cur_hovering.y + cur_hovering.radius + init_offset_y) * scale + offset_y,
-					opacity,
-				}} styleName="articleBlock">
-					<ArticleCard article={cur_hovering.meta} />
-				</div>
+				(() => {
+					if (cur_hovering == null) {
+						return null;
+					} else {
+						let r = computeRadius(cur_hovering.meta, props.panel.radius_mode);
+						return <div key={cur_hovering.id} style={{
+							left: (cur_hovering.x + r + init_offset_x) * scale + offset_x,
+							top: (cur_hovering.y + r + init_offset_y) * scale + offset_y,
+							opacity,
+						}} styleName="articleBlock">
+							<ArticleCard article={cur_hovering.meta} />
+						</div>;
+					}
+				})()
 			}
 		</div>
 	</>;
