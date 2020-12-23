@@ -181,13 +181,13 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		if (user_state.login) {
 			return <>
 				<div ref={ref} styleName="wrap">
-					<NotificationIcon icon={'♡'}
+					<NotificationIcon icon={'🤍'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Good}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
 					<NotificationIcon icon={'🗞️'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Neutral}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
-					<NotificationIcon icon={'☠'}
+					<NotificationIcon icon={'☠️'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
 
@@ -210,7 +210,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			</div>;
 		}
 	}
-	let title = cur_board ? cur_board: '全站熱門'; // XXX: 全站熱門以外的？
+	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className="header" styleName="header">
 			<LoginModal />
@@ -221,7 +221,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						<img src="/img/icon_with_text.png" alt="" />
 					</div>
 					<div styleName="location">{title}</div>
-					<SearchBar history={props.history} cur_board={cur_board}/>
+					<SearchBar history={props.history} cur_board={cur_board} />
 				</div>
 
 				<div styleName="rightSet">
