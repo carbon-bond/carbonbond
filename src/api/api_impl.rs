@@ -81,9 +81,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Fallible<Vec<model::ArticleMeta>> {
         // TODO: 支援 author_name
         match board_name {
-            Some(name) => {
-                Ok(db::article::get_by_board_name(&name, 0, count, &family_filter).await?)
-            }
+            Some(name) => Ok(
+                db::article::get_by_board_name(&name, 0, count, &family_filter)
+                    .await?
+                    .collect(),
+            ),
             _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         }
     }

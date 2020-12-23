@@ -78,6 +78,7 @@ mod model {
         pub digest: String,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
+        pub stat: ArticleStatistics,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {

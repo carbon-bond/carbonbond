@@ -71,6 +71,9 @@ mod inner {
         pub fn context<S: ToString>(self, context: S) -> Error {
             Error::new_logic(self, context)
         }
+        pub fn to_err(self) -> Error {
+            self.into()
+        }
     }
     #[derive(Serialize, Debug, TypeScriptify)]
     pub enum Error {

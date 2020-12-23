@@ -159,7 +159,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     }
 
     let articles =
-        db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?;
+        db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?.collect();
     assert_eq!(articles.len(), 2, "文章不是兩篇！？");
     Ok(())
 }
