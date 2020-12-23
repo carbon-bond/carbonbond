@@ -437,8 +437,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chitin"
-version = "0.2.5"
-source = "git+https://github.com/carbon-bond/chitin#c0bc2ce17a5337d2870603dbe20da6036b2a7692"
+version = "0.2.6"
+source = "git+https://github.com/carbon-bond/chitin#a67b9801006b902706f427216d36e4e5fbb10d44"
 dependencies = [
  "chitin_core",
  "chitin_derive",
@@ -447,8 +447,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_core"
-version = "0.2.5"
-source = "git+https://github.com/carbon-bond/chitin#c0bc2ce17a5337d2870603dbe20da6036b2a7692"
+version = "0.2.6"
+source = "git+https://github.com/carbon-bond/chitin#a67b9801006b902706f427216d36e4e5fbb10d44"
 dependencies = [
  "Inflector",
  "proc-macro2 1.0.18",
@@ -458,8 +458,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_derive"
-version = "0.2.5"
-source = "git+https://github.com/carbon-bond/chitin#c0bc2ce17a5337d2870603dbe20da6036b2a7692"
+version = "0.2.6"
+source = "git+https://github.com/carbon-bond/chitin#a67b9801006b902706f427216d36e4e5fbb10d44"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",
@@ -469,8 +469,8 @@ dependencies = [
 
 [[package]]
 name = "chitin_model"
-version = "0.2.5"
-source = "git+https://github.com/carbon-bond/chitin#c0bc2ce17a5337d2870603dbe20da6036b2a7692"
+version = "0.2.6"
+source = "git+https://github.com/carbon-bond/chitin#a67b9801006b902706f427216d36e4e5fbb10d44"
 dependencies = [
  "chitin_core",
  "proc-macro2 1.0.18",
@@ -559,6 +559,22 @@ dependencies = [
  "time 0.2.16",
  "version_check",
 ]
+
+[[package]]
+name = "core-foundation"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a89e2ae426ea83155dccf10c0fa6b1463ef6d5fcb44cee0b224a408fa640a62"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
+name = "core-foundation-sys"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea221b5284a47e40033bf9b66f35f984ec0ea2931eb03505246cd27a963f981b"
 
 [[package]]
 name = "cpuid-bool"
@@ -1414,6 +1430,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "native-tls"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fcc7939b5edc4e4f86b1b4a04bb1498afaaf871b1a6691838ed06fcb48d3a3f"
+dependencies = [
+ "lazy_static",
+ "libc",
+ "log",
+ "openssl",
+ "openssl-probe",
+ "openssl-sys",
+ "schannel",
+ "security-framework",
+ "security-framework-sys",
+ "tempfile",
+]
+
+[[package]]
 name = "net2"
 version = "0.2.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1503,6 +1537,12 @@ dependencies = [
  "libc",
  "openssl-sys",
 ]
+
+[[package]]
+name = "openssl-probe"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77af24da69f9d9341038eba93a073b1fdaaa1b788221b00a69bce9e762cb32de"
 
 [[package]]
 name = "openssl-src"
@@ -1849,21 +1889,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ring"
-version = "0.16.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "024a1e66fea74c66c66624ee5622a7ff0e4b73a13b4f5c326ddb50c708944226"
-dependencies = [
- "cc",
- "libc",
- "once_cell",
- "spin",
- "untrusted",
- "web-sys",
- "winapi 0.3.9",
-]
-
-[[package]]
 name = "rust-argon2"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1903,19 +1928,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustls"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d1126dcf58e93cee7d098dbda643b5f92ed724f1f6a63007c1116eed6700c81"
-dependencies = [
- "base64 0.12.3",
- "log",
- "ring",
- "sct",
- "webpki",
-]
-
-[[package]]
 name = "rustyline"
 version = "6.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1941,6 +1953,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
 
 [[package]]
+name = "schannel"
+version = "0.1.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f05ba609c234e60bee0d547fe94a4c7e9da733d1c962cf6e59efa4cd9c8bc75"
+dependencies = [
+ "lazy_static",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "scoped-tls"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1959,13 +1981,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
-name = "sct"
-version = "0.6.0"
+name = "security-framework"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3042af939fca8c3453b7af0f1c66e533a15a86169e39de2657310ade8f98d3c"
+checksum = "c1759c2e3c8580017a484a7ac56d3abc5a6c1feadf88db2f3633f12ae4268c69"
 dependencies = [
- "ring",
- "untrusted",
+ "bitflags",
+ "core-foundation",
+ "core-foundation-sys",
+ "libc",
+ "security-framework-sys",
+]
+
+[[package]]
+name = "security-framework-sys"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f99b9d5e26d2a71633cc4f2ebae7cc9f874044e0c351a27e17892d76dce5678b"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
 ]
 
 [[package]]
@@ -2144,12 +2179,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "spin"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
-
-[[package]]
 name = "sqlformat"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2203,7 +2232,6 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "rand",
- "rustls",
  "sha-1 0.9.1",
  "sha2",
  "smallvec",
@@ -2212,8 +2240,6 @@ dependencies = [
  "stringprep",
  "thiserror",
  "url",
- "webpki",
- "webpki-roots",
  "whoami",
 ]
 
@@ -2244,9 +2270,10 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63fc5454c9dd7aaea3a0eeeb65ca40d06d0d8e7413a8184f7c3a3ffa5056190b"
 dependencies = [
+ "native-tls",
  "once_cell",
  "tokio",
- "tokio-rustls",
+ "tokio-native-tls",
 ]
 
 [[package]]
@@ -2600,15 +2627,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "tokio-rustls"
-version = "0.14.1"
+name = "tokio-native-tls"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e12831b255bcfa39dc0436b01e19fea231a37db570686c06ee72c423479f889a"
+checksum = "cd608593a919a8e05a7d1fc6df885e40f6a88d3a70a3a7eff23ff27964eda069"
 dependencies = [
- "futures-core",
- "rustls",
+ "native-tls",
  "tokio",
- "webpki",
 ]
 
 [[package]]
@@ -2775,12 +2800,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "untrusted"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
-
-[[package]]
 name = "url"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2923,25 +2942,6 @@ checksum = "dda38f4e5ca63eda02c059d243aa25b5f35ab98451e518c51612cd0f1bd19a47"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "webpki"
-version = "0.21.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e38c0608262c46d4a56202ebabdeb094cef7e560ca7a226c6bf055188aa4ea"
-dependencies = [
- "ring",
- "untrusted",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82015b7e0b8bad8185994674a13a93306bea76cf5a16c5a181382fd3a5ec2376"
-dependencies = [
- "webpki",
 ]
 
 [[package]]
