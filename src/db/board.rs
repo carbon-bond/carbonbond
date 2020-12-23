@@ -17,7 +17,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Board> {
     let pool = get_pool();
     let board = sqlx::query_as!(
         Board,
-        "SELECT *, 0::bigint as popularity FROM boards WHERE id = $1",
+        r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE id = $1"#,
         id
     )
     .fetch_one(pool)
@@ -30,7 +30,7 @@ pub async fn get_by_name(name: &str) -> Fallible<Board> {
     let pool = get_pool();
     let board = sqlx::query_as!(
         Board,
-        "SELECT *, 0::bigint as popularity FROM boards WHERE board_name = $1",
+        r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE board_name = $1"#,
         name
     )
     .fetch_one(pool)
@@ -41,7 +41,7 @@ pub async fn get_by_name(name: &str) -> Fallible<Board> {
 
 pub async fn get_all() -> Fallible<Vec<Board>> {
     let pool = get_pool();
-    let boards = sqlx::query_as!(Board, "SELECT *, 0::bigint as popularity FROM boards")
+    let boards = sqlx::query_as!(Board, r#"SELECT *, 0::bigint as "popularity!" FROM boards"#)
         .fetch_all(pool)
         .await?;
     Ok(boards)
@@ -58,7 +58,7 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(
         BoardOverview,
-        "SELECT board_name, id, title, 0::bigint as popularity FROM boards WHERE id = ANY($1)",
+        r#"SELECT board_name, id, title, 0::bigint as "popularity!" FROM boards WHERE id = ANY($1)"#,
         board_ids
     )
     .fetch_all(pool)

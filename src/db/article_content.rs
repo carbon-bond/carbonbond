@@ -2,7 +2,7 @@ use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde_json::Value;
-use sqlx::{executor::Executor, Postgres};
+use sqlx::{PgConnection, Postgres};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -247,8 +247,8 @@ impl ValidatorTrait for Validator {
     }
 }
 
-async fn insert_int_field<C: Executor<Database = Postgres>>(
-    conn: &mut C,
+async fn insert_int_field(
+    conn: &mut PgConnection,
     article_id: i64,
     field_name: &String,
     value: i64,
@@ -266,8 +266,8 @@ async fn insert_int_field<C: Executor<Database = Postgres>>(
     Ok(())
 }
 
-async fn insert_string_field<C: Executor<Database = Postgres>>(
-    conn: &mut C,
+async fn insert_string_field(
+    conn: &mut PgConnection,
     article_id: i64,
     field_name: &String,
     value: &String,
@@ -285,8 +285,8 @@ async fn insert_string_field<C: Executor<Database = Postgres>>(
     Ok(())
 }
 
-async fn insert_bond_field<C: Executor<Database = Postgres>>(
-    conn: &mut C,
+async fn insert_bond_field(
+    conn: &mut PgConnection,
     article_id: i64,
     field_name: &String,
     bond: &Bond,
@@ -305,8 +305,8 @@ async fn insert_bond_field<C: Executor<Database = Postgres>>(
     super::article::update_energy(conn, bond.target_article, bond.energy).await?;
     Ok(())
 }
-async fn insert_field<C: Executor<Database = Postgres>>(
-    conn: &mut C,
+async fn insert_field(
+    conn: &mut PgConnection,
     article_id: i64,
     field: &Field,
     value: Value,
@@ -341,8 +341,8 @@ async fn insert_field<C: Executor<Database = Postgres>>(
     Ok(())
 }
 
-pub(super) async fn create<C: Executor<Database = Postgres>>(
-    conn: &mut C,
+pub(super) async fn create(
+    conn: &mut PgConnection,
     article_id: i64,
     board_id: i64,
     content: Cow<'_, Value>,

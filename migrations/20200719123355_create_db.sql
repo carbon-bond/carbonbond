@@ -73,7 +73,7 @@ CREATE TABLE categories (
   id bigserial PRIMARY KEY,
   board_id bigint REFERENCES boards (id) NOT NULL,
   category_name text NOT NULL,
-  version bigint,
+  version bigint NOT NULL DEFAULT 0,
   source text NOT NULL,
   families text[] NOT NULL DEFAULT '{}',
   create_time timestamptz NOT NULL DEFAULT NOW()

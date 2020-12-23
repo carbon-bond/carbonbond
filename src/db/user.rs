@@ -8,16 +8,17 @@ impl DBObject for User {
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<User> {
-    let pool = get_pool();
-    let user = sqlx::query_as!(
-        User,
-        "SELECT * from user_with_relations() as u where u.id = $1",
-        id
-    )
-    .fetch_one(pool)
-    .await
-    .to_fallible(id)?;
-    Ok(user)
+    panic!()
+    // let pool = get_pool();
+    // let user = sqlx::query_as!(
+    //     User,
+    //     "SELECT * from user_with_relations() as u where u.id = $1",
+    //     id
+    // )
+    // .fetch_one(pool)
+    // .await
+    // .to_fallible(id)?;
+    // Ok(user)
 }
 
 pub async fn email_used(email: &str) -> Fallible<bool> {
@@ -29,16 +30,17 @@ pub async fn email_used(email: &str) -> Fallible<bool> {
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<User> {
-    let pool = get_pool();
-    let user = sqlx::query_as!(
-        User,
-        "SELECT * from user_with_relations() as u where u.user_name = $1",
-        name
-    )
-    .fetch_one(pool)
-    .await
-    .to_fallible(name)?;
-    Ok(user)
+    panic!()
+    // let pool = get_pool();
+    // let user = sqlx::query_as!(
+    //     User,
+    //     "SELECT * from user_with_relations() as u where u.user_name = $1",
+    //     name
+    // )
+    // .fetch_one(pool)
+    // .await
+    // .to_fallible(name)?;
+    // Ok(user)
 }
 
 pub async fn get_signup_token(email: &str) -> Fallible<Option<String>> {

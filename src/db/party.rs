@@ -8,13 +8,14 @@ impl DBObject for Party {
 
 pub async fn get_by_name(name: &str) -> Fallible<Party> {
     let pool = get_pool();
+    // XXX: 密切關注 sql issue-367，可以避免底下的 board_name 硬轉
     let party = sqlx::query_as!(
         Party,
-        "
-    SELECT parties.*, boards.board_name FROM parties
+        r#"
+    SELECT parties.*, boards.board_name as "board_name?" FROM parties
     LEFT JOIN boards on boards.id = parties.board_id
     WHERE parties.party_name = $1
-    ",
+    "#,
         name
     )
     .fetch_one(pool)
@@ -25,13 +26,14 @@ pub async fn get_by_name(name: &str) -> Fallible<Party> {
 
 pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
     let pool = get_pool();
+    // XXX: 密切關注 sql issue-367，可以避免底下的 board_name 硬轉
     let parties: Vec<Party> = sqlx::query_as!(
         Party,
-        "
-    SELECT parties.*, boards.board_name FROM parties
+        r#"
+    SELECT parties.*, boards.board_name as "board_name?" FROM parties
     INNER JOIN party_members ON parties.id = party_members.party_id
     LEFT JOIN boards on boards.id = parties.board_id
-    WHERE user_id = $1;",
+    WHERE user_id = $1;"#,
         id
     )
     .fetch_all(pool)

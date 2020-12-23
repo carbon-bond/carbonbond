@@ -3,8 +3,8 @@ use carbonbond::{
     config::{load_config, prj_path},
     custom_error::Fallible,
 };
-use sqlx_beta::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};
-use sqlx_beta::{any::Any, AnyConnection, Connection};
+use sqlx::migrate::{Migrate, MigrateDatabase, MigrateError, Migrator};
+use sqlx::{Any, AnyConnection, Connection};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]

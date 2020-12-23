@@ -22,6 +22,7 @@
         flex: 1;
         justify-content: center;
         align-items: center;
+        flex: 1;
 
         & .carbonbond {
             display: flex;
@@ -48,6 +49,10 @@
         & .searchPart {
             line-height: 40px;
             cursor: text;
+<<<<<<< Updated upstream
+=======
+            /* height: 40px; */
+>>>>>>> Stashed changes
             flex: 1;
 
             display: flex;

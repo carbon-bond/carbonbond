@@ -14,12 +14,12 @@ pub async fn get_by_ids(
     let pool = get_pool();
     let replies = sqlx::query_as!(
         Entry,
-        "
-        SELECT abf.value AS id, COUNT(DISTINCT abf.article_id)
+        r#"
+        SELECT abf.value AS id, COUNT(DISTINCT abf.article_id) as "count!"
         FROM article_bond_fields abf
         WHERE abf.value = ANY($1)
         GROUP by abf.value ORDER BY abf.value
-        ",
+        "#,
         &ids,
     )
     .fetch_all(pool)

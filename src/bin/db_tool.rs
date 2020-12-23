@@ -5,8 +5,8 @@ use carbonbond::{
     db,
 };
 use rustyline::Editor;
-use sqlx_beta::migrate::{Migrate, MigrateError, Migrator};
-use sqlx_beta::{AnyConnection, Connection};
+use sqlx::migrate::{Migrate, MigrateError, Migrator};
+use sqlx::{AnyConnection, Connection};
 use std::io::Write;
 use structopt::StructOpt;
 

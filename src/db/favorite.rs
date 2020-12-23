@@ -3,18 +3,19 @@ use crate::api::model::ArticleMeta;
 use crate::custom_error::Fallible;
 
 pub async fn get_article_by_user_id(id: i64) -> Fallible<Vec<ArticleMeta>> {
-    let pool = get_pool();
-    let articles: Vec<ArticleMeta> = sqlx::query_as!(
-        ArticleMeta,
-        "
-        SELECT article_metas.* FROM article_metas(true, '{}')
-        INNER JOIN favorite_articles ON article_metas.id = favorite_articles.article_id
-        WHERE favorite_articles.user_id = $1;",
-        id
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(articles)
+    panic!()
+    // let pool = get_pool();
+    // let articles: Vec<ArticleMeta> = sqlx::query_as!(
+    //     ArticleMeta,
+    //     "
+    //     SELECT article_metas.* FROM article_metas(true, '{}')
+    //     INNER JOIN favorite_articles ON article_metas.id = favorite_articles.article_id
+    //     WHERE favorite_articles.user_id = $1;",
+    //     id
+    // )
+    // .fetch_all(pool)
+    // .await?;
+    // Ok(articles)
 }
 
 pub async fn favorite(user_id: i64, article_id: i64) -> Fallible<i64> {

@@ -7,7 +7,7 @@ use force;
 use force::parse_category;
 use lazy_static::lazy_static;
 use serde_json::Value;
-use sqlx::{executor::Executor, Postgres};
+use sqlx::{PgConnection, Postgres};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -103,100 +103,102 @@ pub async fn search_article(
     start_time: Option<DateTime<Utc>>,
     title: Option<String>,
 ) -> Fallible<Vec<ArticleMeta>> {
-    let pool = get_pool();
-    let metas = sqlx::query_as!(
-        ArticleMeta,
-        "
-        SELECT * FROM article_metas(true, '{}')
-        WHERE ($1 OR board_name = $2)
-        AND ($3 OR author_name = $4)
-        AND ($5 OR category_id = $6)
-        AND ($7 OR create_time < $8)
-        AND ($9 OR create_time > $10)
-        AND ($11 OR title ~ $12)
-        ",
-        board_name.is_none(),
-        board_name,
-        author_name.is_none(),
-        author_name.unwrap_or_default(),
-        category.is_none(),
-        category.unwrap_or_default(),
-        end_time.is_none(),
-        end_time.unwrap_or(Utc::now()),
-        start_time.is_none(),
-        start_time.unwrap_or(Utc::now()),
-        title.is_none(),
-        title.unwrap_or_default()
-    )
-    .fetch_all(pool)
-    .await?;
-    // XXX: 用不定長 sql 優化之
-    let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
-    for (name, value) in content.into_iter() {
-        match value {
-            SearchField::String(value) => {
-                ids = sqlx::query!(
-                    "
-                    SELECT a.id FROM articles a WHERE EXISTS (
-                        SELECT 1 FROM article_string_fields f
-                        WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2
-                    ) AND a.id = ANY($3)
-                    ",
-                    name,
-                    value,
-                    &ids
-                )
-                .fetch_all(pool)
-                .await?
-                .into_iter()
-                .map(|rec| rec.id)
-                .collect();
-            }
-            SearchField::Range((from, to)) => {
-                ids = sqlx::query!(
-                    "
-                    SELECT a.id FROM articles a WHERE EXISTS (
-                        SELECT 1 FROM article_int_fields f
-                        WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3
-                    ) AND a.id = ANY($4)
-                    ",
-                    name,
-                    from,
-                    to,
-                    &ids
-                )
-                .fetch_all(pool)
-                .await?
-                .into_iter()
-                .map(|rec| rec.id)
-                .collect();
-            }
-        }
-    }
-    let metas = {
-        use std::collections::HashSet;
-        let set: HashSet<i64> = ids.into_iter().collect();
-        let mut filterd_metas = vec![];
-        for m in metas.into_iter() {
-            if set.contains(&m.id) {
-                filterd_metas.push(m);
-            }
-        }
-        filterd_metas
-    };
-    Ok(metas)
+    panic!();
+    // let pool = get_pool();
+    // let metas = sqlx::query_as!(
+    //     ArticleMeta,
+    //     "
+    //     SELECT * FROM article_metas(true, '{}')
+    //     WHERE ($1 OR board_name = $2)
+    //     AND ($3 OR author_name = $4)
+    //     AND ($5 OR category_id = $6)
+    //     AND ($7 OR create_time < $8)
+    //     AND ($9 OR create_time > $10)
+    //     AND ($11 OR title ~ $12)
+    //     ",
+    //     board_name.is_none(),
+    //     board_name,
+    //     author_name.is_none(),
+    //     author_name.unwrap_or_default(),
+    //     category.is_none(),
+    //     category.unwrap_or_default(),
+    //     end_time.is_none(),
+    //     end_time.unwrap_or(Utc::now()),
+    //     start_time.is_none(),
+    //     start_time.unwrap_or(Utc::now()),
+    //     title.is_none(),
+    //     title.unwrap_or_default()
+    // )
+    // .fetch_all(pool)
+    // .await?;
+    // // XXX: 用不定長 sql 優化之
+    // let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
+    // for (name, value) in content.into_iter() {
+    //     match value {
+    //         SearchField::String(value) => {
+    //             ids = sqlx::query!(
+    //                 "
+    //                 SELECT a.id FROM articles a WHERE EXISTS (
+    //                     SELECT 1 FROM article_string_fields f
+    //                     WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2
+    //                 ) AND a.id = ANY($3)
+    //                 ",
+    //                 name,
+    //                 value,
+    //                 &ids
+    //             )
+    //             .fetch_all(pool)
+    //             .await?
+    //             .into_iter()
+    //             .map(|rec| rec.id)
+    //             .collect();
+    //         }
+    //         SearchField::Range((from, to)) => {
+    //             ids = sqlx::query!(
+    //                 "
+    //                 SELECT a.id FROM articles a WHERE EXISTS (
+    //                     SELECT 1 FROM article_int_fields f
+    //                     WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3
+    //                 ) AND a.id = ANY($4)
+    //                 ",
+    //                 name,
+    //                 from,
+    //                 to,
+    //                 &ids
+    //             )
+    //             .fetch_all(pool)
+    //             .await?
+    //             .into_iter()
+    //             .map(|rec| rec.id)
+    //             .collect();
+    //         }
+    //     }
+    // }
+    // let metas = {
+    //     use std::collections::HashSet;
+    //     let set: HashSet<i64> = ids.into_iter().collect();
+    //     let mut filterd_metas = vec![];
+    //     for m in metas.into_iter() {
+    //         if set.contains(&m.id) {
+    //             filterd_metas.push(m);
+    //         }
+    //     }
+    //     filterd_metas
+    // };
+    // Ok(metas)
 }
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
-    let pool = get_pool();
-    let meta = sqlx::query_as!(
-        ArticleMeta,
-        "SELECT * FROM article_metas(true, '{}') WHERE id = $1",
-        id
-    )
-    .fetch_one(pool)
-    .await
-    .to_fallible(&id.to_string())?;
-    Ok(meta)
+    panic!();
+    // let pool = get_pool();
+    // let meta = sqlx::query_as!(
+    //     ArticleMeta,
+    //     "SELECT * FROM article_metas(true, '{}') WHERE id = $1",
+    //     id
+    // )
+    // .fetch_one(pool)
+    // .await
+    // .to_fallible(&id.to_string())?;
+    // Ok(meta)
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<Article> {
@@ -212,25 +214,26 @@ pub async fn get_by_board_name(
     limit: usize,
     family_filter: &FamilyFilter,
 ) -> Fallible<Vec<ArticleMeta>> {
-    let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
-    let metas = sqlx::query_as!(
-        ArticleMeta,
-        "
-        SELECT * FROM article_metas($4, $5)
-        WHERE board_name = $1
-        ORDER BY create_time DESC
-        LIMIT $2 OFFSET $3
-        ",
-        board_name,
-        limit as i64,
-        offset,
-        family_filter.0,
-        family_filter.1
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(metas)
+    panic!();
+    // let pool = get_pool();
+    // let family_filter = filter_tuple(family_filter);
+    // let metas = sqlx::query_as!(
+    //     ArticleMeta,
+    //     "
+    //     SELECT * FROM article_metas($4, $5)
+    //     WHERE board_name = $1
+    //     ORDER BY create_time DESC
+    //     LIMIT $2 OFFSET $3
+    //     ",
+    //     board_name,
+    //     limit as i64,
+    //     offset,
+    //     family_filter.0,
+    //     family_filter.1
+    // )
+    // .fetch_all(pool)
+    // .await?;
+    // Ok(metas)
 }
 
 // `article_id` 指向的文章
@@ -239,28 +242,30 @@ pub async fn get_bondee_meta(
     category_set: Option<&[String]>,
     family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
-    let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
-    let data = sqlx::query_as!(
-        BondAndArticle,
-        "
-        SELECT DISTINCT
-        a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
-        FROM article_metas($4, $5) a
-        INNER JOIN article_bond_fields abf ON a.id = abf.value
-        WHERE abf.article_id = $1
-        AND ($2 OR category_name = ANY($3))
-        ORDER BY create_time DESC
-        ",
-        article_id,
-        category_set.is_none(),
-        category_set.unwrap_or(EMPTY_SET),
-        family_filter.0,
-        family_filter.1
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(data.into_iter().map(|d| d.into()))
+    panic!();
+    Ok(vec![].into_iter())
+    // let pool = get_pool();
+    // let family_filter = filter_tuple(family_filter);
+    // let data = sqlx::query_as!(
+    //     BondAndArticle,
+    //     "
+    //     SELECT DISTINCT
+    //     a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
+    //     FROM article_metas($4, $5) a
+    //     INNER JOIN article_bond_fields abf ON a.id = abf.value
+    //     WHERE abf.article_id = $1
+    //     AND ($2 OR category_name = ANY($3))
+    //     ORDER BY create_time DESC
+    //     ",
+    //     article_id,
+    //     category_set.is_none(),
+    //     category_set.unwrap_or(EMPTY_SET),
+    //     family_filter.0,
+    //     family_filter.1
+    // )
+    // .fetch_all(pool)
+    // .await?;
+    // Ok(data.into_iter().map(|d| d.into()))
 }
 
 // 指向 `article_id` 的文章
@@ -269,28 +274,30 @@ pub async fn get_bonder_meta(
     category_set: Option<&[String]>,
     family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
-    let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
-    let data = sqlx::query_as!(
-        BondAndArticle,
-        "
-        SELECT DISTINCT
-        a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
-        FROM article_metas($4, $5) a
-        INNER JOIN article_bond_fields abf ON a.id = abf.article_id
-        WHERE abf.value = $1
-        AND ($2 OR category_name = ANY($3))
-        ORDER BY create_time DESC
-        ",
-        article_id,
-        category_set.is_none(),
-        category_set.unwrap_or(EMPTY_SET),
-        family_filter.0,
-        family_filter.1
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(data.into_iter().map(|d| d.into()))
+    panic!();
+    Ok(vec![].into_iter())
+    // let pool = get_pool();
+    // let family_filter = filter_tuple(family_filter);
+    // let data = sqlx::query_as!(
+    //     BondAndArticle,
+    //     "
+    //     SELECT DISTINCT
+    //     a.*, abf.article_id as from, abf.value as to, abf.energy as bond_energy, abf.name, abf.id as bond_id
+    //     FROM article_metas($4, $5) a
+    //     INNER JOIN article_bond_fields abf ON a.id = abf.article_id
+    //     WHERE abf.value = $1
+    //     AND ($2 OR category_name = ANY($3))
+    //     ORDER BY create_time DESC
+    //     ",
+    //     article_id,
+    //     category_set.is_none(),
+    //     category_set.unwrap_or(EMPTY_SET),
+    //     family_filter.0,
+    //     family_filter.1
+    // )
+    // .fetch_all(pool)
+    // .await?;
+    // Ok(data.into_iter().map(|d| d.into()))
 }
 
 pub async fn get_bonder(
@@ -430,11 +437,7 @@ pub async fn create(
     Ok(article_id)
 }
 
-pub(super) async fn update_energy<C: Executor<Database = Postgres>>(
-    conn: &mut C,
-    id: i64,
-    energy: i16,
-) -> Fallible {
+pub(super) async fn update_energy(conn: &mut PgConnection, id: i64, energy: i16) -> Fallible {
     sqlx::query!(
         "UPDATE articles SET energy = energy + $1 WHERE id = $2",
         energy as i32,
