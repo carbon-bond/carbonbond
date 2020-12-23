@@ -2,20 +2,23 @@ use super::get_pool;
 use crate::api::model::ArticleMeta;
 use crate::custom_error::Fallible;
 
-pub async fn get_article_by_user_id(id: i64) -> Fallible<Vec<ArticleMeta>> {
-    panic!()
-    // let pool = get_pool();
-    // let articles: Vec<ArticleMeta> = sqlx::query_as!(
-    //     ArticleMeta,
-    //     "
-    //     SELECT article_metas.* FROM article_metas(true, '{}')
-    //     INNER JOIN favorite_articles ON article_metas.id = favorite_articles.article_id
-    //     WHERE favorite_articles.user_id = $1;",
-    //     id
-    // )
-    // .fetch_all(pool)
-    // .await?;
-    // Ok(articles)
+const EMPTY_SET: &[String] = &[];
+
+pub async fn get_by_user_id(id: i64) -> Fallible<impl ExactSizeIterator<Item = ArticleMeta>> {
+    let pool = get_pool();
+    let data = metas!(
+        "metas.*",
+        "
+        INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id
+        WHERE favorite_articles.user_id = $3
+        ",
+        true,
+        EMPTY_SET,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(data.into_iter().map(|d| to_meta!(d)))
 }
 
 pub async fn favorite(user_id: i64, article_id: i64) -> Fallible<i64> {

@@ -7,18 +7,69 @@ impl DBObject for User {
     const TYPE: DataType = DataType::User;
 }
 
+// XXX: 密切關注 sqlx user defined macro
+// XXX: 密切關注 sqlx 什麼時候能把 COUNT(*) 判斷為非空
+macro_rules! users {
+    ($remain:literal, $($arg:expr),*) => {
+        sqlx::query_as!(
+            User,
+            r#"
+            WITH metas AS (SELECT
+                users.id,
+                users.user_name,
+                users.sentence,
+                users.energy,
+                users.introduction,
+                users.gender,
+                users.job,
+                users.city,
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND (kind = 'hate'
+                    OR kind = 'openly_hate')) AS "hated_count!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND kind = 'follow') AS "followed_count!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND (kind = 'hate'
+                    OR kind = 'openly_hate')) AS "hating_count!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND kind = 'follow') AS "following_count!"
+            FROM users) SELECT * FROM metas "# + $remain,
+            $($arg),*
+        )
+    };
+}
+
 pub async fn get_by_id(id: i64) -> Fallible<User> {
-    panic!()
-    // let pool = get_pool();
-    // let user = sqlx::query_as!(
-    //     User,
-    //     "SELECT * from user_with_relations() as u where u.id = $1",
-    //     id
-    // )
-    // .fetch_one(pool)
-    // .await
-    // .to_fallible(id)?;
-    // Ok(user)
+    let pool = get_pool();
+    let user = users!("WHERE metas.id = $1", id)
+        .fetch_one(pool)
+        .await
+        .to_fallible(id)?;
+    Ok(user)
 }
 
 pub async fn email_used(email: &str) -> Fallible<bool> {
@@ -30,17 +81,12 @@ pub async fn email_used(email: &str) -> Fallible<bool> {
 }
 
 pub async fn get_by_name(name: &str) -> Fallible<User> {
-    panic!()
-    // let pool = get_pool();
-    // let user = sqlx::query_as!(
-    //     User,
-    //     "SELECT * from user_with_relations() as u where u.user_name = $1",
-    //     name
-    // )
-    // .fetch_one(pool)
-    // .await
-    // .to_fallible(name)?;
-    // Ok(user)
+    let pool = get_pool();
+    let user = users!("WHERE metas.user_name = $1", name)
+        .fetch_one(pool)
+        .await
+        .to_fallible(name)?;
+    Ok(user)
 }
 
 pub async fn get_signup_token(email: &str) -> Fallible<Option<String>> {

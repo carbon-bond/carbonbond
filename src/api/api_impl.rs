@@ -310,7 +310,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
     ) -> Fallible<Vec<model::ArticleMeta>> {
         let id = context.get_id_strict()?;
-        db::favorite::get_article_by_user_id(id).await
+        Ok(db::favorite::get_by_user_id(id).await?.collect())
     }
     async fn query_user(
         &self,

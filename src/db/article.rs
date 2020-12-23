@@ -1,4 +1,4 @@
-use super::{article_content, get_pool, DBObject, ToFallible};
+use super::{article_content, get_pool, DBObject};
 use crate::api::model::{Article, ArticleMeta, Edge, FamilyFilter, SearchField};
 use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
@@ -7,7 +7,7 @@ use force;
 use force::parse_category;
 use lazy_static::lazy_static;
 use serde_json::Value;
-use sqlx::{PgConnection, Postgres};
+use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;

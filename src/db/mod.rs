@@ -3,6 +3,7 @@ use crate::custom_error::{DataType, ErrorCode, Fallible};
 use sqlx::postgres::PgPool;
 use state::Storage;
 
+#[macro_use]
 pub mod article;
 pub mod article_content;
 pub mod article_statistics;
