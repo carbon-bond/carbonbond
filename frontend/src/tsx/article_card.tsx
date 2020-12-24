@@ -1,5 +1,6 @@
 import * as React from 'react';
 import '../css/board_switch/article_card.css';
+import { UserState } from './global_state/user';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { ArticleMeta, Edge } from '../ts/api/api_trait';
@@ -27,15 +28,22 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 	return <div styleName="articleLine">
 		<span styleName="articleType">{props.category_name}</span>
 		<span styleName="articleTitle">{props.title}</span>
-		<Link  styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
+	const { user_state } = UserState.useContainer();
 	const [favorite, setFavorite] = React.useState<boolean>(false);
 
 	async function fetchFavorites(): Promise<ArticleMeta[]> {
-		return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+		if (user_state.login) {
+			console.log('has login');
+			return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+		} else {
+			console.log('no login');
+			return [];
+		}
 	}
 
 	Promise.all([
@@ -71,24 +79,19 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
-				<i> ☘ </i>
-				<span styleName="num">{props.article.energy}</span>鍵能
+				☘️<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				<i> 🗯 </i>
-				<span styleName="num">1297</span>則留言
+				🗯️<span styleName="num">1297</span>則留言
 			</div>
 			<div styleName="articleBtnItem">
-				<i> ⮕ </i>
-				<span styleName="num">18</span>篇大回文
+				➡️<span styleName="num">18</span>篇大回文
 			</div>
 			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
-				{favorite ? <i> 🌟 </i>: <i> ★ </i> }
-				{favorite ? '取消收藏' : '收藏'}
+				{favorite ? '🌟取消收藏' : '⭐收藏'}
 			</div>
 			<div styleName="articleBtnItem">
-				<i> 📎 </i>
-				分享
+				📎分享
 			</div>
 		</div>
 	</div>;
@@ -204,9 +207,9 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 }
 
 function CommentCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
-	const date_string =  relativeDate(new Date(props.meta.create_time));
+	const date_string = relativeDate(new Date(props.meta.create_time));
 	return <div styleName="commentCard">
-		<BondCard bond={props.bond}/>
+		<BondCard bond={props.bond} />
 		<div styleName="commentHeader">
 			<Link to={`/app/user/${props.meta.author_name}`}>
 				<div styleName="authorId">{props.meta.author_name}</div>
