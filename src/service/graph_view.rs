@@ -43,8 +43,11 @@ pub async fn query_graph(
         log::trace!("對 {:?} 搜索", articles_to_expand);
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
-            let bondee = db::article::get_bondee_meta(id, category_set, family_filer).await?;
-            let bonder = db::article::get_bonder_meta(id, category_set, family_filer).await?;
+            let (bondee, bonder) = tokio::join!(
+                db::article::get_bondee_meta(id, category_set, family_filer),
+                db::article::get_bonder_meta(id, category_set, family_filer)
+            );
+            let (bondee, bonder) = (bondee?, bonder?);
             macro_rules! insert {
                 ($iter:ident) => {
                     for (bond, meta) in $iter {
