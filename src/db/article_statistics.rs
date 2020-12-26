@@ -1,6 +1,7 @@
 use super::get_pool;
-use crate::api::model::{ArticleMeta, ArticleStatistics};
+use crate::api::model::ArticleMeta;
 use crate::custom_error::Fallible;
+use std::collections::HashMap;
 
 struct Entry {
     id: i64,
@@ -28,44 +29,15 @@ pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
     )
     .fetch_all(pool)
     .await?;
-    let mut replies: &[_] = &replies;
-
-    for meta in metas.into_iter() {
-        let (id, stat) = (meta.id, &mut meta.stat);
-        if let Some((is_small, r)) = extract_from_stats(id, &mut replies) {
-            if is_small {
-                stat.small_replies = r;
+    let mut map: HashMap<_, _> = metas.into_iter().map(|meta| (meta.id, meta)).collect();
+    for r in replies.into_iter() {
+        if let Some(a) = map.get_mut(&r.id) {
+            if r.is_small {
+                a.stat.small_replies = r.count;
             } else {
-                stat.replies = r;
-            }
-        }
-        if let Some((is_small, r)) = extract_from_stats(id, &mut replies) {
-            if is_small {
-                stat.small_replies = r;
-            } else {
-                stat.replies = r;
+                a.stat.replies = r.count;
             }
         }
     }
     Ok(())
-}
-
-fn extract_from_stats(cur_id: i64, series: &mut &[Entry]) -> Option<(bool, i64)> {
-    loop {
-        match series.first() {
-            Some(entry) => {
-                if entry.id == cur_id {
-                    *series = &series[1..series.len()];
-                    return Some((entry.is_small, entry.count));
-                } else if entry.id < cur_id {
-                    *series = &series[1..series.len()];
-                } else {
-                    return None;
-                }
-            }
-            None => {
-                return None;
-            }
-        }
-    }
 }
