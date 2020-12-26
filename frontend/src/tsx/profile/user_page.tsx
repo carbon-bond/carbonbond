@@ -1,14 +1,16 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
+import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
-import { UserRelationKind, User, ArticleMeta } from '../../ts/api/api_trait';
+import { UserRelationKind, User, ArticleMeta, Favorite } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 
 import '../../css/article_wrapper.css';
+import '../../css/favorite_wrapper.css';
 import '../../css/user_page.css';
 import produce from 'immer';
 
@@ -300,7 +302,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 function ProfileWorks(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
-	const [favorites, setFavorites] = React.useState<ArticleMeta[]>([]);
+	const [favorites, setFavorites] = React.useState<Favorite[]>([]);
 
 	React.useEffect(() => {
 		// TODO detect which tab is currently selected and only need to update that tab's data
@@ -361,7 +363,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 		<div styleName="switchContent">
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Comments />}
-			{selectTab == 2 && <Articles articles={favorites} />}
+			{selectTab == 2 && <Favorites favorites={favorites} />}
 			{selectTab == 3 && <Friendships />}
 		</div>
 	</div>;
@@ -372,6 +374,22 @@ function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
 		{props.articles.map((article, idx) => (
 			<div styleName="articleWrapper" key={`article-${idx}`}>
 				<ArticleCard article={article} />
+			</div>
+		))}
+	</div>;
+}
+
+function Favorites(props: { favorites: Favorite[] }): JSX.Element {
+	let sortedFavorites = Array.from(props.favorites).sort((lhs, rhs) => {
+		return lhs.create_time < rhs.create_time ? 1 : -1;
+	});
+	return <div>
+		{sortedFavorites.map((favorite, idx) => (
+			<div styleName="favoriteWrapper" key={`article-${idx}`}>
+				<div styleName="favoriteTitle">{relativeDate(new Date(favorite.create_time))}</div>
+				<div styleName="articleWrapper" >
+					<ArticleCard article={favorite.meta} />
+				</div>
 			</div>
 		))}
 	</div>;
@@ -392,7 +410,7 @@ async function fetchArticles(
 	return unwrap_or(await API_FETCHER.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 
-async function fetchFavorites(): Promise<ArticleMeta[]> {
+async function fetchFavorites(): Promise<Favorite[]> {
 	return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
 }
 

@@ -34,12 +34,6 @@ mod model {
         pub create_time: DateTime<Utc>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Favorite {
-        pub id: i64,
-        pub user_id: i64,
-        pub article_id: i64,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
         pub id: i64,
         pub board_name: String,
@@ -79,6 +73,11 @@ mod model {
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
         pub stat: ArticleStatistics,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Favorite {
+        pub meta: ArticleMeta,
+        pub create_time: DateTime<Utc>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {

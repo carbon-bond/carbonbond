@@ -308,7 +308,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_my_favorite_article_list(
         &self,
         context: &mut crate::Ctx,
-    ) -> Fallible<Vec<model::ArticleMeta>> {
+    ) -> Fallible<Vec<model::Favorite>> {
         let id = context.get_id_strict()?;
         Ok(db::favorite::get_by_user_id(id).await?.collect())
     }

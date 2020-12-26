@@ -65,6 +65,14 @@ macro_rules! to_meta {
         }
     };
 }
+macro_rules! to_favorite {
+    ($data:ident) => {
+        Favorite {
+            create_time: $data.favorite_create_time,
+            meta: to_meta!($data),
+        }
+    };
+}
 macro_rules! to_bond_and_meta {
     ($data:ident) => {
         (

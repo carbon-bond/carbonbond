@@ -22,7 +22,7 @@ pub enum UserQuery {
     QueryMe {},
     #[chitin(request, response = "Vec<super::model::Party>")]
     QueryMyPartyList {},
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(request, response = "Vec<super::model::Favorite>")]
     QueryMyFavoriteArticleList {},
 
     #[chitin(request, response = "()")]
