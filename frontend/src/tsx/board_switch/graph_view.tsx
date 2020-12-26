@@ -13,16 +13,20 @@ type Props = RouteComponentProps<{ article_id: string }>;
 enum RadiusMode {
 	Energy,
 	AbsEnergy,
-	Reply,
+	SmallReply,
 };
 type Panel = {
-	radius_mode: RadiusMode
+	radius_mode: RadiusMode,
+	locate: boolean,
+	unlocate: () => void
 };
 
 export function GraphView(props: Props): JSX.Element {
 	let article_id = parseInt(props.match.params.article_id);
 	let [article_meta, setArticleMeta] = React.useState<ArticleMeta | null>(null);
 	let [radius_mode, setRadiusMode] = React.useState(RadiusMode.Energy);
+	let [locate, setLocate] = React.useState(false);
+	let unlocate = React.useCallback(() => setLocate(false), []);
 	React.useEffect(() => {
 		if (Number.isNaN(article_id)) {
 			toastErr(`${props.match.params.article_id} 不是合法的文章 id`);
@@ -37,7 +41,7 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['回應數', RadiusMode.Reply]];
+		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['留言數', RadiusMode.SmallReply]];
 		return <div styleName="wrapper">
 			<div styleName="panel">
 				<h3>文章半徑</h3>
@@ -55,8 +59,10 @@ export function GraphView(props: Props): JSX.Element {
 						</>;
 					})}
 				</div>
+				<hr/>
+				<button onClick={() => setLocate(true)}>定位當前文章</button>
 			</div>
-			<GraphViewInner panel={{ radius_mode }} meta={article_meta} {...props} />
+			<GraphViewInner panel={{ radius_mode, locate, unlocate }} meta={article_meta} {...props} />
 		</div>;
 	} else {
 		return <></>;
@@ -98,6 +104,8 @@ function computeRadius(meta: ArticleMeta, mode: RadiusMode = RadiusMode.Energy):
 		value = meta.energy;
 	} else if (mode == RadiusMode.AbsEnergy) {
 		value = Math.abs(meta.energy);
+	} else if (mode == RadiusMode.SmallReply) {
+		value = Math.abs(meta.stat.small_replies);
 	} else {
 		value = 1;
 	}
@@ -170,9 +178,12 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	let [offset_y, setOffsetY] = React.useState(0);
 	let [init_offset_x, setInitOffsetX] = React.useState(0);
 	let [init_offset_y, setInitOffsetY] = React.useState(0);
+	let [cur_article_x, setCurArticleX] = React.useState(0);
+	let [cur_article_y, setCurArticleY] = React.useState(0);
 	let [scale, setScale] = React.useState(1);
 	let [opacity, setOpacity] = React.useState(0);
 	let graph_div = React.useRef<HTMLDivElement | null>(null);
+	let svg_ref = React.useRef<null | d3.Selection<SVGSVGElement, unknown, null ,undefined>>(null);
 	let node_ref = useRefD3<SVGCircleElement, Node>();
 	let link_ref = useRefD3<SVGPathElement, Edge>();
 	let text_ref = useRefD3<SVGTextElement, Node>();
@@ -245,9 +256,9 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			// @ts-ignore
 			return `M${s.x},${s.y} A ${dr} ${dr} 0 0 ${direction} ${m.x} ${m.y}`;
 		});
-		let offset_x = 0, offset_y = 0;
 		node.attr('transform', d => {
 			if (props.meta.id == d.id) {
+				let offset_x = 0, offset_y = 0;
 				// @ts-ignore
 				let [x, y, diameter] = [d.x, d.y, computeRadius(d.meta, mode) * 2];
 				// 避免當前文章跑出畫面外
@@ -261,6 +272,10 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 				} else if (y + diameter > height) {
 					offset_y = height - y - diameter;
 				}
+				setCurArticleX(x);
+				setCurArticleY(y);
+				setInitOffsetX(offset_x);
+				setInitOffsetY(offset_y);
 			}
 			// @ts-ignore
 			return 'translate(' + d.x + ',' + d.y + ')';
@@ -270,9 +285,6 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			// @ts-ignore
 			return `translate(${d.x - len / 2}, ${d.y + computeRadius(d.meta, mode) + FONT_SIZE})`;
 		});
-
-		setInitOffsetX(offset_x);
-		setInitOffsetY(offset_y);
 
 	}, [link_ref, node_ref, text_ref, props.meta.id]);
 
@@ -284,12 +296,15 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 		let svg_super = d3.select(graph_div.current).append('svg')
 			.attr('width', width)
 			.attr('height', height);
+		svg_ref.current = svg_super;
 
-		let svg = makeZoomable(svg_super, (t) => {
+		// @ts-ignore
+		svg_super.call(zoom((t) => {
 			setOffsetX(t.offset_x);
 			setOffsetY(t.offset_y);
 			setScale(t.scale);
-		}).attr('id', 'canvas');
+		}));
+		let svg = svg_super.append('g').attr('id', 'canvas');
 
 		let link = svg.append('g')
 			.selectAll('path')
@@ -365,9 +380,32 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	}, [graph, props.meta.id, props.history, redraw, link_ref, node_ref, text_ref]);
 
 	React.useEffect(() => {
+		if (!props.panel.locate) {
+			return;
+		}
+		if (graph_div.current == null) {
+			return;
+		}
+		let [width, height] = getWidthHeight();
+		// init_offset_x * scale + offset_x + cur_article_x = width/2;
+		let trans_x = width / 2 - init_offset_x - cur_article_x * scale;
+		let trans_y = height / 2 - init_offset_y - cur_article_y * scale;
+		// @ts-ignore
+		svg_ref.current!.transition().duration(200).call(zoom(t => {
+			setOffsetX(t.offset_x);
+			setOffsetY(t.offset_y);
+			setScale(t.scale);
+		}).transform,
+		d3.zoomIdentity.translate(trans_x, trans_y).scale(scale)
+		);
+
+		props.panel.unlocate();
+	}, [props.panel, cur_article_x, cur_article_y, init_offset_x, init_offset_y, scale]);
+
+	React.useEffect(() => {
 		d3.select('#canvas')
 		.transition()
-		.duration(50)
+		.duration(40)
 		.attr('transform', `translate(${offset_x + init_offset_x * scale}, ${offset_y + init_offset_y * scale})scale(${scale})`);
 	}, [init_offset_x, init_offset_y, offset_x, offset_y, scale]);
 
@@ -471,13 +509,11 @@ function addMarker(
 			.attr('fill', color);
 }
 
-function makeZoomable(
-	svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+function zoom(
 	onTransform: (t: { offset_x: number, offset_y: number, scale: number }) => void
-): d3.Selection<SVGGElement, unknown, null, undefined> {
-	let g = svg.append('g');
+): d3.ZoomBehavior<Element, unknown> {
 	let speed = 1;
-	let zoom = d3.zoom()
+	return d3.zoom()
 		.scaleExtent([0.5, 5])
 		.on('zoom', function (event) {
 			let scale = event.transform.k * speed + (1 - speed);
@@ -488,9 +524,6 @@ function makeZoomable(
 				scale,
 			});
 		});
-	// @ts-ignore
-	svg.call(zoom);
-	return g;
 }
 
 function computeOffsetTop(elt: HTMLElement | null): number {
