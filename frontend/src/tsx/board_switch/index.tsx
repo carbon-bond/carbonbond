@@ -25,6 +25,8 @@ export function BoardSwitch(props: Props): JSX.Element {
 	let [board, setBoard] = React.useState<Board | null>(null);
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
 	React.useEffect(() => {
+		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
+		setFetching(true);
 		API_FETCHER.queryBoard(board_name).then(res => {
 			try {
 				let board = unwrap(res);
@@ -41,9 +43,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 			setFetching(false);
 		});
 	}, [board_name]);
-	if (fetching) {
-		return <div></div>;
-	} else if (board == null) {
+	if (!fetching && board == null) {
 		return <div>查無此看板</div>;
 	} else {
 		return <div className="forumBody">
@@ -51,40 +51,48 @@ export function BoardSwitch(props: Props): JSX.Element {
 				<div styleName="boardHeader">
 					<div>
 						<div styleName="headerLeft">
-							<div styleName="boardTitle">
-								<Link to={`/app/b/${board.board_name}`}>{board.board_name}</Link>
-							</div>
-							<div styleName="boardSubTitle">{board.title}</div>
+							{
+								board == null ? null : <>
+									<div styleName="boardTitle">
+										<Link to={`/app/b/${board.board_name}`}>{board.board_name}</Link>
+									</div>
+									<div styleName="boardSubTitle">{board.title}</div>
+								</>
+							}
 						</div>
 
 						<div styleName="headerRight">
-							<div styleName="dataBox">
-								<div styleName="dataBoxItem">
-									<div styleName="number">{subscribe_count}</div>
-									<div styleName="text">追蹤人數</div>
+							{
+								board == null ? null : <div styleName="dataBox">
+									<div styleName="dataBoxItem">
+										<div styleName="number">{subscribe_count}</div>
+										<div styleName="text">追蹤人數</div>
+									</div>
+									<div styleName="dataBoxItem">
+										<div styleName="number">{board.popularity}</div>
+										<div styleName="text">在線人數</div>
+									</div>
 								</div>
-								<div styleName="dataBoxItem">
-									<div styleName="number">{board.popularity}</div>
-									<div styleName="text">在線人數</div>
-								</div>
-							</div>
+							}
 						</div>
 					</div>
 				</div>
 			</div>
-			<Switch>
-				<Route exact path="/app/b/:board_name/graph/:article_id" render={props =>
-					<div style={{ display: 'flex', flexDirection: 'row' }}>
-						<div style={{ flex: 1 }}>
-							<GraphView {...props} />
+			{
+				board == null ? null : <Switch>
+					<Route exact path="/app/b/:board_name/graph/:article_id" render={props =>
+						<div style={{ display: 'flex', flexDirection: 'row' }}>
+							<div style={{ flex: 1 }}>
+								<GraphView {...props} />
+							</div>
+							<div className="rightSideBar">
+								<ArticleSidebar />
+							</div>
 						</div>
-						<div className="rightSideBar">
-							<ArticleSidebar />
-						</div>
-					</div>
-				} />
-				<Route render={() => <SwitchContent board={board!} />} />
-			</Switch>
+					} />
+					<Route render={() => <SwitchContent board={board!} />} />
+				</Switch>
+			}
 		</div>;
 	}
 }

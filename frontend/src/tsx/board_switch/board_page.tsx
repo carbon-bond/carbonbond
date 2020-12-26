@@ -46,10 +46,10 @@ export function BoardPage(props: Props): JSX.Element {
 	min_article_id_ref.current = min_article_id;
 
 	const { setCurBoard } = BoardCacheState.useContainer();
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
+		console.log(`開始載入 ${board_name}`);
 		setCurBoard(board_name);
 		setMinArticleID(null);
-		setArticles([]);
 		setIsEnd(false);
 		fetchArticles(board_name, PAGE_SIZE, null, setMinArticleID).then(more_articles => {
 			setArticles(more_articles);
@@ -58,10 +58,10 @@ export function BoardPage(props: Props): JSX.Element {
 
 	const scrollHandler = React.useCallback((): void => {
 		// 第一次載入結束前 or 已經載到最早的文章了，不要動作
-		if (articles.length == 0 || is_end) {
+		if (is_end) {
 			return;
 		}
-		console.log('Touch End');
+		console.log(`Touch End ${board_name}`);
 		// const before = articles.slice(-1)[0].id;
 		fetchArticles(board_name, PAGE_SIZE, min_article_id_ref.current, setMinArticleID).then(more_articles => {
 			if (more_articles.length > 0) {
@@ -70,7 +70,7 @@ export function BoardPage(props: Props): JSX.Element {
 				setIsEnd(true);
 			}
 		});
-	}, [articles, min_article_id_ref, board_name, is_end]);
+	}, [articles, min_article_id_ref, is_end, board_name]);
 
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
