@@ -65,8 +65,10 @@ pub async fn query_graph(
         }
         articles_to_expand = articles_next;
     }
+    let mut nodes: Vec<_> = nodes.into_iter().map(|(_, v)| v).collect();
+    nodes.sort_by_key(|a| a.id);
     Ok(Graph {
         edges: edges.into_iter().map(|(_, v)| v).collect(),
-        nodes: nodes.into_iter().map(|(_, v)| v).collect(),
+        nodes: nodes,
     })
 }

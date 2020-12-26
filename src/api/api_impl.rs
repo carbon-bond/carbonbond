@@ -3,7 +3,7 @@ use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::email;
 use crate::service;
-use crate::util::HasBoardProps;
+use crate::util::{HasArticleStats, HasBoardProps};
 use crate::Context;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -80,22 +80,17 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         family_filter: super::model::FamilyFilter,
     ) -> Fallible<Vec<model::ArticleMeta>> {
         // TODO: 支援 author_name
-        match board_name {
-            Some(name) => Ok(
-                db::article::get_by_board_name(&name, 0, count, &family_filter)
-                    .await?
-                    .collect(),
-            ),
-            _ => Err(crate::custom_error::ErrorCode::UnImplemented.into()),
-        }
+        let articles: Vec<_> = match board_name {
+            Some(name) => db::article::get_by_board_name(&name, 0, count, &family_filter)
+                .await?
+                .collect(),
+            _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
+        };
+        articles.assign_stats().await
     }
-    async fn query_article(
-        &self,
-        _context: &mut crate::Ctx,
-        id: i64,
-    ) -> Result<model::Article, crate::custom_error::Error> {
+    async fn query_article(&self, _context: &mut crate::Ctx, id: i64) -> Fallible<model::Article> {
         let article = db::article::get_by_id(id).await?;
-        Ok(article)
+        article.assign_stats().await
     }
     async fn query_bonder(
         &self,
@@ -158,6 +153,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         family_filter: super::model::FamilyFilter,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
         service::graph_view::query_graph(10, article_id, opt_slice(&category_set), &family_filter)
+            .await?
+            .assign_stats()
             .await
     }
 }
@@ -310,7 +307,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
     ) -> Fallible<Vec<model::Favorite>> {
         let id = context.get_id_strict()?;
-        Ok(db::favorite::get_by_user_id(id).await?.collect())
+        let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
+        articles.assign_stats().await
     }
     async fn query_user(
         &self,

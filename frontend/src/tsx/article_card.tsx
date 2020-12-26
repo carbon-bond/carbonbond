@@ -80,10 +80,10 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				☘️<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				🗯️<span styleName="num">1297</span>則留言
+				🗯️<span styleName="num">{props.article.stat.small_replies}</span>則留言
 			</div>
 			<div styleName="articleBtnItem">
-				➡️<span styleName="num">18</span>篇大回文
+				➡️<span styleName="num">{props.article.stat.replies}</span>篇大回文
 			</div>
 			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
 				{favorite ? '🌟取消收藏' : '⭐收藏'}

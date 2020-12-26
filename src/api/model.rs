@@ -82,6 +82,7 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {
         pub replies: i64,
+        pub small_replies: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
