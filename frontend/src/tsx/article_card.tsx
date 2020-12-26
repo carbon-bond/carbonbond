@@ -4,7 +4,7 @@ import { UserState } from './global_state/user';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
 import { ArticleMeta, Edge, Favorite } from '../ts/api/api_trait';
-import { API_FETCHER, unwrap, unwrap_or } from '../ts/api/api';
+import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
 import { parse_category } from 'force';
 
@@ -38,7 +38,8 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 
 	async function fetchFavorites(): Promise<Favorite[]> {
 		if (user_state.login) {
-			return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+			// return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+			return [];
 		} else {
 			return [];
 		}

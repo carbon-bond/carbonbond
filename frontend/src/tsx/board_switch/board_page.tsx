@@ -23,30 +23,38 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 async function fetchArticles(
 	board_name: string,
 	page_size: number,
+	min_id: null | number,
+	setMinID: (min_id: number) => void
 ): Promise<ArticleMeta[]> {
-	return unwrap_or(await API_FETCHER.queryArticleList(page_size, null,
+	let articles = unwrap_or(await API_FETCHER.queryArticleList(page_size, min_id, null,
 		board_name, { BlackList: [force_util.SMALL] }), []);
+	let new_min = Math.min(...articles.map(a => a.id));
+	if (min_id != null) {
+		new_min = Math.min(min_id, new_min);
+	}
+	setMinID(new_min);
+	return articles;
 }
 
 export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.board.board_name;
 
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
-	const [is_end, set_is_end] = React.useState<boolean>(false);
+	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
+	const [is_end, setIsEnd] = React.useState<boolean>(false);
+	const min_article_id_ref = React.useRef<null | number>(0);
+	min_article_id_ref.current = min_article_id;
 
 	const { setCurBoard } = BoardCacheState.useContainer();
 	React.useEffect(() => {
-		setCurBoard(props.board.board_name);
-		// return () => {
-		// 	setCurBoard(null);
-		// };
-	}, [props.board, setCurBoard]);
-
-	React.useEffect(() => {
-		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {
+		setCurBoard(board_name);
+		setMinArticleID(null);
+		setArticles([]);
+		setIsEnd(false);
+		fetchArticles(board_name, PAGE_SIZE, null, setMinArticleID).then(more_articles => {
 			setArticles(more_articles);
 		});
-	}, [board_name]);
+	}, [board_name, setCurBoard]);
 
 	const scrollHandler = React.useCallback((): void => {
 		// 第一次載入結束前 or 已經載到最早的文章了，不要動作
@@ -55,14 +63,14 @@ export function BoardPage(props: Props): JSX.Element {
 		}
 		console.log('Touch End');
 		// const before = articles.slice(-1)[0].id;
-		fetchArticles(board_name, PAGE_SIZE).then(more_articles => {
+		fetchArticles(board_name, PAGE_SIZE, min_article_id_ref.current, setMinArticleID).then(more_articles => {
 			if (more_articles.length > 0) {
 				setArticles([...articles, ...more_articles]);
 			} else {
-				set_is_end(true);
+				setIsEnd(true);
 			}
 		});
-	}, [articles, board_name, is_end]);
+	}, [articles, min_article_id_ref, board_name, is_end]);
 
 	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);

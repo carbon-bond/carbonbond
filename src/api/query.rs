@@ -84,6 +84,7 @@ pub enum ArticleQuery {
     #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
     QueryArticleList {
         count: usize,
+        max_id: Option<i64>,
         author_name: Option<String>,
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,

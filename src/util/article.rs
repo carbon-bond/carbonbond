@@ -49,6 +49,11 @@ impl ArticleKind for Favorite {
         &mut self.meta
     }
 }
+impl<T, A: ArticleKind> ArticleKind for (T, A) {
+    fn meta(&mut self) -> &mut ArticleMeta {
+        self.1.meta()
+    }
+}
 
 #[async_trait]
 impl HasArticleStats for Graph {

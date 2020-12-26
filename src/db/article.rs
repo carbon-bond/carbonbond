@@ -134,6 +134,7 @@ pub async fn search_article(
         AND ($9 OR create_time < $10)
         AND ($11 OR create_time > $12)
         AND ($13 OR title ~ $14)
+        ORDER BY create_time DESC
         ",
         true,
         EMPTY_SET,
@@ -229,7 +230,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
 
 pub async fn get_by_board_name(
     board_name: &str,
-    offset: i64,
+    max_id: Option<i64>,
     limit: usize,
     family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = ArticleMeta>> {
@@ -238,15 +239,16 @@ pub async fn get_by_board_name(
     let metas = metas!(
         "*",
         "
-        WHERE board_name = $3
+        WHERE board_name = $3 AND ($5 OR id < $6)
         ORDER BY create_time DESC
-        LIMIT $4 OFFSET $5
+        LIMIT $4
         ",
         family_filter.0,
         family_filter.1,
         board_name,
         limit as i64,
-        offset
+        max_id.is_none(),
+        max_id.unwrap_or_default()
     )
     .fetch_all(pool)
     .await?;

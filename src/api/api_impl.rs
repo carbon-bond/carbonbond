@@ -58,7 +58,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category: Option<i64>,
         title: Option<String>,
         content: HashMap<String, super::model::SearchField>,
-    ) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
         let meta = db::article::search_article(
             author_name,
             board_name,
@@ -69,19 +69,20 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
         )
         .await?;
-        Ok(meta)
+        meta.assign_stats().await
     }
     async fn query_article_list(
         &self,
         _context: &mut crate::Ctx,
         count: usize,
+        max_id: Option<i64>,
         _author_name: Option<String>,
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,
     ) -> Fallible<Vec<model::ArticleMeta>> {
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
-            Some(name) => db::article::get_by_board_name(&name, 0, count, &family_filter)
+            Some(name) => db::article::get_by_board_name(&name, max_id, count, &family_filter)
                 .await?
                 .collect(),
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
@@ -99,11 +100,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
-        Ok(
-            db::article::get_bonder(id, opt_slice(&category_set), &family_filter)
-                .await?
-                .collect(),
-        )
+        let bonders: Vec<_> = db::article::get_bonder(id, opt_slice(&category_set), &family_filter)
+            .await?
+            .collect();
+        bonders.assign_stats().await
     }
     async fn query_bonder_meta(
         &self,
@@ -113,18 +113,18 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
     {
-        Ok(
+        let bonders: Vec<_> =
             db::article::get_bonder_meta(id, opt_slice(&category_set), &family_filter)
                 .await?
-                .collect(),
-        )
+                .collect();
+        bonders.assign_stats().await
     }
     async fn query_article_meta(
         &self,
         _context: &mut crate::Ctx,
         id: i64,
     ) -> Result<super::model::ArticleMeta, crate::custom_error::Error> {
-        db::article::get_meta_by_id(id).await
+        db::article::get_meta_by_id(id).await?.assign_stats().await
     }
     async fn create_article(
         &self,
