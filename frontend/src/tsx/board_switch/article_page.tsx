@@ -3,7 +3,7 @@ import { produce } from 'immer';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, BondCard, SimpleArticleCardById, CommentCard } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCard, BondCard, SimpleArticleCardById, SatelliteCard } from '../article_card';
 import '../../css/board_switch/article_page.css';
 import { Article, ArticleMeta, Board, Edge } from '../../ts/api/api_trait';
 import { parse_category, Field, Force, Category } from 'force';
@@ -20,7 +20,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
 	React.useEffect(() => {
-		API_FETCHER.queryBonderMeta(article.meta.id, null, { BlackList: [force_util.SMALL] }).then(data => {
+		API_FETCHER.queryBonderMeta(article.meta.id, null, { BlackList: [force_util.SATELLITE] }).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
@@ -77,51 +77,51 @@ function get_bond_fields(force: Force, category_name: string): FieldPath[] {
 	return candidates;
 }
 
-function Comments(props: { article: Article, board: Board }): JSX.Element {
+function Satellites(props: { article: Article, board: Board }): JSX.Element {
 	const { article, board } = props;
-	let [small_articles, setSmallArticles] = React.useState<[Edge, Article][]>([]);
-	let [small_fields, setSmallFields] = React.useState<FieldPath[]>([]);
+	let [satellite_articles, setSatelliteArticles] = React.useState<[Edge, Article][]>([]);
+	let [satellite_fields, setSatelliteFields] = React.useState<FieldPath[]>([]);
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
-	const get_comment = ((): void => {
+	const get_satellite = ((): void => {
 		get_force(article.meta.board_id)
 		.then(force => {
-			const small_members = force_util.get_small_members(force);
-			let small_fields = get_bond_fields(force, article.meta.category_name).filter(fp => small_members.includes(fp.category));
-			setSmallFields(small_fields);
+			const satellite_members = force_util.get_satellite_members(force);
+			let satellite_fields = get_bond_fields(force, article.meta.category_name).filter(fp => satellite_members.includes(fp.category));
+			setSatelliteFields(satellite_fields);
 		});
-		API_FETCHER.queryBonder(article.meta.id, null, { WhiteList: [force_util.SMALL] }).then(data => {
-			setSmallArticles(unwrap(data));
+		API_FETCHER.queryBonder(article.meta.id, null, { WhiteList: [force_util.SATELLITE] }).then(data => {
+			setSatelliteArticles(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
 		});
 	});
 
-	React.useEffect(get_comment, [article.meta.board_id, article.meta.id]);
+	React.useEffect(get_satellite, [article.meta.board_id, article.meta.id]);
 
-	function CommentButtons(): JSX.Element {
+	function SatelliteButtons(): JSX.Element {
 		let force = useForce(board.id);
 		if (force) {
-			return <ReplyArea force={force} candidates={small_fields} article={article} board={board}/>;
+			return <ReplyArea force={force} candidates={satellite_fields} article={article} board={board}/>;
 		} else {
 			return <></>;
 		}
 	}
-	return <div styleName="comments">
+	return <div styleName="satellites">
 		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
 			<span styleName="toggleButton">{expanded ? '⯆' : '⯈'} </span>
-			<span>{small_articles.length} 則留言</span>
+			<span>{satellite_articles.length} 則衛星</span>
 		</div>
 		<div styleName="contents">
 			<div>
 				{
 					expanded
-						? small_articles.map(([bond, article]) => <CommentCard key={article.meta.id} meta={article.meta} bond={bond}/>)
+						? satellite_articles.map(([bond, article]) => <SatelliteCard key={article.meta.id} meta={article.meta} bond={bond}/>)
 						: null
 				}
 			</div>
 			<div>
-				<CommentButtons />
+				<SatelliteButtons />
 			</div>
 		</div>
 	</div>;
@@ -351,7 +351,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleContent article={article} />
 		<ArticleFooter  article={article.meta}/>
 		<BigReplyList article={article} />
-		<Comments article={article} board={board} />
+		<Satellites article={article} board={board} />
 	</div>;
 }
 

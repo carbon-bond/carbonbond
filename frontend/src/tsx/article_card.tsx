@@ -81,10 +81,10 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				☘️<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				🗯️<span styleName="num">{props.article.stat.small_replies}</span>則留言
+				🗯️<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
 			</div>
 			<div styleName="articleBtnItem">
-				➡️<span styleName="num">{props.article.stat.replies}</span>篇大回文
+				➡️<span styleName="num">{props.article.stat.replies}</span>篇回文
 			</div>
 			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
 				{favorite ? '🌟取消收藏' : '⭐收藏'}
@@ -205,11 +205,11 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	}
 }
 
-function CommentCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
+function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div styleName="commentCard">
+	return <div styleName="satelliteCard">
 		<BondCard bond={props.bond} />
-		<div styleName="commentHeader">
+		<div styleName="satelliteHeader">
 			<Link to={`/app/user/${props.meta.author_name}`}>
 				<div styleName="authorId">{props.meta.author_name}</div>
 			</Link>
@@ -225,6 +225,6 @@ export {
 	ArticleCard,
 	SimpleArticleCardById,
 	SimpleArticleCard,
-	CommentCard,
+	SatelliteCard,
 	BondCard
 };

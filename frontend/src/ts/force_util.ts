@@ -34,12 +34,12 @@ export function new_content(category: Category): { [index: string]: string | str
 	return content;
 }
 
-export function get_small_members(force: Force): string[] {
-	return get_family_members(force, '小的');
+export const SATELLITE = '衛星';
+
+export function get_satellite_members(force: Force): string[] {
+	return get_family_members(force, '衛星');
 }
 
-export function get_big_members(force: Force): string[] {
-	return get_non_family_members(force, '小的');
+export function get_main_members(force: Force): string[] {
+	return get_non_family_members(force, '衛星');
 }
-
-export const SMALL = '小的';

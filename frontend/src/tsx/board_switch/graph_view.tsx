@@ -41,7 +41,7 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['留言數', RadiusMode.SmallReply]];
+		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['衛星數', RadiusMode.SmallReply]];
 		return <div styleName="wrapper">
 			<div styleName="panel">
 				<h3>文章半徑</h3>
@@ -105,7 +105,7 @@ function computeRadius(meta: ArticleMeta, mode: RadiusMode = RadiusMode.Energy):
 	} else if (mode == RadiusMode.AbsEnergy) {
 		value = Math.abs(meta.energy);
 	} else if (mode == RadiusMode.SmallReply) {
-		value = Math.abs(meta.stat.small_replies);
+		value = Math.abs(meta.stat.satellite_replies);
 	} else {
 		value = 1;
 	}
@@ -197,7 +197,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryGraph(props.meta.id, null, { BlackList: [force_util.SMALL] }).then(res => {
+		API_FETCHER.queryGraph(props.meta.id, null, { BlackList: [force_util.SATELLITE] }).then(res => {
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {

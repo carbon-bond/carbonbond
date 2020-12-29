@@ -356,7 +356,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	return <div styleName="works">
 		<div styleName="navigateBar">
 			<div styleName={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(1); }}>留言</div>
+			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
 			<div styleName={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
 			<div styleName={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
 		</div>

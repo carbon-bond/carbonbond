@@ -27,7 +27,7 @@ async function fetchArticles(
 	setMinID: (min_id: number) => void
 ): Promise<ArticleMeta[]> {
 	let articles = unwrap_or(await API_FETCHER.queryArticleList(page_size, min_id, null,
-		board_name, { BlackList: [force_util.SMALL] }), []);
+		board_name, { BlackList: [force_util.SATELLITE] }), []);
 	let new_min = Math.min(...articles.map(a => a.id));
 	if (min_id != null) {
 		new_min = Math.min(min_id, new_min);
