@@ -142,7 +142,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             content
         );
         let author_id = context.get_id_strict()?;
-        let id = db::article::create(author_id, board_id, category_name, title, content).await?;
+        let id = db::article::create(author_id, board_id, &category_name, &title, content.clone())
+            .await?;
+        service::notification::handle_article(author_id, board_id, id, &category_name, content)
+            .await?;
         Ok(id)
     }
     async fn query_graph(
@@ -388,8 +391,9 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         .await?;
 
         use model::NotificationKind;
-        let noti =
-            |kind| service::notification::create(target_user, kind, Some(from_user), None, None);
+        let noti = |kind| {
+            service::notification::create(target_user, kind, Some(from_user), None, None, None)
+        };
         match kind {
             model::UserRelationKind::Follow => {
                 noti(NotificationKind::Follow).await?;

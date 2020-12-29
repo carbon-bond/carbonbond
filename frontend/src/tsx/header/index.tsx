@@ -24,7 +24,7 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 		}
 	}}>
 		<div styleName="space" />
-		<div styleName="feature">{props.children}</div>
+		<div>{props.children}</div>
 		<div styleName="space" />
 	</div>;
 }

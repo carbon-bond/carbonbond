@@ -2,7 +2,6 @@ use super::{get_pool, DBObject};
 use crate::api::model::{Notification, NotificationKind};
 use crate::custom_error::{DataType, Fallible};
 use std::str::FromStr;
-use std::string::ToString;
 
 impl DBObject for Notification {
     const TYPE: DataType = DataType::Notification;
@@ -14,19 +13,21 @@ pub async fn create(
     quality: Option<bool>,
     user2_id: Option<i64>,
     board_id: Option<i64>,
-    article_id: Option<i64>,
+    article1_id: Option<i64>,
+    article2_id: Option<i64>,
 ) -> Fallible<i64> {
     let pool = get_pool();
     let id = sqlx::query!(
         "
-        INSERT INTO notifications (user_id, user2_id, board_id, article_id, kind, quality)
-        VALUES ($1, $2, $3, $4, $5::text::notification_kind, $6)
+        INSERT INTO notifications (user_id, user2_id, board_id, article1_id, article2_id, kind, quality)
+        VALUES ($1, $2, $3, $4, $5, $6::text::notification_kind, $7)
         RETURNING id
         ",
         user_id,
         user2_id,
         board_id,
-        article_id,
+        article1_id,
+        article2_id,
         kind.to_string(),
         quality
     )
@@ -51,17 +52,20 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
         pub board_id: Option<i64>,
         pub user2_name: Option<String>,
         pub user2_id: Option<i64>,
-        pub article_title: Option<String>,
-        pub article_id: Option<i64>,
+        pub article1_title: Option<String>,
+        pub article1_id: Option<i64>,
+        pub article2_title: Option<String>,
+        pub article2_id: Option<i64>,
     }
     let notifications = sqlx::query_as_unchecked!(
         DBNotification,
         "
-        SELECT n.*, users.user_name as user2_name, boards.board_name, articles.title as article_title
+        SELECT n.*, users.user_name as user2_name, boards.board_name, a1.title as article1_title, a2.title as article2_title
         FROM notifications n
         LEFT JOIN users on n.user2_id = users.id
         LEFT JOIN boards on n.board_id = boards.id
-        LEFT JOIN articles on n.article_id = articles.id
+        LEFT JOIN articles a1 on n.article1_id = a1.id
+        LEFT JOIN articles a2 on n.article2_id = a2.id
         WHERE user_id = $1 AND ($2 OR NOT n.read)
         ",
         user_id,
@@ -83,8 +87,10 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
                 board_id: n.board_id,
                 user2_name: n.user2_name,
                 user2_id: n.user2_id,
-                article_title: n.article_title,
-                article_id: n.article_id,
+                article1_title: n.article1_title,
+                article2_title: n.article2_title,
+                article1_id: n.article1_id,
+                article2_id: n.article2_id,
             })
         })
         .collect()

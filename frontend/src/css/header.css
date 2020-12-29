@@ -125,25 +125,19 @@
                     margin-left: 12px;
                 }
             }
-            & .space {
-                width: 10px;
-            }
             & .dropdown {
                 border: var(--border-color) solid 1px;
                 & .features {
                     /* flex-direction: column;
                     align-items: center; */
                     background-color: var(--background-color);
+                    font-size: 18px;
                     & .row:hover {
                         background-color: var(--hover-background-color);
                     }
                     & .row {
                         padding: 5px 0px;
                         display: flex;
-                        & .feature {
-                            cursor: pointer;
-                            font-size: 18px;
-                        }
                         & .space {
                             min-width: 25px;
                         }
@@ -198,4 +192,8 @@
 
 .notificationRow {
     width: 150px;
+    font-size: 14px;
+    & .notificationSpace {
+        min-width: 6px;
+    }
 }

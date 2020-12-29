@@ -5,9 +5,14 @@ import '../../css/components/drop_down.css';
 export function DropDown(props: {
 	button: JSX.Element,
 	body: null | JSX.Element,
-	onExtended?: Function
+	onExtended?: Function,
+	forced_expanded?: boolean,
 }): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
+	let should_expand = extended && props.body != null;
+	if (typeof props.forced_expanded != 'undefined') {
+		should_expand = props.forced_expanded;
+	}
 	return <div styleName="wrap">
 		<div styleName="button" onClick={() => {
 			setExtended(!extended);
@@ -19,7 +24,7 @@ export function DropDown(props: {
 		</div>
 		<div styleName="body">
 			{
-				extended && props.body
+				should_expand
 					? <>
 						<div styleName="triangle"></div>
 						{props.body}

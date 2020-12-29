@@ -346,7 +346,7 @@ impl DBObject for Category {
     const TYPE: DataType = DataType::Category;
 }
 
-async fn get_newest_category(board_id: i64, category_name: &String) -> Fallible<Category> {
+pub async fn get_newest_category(board_id: i64, category_name: &str) -> Fallible<Category> {
     let pool = get_pool();
     let category = sqlx::query_as!(
         Category,
@@ -402,8 +402,8 @@ async fn get_force_category(
 pub async fn create(
     author_id: i64,
     board_id: i64,
-    category_name: String,
-    title: String,
+    category_name: &str,
+    title: &str,
     content: String,
 ) -> Fallible<i64> {
     let content: Value = serde_json::from_str(&content).map_err(|err| {
@@ -412,7 +412,7 @@ pub async fn create(
             .context(err)
     })?;
 
-    let category = get_newest_category(board_id, &category_name).await?;
+    let category = get_newest_category(board_id, category_name).await?;
     let force_category = parse_category(&category.source)?;
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(

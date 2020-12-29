@@ -130,6 +130,12 @@ mod model {
         Follow,
         #[strum(serialize = "hate")]
         Hate,
+        #[strum(serialize = "article_replied")]
+        ArticleReplied,
+        #[strum(serialize = "article_good_replied")]
+        ArticleGoodReplied,
+        #[strum(serialize = "article_bad_replied")]
+        ArticleBadReplied,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Notification {
@@ -144,8 +150,10 @@ mod model {
         pub board_id: Option<i64>,
         pub user2_name: Option<String>,
         pub user2_id: Option<i64>,
-        pub article_title: Option<String>,
-        pub article_id: Option<i64>,
+        pub article1_title: Option<String>,
+        pub article2_title: Option<String>,
+        pub article1_id: Option<i64>,
+        pub article2_id: Option<i64>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub enum SearchField {

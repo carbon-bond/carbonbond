@@ -75,6 +75,7 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
         Some(user2_id),
         None,
         None,
+        None,
     )
     .await?;
     let notifications = db::notification::get_by_user(user_id, false).await?;

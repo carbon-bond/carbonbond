@@ -1,11 +1,11 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 
 import '../../css/header.css';
 
-import {  API_FETCHER } from '../../ts/api/api';
+import { API_FETCHER } from '../../ts/api/api';
 import { Notification, NotificationKind } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
-import { Row } from './index';
 import produce from 'immer';
 import { toastErr } from '../utils';
 
@@ -52,6 +52,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 		if (props.expanding_quality == props.quality) {
 			props.setExpandingQuality(null);
 		} else {
+			console.log(props.expanding_quality, props.quality);
 			props.setExpandingQuality(props.quality);
 			API_FETCHER.readNotifications(notifications.map(n => n.id)).then(res => {
 				if ('Err' in res) {
@@ -76,16 +77,21 @@ export function NotificationIcon(props: Props): JSX.Element {
 				}
 			</div>
 		}
+		forced_expanded={props.expanding_quality == props.quality}
 		onExtended={onClick}
 		body={
 			((): null | JSX.Element => {
-				if (props.expanding_quality == props.quality) {
-					return <NotificationDropDown notifications={notifications} />;
-				}
-				return null;
+				return <NotificationDropDown notifications={notifications} />;
 			})()
 		}
 	/>;
+}
+function NotiRow<T>(props: { children: T }): JSX.Element {
+	return <div styleName="row">
+		<div styleName="notificationSpace" />
+		<div>{props.children}</div>
+		<div styleName="notificationSpace" />
+	</div>;
 }
 export function NotificationDropDown(props: { notifications: Notification[] }): JSX.Element {
 	return <div styleName="dropdown">
@@ -94,7 +100,7 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 				{
 					(() => {
 						if (props.notifications.length == 0) {
-							return <Row>暫無通知</Row>;
+							return <NotiRow>暫無通知</NotiRow>;
 						}
 					})()
 				}
@@ -109,10 +115,19 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 }
 export function NotificationBlock(props: { notification: Notification }): JSX.Element {
 	let n = props.notification;
+	function ReplyNoti(props: { txt: string }): JSX.Element {
+		return <NotiRow>{n.user2_name!}{props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiRow>;
+	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <Row>{n.user2_name!}追蹤了你</Row>;
+			return <NotiRow>{n.user2_name!}追蹤了你</NotiRow>;
 		case NotificationKind.Hate:
-			return <Row>{n.user2_name!}仇視了你</Row>;
+			return <NotiRow>{n.user2_name!}仇視了你</NotiRow>;
+		case NotificationKind.ArticleBadReplied:
+			return <ReplyNoti txt="戰" />;
+		case NotificationKind.ArticleGoodReplied:
+			return <ReplyNoti txt="挺" />;
+		case NotificationKind.ArticleReplied:
+			return <ReplyNoti txt="回" />;
 	}
 }
