@@ -243,6 +243,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 }
 
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	const [relation, setRelation] = React.useState<UserRelationKind>(UserRelationKind.None);
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -253,11 +255,74 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		props.setProfileUser(new_state);
 	}
 
-	function createUserRelation(kind: UserRelationKind): void {
+	async function createUserRelation(kind: UserRelationKind): Promise<{}> {
 		if (props.profile_user) {
-			API_FETCHER.createUserRelation(props.profile_user.id, kind);
+			try {
+				await API_FETCHER.createUserRelation(props.profile_user.id, kind);
+			} catch (err) {
+				toastErr(err);
+			}
+		}
+		return {};
+	}
+
+	async function deleteUserRelation(): Promise<{}> {
+		if (props.profile_user) {
+			try {
+				await API_FETCHER.deleteUserRelation(props.profile_user.id);
+			} catch (err) {
+				toastErr(err);
+			}
+		}
+		return {};
+	}
+
+	function onChangeRelation(kind: UserRelationKind): void {
+		switch (kind) {
+			case UserRelationKind.Follow:
+				break;
+			case UserRelationKind.OpenlyFollow:
+				if (relation == UserRelationKind.OpenlyFollow) {
+					deleteUserRelation();
+					setRelation(UserRelationKind.None);
+				} else {
+					createUserRelation(UserRelationKind.OpenlyFollow);
+					setRelation(UserRelationKind.OpenlyFollow);
+				}
+				break;
+			case UserRelationKind.Hate:
+				break;
+			case UserRelationKind.OpenlyHate:
+				if (relation == UserRelationKind.OpenlyHate) {
+					deleteUserRelation();
+					setRelation(UserRelationKind.None);
+				} else {
+					createUserRelation(UserRelationKind.OpenlyHate);
+					setRelation(UserRelationKind.OpenlyHate);
+				}
+				break;
+			default:
+				break;
 		}
 	}
+
+	React.useEffect(() => {
+		async function queryUserRelation(): Promise<{}> {
+			if (props.profile_user) {
+				try {
+					await API_FETCHER.queryUserRelation(props.profile_user.id).then((res) => {
+						setRelation(unwrap(res));
+					});
+				} catch (err) {
+					toastErr(err);
+				}
+			}
+			return {};
+		}
+		if (props.profile_user && user_state.login) {
+			queryUserRelation();
+		}
+	}, [props.profile_user, user_state.login]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
@@ -281,13 +346,14 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		<div styleName="operation">
 			<div styleName="links">
 				{
+					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
 						<div styleName="relation">
-							<button onClick={() => createUserRelation(UserRelationKind.Follow)}>
-								追蹤
+							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyFollow)}>
+								{relation == UserRelationKind.Follow || relation == UserRelationKind.OpenlyFollow ? '取消追蹤' : '追蹤'}
 							</button>
-							<button onClick={() => createUserRelation(UserRelationKind.Hate)}>
-								仇視
+							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyHate)}>
+								{relation == UserRelationKind.Hate || relation == UserRelationKind.OpenlyHate ? '取消仇視' : '仇視'}
 							</button>
 						</div> :
 						<></>
@@ -306,11 +372,9 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 
 	React.useEffect(() => {
 		// TODO detect which tab is currently selected and only need to update that tab's data
-		console.log('profileWorks useEffect');
 		Promise.all([
 			fetchArticles(props.profile_user.user_name),
 		]).then(([more_articles]) => {
-			console.log('profileWorks useEffect then');
 			try {
 				setArticles(more_articles);
 			} catch (err) {

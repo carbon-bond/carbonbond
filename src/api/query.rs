@@ -58,6 +58,10 @@ pub enum UserQuery {
         kind: super::model::UserRelationKind,
     },
     #[chitin(request, response = "()")]
+    DeleteUserRelation { target_user: i64 },
+    #[chitin(request, response = "super::model::UserRelationKind")]
+    QueryUserRelation { target_user: i64 },
+    #[chitin(request, response = "()")]
     UpdateAvatar { image: String },
     #[chitin(request, response = "()")]
     UpdateSentence { sentence: String },

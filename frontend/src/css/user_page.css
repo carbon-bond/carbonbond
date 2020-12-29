@@ -78,7 +78,12 @@
                 margin-bottom: 10px;
             }
         }
-        & .relation {}
+        & .relation {
+            width: 200px;
+            & button {
+                margin: 0px 10px 0px 0px;
+            }
+        }
     }
 }
 

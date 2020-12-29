@@ -104,8 +104,12 @@ mod model {
         Follow,
         #[strum(serialize = "hate")]
         Hate,
+        #[strum(serialize = "openly_follow")]
+        OpenlyFollow,
         #[strum(serialize = "openly_hate")]
         OpenlyHate,
+        #[strum(serialize = "none")]
+        None,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct UserRelation {

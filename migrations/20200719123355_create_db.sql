@@ -159,8 +159,10 @@ CREATE INDEX party_members_create_time_index ON party_members (create_time);
 
 CREATE TYPE user_relation_kind AS ENUM (
   'follow',
+  'openly_follow',
   'hate',
-  'openly_hate'
+  'openly_hate',
+  'none'
 );
 
 CREATE TABLE user_relations (

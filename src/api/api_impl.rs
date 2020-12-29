@@ -395,7 +395,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
             service::notification::create(target_user, kind, Some(from_user), None, None, None)
         };
         match kind {
-            model::UserRelationKind::Follow => {
+            model::UserRelationKind::OpenlyFollow => {
                 noti(NotificationKind::Follow).await?;
             }
             model::UserRelationKind::OpenlyHate => {
@@ -404,6 +404,23 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
             _ => (),
         }
         Ok(())
+    }
+    async fn delete_user_relation(
+        &self,
+        context: &mut crate::Ctx,
+        target_user: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let from_user = context.get_id_strict()?;
+        db::user::delete_relation(from_user, target_user).await
+    }
+    async fn query_user_relation(
+        &self,
+        context: &mut crate::Ctx,
+        target_user: i64,
+    ) -> Result<super::model::UserRelationKind, crate::custom_error::Error> {
+        let from_user = context.get_id_strict()?;
+        let relation = db::user::query_relation(from_user, target_user).await?;
+        Ok(relation)
     }
     async fn update_avatar(
         &self,
