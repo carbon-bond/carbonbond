@@ -7,10 +7,14 @@ let path = require('path');
 let fs = require('fs');
 
 export class InjectFetcher extends RootQueryFetcher {
+	constructor(private users: Array<number>) {
+		super();
+	};
 	fetchResult(query: Object): Promise<string> {
 		let url = 'http://localhost:8080/api';
 		const jar = request.jar();
-		const cookie = request.cookie('id=1')!;
+		let pos = Math.floor(Math.random() * this.users.length);
+		const cookie = request.cookie(`id=${this.users[pos]}`)!;
 		jar.setCookie(cookie, url);
 		return new Promise((resolve, reject) => {
 			request(
@@ -32,7 +36,7 @@ export class InjectFetcher extends RootQueryFetcher {
 	}
 }
 
-let API_FETCHER = new InjectFetcher();
+let API_FETCHER = new InjectFetcher([1]);
 
 type ArticleConentElt = number | string | Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
