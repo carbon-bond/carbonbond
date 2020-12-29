@@ -54,7 +54,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
 大文章 {
     文本 內文
 }
-小留言 @ [小的] {
+小留言 @ [衛星] {
     鍵結[大文章] 本體
 }";
     db::board::create(&model::NewBoard {
@@ -108,7 +108,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     let big_id = post("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
         .await
         .unwrap();
-    let small_id = post(
+    let satellite_id = post(
         "小留言",
         "會通過",
         &format!(
@@ -123,7 +123,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         "會通過才有鬼",
         &format!(
             "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
-            small_id
+            satellite_id
         ),
     )
     .await;

@@ -13,7 +13,7 @@ import * as force_util from '../../ts/force_util';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
 
-function BigReplyList(props: { article: Article }): JSX.Element {
+function ReplyList(props: { article: Article }): JSX.Element {
 	// TODO: 從上層傳遞
 	const { article } = props;
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
@@ -46,7 +46,7 @@ function BigReplyList(props: { article: Article }): JSX.Element {
 	return <div styleName="replyCardList">
 		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
 			<span styleName="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
-			<span>{bonders.length} 篇大回文</span>
+			<span>{bonders.length} 篇回文</span>
 		</div>
 		<div>
 			<BonderCards expanded={expanded} bonders={bonders} />
@@ -350,7 +350,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ReplyButtons />
 		<ArticleContent article={article} />
 		<ArticleFooter  article={article.meta}/>
-		<BigReplyList article={article} />
+		<ReplyList article={article} />
 		<Satellites article={article} board={board} />
 	</div>;
 }

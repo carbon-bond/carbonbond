@@ -13,7 +13,7 @@ type Props = RouteComponentProps<{ article_id: string }>;
 enum RadiusMode {
 	Energy,
 	AbsEnergy,
-	SmallReply,
+	SatelliteReply,
 };
 type Panel = {
 	radius_mode: RadiusMode,
@@ -41,7 +41,7 @@ export function GraphView(props: Props): JSX.Element {
 		});
 	}, [article_id, props.match.params.article_id]);
 	if (article_meta) {
-		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['衛星數', RadiusMode.SmallReply]];
+		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['衛星數', RadiusMode.SatelliteReply]];
 		return <div styleName="wrapper">
 			<div styleName="panel">
 				<h3>文章半徑</h3>
@@ -104,7 +104,7 @@ function computeRadius(meta: ArticleMeta, mode: RadiusMode = RadiusMode.Energy):
 		value = meta.energy;
 	} else if (mode == RadiusMode.AbsEnergy) {
 		value = Math.abs(meta.energy);
-	} else if (mode == RadiusMode.SmallReply) {
+	} else if (mode == RadiusMode.SatelliteReply) {
 		value = Math.abs(meta.stat.satellite_replies);
 	} else {
 		value = 1;

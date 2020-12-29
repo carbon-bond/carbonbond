@@ -362,7 +362,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 		</div>
 		<div styleName="switchContent">
 			{selectTab == 0 && <Articles articles={articles} />}
-			{selectTab == 1 && <Comments />}
+			{selectTab == 1 && <Satellites />}
 			{selectTab == 2 && <Favorites favorites={favorites} />}
 			{selectTab == 3 && <Friendships />}
 		</div>
@@ -395,8 +395,8 @@ function Favorites(props: { favorites: Favorite[] }): JSX.Element {
 	</div>;
 }
 
-function Comments(): JSX.Element {
-	return <div>Comments</div>;
+function Satellites(): JSX.Element {
+	return <div>衛星文章</div>;
 }
 
 function Friendships(): JSX.Element {
