@@ -4,31 +4,11 @@
     flex-direction: row;
     justify-content: center;
     border-bottom: 1px var(--border-color) solid;
-    & .avatar {
+    & .avatarContainer {
         margin: 30px 20px;
+        width: 144px;
+        height: 144px;
         position: relative;
-        & img {
-            height: 144px;
-            width: 144px;
-        }
-        & .editPrompt {
-            color: white;
-            font-size: 14px;
-            background: black;
-            border-radius: 5px;
-            padding: 5px;
-            position: absolute;
-            left: 5px;
-            bottom: 5px;
-        }
-    }
-    & .avatar.isMine {
-        & * {
-            cursor: pointer;
-        }
-        & input {
-            display: none;
-        }
     }
     & .abstract {
         width: 30%;
@@ -160,13 +140,6 @@
     }
 }
 
-.buttonSet {
-    margin-top: 10px;
-    & button {
-        margin-right: 5px;
-    }
-}
-
 .editModal {
     width: 300px;
     height: 350px;
@@ -205,4 +178,14 @@
             padding: 0px 1em 0px 8px;
         }
     }
+}
+
+.userListContainer {
+    padding: 10px 20px 0px;
+}
+
+.friendshipWrapper {
+    display: inline-block;
+    width: 50%;
+    padding: 10px 10px;
 }

@@ -1,9 +1,10 @@
 import * as React from 'react';
-import ReactModal from 'react-modal';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
+import { Avatar } from './avatar';
+import { UserCard } from './user_card';
 import { UserRelationKind, User, ArticleMeta, Favorite } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
@@ -13,95 +14,6 @@ import '../../css/article_wrapper.css';
 import '../../css/favorite_wrapper.css';
 import '../../css/user_page.css';
 import produce from 'immer';
-
-// TODO: 可剪裁非正方形的圖片
-function EditAvatar(props: { name: string }): JSX.Element {
-	// const { user_state } = UserState.useContainer();
-	const [is_editing, setIsEditing] = React.useState<boolean>(false);
-	const [preview_data, setPreviewData] = React.useState<string | null>(null);
-
-	function chooseAvatar(e: React.ChangeEvent<HTMLInputElement>): void {
-		e.preventDefault();
-
-		if (e.target.files == null) {
-			return;
-		}
-
-		let reader = new FileReader();
-		let file = e.target.files[0];
-		e.target.value = '';
-
-		reader.onloadend = () => {
-			setPreviewData(reader.result as string); // 因爲使用 readAsDataURL ，故 result 爲字串
-			setIsEditing(true);
-		};
-
-		reader.readAsDataURL(file);
-		return;
-	}
-
-	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
-		e.preventDefault();
-		try {
-			if (preview_data != null) {
-				unwrap(await API_FETCHER.updateAvatar(preview_data.split(',')[1]));
-			}
-			setIsEditing(false);
-			location.reload();
-		} catch (err) {
-			toastErr(err);
-		}
-		return {};
-	}
-	return <div styleName="avatar isMine">
-		<ReactModal
-			isOpen={is_editing}
-			onRequestClose={() => setIsEditing(false)}
-			style={{
-				overlay: { zIndex: 200 },
-				content: {
-					position: 'absolute',
-					top: '50%',
-					left: '50%',
-					transform: 'translate(-50%, -50%)',
-					right: 'none',
-					bottom: 'none',
-				}
-			}} >
-			{
-				preview_data ?
-					<img src={preview_data} height="144" width="144"></img> :
-					<div>出了些問題......</div>
-			}
-			<div styleName="buttonSet">
-				<button onClick={uploadAvatar}>確定</button>
-				<button onClick={() => setIsEditing(false)}>取消</button>
-			</div>
-		</ReactModal>
-		<label htmlFor="fileUploader">
-			<img styleName="isMine" src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
-			<div styleName="editPrompt">
-				換頭貼
-			</div>
-		</label>
-		<input
-			type="file"
-			id="fileUploader"
-			data-target="fileUploader"
-			accept="image/png, image/jpeg"
-			onChange={chooseAvatar} />
-	</div>;
-}
-
-function Avatar(props: { is_me: boolean, name: string }): JSX.Element {
-	if (props.is_me) {
-		return <EditAvatar name={props.name} />;
-	} else {
-		return <div styleName="avatar">
-			<img src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
-		</div>;
-	}
-}
 
 function EditSentence(props: { sentence: string, setSentence: Function }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
@@ -327,7 +239,9 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
 	return <div styleName="up">
-		<Avatar is_me={is_me} name={props.profile_user.user_name} />
+		<div styleName="avatarContainer">
+			<Avatar is_me={is_me} name={props.profile_user.user_name} />
+		</div>
 		<div styleName="abstract">
 			<div styleName="username">{props.profile_user.user_name}</div>
 			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={setSentence} />
@@ -428,7 +342,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Satellites />}
 			{selectTab == 2 && <Favorites favorites={favorites} />}
-			{selectTab == 3 && <Friendships />}
+			{selectTab == 3 && <Friendships user={props.profile_user} />}
 		</div>
 	</div>;
 }
@@ -463,8 +377,25 @@ function Satellites(): JSX.Element {
 	return <div>衛星文章</div>;
 }
 
-function Friendships(): JSX.Element {
-	return <div>Friendships</div>;
+function Friendships(props: { user: User }): JSX.Element {
+	let myuser = [];
+	myuser.push(props.user);
+	myuser.push(props.user);
+	myuser.push(props.user);
+	return <div styleName="userListContainer">
+		<div>Follow</div>
+		{myuser.map((user, idx) => (
+			<div styleName="friendshipWrapper" key={`friendship-follow-${idx}`}>
+				<UserCard user={user} />
+			</div>
+		))}
+		<div>Hate</div>
+		{myuser.map((user, idx) => (
+			<div styleName="friendshipWrapper" key={`friendship-hate-${idx}`}>
+				<UserCard user={user} />
+			</div>
+		))}
+	</div>;
 }
 
 

@@ -1,0 +1,31 @@
+.avatar {
+	& img {
+		max-height: 100%;
+		max-width: 100%;
+	}
+	& .editPrompt {
+		color: white;
+		font-size: 14px;
+		background: black;
+		border-radius: 5px;
+		padding: 5px;
+		position: absolute;
+		left: 5px;
+		bottom: 5px;
+	}
+}
+.avatar.isMine {
+	& * {
+		cursor: pointer;
+	}
+	& input {
+		display: none;
+	}
+}
+
+.buttonSet {
+    margin-top: 10px;
+    & button {
+        margin-right: 5px;
+    }
+}
