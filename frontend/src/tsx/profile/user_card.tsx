@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { User } from '../../ts/api/api_trait';
+import { UserMini } from '../../ts/api/api_trait';
 import { Avatar } from './avatar';
 import '../../css/user_card.css';
 
-function UserCard(props: { user: User }): JSX.Element {
+function UserCard(props: { user: UserMini }): JSX.Element {
 	const url = `/app/user/${props.user.user_name}`;
 
 	return (

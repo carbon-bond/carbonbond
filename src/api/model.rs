@@ -24,6 +24,13 @@ mod model {
         pub city: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UserMini {
+        pub id: i64,
+        pub user_name: String,
+        pub energy: i64,
+        pub sentence: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {
         pub id: i64,
         pub party_name: String,

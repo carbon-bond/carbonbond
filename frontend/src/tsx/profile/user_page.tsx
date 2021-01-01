@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, ArticleMeta, Favorite } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -282,10 +282,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 function ProfileWorks(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
-	const [favorites, setFavorites] = React.useState<Favorite[]>([]);
 
 	React.useEffect(() => {
-		// TODO detect which tab is currently selected and only need to update that tab's data
 		Promise.all([
 			fetchArticles(props.profile_user.user_name),
 		]).then(([more_articles]) => {
@@ -313,15 +311,6 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 			case 1:
 				break;
 			case 2:
-				Promise.all([
-					fetchFavorites(),
-				]).then(([more_favorites]) => {
-					try {
-						setFavorites(more_favorites);
-					} catch (err) {
-						toastErr(err);
-					}
-				});
 				break;
 			case 3:
 				break;
@@ -341,7 +330,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 		<div styleName="switchContent">
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Satellites />}
-			{selectTab == 2 && <Favorites favorites={favorites} />}
+			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
 			{selectTab == 3 && <Friendships user={props.profile_user} />}
 		</div>
 	</div>;
@@ -357,8 +346,28 @@ function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
 	</div>;
 }
 
-function Favorites(props: { favorites: Favorite[] }): JSX.Element {
-	let sortedFavorites = Array.from(props.favorites).sort((lhs, rhs) => {
+function Favorites(props: { profile_user: User }): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	const [favorites, setFavorites] = React.useState<Favorite[]>([]);
+
+	React.useEffect(() => {
+		// TODO change fetchFavorites to get a user_id as parameter
+		Promise.all([
+			fetchFavorites(),
+		]).then(([more_favorites]) => {
+			try {
+				if (user_state.login && props.profile_user.user_name == user_state.user_name) {
+					setFavorites(more_favorites);
+				} else {
+					setFavorites([]);
+				}
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [props.profile_user.user_name]);
+
+	let sortedFavorites = Array.from(favorites).sort((lhs, rhs) => {
 		return lhs.create_time < rhs.create_time ? 1 : -1;
 	});
 	return <div>
@@ -378,19 +387,32 @@ function Satellites(): JSX.Element {
 }
 
 function Friendships(props: { user: User }): JSX.Element {
-	let myuser = [];
-	myuser.push(props.user);
-	myuser.push(props.user);
-	myuser.push(props.user);
+	const [followers, setFollowers] = React.useState<UserMini[]>([]);
+	const [haters, setHaters] = React.useState<UserMini[]>([]);
+
+	React.useEffect(() => {
+		Promise.all([
+			fetchFollowers(props.user.id),
+			fetchHaters(props.user.id),
+		]).then(([more_followers, more_haters]) => {
+			try {
+				setFollowers(more_followers);
+				setHaters(more_haters);
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [props.user.user_name]);
+
 	return <div styleName="userListContainer">
-		<div>Follow</div>
-		{myuser.map((user, idx) => (
+		<div>💖追隨者</div>
+		{followers.map((user, idx) => (
 			<div styleName="friendshipWrapper" key={`friendship-follow-${idx}`}>
 				<UserCard user={user} />
 			</div>
 		))}
-		<div>Hate</div>
-		{myuser.map((user, idx) => (
+		<div>⚔️仇視者</div>
+		{haters.map((user, idx) => (
 			<div styleName="friendshipWrapper" key={`friendship-hate-${idx}`}>
 				<UserCard user={user} />
 			</div>
@@ -407,6 +429,14 @@ async function fetchArticles(
 
 async function fetchFavorites(): Promise<Favorite[]> {
 	return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+}
+
+async function fetchFollowers(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.queryFollowerList(user_id), []);
+}
+
+async function fetchHaters(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.queryHaterList(user_id), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;

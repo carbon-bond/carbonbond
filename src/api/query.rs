@@ -61,6 +61,10 @@ pub enum UserQuery {
     DeleteUserRelation { target_user: i64 },
     #[chitin(request, response = "super::model::UserRelationKind")]
     QueryUserRelation { target_user: i64 },
+    #[chitin(request, response = "Vec<super::model::UserMini>")]
+    QueryFollowerList { user: i64 },
+    #[chitin(request, response = "Vec<super::model::UserMini>")]
+    QueryHaterList { user: i64 },
     #[chitin(request, response = "()")]
     UpdateAvatar { image: String },
     #[chitin(request, response = "()")]

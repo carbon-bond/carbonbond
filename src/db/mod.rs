@@ -14,6 +14,7 @@ pub mod notification;
 pub mod party;
 pub mod subscribed_boards;
 pub mod user;
+pub mod user_relation;
 
 static POOL: Storage<PgPool> = Storage::new();
 

@@ -313,6 +313,20 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
         articles.assign_stats().await
     }
+    async fn query_follower_list(
+        &self,
+        context: &mut crate::Ctx,
+        user: i64,
+    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_follower(user).await
+    }
+    async fn query_hater_list(
+        &self,
+        context: &mut crate::Ctx,
+        user: i64,
+    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_hater(user).await
+    }
     async fn query_user(
         &self,
         _context: &mut crate::Ctx,
@@ -383,7 +397,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         kind: model::UserRelationKind,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
-        db::user::create_relation(&model::UserRelation {
+        db::user_relation::create_relation(&model::UserRelation {
             from_user,
             kind,
             to_user: target_user,
@@ -411,7 +425,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         target_user: i64,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
-        db::user::delete_relation(from_user, target_user).await
+        db::user_relation::delete_relation(from_user, target_user).await
     }
     async fn query_user_relation(
         &self,
@@ -419,7 +433,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         target_user: i64,
     ) -> Result<super::model::UserRelationKind, crate::custom_error::Error> {
         let from_user = context.get_id_strict()?;
-        let relation = db::user::query_relation(from_user, target_user).await?;
+        let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)
     }
     async fn update_avatar(
