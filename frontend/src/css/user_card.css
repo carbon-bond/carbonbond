@@ -17,19 +17,22 @@
         display: flex;
         flex-direction: column;
         & .userName {
-            flex: 1;
-            font-size: 24px;
-            padding: auto 0px;
+            font-size: 20px;
+            margin: 0px 0px 2px;
         }
         & .userSentence {
-            font-size: 20px;
+            font-size: 16px;
+            height: 16px;
             color: var(--gray);
+            margin: 0px 0px 4px;
         }
         & .userFooter {
+            flex: 1;
             display: flex;
             flex-direction: row;
             & .userFooterItem {
                 font-size: 12px;
+                align-self: flex-end;
                 & .num {
                     margin-right: 2px;
                 }

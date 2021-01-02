@@ -180,6 +180,10 @@
     }
 }
 
+.userListHeader {
+    padding: 0px 10px;
+}
+
 .userListContainer {
     padding: 10px 20px 0px;
 }

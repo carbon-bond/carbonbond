@@ -405,13 +405,13 @@ function Friendships(props: { user: User }): JSX.Element {
 	}, [props.user.user_name]);
 
 	return <div styleName="userListContainer">
-		<div>💖追隨者</div>
+		<div styleName="userListHeader">💖追隨者</div>
 		{followers.map((user, idx) => (
 			<div styleName="friendshipWrapper" key={`friendship-follow-${idx}`}>
 				<UserCard user={user} />
 			</div>
 		))}
-		<div>⚔️仇視者</div>
+		<div styleName="userListHeader">⚔️仇視者</div>
 		{haters.map((user, idx) => (
 			<div styleName="friendshipWrapper" key={`friendship-hate-${idx}`}>
 				<UserCard user={user} />
