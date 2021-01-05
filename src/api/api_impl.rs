@@ -315,14 +315,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
     async fn query_follower_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         user: i64,
     ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_follower(user).await
     }
     async fn query_hater_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         user: i64,
     ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hater(user).await

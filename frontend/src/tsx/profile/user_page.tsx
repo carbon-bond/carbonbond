@@ -365,7 +365,7 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 				toastErr(err);
 			}
 		});
-	}, [props.profile_user.user_name]);
+	}, [props.profile_user.user_name, user_state]);
 
 	let sortedFavorites = Array.from(favorites).sort((lhs, rhs) => {
 		return lhs.create_time < rhs.create_time ? 1 : -1;
@@ -402,7 +402,7 @@ function Friendships(props: { user: User }): JSX.Element {
 				toastErr(err);
 			}
 		});
-	}, [props.user.user_name]);
+	}, [props.user]);
 
 	return <div styleName="userListContainer">
 		<div styleName="userListHeader">💖追隨者</div>
