@@ -8,6 +8,7 @@ import { Notification, NotificationKind } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
 import produce from 'immer';
 import { toastErr } from '../utils';
+import { relativeDate } from '../../ts/date';
 
 export enum NotificationQuality { Good, Bad, Neutral };
 
@@ -52,7 +53,6 @@ export function NotificationIcon(props: Props): JSX.Element {
 		if (props.expanding_quality == props.quality) {
 			props.setExpandingQuality(null);
 		} else {
-			console.log(props.expanding_quality, props.quality);
 			props.setExpandingQuality(props.quality);
 			API_FETCHER.readNotifications(notifications.map(n => n.id)).then(res => {
 				if ('Err' in res) {
@@ -86,15 +86,26 @@ export function NotificationIcon(props: Props): JSX.Element {
 		}
 	/>;
 }
-function NotiRow<T>(props: { children: T }): JSX.Element {
+function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
 	return <div styleName="row">
+		{
+			props.time ? <>
+				<div style={{ display: 'flex', width: '92%', margin: '0 auto' }}>
+					<img src="/img/icon.png" />
+					<div style={{ flex: 1 }} />
+					<p styleName="time">{relativeDate(props.time)}</p>
+				</div>
+				<div style={{ flexBasis: '100%' }} />
+			</> : null
+		}
+
 		<div styleName="notificationSpace" />
-		<div>{props.children}</div>
+		<div styleName="notificationMessage"> {props.children} </div>
 		<div styleName="notificationSpace" />
 	</div>;
 }
 export function NotificationDropDown(props: { notifications: Notification[] }): JSX.Element {
-	return <div styleName="dropdown">
+	return <div styleName="dropdown notificationDropdown" >
 		<div styleName="features">
 			<div styleName="notificationRow">
 				{
@@ -105,8 +116,11 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 					})()
 				}
 				{
-					props.notifications.map(n => {
-						return <NotificationBlock key={n.id} notification={n} />;
+					props.notifications.map((n, i) => {
+						return <>
+							{ i == 0 ? null : <hr styleName="notificationSep" key={n.id}/> }
+							<NotificationBlock notification={n} key={n.id} />
+						</>;
 					})
 				}
 			</div>
@@ -115,14 +129,20 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 }
 export function NotificationBlock(props: { notification: Notification }): JSX.Element {
 	let n = props.notification;
+	function NotiConcreteRow<T>(props: { children: T }): JSX.Element {
+		return <NotiRow time={new Date(n.create_time)}>
+			{props.children}
+		</NotiRow>;
+	}
+
 	function ReplyNoti(props: { txt: string }): JSX.Element {
-		return <NotiRow>{n.user2_name!}{props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiRow>;
+		return <NotiConcreteRow>{n.user2_name!}{props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiConcreteRow>;
 	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <NotiRow>{n.user2_name!}追蹤了你</NotiRow>;
+			return <NotiConcreteRow>{n.user2_name!}追蹤了你</NotiConcreteRow>;
 		case NotificationKind.Hate:
-			return <NotiRow>{n.user2_name!}仇視了你</NotiRow>;
+			return <NotiConcreteRow>{n.user2_name!}仇視了你</NotiConcreteRow>;
 		case NotificationKind.ArticleBadReplied:
 			return <ReplyNoti txt="戰" />;
 		case NotificationKind.ArticleGoodReplied:

@@ -27,7 +27,7 @@ export function DropDown(props: {
 				should_expand
 					? <>
 						<div styleName="triangle"></div>
-						{props.body}
+						<div style={{position: 'relative'}}> {props.body} </div>
 					</>
 					: null
 			}

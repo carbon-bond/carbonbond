@@ -14,3 +14,10 @@ body {
     width: 100%;
     background-color: var(--lower-background-color);
 }
+a {
+    color: var(--gray);
+}
+a:hover {
+    color: var(--theme-color);
+    text-decoration: underline;
+}
