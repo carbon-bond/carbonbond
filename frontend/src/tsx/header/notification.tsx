@@ -90,11 +90,11 @@ function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
 	return <div styleName="row">
 		{
 			props.time ? <>
-				<div style={{ display: 'flex', width: '92%', margin: '0 auto' }}>
-					<img src="/img/icon.png" />
-					<div style={{ flex: 1 }} />
-					<p styleName="time">{relativeDate(props.time)}</p>
-				</div>
+				<div styleName="notificationSpace" />
+				<img src="/img/icon.png" />
+				<div style={{ flex: 1 }} />
+				<p styleName="time">{relativeDate(props.time)}</p>
+				<div styleName="notificationSpace" />
 				<div style={{ flexBasis: '100%' }} />
 			</> : null
 		}
