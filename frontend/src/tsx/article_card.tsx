@@ -57,19 +57,19 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
-				☘️<span styleName="num">{props.article.energy}</span>鍵能
+				☘️&nbsp;<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
 			<div styleName="articleBtnItem">
-				🗯️<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
+				🗯️&nbsp;<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
 			</div>
 			<div styleName="articleBtnItem">
-				➡️<span styleName="num">{props.article.stat.replies}</span>篇回文
+				➡️&nbsp;<span styleName="num">{props.article.stat.replies}</span>篇回文
 			</div>
 			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
-				{favorite ? '🌟取消收藏' : '⭐收藏'}
+				{favorite ? '🌟 取消收藏' : '⭐ 收藏'}
 			</div>
 			<div styleName="articleBtnItem">
-				📎分享
+				📎 分享
 			</div>
 		</div>
 	</div>;

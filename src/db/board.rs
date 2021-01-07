@@ -72,11 +72,12 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     let force = parse(&board.force)?;
     let board_id = sqlx::query!(
         "
-        INSERT INTO boards (board_name, detail, title, force, ruling_party_id)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO boards (board_name, style, detail, title, force, ruling_party_id)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id
         ",
         board.board_name,
+        board.style,
         board.detail,
         board.title,
         board.force,

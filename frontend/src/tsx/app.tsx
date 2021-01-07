@@ -48,7 +48,7 @@ function App(): JSX.Element {
 					<BoardList></BoardList>
 				)} />
 				<Route exact path="/app/search" render={props => (
-					<SearchPage {...props}/>
+					<SearchPage {...props} />
 				)} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />

@@ -55,7 +55,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			{
 				(() => {
 					if (!party.board_id && user_state.login) {
-						return <CreateBoardBlock party_id={party.id} rp={props}/>;
+						return <CreateBoardBlock party_id={party.id} rp={props} />;
 					} else {
 						return null;
 					}
@@ -75,10 +75,11 @@ type Input = {
 };
 
 function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
-	const { register, handleSubmit, errors } = useForm<Input>({mode: 'onBlur'});
+	const { register, handleSubmit, errors } = useForm<Input>({ mode: 'onBlur' });
 	let [expand, setExpand] = React.useState(false);
 	function onSubmit(data: Input): void {
 		API_FETCHER.createBoard({
+			style: '一般看板',
 			ruling_party_id: props.party_id,
 			...data
 		})
@@ -90,7 +91,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>
 		{
 			expand ? <form onSubmit={handleSubmit(onSubmit)} styleName="form">
-				<input name="board_name" placeholder="看板名稱" ref={register({required: true})} autoFocus/>
+				<input name="board_name" placeholder="看板名稱" ref={register({ required: true })} autoFocus />
 				{errors.board_name && <InvalidMessage msg="必填" />}
 				<input name="title" placeholder="版主的話" ref={register} />
 				<textarea name="detail" placeholder="看板介紹" ref={register} />
@@ -106,7 +107,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 					}
 				})} />
 				{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
-				<input type="submit" value="確認"/>
+				<input type="submit" value="確認" />
 			</form>
 				: <></>
 		}
