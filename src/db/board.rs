@@ -26,12 +26,13 @@ pub async fn get_by_id(id: i64) -> Fallible<Board> {
     Ok(board)
 }
 
-pub async fn get_by_name(name: &str) -> Fallible<Board> {
+pub async fn get_by_name(name: &str, style: &str) -> Fallible<Board> {
     let pool = get_pool();
     let board = sqlx::query_as!(
         Board,
-        r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE board_name = $1"#,
-        name
+        r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE board_name = $1 AND style = $2"#,
+        name,
+        style
     )
     .fetch_one(pool)
     .await

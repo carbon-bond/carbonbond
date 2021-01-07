@@ -147,7 +147,7 @@ pub enum BoardQuery {
     #[chitin(request, response = "Vec<super::model::BoardName>")]
     QueryBoardNameList {},
     #[chitin(request, response = "super::model::Board")]
-    QueryBoard { name: String },
+    QueryBoard { name: String, style: String },
     #[chitin(request, response = "super::model::Board")]
     QueryBoardById { id: i64 },
     #[chitin(request, response = "usize")]

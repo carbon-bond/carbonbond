@@ -17,17 +17,16 @@ import '../../css/board_switch/board_page.css';
 import { toastErr } from '../utils';
 import { GraphView } from './graph_view';
 
-type Props = RouteComponentProps<{ board_name: string }>;
-
-export function BoardSwitch(props: Props): JSX.Element {
-	let board_name = props.match.params.board_name;
+function BoardSwitch(props: { board_name: string, style: string }): JSX.Element {
+	let board_name = props.board_name;
+	let style = props.style;
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
 	React.useEffect(() => {
 		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
-		API_FETCHER.queryBoard(board_name).then(res => {
+		API_FETCHER.queryBoard(board_name, style).then(res => {
 			try {
 				let board = unwrap(res);
 				setBoard(board);
@@ -42,7 +41,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 		}).finally(() => {
 			setFetching(false);
 		});
-	}, [board_name]);
+	}, [board_name, style]);
 	if (!fetching && board == null) {
 		return <div>查無此看板</div>;
 	} else {
@@ -122,4 +121,16 @@ function SwitchContent(props: { board: Board }): JSX.Element {
 			</Switch>
 		</div>
 	</div>;
+}
+
+type PersonalBoardProps = RouteComponentProps<{ profile_name: string }>;
+
+export function PersonalBoard(props: PersonalBoardProps): JSX.Element {
+	return <BoardSwitch board_name={props.match.params.profile_name} style={'個人看板'} />;
+}
+
+type GeneralBoardProps = RouteComponentProps<{ board_name: string }>;
+
+export function GeneralBoard(props: GeneralBoardProps): JSX.Element {
+	return <BoardSwitch board_name={props.match.params.board_name} style={'一般看板'} />;
 }

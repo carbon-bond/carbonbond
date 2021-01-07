@@ -90,7 +90,7 @@ async function injectBoard(
 			})
 		);
 	} catch (_) {
-		let b = unwrap(await API_FETCHER.queryBoard(board.name));
+		let b = unwrap(await API_FETCHER.queryBoard(board.name, '一般看板'));
 		board_id = b.id;
 	}
 	console.log(`創板成功 ${board.name} = ${board_id}`);
