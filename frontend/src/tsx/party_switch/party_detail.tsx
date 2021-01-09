@@ -7,6 +7,7 @@ import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
+import { ModalButton, ModalWindow } from '../components/modal_window';
 
 import '../../css/party/party_detail.css';
 import { parse } from 'force';
@@ -87,10 +88,10 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 			.then(() => props.rp.history.push(`/app/b/${data.board_name}`))
 			.catch(err => toastErr(err));
 	}
-	return <div styleName="createBoardBlock">
-		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>
-		{
-			expand ? <form onSubmit={handleSubmit(onSubmit)} styleName="form">
+
+	function getBody(): JSX.Element {
+		return <div styleName="editModal">
+			<form onSubmit={handleSubmit(onSubmit)} styleName="form">
 				<input name="board_name" placeholder="看板名稱" ref={register({ required: true })} autoFocus />
 				{errors.board_name && <InvalidMessage msg="必填" />}
 				<input name="title" placeholder="版主的話" ref={register} />
@@ -109,7 +110,21 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 				{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
 				<input type="submit" value="確認" />
 			</form>
-				: <></>
-		}
+		</div>;
+	}
+
+	let buttons: ModalButton[] = [];
+	// buttons.push({ text: '確認', handler: () => updateInformation(introduction, gender, job, city) });
+	// buttons.push({ text: '取消', handler: () => setEditing(false) });
+
+	return <div styleName="createBoardBlock">
+		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>
+		<ModalWindow
+			title="🏂 創立看板"
+			body={getBody()}
+			buttons={buttons}
+			visible={expand}
+			setVisible={setExpand}
+		/>
 	</div>;
 }
