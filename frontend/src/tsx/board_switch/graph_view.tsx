@@ -69,7 +69,7 @@ export function GraphView(props: Props): JSX.Element {
 	}
 }
 
-let NODE_OPACITY = 0.9;
+let NODE_OPACITY = 0.8;
 let NODE_OPACITY_DIM = 0.3;
 let GREY = 'rgb(80, 80, 80)';
 let GREEN = '#69b3a2';
@@ -230,7 +230,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 		return [width, height];
 	}
 
-	let redraw = React.useCallback((mode = RadiusMode.Energy) => {
+	let redraw = React.useCallback((should_blink?: boolean, mode = RadiusMode.Energy) => {
 		let [width, height] = getWidthHeight();
 		let link = link_ref.current!;
 		let node = node_ref.current!;
@@ -285,7 +285,9 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			// @ts-ignore
 			return `translate(${d.x - len / 2}, ${d.y + computeRadius(d.meta, mode) + FONT_SIZE})`;
 		});
-
+		if (should_blink) {
+			blink(props.meta.id, 3);
+		}
 	}, [link_ref, node_ref, text_ref, props.meta.id]);
 
 	React.useEffect(() => {
@@ -375,7 +377,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			)
 			.force('charge', d3.forceManyBody().strength(-2000))
 			.force('center', d3.forceCenter(width / 2, height / 2))
-			.on('end', () => redraw());
+			.on('end', () => redraw(true));
 		simulation.tick(700);
 	}, [graph, props.meta.id, props.history, redraw, link_ref, node_ref, text_ref]);
 
@@ -398,9 +400,10 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 		}).transform,
 		d3.zoomIdentity.translate(trans_x, trans_y).scale(scale)
 		);
+		blink(props.meta.id, 3);
 
 		props.panel.unlocate();
-	}, [props.panel, cur_article_x, cur_article_y, init_offset_x, init_offset_y, scale]);
+	}, [props.panel, props.meta.id, cur_article_x, cur_article_y, init_offset_x, init_offset_y, scale]);
 
 	React.useEffect(() => {
 		d3.select('#canvas')
@@ -416,7 +419,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 		node_ref.current?.transition()
 		.duration(200)
 		.attr('r', d => computeRadius(d.meta, props.panel.radius_mode));
-		redraw(props.panel.radius_mode);
+		redraw(false, props.panel.radius_mode);
 	}, [props.panel.radius_mode, node_ref, redraw]);
 
 	React.useEffect(() => {
@@ -538,4 +541,28 @@ function computeOffsetTop(elt: HTMLElement | null): number {
 		}
 	}
 	return offsetTop;
+}
+
+function blink(id: number, cnt: number): void {
+	let cur_node = d3.select(`#a${id}`);
+	let dim = NODE_OPACITY / 3;
+	function inner(cnt: number): void {
+		if (cnt == 0) {
+			cur_node.transition()
+				.duration(200)
+				.style('opacity', NODE_OPACITY);
+			return;
+		}
+		cur_node.transition()
+			.duration(200)
+			.style('opacity', 1)
+			.transition()
+			.duration(200)
+			.style('opacity', dim)
+			.on('end', () => inner(cnt - 1));
+	}
+	cur_node.transition()
+		.duration(200)
+		.style('opacity', dim)
+		.on('end', () => inner(cnt - 1));
 }
