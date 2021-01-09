@@ -42,14 +42,14 @@ type ArticleConentElt = number | string | Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
 
 type ArticleConfig = {
-  title: string;
-  category: string;
-  content: { [key: string]: ArticleContent };
+	title: string;
+	category: string;
+	content: { [key: string]: ArticleContent };
 };
 type BoardConfig = {
-  name: string;
-  force: string[];
-  articles: ArticleConfig[];
+	name: string;
+	force: string[];
+	articles: ArticleConfig[];
 };
 
 export async function inject(file: string): Promise<void> {
@@ -83,13 +83,14 @@ async function injectBoard(
 			await API_FETCHER.createBoard({
 				ruling_party_id: party_id,
 				board_name: board.name,
+				style: '一般看板',
 				title: '測試標題',
 				detail: '測試',
 				force: force_str,
 			})
 		);
 	} catch (_) {
-		let b = unwrap(await API_FETCHER.queryBoard(board.name));
+		let b = unwrap(await API_FETCHER.queryBoard(board.name, '一般看板'));
 		board_id = b.id;
 	}
 	console.log(`創板成功 ${board.name} = ${board_id}`);

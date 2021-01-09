@@ -54,12 +54,14 @@ CREATE TABLE reset_password (
 -- 看板
 CREATE TABLE boards (
   id bigserial PRIMARY KEY,
-  board_name text NOT NULL UNIQUE,
+  board_name text NOT NULL,
+  style text NOT NULL,
   title text NOT NULL DEFAULT '',
   detail text NOT NULL DEFAULT '',
   force text NOT NULL DEFAULT '',
   ruling_party_id bigint NOT NULL, -- 等 parties 表建立後設定爲 foreign key
-  create_time timestamptz NOT NULL DEFAULT NOW()
+  create_time timestamptz NOT NULL DEFAULT NOW(),
+  UNIQUE (board_name, style)
 );
 
 CREATE INDEX boards_board_name_index ON boards (board_name);

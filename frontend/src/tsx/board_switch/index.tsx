@@ -12,15 +12,16 @@ import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { Board } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
+import { UserState } from '../global_state/user';
 
 import '../../css/board_switch/board_page.css';
 import { toastErr } from '../utils';
 import { GraphView } from './graph_view';
 
-type Props = RouteComponentProps<{ board_name: string }> & { hide_sidebar?: boolean };
-
-export function BoardSwitch(props: Props): JSX.Element {
-	let board_name = props.match.params.board_name;
+function BoardSwitch(props: { board_name: string, style: string, hide_sidebar?: boolean }): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	let board_name = props.board_name;
+	let style = props.style;
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
@@ -28,7 +29,7 @@ export function BoardSwitch(props: Props): JSX.Element {
 	React.useEffect(() => {
 		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
-		API_FETCHER.queryBoard(board_name).then(res => {
+		API_FETCHER.queryBoard(board_name, style).then(res => {
 			try {
 				let board = unwrap(res);
 				setBoard(board);
@@ -43,9 +44,12 @@ export function BoardSwitch(props: Props): JSX.Element {
 		}).finally(() => {
 			setFetching(false);
 		});
-	}, [board_name]);
+	}, [board_name, style]);
 	if (!fetching && board == null) {
-		return <div>查無此看板</div>;
+		return <div>
+			<div>查無此看板</div>
+			{(user_state.login && style == '個人看板' && board_name == user_state.user_name) && <button>創建個人看板</button>}
+		</div>;
 	} else {
 		return <div className="forumBody">
 			<div className="switchHeader">
@@ -127,4 +131,18 @@ function SwitchContent(props: { board: Board, hide_sidebar?: boolean }): JSX.Ele
 			</div>
 		}
 	</div>;
+}
+
+type PersonalBoardProps = RouteComponentProps<{ profile_name: string }> & { hide_sidebar?: boolean };
+
+export function PersonalBoard(props: PersonalBoardProps): JSX.Element {
+	return <BoardSwitch board_name={props.match.params.profile_name}
+		style={'個人看板'} hide_sidebar={props.hide_sidebar} />;
+}
+
+type GeneralBoardProps = RouteComponentProps<{ board_name: string }> & { hide_sidebar?: boolean };
+
+export function GeneralBoard(props: GeneralBoardProps): JSX.Element {
+	return <BoardSwitch board_name={props.match.params.board_name}
+		style={'一般看板'} hide_sidebar={props.hide_sidebar} />;
 }

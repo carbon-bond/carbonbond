@@ -215,8 +215,13 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     ) -> Fallible<Vec<model::BoardName>> {
         db::board::get_all_board_names().await
     }
-    async fn query_board(&self, context: &mut crate::Ctx, name: String) -> Fallible<model::Board> {
-        let board = db::board::get_by_name(&name).await?;
+    async fn query_board(
+        &self,
+        context: &mut crate::Ctx,
+        name: String,
+        style: String,
+    ) -> Fallible<model::Board> {
+        let board = db::board::get_by_name(&name, &style).await?;
         if let Some(user_id) = context.get_id() {
             service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
