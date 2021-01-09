@@ -4,6 +4,7 @@
     align-items: center;
     justify-content: center;
     & > div {
+        width: 100%;
         background-color: var(--background-color);
         & .boardBlock:not(:first-child) {
             border-top: 0px;
@@ -13,7 +14,7 @@
         }
         & .boardBlock {
             border: 1px var(--lighter-gray) solid;
-            width: 350px;
+            width: 100%;
             padding: 5px;
             & .name {
                 color: black;

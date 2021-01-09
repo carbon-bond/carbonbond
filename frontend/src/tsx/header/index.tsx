@@ -169,6 +169,9 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		let ref = React.useRef(null);
 		let [notifications, setNotifications] = React.useState<Notification[]>([]);
 		React.useEffect(() => {
+			if (!user_state.login) {
+				return;
+			}
 			API_FETCHER.queryNotificationByUser(true).then((res) => {
 				if ('Err' in res) {
 					toastErr(res.Err);
@@ -220,6 +223,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			<LoginModal />
 			<SignupModal />
 			<div styleName="container">
+				<div styleName="space"/>
 				<div styleName="leftSet">
 					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
 						<img src="/img/icon_with_text.png" alt="" />
@@ -227,6 +231,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="location">{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} />
 				</div>
+				<div styleName="space"/>
 
 				<div styleName="rightSet">
 					{UserStatus()}

@@ -26,7 +26,7 @@ import { SignupPage } from '../signup_page';
 import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
-// import { Header } from '../header';
+import { Header } from './header';
 // import { LeftPanel } from '../left_panel';
 import { BottomPanel } from '../bottom_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
@@ -89,7 +89,7 @@ function App(): JSX.Element {
 		}, [load, unload, user_state.login]);
 
 		return <Router>
-			{/* <Header></Header> */}
+			<Header></Header>
 			<div className="other" >
 				{/* <LeftPanel></LeftPanel> */}
 				<MainScrollState.Provider>

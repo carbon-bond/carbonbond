@@ -16,11 +16,8 @@
         align-items: center;
     }
     & .leftSet {
-        margin-right: 20px;
-        margin-left: 20px;
         display: flex;
         flex: 1;
-        justify-content: center;
         align-items: center;
 
         & .carbonbond {
@@ -31,16 +28,15 @@
             font-size: 30px;
             font-weight: bold;
             & img {
-                margin-right: 10px;
                 cursor: pointer;
-                width: 125px;
-                height: 60px;
+                /* width: 125px;
+                height: 60px; */
             }
         }
         & .location {
             color: var(--light-font-color);
             font-size: 18px;
-            margin: 0 48px;
+            margin-right: 48px;
             cursor: pointer;
             width: auto;
             white-space: nowrap;
@@ -67,7 +63,6 @@
                 background: var(--background-color);
             }
         }
-
     }
     & .rightSet {
         display: flex;
@@ -80,28 +75,6 @@
             align-self: center;
             justify-content: center;
             height: 100%;
-            & .icon {
-                height: 100%;
-                padding: 5px;
-                display: flex;
-                align-items: center;
-                font-size: 24px;
-                position: relative;
-                & .unreadCount {
-                    border-radius: 8px;
-                    height: 16;
-                    width: 16;
-                    font-size: 16;
-                    background-color: pink;
-                    position: absolute;
-                    text-align: center;
-                    top: 35px;
-                    left: 15;
-                }
-            }
-            & .icon:hover {
-                background-color: var(--hover-background-color);
-            }
             & .userInfo:hover {
                 background-color: var(--hover-background-color);
             }
@@ -141,9 +114,6 @@
                         cursor: pointer;
                         display: flex;
                         flex-wrap: wrap;
-                        & .space {
-                            min-width: 25px;
-                        }
                     }
                 }
             }
@@ -158,6 +128,9 @@
             }
         }
     }
+}
+.space {
+    min-width: 25px;
 }
 
 .loginModal {
@@ -216,4 +189,27 @@
     & .time {
         color: var(--lighter-gray);
     }
+}
+.icon {
+    height: 100%;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    position: relative;
+}
+.icon:hover {
+    background-color: var(--hover-background-color);
+}
+.unreadCount {
+    border-radius: 8px;
+    height: 16;
+    width: 16;
+    font-size: 16;
+    background-color: pink;
+    position: absolute;
+    text-align: center;
+    top: 35px;
+    left: 15;
 }
