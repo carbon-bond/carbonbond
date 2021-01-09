@@ -9,13 +9,17 @@ use carbonbond::{
     Ctx,
 };
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::{header, Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
 use state::Storage;
 
 static INDEX: Storage<String> = Storage::new();
+static INDEX_MOBILE: Storage<String> = Storage::new();
 fn index() -> &'static str {
     INDEX.get()
+}
+fn index_mobile() -> &'static str {
+    INDEX_MOBILE.get()
 }
 
 fn not_found() -> Response<Body> {
@@ -62,6 +66,13 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
         (&Method::GET, _) => {
             if req.uri().path().starts_with("/app") {
                 // html 檔案
+                let (parts, _) = req.into_parts();
+                if let Some(user_agent) = parts.headers.get(header::USER_AGENT) {
+                    let user_agent = user_agent.to_str()?;
+                    if carbonbond::util::is_mobile(&user_agent) {
+                        return Ok(Response::new(Body::from(index_mobile())));
+                    }
+                }
                 Ok(Response::new(Body::from(index())))
             } else if req.uri().path().starts_with("/avatar") {
                 // 大頭貼
@@ -118,10 +129,14 @@ async fn main() -> Fallible<()> {
     redis::init().await.unwrap();
     log::info!("載入前端資源");
     let static_files = Static::new(prj_path.join("./frontend/static"));
+
     log::info!("載入首頁");
     let content = std::fs::read_to_string(prj_path.join("./frontend/static/index.html"))
         .expect("讀取首頁失敗");
     INDEX.set(content);
+    let content = std::fs::read_to_string(prj_path.join("./frontend/static/m.index.html"))
+        .expect("讀取行動版首頁失敗");
+    INDEX_MOBILE.set(content);
 
     log::info!("啟動伺服器");
     let addr: std::net::SocketAddr =

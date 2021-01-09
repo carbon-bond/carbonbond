@@ -17,13 +17,14 @@ import '../../css/board_switch/board_page.css';
 import { toastErr } from '../utils';
 import { GraphView } from './graph_view';
 
-type Props = RouteComponentProps<{ board_name: string }>;
+type Props = RouteComponentProps<{ board_name: string }> & { hide_sidebar?: boolean };
 
 export function BoardSwitch(props: Props): JSX.Element {
 	let board_name = props.match.params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
+	let hide_sidebar = props.hide_sidebar;
 	React.useEffect(() => {
 		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
@@ -85,19 +86,21 @@ export function BoardSwitch(props: Props): JSX.Element {
 							<div style={{ flex: 1 }}>
 								<GraphView {...props} />
 							</div>
-							<div className="rightSideBar">
-								<ArticleSidebar />
-							</div>
+							{
+								hide_sidebar ? null : <div className="rightSideBar">
+									<ArticleSidebar />
+								</div>
+							}
 						</div>
 					} />
-					<Route render={() => <SwitchContent board={board!} />} />
+					<Route render={() => <SwitchContent board={board!} hide_sidebar={hide_sidebar} />} />
 				</Switch>
 			}
 		</div>;
 	}
 }
 
-function SwitchContent(props: { board: Board }): JSX.Element {
+function SwitchContent(props: { board: Board, hide_sidebar?: boolean }): JSX.Element {
 	let board = props.board;
 	return <div className="switchContent">
 		<div className="mainContent">
@@ -111,15 +114,17 @@ function SwitchContent(props: { board: Board }): JSX.Element {
 				<Redirect to="/app" />
 			</Switch>
 		</div>
-		<div className="rightSideBar">
-			<Switch>
-				<Route exact path="/app/b/:board_name" render={props =>
-					<BoardSidebar {...props} board={board} />
-				} />
-				<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
-					<ArticleSidebar />
-				} />
-			</Switch>
-		</div>
+		{
+			props.hide_sidebar ? null : <div className="rightSideBar">
+				<Switch>
+					<Route exact path="/app/b/:board_name" render={props =>
+						<BoardSidebar {...props} board={board} />
+					} />
+					<Route exact path="/app/b/:board_name/a/:article_id" render={() =>
+						<ArticleSidebar />
+					} />
+				</Switch>
+			</div>
+		}
 	</div>;
 }

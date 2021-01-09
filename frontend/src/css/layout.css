@@ -14,8 +14,9 @@
         display: flex;
         flex-direction: row;
         position: relative;
+        overflow-y: hidden;
         & .mainBody {
-            overflow-Y: auto;
+            overflow-y: auto;
             height: 100%;
             flex: 1;
             & .forumBody {
@@ -35,7 +36,8 @@
                     justify-content: center;
 
                     & .mainContent {
-                        width: 600px; /* XXX: 為何寫死？ */
+                        max-width: 600px;
+                        width: 100%;
                     }
                 }
             }

@@ -2,9 +2,10 @@ const path = require('path');
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 const smp = new SpeedMeasurePlugin();
 
-module.exports = smp.wrap({
+let config = {
 	entry: {
-		index: './src/tsx/app.tsx',
+		'bundle': './src/tsx/app.tsx',
+		'm.bundle': './src/tsx/mobile/app.tsx',
 	},
 	resolve: {
 		mainFields: ['browser', 'main', 'module'],
@@ -13,9 +14,9 @@ module.exports = smp.wrap({
 	},
 	output: {
 		path: path.resolve(__dirname, 'static/dist'),
-		filename: 'bundle.js',
+		filename: '[name].js',
 		publicPath: '/dist/',
-		chunkFilename: '[name].bundle.js',
+		chunkFilename: '[name].js',
 	},
 	module: {
 		rules: [
@@ -89,4 +90,6 @@ module.exports = smp.wrap({
 		]
 	},
 	mode: 'development'
-});
+};
+
+module.exports = smp.wrap(config);

@@ -2,7 +2,7 @@
     border: 1px var(--lighter-gray) solid;
     background-color: var(--background-color);
     padding: 20px;
-    margin: 20px;
+    /* margin: 20px; */
     margin-top: 20px;
     margin-bottom: 20px;
 
