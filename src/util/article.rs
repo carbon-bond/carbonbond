@@ -29,7 +29,7 @@ impl<T: ArticleKind + Send + Sync> HasArticleStats for T {
         article_statistics::get(vec![self.meta()]).await
     }
     async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible {
-        article_statistics::get_personal(vec![self.meta()]).await
+        article_statistics::get_personal(vec![self.meta()], user_id).await
     }
 }
 
@@ -42,7 +42,7 @@ impl<T: ArticleKind + Send + Sync> HasArticleStats for Vec<T> {
     }
     async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible {
         let metas: Vec<_> = self.iter_mut().map(|a| a.meta()).collect();
-        article_statistics::get_personal(metas).await
+        article_statistics::get_personal(metas, user_id).await
     }
 }
 

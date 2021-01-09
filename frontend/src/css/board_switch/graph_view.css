@@ -8,6 +8,7 @@
     position: relative;
 
     & .panel {
+        opacity: 0.8;
         padding: 10px;
         z-index: 9;
         background-color: white;

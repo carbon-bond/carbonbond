@@ -42,11 +42,13 @@ pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
     Ok(())
 }
 
-pub async fn get_personal(metas: Vec<&mut ArticleMeta>) -> Fallible {
+pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallible {
     let pool = get_pool();
     let ids: Vec<_> = metas.iter().map(|a| a.id).collect();
     let personals = sqlx::query!(
-        "SELECT article_id FROM favorite_articles WHERE article_id = ANY($1)",
+        "SELECT article_id FROM favorite_articles
+        WHERE user_id = $1 AND article_id = ANY($2)",
+        user_id,
         &ids,
     )
     .fetch_all(pool)

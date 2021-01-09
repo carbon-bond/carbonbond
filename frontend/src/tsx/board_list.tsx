@@ -5,6 +5,7 @@ import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board } from '../ts/api/api_trait';
 
 import '../css/board_list.css';
+import '../css/layout.css?global';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
@@ -30,7 +31,7 @@ function BoardList(): JSX.Element {
 	}, []);
 
 	return <div styleName="boardList">
-		<div>
+		<div className="mainContent">
 			{
 				board_list.map(board => (
 					<div styleName="boardBlock" key={board.id}>
