@@ -35,6 +35,9 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	const { user_state, setLogin, setLogout } = UserState.useContainer();
 	const { cur_board } = BoardCacheState.useContainer();
 
+	let [expanding_user, setExpandingUser] = React.useState(false);
+	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
+
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
 			let user = unwrap(await API_FETCHER.login(name, password));
@@ -57,7 +60,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		try {
 			unwrap(await API_FETCHER.logout());
 			setLogout();
-			// setExtended(false);
+			setExpandingUser(false);
+			setExpandingQuality(null);
 			toast('您已登出');
 		} catch (err) {
 			toastErr(err);
@@ -163,7 +167,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	}
 	function UserStatus(): JSX.Element {
 		let ref = React.useRef(null);
-		let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
 		let [notifications, setNotifications] = React.useState<Notification[]>([]);
 		React.useEffect(() => {
 			API_FETCHER.queryNotificationByUser(true).then((res) => {
@@ -175,7 +178,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			});
 		}, []);
 		useOnClickOutside(ref, () => {
-			// setExtended(false);
+			setExpandingUser(false);
 			setExpandingQuality(null);
 		});
 		if (user_state.login) {
@@ -193,8 +196,9 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 					<div styleName="space"></div>
 					<DropDown
+						forced_expanded={expanding_user}
 						button={
-							<div styleName="userInfo">
+							<div styleName="userInfo" onClick={() => setExpandingUser(!expanding_user)}>
 								<img src={`/avatar/${user_state.user_name}`} />
 								<div styleName="userName">{user_state.user_name}</div>
 								<div styleName="energy">☘ {user_state.energy}</div>

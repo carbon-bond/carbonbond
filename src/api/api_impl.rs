@@ -4,10 +4,18 @@ use crate::db;
 use crate::email;
 use crate::service;
 use crate::util::{HasArticleStats, HasBoardProps};
-use crate::Context;
+use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+
+async fn complete_article<A: HasArticleStats>(mut articles: A, ctx: &mut Ctx) -> Fallible<A> {
+    articles.assign_stats_in_place().await?;
+    if let Some(user_id) = ctx.get_id() {
+        articles.assign_personal_meta_in_place(user_id).await?;
+    }
+    Ok(articles)
+}
 
 #[derive(Default)]
 pub struct RootQueryRouter {
@@ -50,7 +58,7 @@ pub struct ArticleQueryRouter {}
 impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn search_article(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         author_name: Option<String>,
         board_name: Option<String>,
         start_time: Option<DateTime<Utc>>,
@@ -69,11 +77,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
         )
         .await?;
-        meta.assign_stats().await
+        complete_article(meta, context).await
     }
     async fn query_article_list(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         count: usize,
         max_id: Option<i64>,
         _author_name: Option<String>,
@@ -87,15 +95,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
                 .collect(),
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         };
-        articles.assign_stats().await
+        complete_article(articles, context).await
     }
-    async fn query_article(&self, _context: &mut crate::Ctx, id: i64) -> Fallible<model::Article> {
+    async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Article> {
         let article = db::article::get_by_id(id).await?;
-        article.assign_stats().await
+        complete_article(article, context).await
     }
     async fn query_bonder(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
@@ -103,11 +111,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let bonders: Vec<_> = db::article::get_bonder(id, opt_slice(&category_set), &family_filter)
             .await?
             .collect();
-        bonders.assign_stats().await
+        complete_article(bonders, context).await
     }
     async fn query_bonder_meta(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
@@ -117,14 +125,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             db::article::get_bonder_meta(id, opt_slice(&category_set), &family_filter)
                 .await?
                 .collect();
-        bonders.assign_stats().await
+        complete_article(bonders, context).await
     }
     async fn query_article_meta(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         id: i64,
     ) -> Result<super::model::ArticleMeta, crate::custom_error::Error> {
-        db::article::get_meta_by_id(id).await?.assign_stats().await
+        complete_article(db::article::get_meta_by_id(id).await?, context).await
     }
     async fn create_article(
         &self,
@@ -150,15 +158,19 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     }
     async fn query_graph(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
-        service::graph_view::query_graph(10, article_id, opt_slice(&category_set), &family_filter)
-            .await?
-            .assign_stats()
-            .await
+        let graph = service::graph_view::query_graph(
+            10,
+            article_id,
+            opt_slice(&category_set),
+            &family_filter,
+        )
+        .await?;
+        complete_article(graph, context).await
     }
 }
 
@@ -311,7 +323,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Fallible<Vec<model::Favorite>> {
         let id = context.get_id_strict()?;
         let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
-        articles.assign_stats().await
+        complete_article(articles, context).await
     }
     async fn query_follower_list(
         &self,

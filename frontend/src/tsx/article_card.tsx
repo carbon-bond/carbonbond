@@ -1,9 +1,8 @@
 import * as React from 'react';
 import '../css/board_switch/article_card.css';
-import { UserState } from './global_state/user';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { ArticleMeta, Edge, Favorite } from '../ts/api/api_trait';
+import { ArticleMeta, Edge } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
 import { parse_category } from 'force';
@@ -33,27 +32,7 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 }
 
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
-	const { user_state } = UserState.useContainer();
-	const [favorite, setFavorite] = React.useState<boolean>(false);
-
-	async function fetchFavorites(): Promise<Favorite[]> {
-		if (user_state.login) {
-			// return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
-			return [];
-		} else {
-			return [];
-		}
-	}
-
-	Promise.all([
-		fetchFavorites(),
-	]).then(([more_favorites]) => {
-		try {
-			setFavorite(more_favorites.some(favorite => favorite.meta.id == props.article.id));
-		} catch (err) {
-			toastErr(err);
-		}
-	});
+	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 
 	async function onFavoriteArticleClick(): Promise<void> {
 		if (favorite) {

@@ -138,6 +138,7 @@
                     }
                     & .row {
                         padding: 5px 0px;
+                        cursor: pointer;
                         display: flex;
                         flex-wrap: wrap;
                         & .space {

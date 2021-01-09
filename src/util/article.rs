@@ -10,6 +10,12 @@ pub trait HasArticleStats: Sized {
         self.assign_stats_in_place().await?;
         Ok(self)
     }
+
+    async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible;
+    async fn assign_personal_meta(mut self, user_id: i64) -> Fallible<Self> {
+        self.assign_personal_meta_in_place(user_id).await?;
+        Ok(self)
+    }
 }
 
 pub trait ArticleKind {
@@ -22,6 +28,9 @@ impl<T: ArticleKind + Send + Sync> HasArticleStats for T {
         // TODO: 進快取撈看看
         article_statistics::get(vec![self.meta()]).await
     }
+    async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible {
+        article_statistics::get_personal(vec![self.meta()]).await
+    }
 }
 
 #[async_trait]
@@ -30,6 +39,10 @@ impl<T: ArticleKind + Send + Sync> HasArticleStats for Vec<T> {
         // TODO: 進快取撈看看
         let metas: Vec<_> = self.iter_mut().map(|a| a.meta()).collect();
         article_statistics::get(metas).await
+    }
+    async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible {
+        let metas: Vec<_> = self.iter_mut().map(|a| a.meta()).collect();
+        article_statistics::get_personal(metas).await
     }
 }
 
@@ -59,5 +72,8 @@ impl<T, A: ArticleKind> ArticleKind for (T, A) {
 impl HasArticleStats for Graph {
     async fn assign_stats_in_place(&mut self) -> Fallible {
         self.nodes.assign_stats_in_place().await
+    }
+    async fn assign_personal_meta_in_place(&mut self, user_id: i64) -> Fallible {
+        self.nodes.assign_personal_meta_in_place(user_id).await
     }
 }

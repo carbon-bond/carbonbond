@@ -64,6 +64,10 @@ mod model {
         pub force: String,
         pub ruling_party_id: i64,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
+    pub struct ArticlePersonalMeta {
+        pub is_favorite: bool,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
@@ -79,7 +83,9 @@ mod model {
         pub digest: String,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
+
         pub stat: ArticleStatistics,
+        pub personal_meta: ArticlePersonalMeta,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Favorite {
