@@ -166,7 +166,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		}
 	}
 	function UserStatus(): JSX.Element {
-		let ref = React.useRef(null);
+		let ref_noti = React.useRef(null);
+		let ref_user = React.useRef(null);
 		let [notifications, setNotifications] = React.useState<Notification[]>([]);
 		React.useEffect(() => {
 			if (!user_state.login) {
@@ -180,13 +181,15 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				setNotifications(res.Ok);
 			});
 		}, []);
-		useOnClickOutside(ref, () => {
-			setExpandingUser(false);
+		useOnClickOutside(ref_noti, () => {
 			setExpandingQuality(null);
+		});
+		useOnClickOutside(ref_user, () => {
+			setExpandingUser(false);
 		});
 		if (user_state.login) {
 			return <>
-				<div ref={ref} styleName="wrap">
+				<div ref={ref_noti} styleName="wrap">
 					<NotificationIcon icon={'🤍'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Good}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
@@ -196,8 +199,9 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<NotificationIcon icon={'☠️'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
-
-					<div styleName="space"></div>
+				</div>
+				<div styleName="space"/>
+				<div ref={ref_user} styleName="wrap">
 					<DropDown
 						forced_expanded={expanding_user}
 						button={

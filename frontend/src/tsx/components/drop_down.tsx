@@ -7,6 +7,7 @@ export function DropDown(props: {
 	body: null | JSX.Element,
 	onExtended?: Function,
 	forced_expanded?: boolean,
+	hide_triangle?: boolean,
 }): JSX.Element {
 	const [extended, setExtended] = React.useState(false);
 	let should_expand = extended && props.body != null;
@@ -26,7 +27,7 @@ export function DropDown(props: {
 			{
 				should_expand
 					? <>
-						<div styleName="triangle"></div>
+						{props.hide_triangle ? null : <div styleName="triangle"></div>}
 						<div style={{position: 'relative'}}> {props.body} </div>
 					</>
 					: null

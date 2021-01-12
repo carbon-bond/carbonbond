@@ -75,6 +75,7 @@
             align-self: center;
             justify-content: center;
             height: 100%;
+            width: 100%;
             & .userInfo:hover {
                 background-color: var(--hover-background-color);
             }

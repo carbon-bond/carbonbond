@@ -1,0 +1,26 @@
+.wrap {
+    position: relative;
+    z-index: 99;
+    & .menu {
+        background: var(--background-color);
+        width: 100vw;
+        position: absolute;
+        right: -15px;
+        border: 1px var(--lighter-gray) solid;
+        border-top-style: none;
+        & .row {
+            margin: 10px 0;
+            display: flex;
+            & .space {
+                flex: 1;
+            }
+        }
+    }
+    & .cover {
+        background-color: rgba(0, 0, 0, 0.6);
+        position: absolute;
+        width: 100vw;
+        height: calc(100vh - 60px);
+        right: -15px;
+    }
+}
