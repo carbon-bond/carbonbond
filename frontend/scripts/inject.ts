@@ -83,7 +83,7 @@ async function injectBoard(
 			await API_FETCHER.createBoard({
 				ruling_party_id: party_id,
 				board_name: board.name,
-				style: '一般看板',
+				board_type: '一般看板',
 				title: '測試標題',
 				detail: '測試',
 				force: force_str,

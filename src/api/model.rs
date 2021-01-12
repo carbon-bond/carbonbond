@@ -44,7 +44,7 @@ mod model {
     pub struct Board {
         pub id: i64,
         pub board_name: String,
-        pub style: String,
+        pub board_type: String,
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
@@ -60,7 +60,7 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct NewBoard {
         pub board_name: String,
-        pub style: String,
+        pub board_type: String,
         pub title: String,
         pub detail: String,
         pub force: String,

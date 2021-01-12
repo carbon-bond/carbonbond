@@ -55,14 +55,44 @@ CREATE TABLE reset_password (
 CREATE TABLE boards (
   id bigserial PRIMARY KEY,
   board_name text NOT NULL,
-  style text NOT NULL,
+  board_type text NOT NULL,
   title text NOT NULL DEFAULT '',
   detail text NOT NULL DEFAULT '',
   force text NOT NULL DEFAULT '',
   ruling_party_id bigint NOT NULL, -- 等 parties 表建立後設定爲 foreign key
   create_time timestamptz NOT NULL DEFAULT NOW(),
-  UNIQUE (board_name, style)
+  UNIQUE (board_name, board_type)
 );
+
+CREATE OR REPLACE FUNCTION check_board ()
+    RETURNS TRIGGER
+    AS $$
+BEGIN
+    IF NEW.board_type = '一般看板' THEN
+        IF (
+            SELECT
+                count(*)
+            FROM
+                parties
+            WHERE
+                id = NEW.ruling_party_id) <> 1 THEN
+            RAISE EXCEPTION '一般看板需要有 ruling_party_id!';
+        END IF;
+    END IF;
+    IF NEW.board_type = '個人看板' THEN
+        IF NEW.ruling_party_id != -1 THEN
+            RAISE EXCEPTION '個人看板需 ruling_party_id 需為 -1!';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER update_board_trigger
+    BEFORE UPDATE OR INSERT ON boards
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_board ();
 
 CREATE INDEX boards_board_name_index ON boards (board_name);
 
@@ -134,9 +164,6 @@ CREATE TABLE parties (
 CREATE INDEX parties_party_name_index ON parties (party_name);
 
 CREATE INDEX parties_create_time_index ON parties (create_time);
-
-ALTER TABLE boards
-  ADD CONSTRAINT boards_ruling_party_key FOREIGN KEY (ruling_party_id) REFERENCES parties (id);
 
 CREATE TABLE subscribed_boards (
   id bigserial PRIMARY KEY,

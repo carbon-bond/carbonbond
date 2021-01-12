@@ -80,7 +80,7 @@ function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
 	function onSubmit(data: Input): void {
 		API_FETCHER.createBoard({
-			style: '一般看板',
+			board_type: '一般看板',
 			ruling_party_id: props.party_id,
 			...data
 		})
