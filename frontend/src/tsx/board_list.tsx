@@ -11,10 +11,11 @@ async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
 }
 
-function BoardBlock(props: { board: { board_name: string, title: string }}): JSX.Element {
+function BoardBlock(props: { board: { board_name: string, board_type: string, title: string } }): JSX.Element {
 	const name = props.board.board_name;
+	const type = props.board.board_type;
 	const title = props.board.title;
-	return <Link to={`/app/b/${name}`}>
+	return <Link to={`/app/${type === '一般看板' ? 'b' : 'user_board'}/${name}`}>
 		<div>
 			<div styleName="name">{name}</div>
 			<div styleName="title">{title}</div>

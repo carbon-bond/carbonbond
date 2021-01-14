@@ -158,6 +158,7 @@ export function GeneralBoard(props: GeneralBoardProps): JSX.Element {
 export function EmptyBoard(props: { board_name: string, board_type: string, history: History }): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const [expand, setExpand] = React.useState<boolean>(false);
+	const [forceValue, setForceValue] = React.useState<string>('');
 
 	type CreatePersonalBoardInput = {
 		detail: string,
@@ -175,28 +176,88 @@ export function EmptyBoard(props: { board_name: string, board_type: string, hist
 				ruling_party_id: -1,
 				...data
 			})
-				.then(data => unwrap(data))
 				.then(() => props.history.go(0))
 				.catch(err => toastErr(err));
 		}
 	}
 
+	type ForceExample = {
+		name: string,
+		force: string[],
+	};
+
+	let forceExamples: ForceExample[] = [];
+
+	forceExamples.push({
+		name: '八尬',
+		force: [
+			'新聞 {',
+			'    單行 媒體',
+			'    單行 記者',
+			'    文本 內文',
+			'    單行 超鏈接',
+			'    文本 備註',
+			'}',
+			'問卦 {',
+			'    文本/.{1,}/ 內文',
+			'}',
+			'解答 {',
+			'    鍵結[問卦,留言] 問題',
+			'    文本 內文',
+			'}',
+			'留言 {',
+			'    鍵結[*] 本體',
+			'    文本/.{1,256}/ 內文',
+			'}',
+			'回覆 {',
+			'    帶籤鍵結[*] {',
+			'        挺 {',
+			'            輸能: [1]',
+			'        }',
+			'        戰 {',
+			'            輸能: [-1]',
+			'        }',
+			'        回 {',
+			'            輸能: [0]',
+			'        }',
+			'    } 原文',
+			'    文本 內文',
+			'}'
+		],
+	});
+
 	function getBody(): JSX.Element {
 		return <div styleName="editModal">
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<textarea name="detail" placeholder="看板介紹" ref={register} />
-				<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
-					validate: (value) => {
-						try {
-							parse(value);
-							return true;
-						} catch (err) {
-							console.log(err);
-							return false;
-						}
-					}
-				})} />
-				{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
+				<div styleName="forceEditor">
+					<div styleName="forceEditorLeft">
+						<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
+							validate: (value) => {
+								try {
+									parse(value);
+									return true;
+								} catch (err) {
+									console.log(err);
+									return false;
+								}
+							}
+						})} value={forceValue} onChange={e => setForceValue(e.target.value)} />
+						{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
+					</div>
+					<div styleName="forceEditorRight">
+						<div>範本</div>
+						<div styleName="forceExampleList">
+							{
+								forceExamples.map(example => (
+									<div styleName="forceExample" key={example.name} onClick={() => setForceValue(example.force.join('\n'))}>
+										{example.name}
+									</div>
+								))
+							}
+						</div>
+					</div>
+				</div>
 				<input type="submit" value="確認" />
 			</form>
 		</div>;

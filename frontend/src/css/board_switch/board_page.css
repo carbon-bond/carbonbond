@@ -52,6 +52,28 @@
 }
 
 .editModal {
+    & .forceEditor {
+        height: 300px;
+        width: 400px;
+        display: flex;
+        flex-direction: row;
+        & .forceEditorLeft {
+            width: 300px;
+            & textarea {
+                height: 100%;
+            }
+        }
+        & .forceEditorRight {
+            margin: 0px 0px 0px 5px;
+            flex: 1;
+            & .forceExampleList {
+                overflow: auto;
+                & .forceExample {
+                    border: var(--border-color) solid 1px;
+                }
+            }
+        }
+    }
     & textarea {
         position: relative;
         width: 100%;

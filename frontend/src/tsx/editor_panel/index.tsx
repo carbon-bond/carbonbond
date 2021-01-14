@@ -33,7 +33,7 @@ function EditorPanel(): JSX.Element | null {
 	}
 	function deleteEditor(): void {
 		let do_delete = true;
-		if (editor_panel_data ) {
+		if (editor_panel_data) {
 			if (editor_panel_data.title != '') {
 				do_delete = confirm('確定要結束發文？');
 			} else {
@@ -53,8 +53,8 @@ function EditorPanel(): JSX.Element | null {
 		return <div styleName="editorPanel">
 			<div styleName="roomTitle">
 				<div onClick={() => onTitleClick()} styleName="leftSet">
-					{ editor_panel_data.board.board_name + ' / ' +
-					(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
+					{editor_panel_data.board.board_name + ' / ' +
+						(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
 				</div>
 				<div onClick={() => onTitleClick()} styleName="middleSet">
 				</div>
@@ -74,16 +74,16 @@ function EditorPanel(): JSX.Element | null {
 	}
 }
 
-const SingleField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
 	const { field, validator } = props;
-	const [ validate_info, setValidateInfo ] = useState<undefined | string>(undefined);
+	const [validate_info, setValidateInfo] = useState<undefined | string>(undefined);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	let content = editor_panel_data!.content;
 
 	useEffect(() => {
 		validator.validate_datatype(field.datatype, content[field.name])
-		.then(res => setValidateInfo(res));
+			.then(res => setValidateInfo(res));
 	}, [field, content, validator]);
 
 	if (editor_panel_data == null) { return <></>; }
@@ -129,16 +129,16 @@ function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
 	}
 }
 
-const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+const ArrayField = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
 	const { field } = props;
-	const [ value, setValue ] = useState<string>('');
-	const [ input_validate_info, setInputValidateInfo ] = useState<undefined | string>(undefined);
-	const [ array_validate_info, setArrayValidateInfo ] = useState<undefined | string>(undefined);
+	const [value, setValue] = useState<string>('');
+	const [input_validate_info, setInputValidateInfo] = useState<undefined | string>(undefined);
+	const [array_validate_info, setArrayValidateInfo] = useState<undefined | string>(undefined);
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	useEffect(() => {
 		props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name])
-		.then(info => setArrayValidateInfo(info));
+			.then(info => setArrayValidateInfo(info));
 	});
 
 	if (editor_panel_data == null) { return <></>; }
@@ -178,7 +178,7 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 			setEditorPanelData(next_state);
 			setValue('');
 			props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name])
-			.then(info => setArrayValidateInfo(info));
+				.then(info => setArrayValidateInfo(info));
 		}
 	};
 
@@ -197,7 +197,7 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 		onChange: (evt: { target: { value: string } }) => {
 			setValue(evt.target.value);
 			props.validator.validate_basic_datatype(field.datatype.t, evt.target.value)
-			.then(res => setInputValidateInfo(res));
+				.then(res => setInputValidateInfo(res));
 		},
 	};
 	if (field.datatype.t.kind == 'text') {
@@ -219,7 +219,7 @@ const ArrayField = (props: {field: Force.Field, validator: Validator}): JSX.Elem
 };
 
 // @ts-ignore
-const Field = (props: {field: Force.Field, validator: Validator}): JSX.Element => {
+const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
 	const { field } = props;
 	const { editor_panel_data } = EditorPanelState.useContainer();
 
@@ -248,15 +248,15 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { closeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { handleSubmit } = useForm();
 	const board = editor_panel_data!.board;
-	const [ board_options, setBoardOptions ] = useState<BoardName[]>([{
+	const [board_options, setBoardOptions] = useState<BoardName[]>([{
 		id: board.id,
 		board_name: board.board_name,
 	}]);
 	useEffect(() => {
 		API_FETCHER.queryBoardNameList()
-		.then(data => unwrap(data))
-		.then(data => setBoardOptions(data))
-		.catch(err => console.log(err));
+			.then(data => unwrap(data))
+			.then(data => setBoardOptions(data))
+			.catch(err => console.log(err));
 	}, []);
 	const force = useMemo(
 		() => Force.parse(board.force),
@@ -303,7 +303,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(id => {
 				toast('發文成功');
 				closeEditorPanel();
-				props.history.push(`/app/b/${editor_panel_data.board.board_name}/a/${id}`);
+				props.history.push(`/app/${board.board_type === '一般看板' ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 				setEditorPanelData(null);
 			})
 			.catch(err => {
@@ -319,9 +319,9 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					value={board.id}
 					onChange={(evt) => {
 						API_FETCHER.queryBoardById(parseInt(evt.target.value))
-						.then(data => unwrap(data))
-						.then(board => setEditorPanelData({...editor_panel_data, board, category: '' }))
-						.catch(err => console.error(err));
+							.then(data => unwrap(data))
+							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '' }))
+							.catch(err => console.error(err));
 					}}
 				>
 					<option value="" disabled hidden>看板</option>
