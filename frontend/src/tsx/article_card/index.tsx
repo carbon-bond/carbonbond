@@ -7,6 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { parse_category } from 'force';
 import { ArticleContent } from '../board_switch/article_page';
+import { ReplyModal, SatelliteModal } from './modal';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -34,8 +35,15 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 	</div>;
 }
 
+enum ModalType {
+	Reply,
+	Satellite,
+	None
+}
+
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
+	const [opening_modal, setOpeningModal] = React.useState(ModalType.None);
 
 	async function onFavoriteArticleClick(): Promise<void> {
 		if (favorite) {
@@ -57,15 +65,22 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		}
 	}
 
+	function openModal(ty: ModalType): void {
+		setOpeningModal(ty);
+	}
+	function closeModal(): void {
+		setOpeningModal(ModalType.None);
+	}
+
 	return <div styleName="articleFooter">
 		<div styleName="articleBtns">
 			<div styleName="articleBtnItem">
 				☘️&nbsp;<span styleName="num">{props.article.energy}</span>鍵能
 			</div>
-			<div styleName="articleBtnItem">
+			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Satellite)}>
 				🗯️&nbsp;<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
 			</div>
-			<div styleName="articleBtnItem">
+			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Reply)}>
 				➡️&nbsp;<span styleName="num">{props.article.stat.replies}</span>篇回文
 			</div>
 			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
@@ -75,6 +90,21 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				📎 分享
 			</div>
 		</div>
+		{
+			(() => {
+				switch (opening_modal) {
+					case ModalType.Reply: {
+						return <ReplyModal article={props.article} close={closeModal}/>;
+					}
+					case ModalType.Satellite: {
+						return <SatelliteModal article={props.article} close={closeModal}/>;
+					}
+					default: {
+						return null;
+					}
+				}
+			})()
+		}
 	</div>;
 }
 
@@ -82,6 +112,7 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 	const date = new Date(props.article.create_time);
 	const [article, setArticle] = React.useState<Article | null>(null);
 	const [board, setBoard] = React.useState(props.board);
+	let [need_show_more, setNeedShowMore] = React.useState(false);
 
 	let user_name = '';
 	let category_name = '';
@@ -96,10 +127,9 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 	const category = parse_category(props.article.category_source);
 	// eslint-disable-next-line
 	let content: { [name: string]: any } = JSON.parse(props.article.digest);
-	function BriefContent(): JSX.Element {
+	function Content(): JSX.Element {
 		let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
 		let content_ref = React.useRef<HTMLDivElement | null>(null);
-		let [need_show_more, setNeedShowMore]= React.useState(false);
 
 		function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
 			if (is_wrapper) {
@@ -149,8 +179,25 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 			return '';
 		}
 
+		function ShowMoreButton(): JSX.Element | null {
+			if (!need_show_more) {
+				return null;
+			}
+			return <>
+				<br/>
+				{
+					article == null ?
+						<a onClick={() => expand()}>...閱讀更多</a> :
+						<a onClick={() => setArticle(null)}>收起</a>
+				}
+			</>;
+		}
+
 		if (article && board) {
-			return <ArticleContent article={article}/>;
+			return <>
+				<ArticleContent article={article} />
+				<ShowMoreButton />
+			</>;
 		}
 
 		return <>
@@ -170,10 +217,7 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 					}
 				</div>
 			</div>
-			{
-				need_show_more ?
-					<><br/><a onClick={() => expand()}>...閱讀更多</a></> : null
-			}
+			<ShowMoreButton />
 		</>;
 	}
 
@@ -187,7 +231,7 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 						category_name={category_name}
 						title={props.article.title}
 						id={props.article.id} />
-					<BriefContent/>
+					<Content/>
 				</div>
 			</div>
 			<ArticleFooter article={props.article} />
@@ -266,5 +310,5 @@ export {
 	SimpleArticleCardById,
 	SimpleArticleCard,
 	SatelliteCard,
-	BondCard
+	BondCard,
 };
