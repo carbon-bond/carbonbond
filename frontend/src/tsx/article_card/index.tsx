@@ -1,12 +1,12 @@
 import * as React from 'react';
-import '../css/board_switch/article_card.css';
-import { relativeDate } from '../ts/date';
+import '../../css/board_switch/article_card.css';
+import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Board, Edge } from '../ts/api/api_trait';
-import { API_FETCHER, unwrap } from '../ts/api/api';
-import { toastErr } from './utils';
+import { Article, ArticleMeta, Board, Edge } from '../../ts/api/api_trait';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
+import { toastErr } from '../utils';
 import { parse_category } from 'force';
-import { ArticleDisplayPage } from './board_switch/article_page';
+import { ArticleContent } from '../board_switch/article_page';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -83,10 +83,6 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 	const [article, setArticle] = React.useState<Article | null>(null);
 	const [board, setBoard] = React.useState(props.board);
 
-	if (article && board) {
-		return <ArticleDisplayPage article={article} board={board}/>;
-	}
-
 	let user_name = '';
 	let category_name = '';
 	try {
@@ -152,6 +148,11 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 			}
 			return '';
 		}
+
+		if (article && board) {
+			return <ArticleContent article={article}/>;
+		}
+
 		return <>
 			<div ref={div => onDivLoad(div, true)} styleName="articleContentWrapper">
 				<div ref={div => onDivLoad(div, false)}>
@@ -218,7 +219,8 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		<Link styleName="overlay" to={url}></Link >
+		<Link styleName="overlay" to={url} target="_blank"></Link >
+		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
 	</div >;
 }
 

@@ -179,7 +179,7 @@ function ShowArrayField(props: { field: Field, value: any[] }): JSX.Element {
 	return <>{ret}</>;
 }
 
-function ArticleContent(props: { article: Article }): JSX.Element {
+export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
 	const category = parse_category(article.meta.category_source);
 	const content = JSON.parse(article.content);
@@ -311,7 +311,7 @@ function ReplyArea(props: { force: Force, candidates: FieldPath[], board: Board,
 	</div>;
 }
 
-export function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
+function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
 
 	let scrollHandler = React.useCallback(() => { }, []);
