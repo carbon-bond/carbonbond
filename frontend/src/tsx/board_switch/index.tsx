@@ -8,16 +8,13 @@ import {
 
 import { RouteComponentProps } from 'react-router';
 import { BoardPage } from './board_page';
+import { BoardCreator } from './board_creator';
 import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { Board } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { UserState } from '../global_state/user';
-import { useForm } from 'react-hook-form';
 import { History } from 'history';
-import { ModalButton, ModalWindow } from '../components/modal_window';
-import { InvalidMessage } from '../components/invalid_message';
-import { parse } from 'force';
 
 import '../../css/board_switch/board_page.css';
 import { toastErr } from '../utils';
@@ -158,112 +155,6 @@ export function GeneralBoard(props: GeneralBoardProps): JSX.Element {
 export function EmptyBoard(props: { board_name: string, board_type: string, history: History }): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const [expand, setExpand] = React.useState<boolean>(false);
-	const [forceValue, setForceValue] = React.useState<string>('');
-
-	type CreatePersonalBoardInput = {
-		detail: string,
-		force: string,
-	};
-
-	const { register, handleSubmit, errors } = useForm<CreatePersonalBoardInput>({ mode: 'onBlur' });
-
-	function onSubmit(data: CreatePersonalBoardInput): void {
-		if (user_state.login) {
-			API_FETCHER.createBoard({
-				title: user_state.user_name,
-				board_name: user_state.user_name,
-				board_type: '個人看板',
-				ruling_party_id: -1,
-				...data
-			})
-				.then(() => props.history.go(0))
-				.catch(err => toastErr(err));
-		}
-	}
-
-	type ForceExample = {
-		name: string,
-		force: string[],
-	};
-
-	let forceExamples: ForceExample[] = [];
-
-	forceExamples.push({
-		name: '八尬',
-		force: [
-			'新聞 {',
-			'    單行 媒體',
-			'    單行 記者',
-			'    文本 內文',
-			'    單行 超鏈接',
-			'    文本 備註',
-			'}',
-			'問卦 {',
-			'    文本/.{1,}/ 內文',
-			'}',
-			'解答 {',
-			'    鍵結[問卦,留言] 問題',
-			'    文本 內文',
-			'}',
-			'留言 {',
-			'    鍵結[*] 本體',
-			'    文本/.{1,256}/ 內文',
-			'}',
-			'回覆 {',
-			'    帶籤鍵結[*] {',
-			'        挺 {',
-			'            輸能: [1]',
-			'        }',
-			'        戰 {',
-			'            輸能: [-1]',
-			'        }',
-			'        回 {',
-			'            輸能: [0]',
-			'        }',
-			'    } 原文',
-			'    文本 內文',
-			'}'
-		],
-	});
-
-	function getBody(): JSX.Element {
-		return <div styleName="editModal">
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<textarea name="detail" placeholder="看板介紹" ref={register} />
-				<div styleName="forceEditor">
-					<div styleName="forceEditorLeft">
-						<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
-							validate: (value) => {
-								try {
-									parse(value);
-									return true;
-								} catch (err) {
-									console.log(err);
-									return false;
-								}
-							}
-						})} value={forceValue} onChange={e => setForceValue(e.target.value)} />
-						{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
-					</div>
-					<div styleName="forceEditorRight">
-						<div>範本</div>
-						<div styleName="forceExampleList">
-							{
-								forceExamples.map(example => (
-									<div styleName="forceExample" key={example.name} onClick={() => setForceValue(example.force.join('\n'))}>
-										{example.name}
-									</div>
-								))
-							}
-						</div>
-					</div>
-				</div>
-				<input type="submit" value="確認" />
-			</form>
-		</div>;
-	}
-
-	let buttons: ModalButton[] = [];
 
 	function handleClick(): void {
 		setExpand(!expand);
@@ -272,12 +163,6 @@ export function EmptyBoard(props: { board_name: string, board_type: string, hist
 	return <div>
 		<div>查無此看板</div>
 		{(user_state.login && props.board_type == '個人看板' && props.board_name == user_state.user_name) && <button onClick={() => handleClick()}>🔨&nbsp;創建個人看板</button>}
-		<ModalWindow
-			title="🔨 創立個人看板"
-			body={getBody()}
-			buttons={buttons}
-			visible={expand}
-			setVisible={setExpand}
-		/>
+		<BoardCreator board_type={'個人看板'} party_id={-1} visible={expand} setVisible={setExpand} history={props.history} />
 	</div>;
 }

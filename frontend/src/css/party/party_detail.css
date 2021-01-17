@@ -18,21 +18,5 @@
             cursor: pointer;
         }
         margin-top: 20px;
-        & .form {
-            display: flex;
-            flex-direction: column;
-            & input { margin-top: 15px; }
-            & textarea { margin-top: 15px; }
-        }
-    }
-}
-
-.editModal {
-    & textarea {
-        position: relative;
-        width: 100%;
-        height: 120px;
-        margin: 0px 0px 5px;
-        resize: none;
     }
 }
