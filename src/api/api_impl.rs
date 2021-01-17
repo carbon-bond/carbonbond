@@ -11,7 +11,7 @@ use std::collections::HashMap;
 
 async fn complete_article<A: HasArticleStats>(mut articles: A, ctx: &mut Ctx) -> Fallible<A> {
     articles.assign_stats_in_place().await?;
-    if let Some(user_id) = ctx.get_id() {
+    if let Some(user_id) = ctx.get_id().await {
         articles.assign_personal_meta_in_place(user_id).await?;
     }
     Ok(articles)
@@ -149,7 +149,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
             content
         );
-        let author_id = context.get_id_strict()?;
+        let author_id = context.get_id_strict().await?;
         let id = db::article::create(author_id, board_id, &category_name, &title, content.clone())
             .await?;
         service::notification::handle_article(author_id, board_id, id, &category_name, content)
@@ -191,7 +191,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         party_name: String,
         board_name: Option<String>,
     ) -> Fallible<i64> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         log::debug!("{} 嘗試創建 {}", id, party_name);
         let id = db::party::create(&party_name, board_name, id).await?;
         Ok(id)
@@ -222,14 +222,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         style: String,
     ) -> Fallible<model::Board> {
         let board = db::board::get_by_name(&name, &style).await?;
-        if let Some(user_id) = context.get_id() {
+        if let Some(user_id) = context.get_id().await {
             service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
         board.assign_props().await
     }
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
         let board = db::board::get_by_id(id).await?;
-        if let Some(user_id) = context.get_id() {
+        if let Some(user_id) = context.get_id().await {
             service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
         board.assign_props().await
@@ -312,21 +312,21 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
 
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
-        if let Some(id) = context.get_id() {
+        if let Some(id) = context.get_id().await {
             Ok(Some(db::user::get_by_id(id).await?))
         } else {
             Ok(None)
         }
     }
     async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::party::get_by_member_id(id).await
     }
     async fn query_my_favorite_article_list(
         &self,
         context: &mut crate::Ctx,
     ) -> Fallible<Vec<model::Favorite>> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
         complete_article(articles, context).await
     }
@@ -358,17 +358,17 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         password: String,
     ) -> Fallible<Option<model::User>> {
         let user = db::user::login(&user_name, &password).await?;
-        context.remember_id(user.id)?;
+        context.remember_id(user.id).await?;
         Ok(Some(user))
     }
     async fn logout(&self, context: &mut crate::Ctx) -> Fallible<()> {
-        context.forget_id()
+        context.forget_id().await
     }
     async fn query_subcribed_boards(
         &self,
         context: &mut crate::Ctx,
     ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::subscribed_boards::get_subscribed_boards(id)
             .await?
             .assign_props()
@@ -379,7 +379,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::subscribed_boards::unsubscribe(id, board_id).await
     }
     async fn subscribe_board(
@@ -387,7 +387,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         board_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::subscribed_boards::subscribe(id, board_id).await
     }
     async fn favorite_article(
@@ -395,7 +395,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
     ) -> Result<i64, crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         let favorite_id = db::favorite::favorite(id, article_id).await?;
         Ok(favorite_id)
     }
@@ -404,7 +404,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::favorite::unfavorite(id, article_id).await
     }
     async fn create_user_relation(
@@ -413,7 +413,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         target_user: i64,
         kind: model::UserRelationKind,
     ) -> Result<(), crate::custom_error::Error> {
-        let from_user = context.get_id_strict()?;
+        let from_user = context.get_id_strict().await?;
         db::user_relation::create_relation(&model::UserRelation {
             from_user,
             kind,
@@ -441,7 +441,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         target_user: i64,
     ) -> Result<(), crate::custom_error::Error> {
-        let from_user = context.get_id_strict()?;
+        let from_user = context.get_id_strict().await?;
         db::user_relation::delete_relation(from_user, target_user).await
     }
     async fn query_user_relation(
@@ -449,7 +449,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         target_user: i64,
     ) -> Result<super::model::UserRelationKind, crate::custom_error::Error> {
-        let from_user = context.get_id_strict()?;
+        let from_user = context.get_id_strict().await?;
         let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)
     }
@@ -458,7 +458,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         image: String,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::avatar::update_avatar(id, image).await
     }
     async fn update_sentence(
@@ -466,7 +466,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         sentence: String,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::user::update_sentence(id, sentence).await
     }
     async fn update_information(
@@ -477,7 +477,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         job: String,
         city: String,
     ) -> Result<(), crate::custom_error::Error> {
-        let id = context.get_id_strict()?;
+        let id = context.get_id_strict().await?;
         db::user::update_info(id, introduction, gender, job, city).await
     }
 }
@@ -491,7 +491,7 @@ impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
         context: &mut crate::Ctx,
         all: bool,
     ) -> Result<Vec<super::model::Notification>, crate::custom_error::Error> {
-        let user_id = context.get_id_strict()?;
+        let user_id = context.get_id_strict().await?;
         let notificartions = db::notification::get_by_user(user_id, all).await?;
         Ok(notificartions)
     }
@@ -500,7 +500,7 @@ impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
         context: &mut crate::Ctx,
         ids: Vec<i64>,
     ) -> Result<(), crate::custom_error::Error> {
-        let user_id = context.get_id_strict()?;
+        let user_id = context.get_id_strict().await?;
         db::notification::read(&ids, user_id).await
     }
 }

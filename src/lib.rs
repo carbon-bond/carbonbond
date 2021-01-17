@@ -23,18 +23,23 @@ mod product {
 
     use crate::custom_error::{ErrorCode, Fallible};
 
+    use async_trait::async_trait;
     use cookie::Cookie;
     use hyper::header;
     use hyper::header::HeaderValue;
     use hyper::{HeaderMap, Response};
+    use redis::AsyncCommands;
     use std::str::FromStr;
 
+    #[async_trait]
     pub trait Context {
-        fn remember_id(&mut self, id: i64) -> Fallible<()>;
-        fn forget_id(&mut self) -> Fallible<()>;
-        fn get_id(&mut self) -> Option<i64>;
-        fn get_id_strict(&mut self) -> Fallible<i64> {
-            self.get_id().ok_or_else(|| ErrorCode::NeedLogin.into())
+        async fn remember_id(&mut self, id: i64) -> Fallible<()>;
+        async fn forget_id(&mut self) -> Fallible<()>;
+        async fn get_id(&mut self) -> Option<i64>;
+        async fn get_id_strict(&mut self) -> Fallible<i64> {
+            self.get_id()
+                .await
+                .ok_or_else(|| ErrorCode::NeedLogin.into())
         }
     }
 
@@ -84,18 +89,34 @@ mod product {
             Ok(())
         }
     }
-    impl Ctx {}
+    fn gen_token() -> String {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let random_u8: [u8; 32] = rng.gen();
+        base64::encode(&random_u8)
+    }
+    #[async_trait]
     impl Context for Ctx {
-        fn remember_id(&mut self, id: i64) -> Fallible<()> {
-            self.set_session("id", id)
+        async fn remember_id(&mut self, id: i64) -> Fallible<()> {
+            let mut conn = crate::redis::get_conn().await?;
+            let token = gen_token();
+            // NOTE: 不知道第三個泛型參數什麼作用
+            conn.set::<&str, i64, ()>(&token, id).await?;
+            self.set_session("token", token)
         }
 
-        fn forget_id(&mut self) -> Fallible<()> {
-            self.forget_session("id")
+        async fn forget_id(&mut self) -> Fallible<()> {
+            self.forget_session("token")
         }
 
-        fn get_id(&mut self) -> Option<i64> {
-            self.get_session("id")
+        async fn get_id(&mut self) -> Option<i64> {
+            match self.get_session::<String>("token") {
+                Some(token) => match crate::redis::get_conn().await {
+                    Ok(mut conn) => conn.get::<String, i64>(token).await.ok(),
+                    Err(_) => None,
+                },
+                None => None,
+            }
         }
     }
 }
