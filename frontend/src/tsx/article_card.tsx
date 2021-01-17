@@ -2,10 +2,13 @@ import * as React from 'react';
 import '../css/board_switch/article_card.css';
 import { relativeDate } from '../ts/date';
 import { Link } from 'react-router-dom';
-import { ArticleMeta, Edge } from '../ts/api/api_trait';
+import { Article, ArticleMeta, Board, Edge } from '../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { toastErr } from './utils';
 import { parse_category } from 'force';
+import { ArticleDisplayPage } from './board_switch/article_page';
+
+const MAX_BRIEF_LINE = 4;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
@@ -75,8 +78,15 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Element {
 	const date = new Date(props.article.create_time);
+	const [article, setArticle] = React.useState<Article | null>(null);
+	const [board, setBoard] = React.useState(props.board);
+
+	if (article && board) {
+		return <ArticleDisplayPage article={article} board={board}/>;
+	}
+
 	let user_name = '';
 	let category_name = '';
 	try {
@@ -86,12 +96,50 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 		user_name = '未知';
 		category_name = '未知';
 	}
-	const url = `/app/b/${props.article.board_name}/a/${props.article.id}`;
 
 	const category = parse_category(props.article.category_source);
 	// eslint-disable-next-line
 	let content: { [name: string]: any } = JSON.parse(props.article.digest);
-	function Content(): JSX.Element[] {
+	function BriefContent(): JSX.Element {
+		let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
+		let content_ref = React.useRef<HTMLDivElement | null>(null);
+		let [need_show_more, setNeedShowMore]= React.useState(false);
+
+		function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
+			if (is_wrapper) {
+				wrapper_ref.current = div;
+			} else {
+				content_ref.current = div;
+			}
+			if (content_ref.current && wrapper_ref.current) {
+				let wrapper = wrapper_ref.current;
+				let content_div = content_ref.current;
+				let height = content_div.offsetHeight;
+				let line_height =
+					parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
+				let lines = Math.floor(height / line_height);
+				if (lines > MAX_BRIEF_LINE) {
+					setNeedShowMore(true);
+					wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
+				}
+			}
+		}
+
+		function expand(): void {
+			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
+				let article = unwrap(res);
+				setArticle(article);
+				if (!board) {
+					return API_FETCHER.queryBoard(props.article.board_name, '一般看板').then(res => { // FIXME: style???
+						let board = unwrap(res);
+						setBoard(board);
+					});
+				}
+			}).catch(err => {
+				toastErr(err);
+			});
+		}
+
 		let show_name = Object.keys(content).length > 1;
 		// eslint-disable-next-line
 		function formatValue(value: any): string {
@@ -104,16 +152,28 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 			}
 			return '';
 		}
-		return category.fields.map(field => {
-			let inner = formatValue(content[field.name]);
-			if (inner.length == 0) {
-				return <></>;
+		return <>
+			<div ref={div => onDivLoad(div, true)} styleName="articleContentWrapper">
+				<div ref={div => onDivLoad(div, false)}>
+					{
+						category.fields.map(field => {
+							let inner = formatValue(content[field.name]);
+							if (inner.length == 0) {
+								return <></>;
+							}
+							return <>
+								{show_name ? <h4>{field.name}</h4> : null}
+								<pre styleName="articleContent">{inner}</pre>
+							</>;
+						})
+					}
+				</div>
+			</div>
+			{
+				need_show_more ?
+					<><br/><a onClick={() => expand()}>...閱讀更多</a></> : null
 			}
-			return <>
-				{show_name ? <h4>{field.name}</h4> : null}
-				<pre styleName="articleContent">{inner}</pre>
-			</>;
-		});
+		</>;
 	}
 
 	return (
@@ -126,11 +186,10 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 						category_name={category_name}
 						title={props.article.title}
 						id={props.article.id} />
-					{Content()}
+					<BriefContent/>
 				</div>
 			</div>
 			<ArticleFooter article={props.article} />
-			<Link styleName="overlay" to={url}> </Link >
 		</div>
 	);
 }

@@ -37,7 +37,6 @@ impl Buff {
                     None => (),
                     Some((idx, _)) => {
                         $s.truncate(idx);
-                        $s.push_str("...");
                     }
                 }
                 $count += $s.chars().count();

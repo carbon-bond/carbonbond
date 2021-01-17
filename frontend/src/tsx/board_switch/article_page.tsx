@@ -311,7 +311,7 @@ function ReplyArea(props: { force: Force, candidates: FieldPath[], board: Board,
 	</div>;
 }
 
-function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
+export function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
 
 	let scrollHandler = React.useCallback(() => { }, []);
