@@ -68,7 +68,7 @@ CREATE OR REPLACE FUNCTION check_board ()
     RETURNS TRIGGER
     AS $$
 BEGIN
-    IF NEW.board_type = '一般看板' THEN
+    IF NEW.board_type = 'general' THEN
         IF (
             SELECT
                 count(*)
@@ -79,7 +79,7 @@ BEGIN
             RAISE EXCEPTION '一般看板需要有 ruling_party_id!';
         END IF;
     END IF;
-    IF NEW.board_type = '個人看板' THEN
+    IF NEW.board_type = 'personal' THEN
         IF NEW.ruling_party_id != -1 THEN
             RAISE EXCEPTION '個人看板需 ruling_party_id 需為 -1!';
         END IF;

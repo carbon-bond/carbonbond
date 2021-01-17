@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { BoardName } from '../../ts/api/api_trait';
+import { BoardName, BoardType } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Validator } from '../../ts/validator';
@@ -303,7 +303,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(id => {
 				toast('發文成功');
 				closeEditorPanel();
-				props.history.push(`/app/${board.board_type === '一般看板' ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
+				props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 				setEditorPanelData(null);
 			})
 			.catch(err => {

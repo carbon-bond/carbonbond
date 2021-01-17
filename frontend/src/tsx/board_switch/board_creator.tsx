@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { API_FETCHER } from '../../ts/api/api';
+import { BoardType } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
 import { History } from 'history';
@@ -23,7 +24,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 		force: string,
 	};
 	console.log('QQ' + user_name);
-	console.log(props.board_type == '一般看板' ? '' : user_name);
+	console.log(props.board_type == BoardType.General ? '' : user_name);
 
 	const { register, handleSubmit, errors } = useForm<CreateBoardInput>({ mode: 'onBlur' });
 
@@ -88,7 +89,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 		return <div styleName="editModal">
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div>看板名稱</div>
-				<input name="board_name" placeholder="看板名稱" defaultValue={props.board_type == '個人看板' ? user_name : ''} disabled={props.board_type == '個人看板'} ref={register({ required: true })} autoFocus />
+				<input name="board_name" placeholder="看板名稱" defaultValue={props.board_type == BoardType.Personal ? user_name : ''} disabled={props.board_type == BoardType.Personal} ref={register({ required: true })} autoFocus />
 				{errors.board_name && <InvalidMessage msg="必填" />}
 				<div>版主的話</div>
 				<input name="title" placeholder="版主的話" ref={register} />
@@ -131,7 +132,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 	let buttons: ModalButton[] = [];
 
 	return <ModalWindow
-		title={props.board_type == '一般看板' ? '🏂 創立看板' : '🔨 創立個人看板'}
+		title={props.board_type == BoardType.General ? '🏂 創立看板' : '🔨 創立個人看板'}
 		body={getBody()}
 		buttons={buttons}
 		visible={props.visible}

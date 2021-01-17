@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { Board } from '../ts/api/api_trait';
+import { Board, BoardType } from '../ts/api/api_trait';
 
 import '../css/board_list.css';
 import '../css/layout.css?global';
@@ -15,7 +15,7 @@ function BoardBlock(props: { board: { board_name: string, board_type: string, ti
 	const name = props.board.board_name;
 	const type = props.board.board_type;
 	const title = props.board.title;
-	return <Link to={`/app/${type === '一般看板' ? 'b' : 'user_board'}/${name}`}>
+	return <Link to={`/app/${type === BoardType.General ? 'b' : 'user_board'}/${name}`}>
 		<div>
 			<div styleName="name">{name}</div>
 			<div styleName="title">{title}</div>

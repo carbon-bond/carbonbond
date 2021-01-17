@@ -40,6 +40,15 @@ mod model {
         pub ruling: bool,
         pub create_time: DateTime<Utc>,
     }
+    #[derive(
+        Serialize, Deserialize, TypeScriptify, Clone, Copy, EnumString, strum::ToString, Debug,
+    )]
+    pub enum BoardType {
+        #[strum(serialize = "general")]
+        General,
+        #[strum(serialize = "personal")]
+        Personal,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
         pub id: i64,

@@ -1,6 +1,6 @@
 import { parse, Category } from 'force';
 import { unwrap } from '../src/ts/api/api';
-import { Bond, RootQueryFetcher } from '../src/ts/api/api_trait';
+import { Bond, RootQueryFetcher, BoardType } from '../src/ts/api/api_trait';
 import request from 'request';
 
 let path = require('path');
@@ -83,14 +83,14 @@ async function injectBoard(
 			await API_FETCHER.createBoard({
 				ruling_party_id: party_id,
 				board_name: board.name,
-				board_type: '一般看板',
+				board_type: BoardType.General,
 				title: '測試標題',
 				detail: '測試',
 				force: force_str,
 			})
 		);
 	} catch (_) {
-		let b = unwrap(await API_FETCHER.queryBoard(board.name, '一般看板'));
+		let b = unwrap(await API_FETCHER.queryBoard(board.name, BoardType.General));
 		board_id = b.id;
 	}
 	console.log(`創板成功 ${board.name} = ${board_id}`);
