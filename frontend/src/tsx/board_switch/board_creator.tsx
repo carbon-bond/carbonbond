@@ -23,8 +23,6 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 		detail: string,
 		force: string,
 	};
-	console.log('QQ' + user_name);
-	console.log(props.board_type == BoardType.General ? '' : user_name);
 
 	const { register, handleSubmit, errors } = useForm<CreateBoardInput>({ mode: 'onBlur' });
 
