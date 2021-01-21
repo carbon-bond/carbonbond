@@ -60,10 +60,11 @@
     display: flex;
 }
 .articleBtns {
-    display: flex;
+    /* display: flex; */
 }
 .articleBtnItem {
-    display: flex;
+    /* display: flex; */
+    float: left;
     white-space: nowrap;
     margin-right: 10px;
     cursor: pointer;
