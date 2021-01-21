@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import useOnClickOutside from 'use-onclickoutside';
 
 import '../../../css/header.css';
 
@@ -39,13 +38,11 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		</div>;
 	}
 	function UserStatus(): JSX.Element {
-		let ref = React.useRef(null);
-		useOnClickOutside(ref, () => setExpandingMenu(false));
 		return <>
 			{
 				user_state.login ? <div styleName="icon">🔔</div> : null
 			}
-			<div ref={ref} styleName="wrap">
+			<div styleName="wrap">
 				<DropDown
 					hide_triangle
 					forced_expanded={expanding_menu}

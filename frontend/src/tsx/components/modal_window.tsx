@@ -32,7 +32,7 @@ export function ModalWindow(props: {
 				transform: 'translate(-50%, -50%)',
 				right: 'none',
 				bottom: 'none',
-				padding: '2px'
+				padding: '2px',
 			}
 		}} >
 

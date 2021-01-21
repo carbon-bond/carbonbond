@@ -32,30 +32,12 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 function _Header(props: RouteComponentProps): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
-	const { user_state, setLogin, setLogout } = UserState.useContainer();
+	const { user_state, setLogout } = UserState.useContainer();
 	const { cur_board } = BoardCacheState.useContainer();
 
 	let [expanding_user, setExpandingUser] = React.useState(false);
 	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
 
-	async function login_request(name: string, password: string): Promise<void> {
-		try {
-			let user = unwrap(await API_FETCHER.login(name, password));
-			setLogining(false);
-			if (user) {
-				setLogin({
-					user_name: user.user_name,
-					energy: user.energy,
-				});
-				toast('登入成功');
-			} else {
-				toast('帳號或密碼錯誤');
-			}
-		} catch (err) {
-			toastErr(err);
-		}
-		return;
-	}
 	async function logout_request(): Promise<{}> {
 		try {
 			unwrap(await API_FETCHER.logout());
@@ -114,39 +96,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			buttons={buttons}
 			visible={signuping}
 			setVisible={setSignuping}
-		/>;
-	}
-	function LoginModal(): JSX.Element {
-		let name = useInputValue('').input_props;
-		let password = useInputValue('').input_props;
-		let ref_all = React.useRef(null);
-		useOnClickOutside(ref_all, () => setLogining(false));
-
-		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-			if (e.key == 'Enter') {
-				login_request(name.value, password.value);
-			} else if (e.key == 'Escape') {
-				setLogining(false);
-			}
-		}
-
-		let buttons: ModalButton[] = [];
-		buttons.push({ text: '登入', handler: () => login_request(name.value, password.value) });
-		buttons.push({ text: '✗', handler: () => setLogining(false) });
-
-		function getBody(): JSX.Element {
-			return <div styleName="loginModal">
-				<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
-				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-			</div>;
-		}
-
-		return <ModalWindow
-			title="登入"
-			body={getBody()}
-			buttons={buttons}
-			visible={logining}
-			setVisible={setLogining}
 		/>;
 	}
 
@@ -224,7 +173,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className="header" styleName="header">
-			<LoginModal />
+			<LoginModal logining={logining} setLogining={setLogining}/>
 			<SignupModal />
 			<div styleName="container">
 				<div styleName="space"/>
@@ -246,5 +195,61 @@ function _Header(props: RouteComponentProps): JSX.Element {
 }
 
 const Header = withRouter(_Header);
+
+export function LoginModal(props: {logining: boolean, setLogining: (logining: boolean) => void}): JSX.Element {
+	const { setLogin } = UserState.useContainer();
+	let name = useInputValue('').input_props;
+	let password = useInputValue('').input_props;
+	let ref_all = React.useRef(null);
+	useOnClickOutside(ref_all, () => props.setLogining(false));
+
+	async function login_request(name: string, password: string): Promise<void> {
+		try {
+			let user = unwrap(await API_FETCHER.login(name, password));
+			props.setLogining(false);
+			if (user) {
+				setLogin({
+					user_name: user.user_name,
+					energy: user.energy,
+				});
+				toast('登入成功');
+			} else {
+				toast('帳號或密碼錯誤');
+			}
+		} catch (err) {
+			toastErr(err);
+		}
+		return;
+	}
+
+
+	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+		if (e.key == 'Enter') {
+			login_request(name.value, password.value);
+		} else if (e.key == 'Escape') {
+			props.setLogining(false);
+		}
+	}
+
+	let buttons: ModalButton[] = [];
+	buttons.push({ text: '登入', handler: () => login_request(name.value, password.value) });
+	buttons.push({ text: '✗', handler: () => props.setLogining(false) });
+
+	function getBody(): JSX.Element {
+		return <div styleName="loginModal">
+			<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
+			<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
+		</div>;
+	}
+
+	return <ModalWindow
+		title="登入"
+		body={getBody()}
+		buttons={buttons}
+		visible={props.logining}
+		setVisible={props.setLogining}
+	/>;
+}
+
 
 export { Header };

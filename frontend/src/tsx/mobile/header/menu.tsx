@@ -1,18 +1,26 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 import '../../../css/mobile/menu.css';
 import { API_FETCHER, unwrap } from '../../../ts/api/api';
 import { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
 import { BoardBlock } from '../../browsebar';
+import { LoginModal } from '../../header';
 import { UserState } from '../../global_state/user';
 import { toastErr } from '../../utils';
 
 type RowProps<T> = { children: T } & ({ to: string } | { onClick: () => void } | {});
 
 export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element }): JSX.Element {
-	let onCoverClicked = props.onCoverClicked;
-	const { user_state } = UserState.useContainer();
+	let [logining, setLogining] = React.useState(false);
+	function onCoverClicked(): void {
+		if (!logining) {
+			props.onCoverClicked();
+		}
+	}
+
+	const { user_state, setLogout } = UserState.useContainer();
 
 	function Row<T>(props: RowProps<T>): JSX.Element {
 		if ('to' in props) {
@@ -20,7 +28,7 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 				<Row>{props.children}</Row>
 			</Link>;
 		}
-		return <div styleName="row" onClick={() => {
+		return <a styleName="row" onClick={() => {
 			if ('onClick' in props) {
 				props.onClick();
 			}
@@ -28,7 +36,7 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 			<div styleName="space" />
 			{props.children}
 			<div styleName="space" />
-		</div>;
+		</a>;
 	}
 	function BoardsRow(props: { name: string, fetchBoards: () => Promise<Result<BoardOverview[], Error>> }): JSX.Element {
 		let [boards, setBoards] = React.useState(new Array<BoardOverview>());
@@ -58,15 +66,30 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 		}
 	}
 
+	async function logout_request(): Promise<{}> {
+		try {
+			unwrap(await API_FETCHER.logout());
+			setLogout();
+			toast('您已登出');
+		} catch (err) {
+			toastErr(err);
+		}
+		return {};
+	}
+
 	return <>
         <div styleName="wrap">
-        	<div styleName="cover" onClick={() => props.onCoverClicked()}/>
+        	<div styleName="cover" onClick={onCoverClicked} />
         	<div styleName="menu">
         		{
         			!user_state.login ? null : <>
                         <Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>
+						<Row onClick={logout_request}>登出</Row>
 						<BoardsRow name="訂閱看板" fetchBoards={async () => await API_FETCHER.querySubcribedBoards()} />
                     </>
+        		}
+        		{
+        			user_state.login ? null : <Row onClick={() => setLogining(true)}>登入</Row>
         		}
         		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.queryHotBoards()} />
         		{
@@ -76,5 +99,6 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
         		}
         	</div>
         </div>
+		<LoginModal setLogining={setLogining} logining={logining}/>
     </>;
 }
