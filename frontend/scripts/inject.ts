@@ -2,32 +2,86 @@ import { parse, Category } from 'force';
 import { unwrap } from '../src/ts/api/api';
 import { Bond, RootQueryFetcher, BoardType } from '../src/ts/api/api_trait';
 import request from 'request';
+import prompts from 'prompts';
 
 let path = require('path');
 let fs = require('fs');
 
+const URL = 'http://localhost:8080/api';
 export class InjectFetcher extends RootQueryFetcher {
-	constructor(private users: Array<number>) {
+	token: string[] = [];
+	is_logining = false;
+	constructor() {
 		super();
 	};
+	async doLogin(): Promise<void> {
+		this.is_logining = true;
+		let user_env = process.env.USERS;
+		if (user_env) {
+			for (let tuple of user_env.split(';')) {
+				let [user, password] = tuple.split(',');
+				try {
+					unwrap(await this.login(user, password));
+				} catch (e) {
+					console.error(e);
+				}
+			}
+		} else {
+			console.log('\n### 請登入至少一組帳號 ###\n');
+			console.log('小技巧：你可以用環境變數來設定使用者列表。例如 USERS="金剛,aaa;石墨,bbb;巴克,ccc" yarn inject\n');
+			while (true) {
+				let user = await prompts({
+					type: 'text',
+					name: 'username',
+					message: '帳號（輸入空字串即結束登入）',
+				});
+				if (!user.username) {
+					break;
+				}
+				let password = await prompts({
+					type: 'password',
+					name: 'password',
+					message: '密碼',
+				});
+				try {
+					unwrap(await this.login(user.username, password.password));
+				} catch (e) {
+					console.error(e);
+				}
+			}
+		}
+		if (this.token.length == 0) {
+			throw '至少須登入一個帳號！';
+		}
+		this.is_logining = false;
+	}
 	fetchResult(query: Object): Promise<string> {
-		let url = 'http://localhost:8080/api';
 		const jar = request.jar();
-		let pos = Math.floor(Math.random() * this.users.length);
-		const cookie = request.cookie(`id=${this.users[pos]}`)!;
-		jar.setCookie(cookie, url);
+		if (!this.is_logining) {
+			let rand = Math.floor(Math.random() * this.token.length);
+			const cookie = request.cookie(this.token[rand])!;
+			jar.setCookie(cookie, URL);
+		}
 		return new Promise((resolve, reject) => {
 			request(
 				{
-					url,
+					url: URL,
 					jar,
 					method: 'POST',
 					json: query,
 				},
-				(err, _, body) => {
+				(err, resp, body) => {
 					if (err) {
 						reject(err);
 					} else {
+						if (this.is_logining) {
+							let cookies = resp.headers['set-cookie'];
+							if (typeof cookies == 'undefined' || cookies.length == 0) {
+								reject(`登入失敗！${JSON.stringify(body)}`);
+							} else {
+								this.token.push(cookies[0]);
+							}
+						}
 						resolve(JSON.stringify(body));
 					}
 				}
@@ -36,7 +90,7 @@ export class InjectFetcher extends RootQueryFetcher {
 	}
 }
 
-let API_FETCHER = new InjectFetcher([1]);
+let API_FETCHER = new InjectFetcher();
 
 type ArticleConentElt = number | string | Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
@@ -54,6 +108,7 @@ type BoardConfig = {
 
 export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
+	await API_FETCHER.doLogin();
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
 	let party_id = unwrap(
 		await API_FETCHER.createParty(
@@ -167,15 +222,19 @@ function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
 	}
 }
 
-try {
-	if (process.argv.length > 2) {
-		for (let file of process.argv.slice(2)) {
-			inject(file);
+async function main(): Promise<void> {
+	try {
+		if (process.argv.length > 2) {
+			for (let file of process.argv.slice(2)) {
+				await inject(file);
+			}
+		} else {
+			let p = path.resolve(__dirname, 'inject_config.default.json');
+			await inject(p);
 		}
-	} else {
-		let p = path.resolve(__dirname, 'inject_config.default.json');
-		inject(p);
+	} catch (err) {
+		console.log(`錯誤 ${err}`);
 	}
-} catch (err) {
-	console.log(`錯誤 ${err}`);
 }
+
+main();
