@@ -102,6 +102,8 @@ mod product {
             let token = gen_token();
             // NOTE: 不知道第三個泛型參數什麼作用
             conn.set::<&str, i64, ()>(&token, id).await?;
+            // TODO: 設置到 config.toml
+            conn.expire(&token, 60 * 60 * 24 * 7).await?;
             self.set_session("token", token)
         }
 
@@ -111,8 +113,17 @@ mod product {
 
         async fn get_id(&mut self) -> Option<i64> {
             match self.get_session::<String>("token") {
-                Some(token) => match crate::redis::get_conn().await {
-                    Ok(mut conn) => conn.get::<String, i64>(token).await.ok(),
+                Some(ref token) => match crate::redis::get_conn().await {
+                    Ok(mut conn) => match conn.get::<&str, i64>(token).await.ok() {
+                        Some(id) => {
+                            conn.expire::<&str, ()>(token, 60 * 60 * 24 * 7).await;
+                            Some(id)
+                        }
+                        None => {
+                            self.forget_session("token");
+                            None
+                        }
+                    },
                     Err(_) => None,
                 },
                 None => None,
