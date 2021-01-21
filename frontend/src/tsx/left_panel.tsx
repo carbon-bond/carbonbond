@@ -12,8 +12,8 @@ enum Option {
 	None            // 側欄關閉
 }
 
-function PanelMain(option: Option): JSX.Element {
-	switch (option) {
+function PanelMain(props: { option: Option }): JSX.Element {
+	switch (props.option) {
 		case Option.Browse:
 			return <div styleName="sidebar"><BrowseBar /></div>;
 		case Option.Chat:
@@ -55,7 +55,7 @@ function LeftPanel(): JSX.Element {
 					<div styleName="icon" onClick={toggleOption(Option.PluginStore)}>🛍</div>
 				</div>
 			</div>
-			{PanelMain(option)}
+			<PanelMain option={option}/>
 		</>
 	);
 }

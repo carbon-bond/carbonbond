@@ -238,7 +238,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div styleName="space"/>
 
 				<div styleName="rightSet">
-					{UserStatus()}
+					<UserStatus/>
 				</div>
 			</div>
 		</div>

@@ -100,7 +100,7 @@ export function BrowseBar(): JSX.Element {
 	}
 }
 
-function BoardBlock(props: { board: BoardOverview }): JSX.Element {
+export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 	let board = props.board;
 	return <Link to={`/app/b/${board.board_name}`}>
 		<div styleName="boardBlock">
