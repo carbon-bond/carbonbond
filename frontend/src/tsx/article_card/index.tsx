@@ -2,7 +2,7 @@ import * as React from 'react';
 import '../../css/board_switch/article_card.css';
 import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Board, Edge } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Edge } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { parse_category } from 'force';
@@ -108,10 +108,9 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Element {
+function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 	const [article, setArticle] = React.useState<Article | null>(null);
-	const [board, setBoard] = React.useState(props.board);
 	let [need_show_more, setNeedShowMore] = React.useState(false);
 
 	let user_name = '';
@@ -155,12 +154,6 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
 				let article = unwrap(res);
 				setArticle(article);
-				if (!board) {
-					return API_FETCHER.queryBoard(props.article.board_name, '一般看板').then(res => { // FIXME: style???
-						let board = unwrap(res);
-						setBoard(board);
-					});
-				}
 			}).catch(err => {
 				toastErr(err);
 			});
@@ -193,7 +186,7 @@ function ArticleCard(props: { article: ArticleMeta, board?: Board }): JSX.Elemen
 			</>;
 		}
 
-		if (article && board) {
+		if (article) {
 			return <>
 				<ArticleContent article={article} />
 				<ShowMoreButton />
