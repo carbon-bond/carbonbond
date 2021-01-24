@@ -200,12 +200,12 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 						category.fields.map(field => {
 							let inner = formatValue(content[field.name]);
 							if (inner.length == 0) {
-								return <></>;
+								return null;
 							}
-							return <>
+							return <div key={field.name}>
 								{show_name ? <h4>{field.name}</h4> : null}
 								<pre styleName="articleContent">{inner}</pre>
-							</>;
+							</div>;
 						})
 					}
 				</div>

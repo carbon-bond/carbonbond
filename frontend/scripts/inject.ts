@@ -108,7 +108,6 @@ type BoardConfig = {
 
 export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
-	await API_FETCHER.doLogin();
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
 	let party_id = unwrap(
 		await API_FETCHER.createParty(
@@ -224,6 +223,7 @@ function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
 
 async function main(): Promise<void> {
 	try {
+		await API_FETCHER.doLogin();
 		if (process.argv.length > 2) {
 			for (let file of process.argv.slice(2)) {
 				await inject(file);

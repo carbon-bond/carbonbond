@@ -40,6 +40,7 @@ export function GraphView(props: Props): JSX.Element {
 			}
 		});
 	}, [article_id, props.match.params.article_id]);
+
 	if (article_meta) {
 		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['衛星數', RadiusMode.SatelliteReply]];
 		return <div styleName="wrapper">
@@ -51,12 +52,12 @@ export function GraphView(props: Props): JSX.Element {
 					setRadiusMode(e.target.value);
 				}}>
 					{radios.map(([name, value]) => {
-						return <>
+						return <React.Fragment key={value}>
 							<input type="radio" value={value} key={value}
 								name="radius-mode" defaultChecked={RadiusMode.Energy == value} />
 							{name}
 							<br/>
-						</>;
+						</React.Fragment>;
 					})}
 				</div>
 				<hr/>

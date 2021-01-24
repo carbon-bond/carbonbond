@@ -171,10 +171,12 @@ function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
 function ShowArrayField(props: { field: Field, value: any[] }): JSX.Element {
 	const ret = [];
 	for (let i = 0; i < props.value.length; i++) {
-		if (i > 0) {
-			ret.push(<hr />);
-		}
-		ret.push(<ShowSingleField field={props.field} value={props.value[i]} />);
+		ret.push(
+			<React.Fragment key={i}>
+				{i > 0 ? <hr /> : null}
+				<ShowSingleField key={i} field={props.field} value={props.value[i]} />
+			</React.Fragment>
+		);
 	}
 	return <>{ret}</>;
 }
@@ -194,9 +196,9 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 							const value = content[field.name];
 							if (field.datatype.kind == 'array') {
 								// @ts-ignore
-								return <ShowArrayField field={field} value={value} />;
+								return <ShowArrayField key={field.name} field={field} value={value} />;
 							} else {
-								return <ShowSingleField field={field} value={value} />;
+								return <ShowSingleField key={field.name} field={field} value={value} />;
 							}
 						})()
 					}
