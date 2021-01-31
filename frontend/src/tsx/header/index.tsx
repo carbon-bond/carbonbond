@@ -114,22 +114,11 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			return <></>;
 		}
 	}
+
 	function UserStatus(): JSX.Element {
+		let notifications = useNotification(user_state.login);
 		let ref_noti = React.useRef(null);
 		let ref_user = React.useRef(null);
-		let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
-		React.useEffect(() => {
-			if (!user_state.login) {
-				return;
-			}
-			API_FETCHER.queryNotificationByUser(true).then((res) => {
-				if ('Err' in res) {
-					toastErr(res.Err);
-					return;
-				}
-				setNotifications(res.Ok);
-			});
-		}, [user_state.login]);
 		useOnClickOutside(ref_noti, () => {
 			setExpandingQuality(null);
 		});
@@ -187,7 +176,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div styleName="space"/>
 
 				<div styleName="rightSet">
-					<UserStatus/>
+					{UserStatus()}
 				</div>
 			</div>
 		</div>
@@ -251,5 +240,21 @@ export function LoginModal(props: {logining: boolean, setLogining: (logining: bo
 	/>;
 }
 
+function useNotification(login: boolean): Notification[] | null {
+	let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
+	React.useEffect(() => {
+		if (!login) {
+			return;
+		}
+		API_FETCHER.queryNotificationByUser(true).then((res) => {
+			if ('Err' in res) {
+				toastErr(res.Err);
+				return;
+			}
+			setNotifications(res.Ok);
+		});
+	}, [login]);
+	return notifications;
+}
 
 export { Header };

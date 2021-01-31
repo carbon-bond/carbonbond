@@ -122,10 +122,10 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 				}
 				{
 					props.notifications.map((n, i) => {
-						return <>
-							{ i == 0 ? null : <hr styleName="notificationSep" key={n.id}/> }
-							<NotificationBlock notification={n} key={n.id} />
-						</>;
+						return <React.Fragment key={n.id}>
+							{ i == 0 ? null : <hr styleName="notificationSep" /> }
+							<NotificationBlock notification={n} />
+						</React.Fragment>;
 					})
 				}
 			</div>
