@@ -3,8 +3,11 @@ import { toastErr } from '../../tsx/utils';
 
 export class ApiFetcher extends api_trait.RootQueryFetcher {
 	async fetchResult(query: Object): Promise<string> {
-
-		const url = `http://${window.location.hostname}:${window.location.port}/api?query=${JSON.stringify(query)}`;
+		let info = JSON.stringify(query);
+		if (info.length > 300) {
+			info = '';
+		}
+		const url = `http://${window.location.hostname}:${window.location.port}/api?query=${info}`;
 
 		const response = await fetch(url, {
 			body: JSON.stringify(query),
