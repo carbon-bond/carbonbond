@@ -64,7 +64,8 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
             Ok(context.resp.map(|s| Body::from(s)))
         }
         (&Method::GET, _) => {
-            if req.uri().path().starts_with("/app") {
+            let url = req.uri().path();
+            if url == "/" || url.starts_with("/app") {
                 // html 檔案
                 let (parts, _) = req.into_parts();
                 if let Some(user_agent) = parts.headers.get(header::USER_AGENT) {
@@ -74,7 +75,7 @@ async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<
                     }
                 }
                 Ok(Response::new(Body::from(index())))
-            } else if req.uri().path().starts_with("/avatar") {
+            } else if url.starts_with("/avatar") {
                 // 大頭貼
                 let dirs = req.uri().path().split("/").collect::<Vec<&str>>();
                 if dirs.len() == 3 {
