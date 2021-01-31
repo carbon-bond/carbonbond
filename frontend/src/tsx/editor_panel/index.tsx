@@ -291,14 +291,33 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					return Promise.reject();
 				}
 			})
-			.then(() =>
-				API_FETCHER.createArticle(
+			.then(() => {
+
+				for (let field of category.fields) {
+					if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+						if (field.datatype.kind == 'array') {
+							content[field.name] = content[field.name].map((id: number) => ({
+								energy: 0,
+								target_article: id,
+								tag: null
+							}));
+						} else {
+							content[field.name] = {
+								energy: 0,
+								target_article: content[field.name],
+								tag: null
+							};
+						}
+					}
+				}
+
+				return API_FETCHER.createArticle(
 					board.id,
 					category.name,
 					editor_panel_data.title,
 					JSON.stringify(content),
-				)
-			)
+				);
+			})
 			.then(data => unwrap(data))
 			.then(id => {
 				toast('發文成功');
