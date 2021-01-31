@@ -117,7 +117,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	function UserStatus(): JSX.Element {
 		let ref_noti = React.useRef(null);
 		let ref_user = React.useRef(null);
-		let [notifications, setNotifications] = React.useState<Notification[]>([]);
+		let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
 		React.useEffect(() => {
 			if (!user_state.login) {
 				return;
@@ -129,7 +129,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				}
 				setNotifications(res.Ok);
 			});
-		}, []);
+		}, [user_state.login]);
 		useOnClickOutside(ref_noti, () => {
 			setExpandingQuality(null);
 		});

@@ -16,7 +16,7 @@ type Props = {
     icon: string,
     quality: NotificationQuality,
     expanding_quality: NotificationQuality | null,
-    notifications: Notification[],
+	notifications: Notification[] | null,
     setExpandingQuality: (q: NotificationQuality | null) => void
 };
 
@@ -31,7 +31,11 @@ function mapQuality(b: boolean | null): NotificationQuality {
 export function NotificationIcon(props: Props): JSX.Element {
 	let [unread_count, setUnreadCount] = React.useState(0);
 	let [notifications, setNotifications] = React.useState<Notification[]>([]);
+	let [ready, setReady] = React.useState(false);
 	React.useEffect(() => {
+		if (props.notifications === null) {
+			return;
+		}
 		let new_unread_cnt = 0;
 		let new_arr = new Array<Notification>();
 		for (let noti of props.notifications) {
@@ -47,6 +51,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 		}
 		setUnreadCount(new_unread_cnt);
 		setNotifications(new_arr);
+		setReady(true);
 	}, [props.notifications, props.quality]);
 
 	function onClick(): void {
@@ -77,7 +82,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 				}
 			</div>
 		}
-		forced_expanded={props.expanding_quality == props.quality}
+		forced_expanded={props.expanding_quality == props.quality && ready}
 		onExtended={onClick}
 		body={
 			((): null | JSX.Element => {

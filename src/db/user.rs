@@ -163,8 +163,9 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
         "SELECT salt, password_hashed from users WHERE user_name = $1",
         name
     )
-    .fetch_one(pool)
-    .await?;
+    .fetch_optional(pool)
+    .await?
+    .ok_or(ErrorCode::PermissionDenied.context("密碼錯誤"))?;
     let equal = argon2::verify_raw(
         password.as_bytes(),
         &record.salt,
@@ -174,7 +175,7 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
     if equal {
         get_by_name(name).await
     } else {
-        Err(Error::new_logic(ErrorCode::PermissionDenied, "密碼錯誤"))
+        Err(ErrorCode::PermissionDenied.context("查無使用者"))
     }
 }
 
