@@ -30,7 +30,9 @@ export function ArticleLine(props: { category_name: string, title: string, id: n
 
 	return <div styleName="articleLine">
 		<span styleName="articleType">{props.category_name}</span>
-		<span styleName="articleTitle">{props.title}</span>
+		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
+			<span styleName="articleTitle">{props.title}</span>
+		</a>
 		<Link styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
