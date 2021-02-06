@@ -7,6 +7,7 @@ use carbonbond::{
 use force::error::{ValidationError, ValidationErrorCode};
 
 async fn setup() {
+    env_logger::init();
     std::env::set_var("MODE", "test");
     let mut child = std::process::Command::new("target/debug/dbtool")
         .args(&["reset"])
@@ -17,7 +18,6 @@ async fn setup() {
     child.wait().unwrap();
     config::init(None);
     db::init().await.unwrap();
-    env_logger::init();
 }
 
 async fn user_test() -> Fallible<(i64, i64)> {
@@ -97,35 +97,31 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
 }
 
 async fn article_test(user_id: i64, board_id: i64) -> Fallible {
-    let post = |category: &str, title: &str, content: &str| {
-        db::article::create(
-            user_id,
-            board_id,
-            category.to_owned(),
-            title.to_owned(),
-            content.to_owned(),
-        )
-    };
-    let big_id = post("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
+    macro_rules! post {
+        ($category:expr, $title:expr, $content:expr) => {
+            db::article::create(user_id, board_id, $category, $title, $content.to_owned())
+        };
+    }
+    let big_id = post!("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
         .await
         .unwrap();
-    let satellite_id = post(
+    let satellite_id = post!(
         "小留言",
         "會通過",
         &format!(
             "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
             big_id
-        ),
+        )
     )
     .await
     .unwrap();
-    let res = post(
+    let res = post!(
         "小留言",
         "會通過才有鬼",
         &format!(
             "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
             satellite_id
-        ),
+        )
     )
     .await;
 
@@ -149,10 +145,10 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         _ => panic!(),
     }
 
-    let res = post(
+    let res = post!(
         "小留言",
         "會通過才有鬼2",
-        &format!("{{ \"本體\": {{ \"target_article\": 99999, \"energy\": 1 }} }}"),
+        &format!("{{ \"本體\": {{ \"target_article\": 99999, \"energy\": 1 }} }}")
     )
     .await;
     match unwrap_bond_err(res) {
@@ -161,7 +157,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     }
 
     let articles =
-        db::article::get_by_board_name("測試板", 0, 999, &model::FamilyFilter::None).await?;
+        db::article::get_by_board_name("測試板", None, 999, &model::FamilyFilter::None).await?;
     assert_eq!(articles.len(), 2, "文章不是兩篇！？");
     Ok(())
 }
