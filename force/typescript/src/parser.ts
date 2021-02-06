@@ -1,6 +1,6 @@
 import { lexer } from './lexer';
 import * as moo from 'moo';
-import { Tag, Bondee, BasicDataType, DataType, Category, Categories, Force, Field } from './defs';
+import { Bondee, BasicDataType, DataType, Category, Categories, Force, Field } from './defs';
 
 function non_expect(expect: string, fact: moo.Token): Error {
 	return new Error(`預期 ${expect} ，但得到 ${JSON.stringify(fact)}`);
@@ -90,25 +90,6 @@ export class Parser {
 		} else {
 			throw non_expect('integer', this.cur());
 		}
-	}
-	parse_tags(): Tag[] {
-		let tags = [];
-		this.eat('left_curly_brace');
-		while (true) {
-			if (this.cur().type == 'right_curly_brace') {
-				this.advance();
-				break;
-			} else {
-				const name = this.get_identifier();
-				tags.push({ name });
-				this.eat('left_curly_brace');
-				while (this.cur().type != 'right_curly_brace') {
-					this.advance();
-				}
-				this.eat('right_curly_brace');
-			}
-		}
-		return tags;
 	}
 	parse_choice(): Choice {
 		switch (this.cur().type) {
@@ -204,16 +185,6 @@ export class Parser {
 				return {
 					kind: 'bond',
 					bondee
-				};
-			}
-			case 'tagged_bond': {
-				this.advance();
-				const bondee = this.parse_bondee();
-				const tags = this.parse_tags();
-				return {
-					kind: 'tagged_bond',
-					bondee,
-					tags
 				};
 			}
 			default: {
@@ -329,7 +300,7 @@ export class Parser {
 
 		for (let [_key, category] of categories) {
 			for (let field of category.fields) {
-				if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+				if (field.datatype.t.kind == 'bond') {
 					const bondee = field.datatype.t.bondee;
 					if (bondee.kind == 'choices') {
 						for (let c of bondee.category) {

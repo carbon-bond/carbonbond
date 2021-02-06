@@ -15,11 +15,6 @@ test('基礎型別字串轉換', () => {
 		bondee: {kind: 'all'}
 	})).toBe('鍵結[*]');
 	expect(defs.show_basic_data_type({
-		kind: 'tagged_bond',
-		bondee: {kind: 'all'},
-		tags: []
-	})).toBe('帶籤鍵結(TODO)');
-	expect(defs.show_basic_data_type({
 		kind: 'one_line',
 	})).toBe('單行');
 	expect(defs.show_basic_data_type({

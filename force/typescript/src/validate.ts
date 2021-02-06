@@ -1,7 +1,6 @@
 import { Bondee, BasicDataType, DataType, Category } from './defs';
 
 export const VALIDATE_INFO = {
-	NOT_A_NUMBER: '非數字',
 	ONELINE_HAS_NEWLINE: '單行不應含有換行',
 	REGEXP_FAIL: '不符合正則表達式',
 	JSON_TYPE_MISMATCH: '資料的型別不符',
@@ -19,12 +18,12 @@ export const VALIDATE_INFO = {
 
 
 export abstract class ValidatorTrait {
-	abstract async  validate_bondee(bondee: Bondee, data: any): Promise<string | undefined>;
+	abstract validate_bondee(bondee: Bondee, data: any): Promise<string | undefined>;
 	async validate_number(data: any): Promise<string | undefined> {
 		if (typeof data == 'number') {
 			return undefined;
 		} else {
-			return VALIDATE_INFO.NOT_A_NUMBER;
+			return VALIDATE_INFO.JSON_TYPE_MISMATCH;
 		}
 	}
 	async validate_basic_datatype(datatype: BasicDataType, data: any): Promise<string | undefined> {
@@ -44,7 +43,7 @@ export abstract class ValidatorTrait {
 			} else {
 				return undefined;
 			}
-		} else if (datatype.kind == 'bond' || datatype.kind == 'tagged_bond') {
+		} else if (datatype.kind == 'bond') {
 			return (await this.validate_bondee(datatype.bondee, data));
 		} else {
 			return VALIDATE_INFO.JSON_TYPE_MISMATCH;

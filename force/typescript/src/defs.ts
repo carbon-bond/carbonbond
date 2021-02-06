@@ -1,7 +1,3 @@
-export interface Tag {
-	name: string;
-}
-
 export type Bondee = {
 	kind: 'choices',
 	category: string[],
@@ -21,10 +17,6 @@ export type BasicDataType = {
 	kind: 'bond',
 	bondee: Bondee
 } | {
-	kind: 'tagged_bond',
-	bondee: Bondee,
-	tags: Tag[]
-} | {
 	kind: 'one_line'
 } | {
 	kind: 'text',
@@ -36,8 +28,6 @@ export type BasicDataType = {
 export function show_basic_data_type(t: BasicDataType): string {
 	if (t.kind == 'bond') {
 		return `鍵結${show_bondee(t.bondee)}`;
-	} else if (t.kind == 'tagged_bond') {
-		return '帶籤鍵結(TODO)';
 	} else if (t.kind == 'one_line') {
 		return '單行';
 	} else if (t.kind == 'text') {
