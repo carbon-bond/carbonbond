@@ -71,26 +71,6 @@ impl Parser {
         }
         ret
     }
-    fn parse_tags(&mut self) -> ForceResult<Vec<Tag>> {
-        let mut tags = Vec::new();
-        self.eat(Token::LeftCurlyBrace)?;
-        loop {
-            if let Token::RightCurlyBrace = self.cur {
-                self.advance();
-                break;
-            } else {
-                let tag = self.get_identifier()?;
-                tags.push(Tag { name: tag });
-                self.eat(Token::LeftCurlyBrace)?;
-                while self.cur != Token::RightCurlyBrace {
-                    // TODO: 解析真實內容
-                    self.advance();
-                }
-                self.eat(Token::RightCurlyBrace)?;
-            }
-        }
-        Ok(tags)
-    }
     fn parse_choice(&mut self) -> ForceResult<Choice> {
         match self.cur {
             Token::At => {
@@ -178,12 +158,6 @@ impl Parser {
                 self.advance();
                 let bondee = self.parse_bondee()?;
                 Ok(BasicDataType::Bond(bondee))
-            }
-            Token::TaggedBond => {
-                self.advance();
-                let bondee = self.parse_bondee()?;
-                let tags = self.parse_tags()?;
-                Ok(BasicDataType::TaggedBond(bondee, tags))
             }
             _ => Err(ForceError::NoMeet {
                 expect: "型別".to_owned(),
@@ -306,7 +280,7 @@ impl Parser {
         for (_key, category) in &categories {
             for field in &category.fields {
                 match field.datatype.basic_type() {
-                    BasicDataType::Bond(bondee) | BasicDataType::TaggedBond(bondee, _) => {
+                    BasicDataType::Bond(bondee) => {
                         if let Bondee::Choices {
                             family: family_choices,
                             category: category_choices,

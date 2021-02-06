@@ -16,12 +16,6 @@ pub enum Bondee {
     },
 }
 
-// TODO: 處理輸能等等額外設定
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypeScriptify)]
-pub struct Tag {
-    pub name: String,
-}
-
 fn serialize_regex<S>(re: &Option<Regex>, s: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
@@ -49,7 +43,6 @@ where
 #[derive(Debug, Serialize, Deserialize, TypeScriptify, Clone)]
 pub enum BasicDataType {
     Bond(Bondee),
-    TaggedBond(Bondee, Vec<Tag>),
     OneLine,
     #[serde(
         serialize_with = "serialize_regex",
@@ -65,10 +58,6 @@ impl PartialEq for BasicDataType {
             (BasicDataType::Bond(bondee), BasicDataType::Bond(other_bondee)) => {
                 bondee == other_bondee
             }
-            (
-                BasicDataType::TaggedBond(bondee, tags),
-                BasicDataType::TaggedBond(other_bondee, other_tags),
-            ) => bondee == other_bondee && tags == other_tags,
             (BasicDataType::OneLine, BasicDataType::OneLine) => true,
             (BasicDataType::Text(Some(regex)), BasicDataType::Text(Some(other_regex))) => {
                 regex.as_str() == other_regex.as_str()
