@@ -173,10 +173,9 @@ async function injectArticle(
 			throw `未知的欄位名 ${field_name}`;
 		}
 		if (field.datatype.t.kind == 'bond') {
-			// TODO: tag_bond
 			if (field.datatype.kind == 'single') {
 				if (Array.isArray(content)) {
-					throw `${field_name} 應該是單元`;
+					throw `${field_name} 不是陣列`;
 				}
 				article.content[field_name] = mapIDAsBond(content, id_pos_map);
 			} else if (field.datatype.kind == 'array') {

@@ -27,7 +27,6 @@ let lexer = moo.compile({
 			text: '文本',
 			number: '數字',
 			bond: '鍵結',
-			tagged_bond: '帶籤鍵結',
 
 			transfuse: '輸能',
 		})

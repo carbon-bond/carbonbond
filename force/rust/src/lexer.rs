@@ -40,8 +40,6 @@ pub enum Token {
     Number,
     #[token("鍵結")]
     Bond,
-    #[token("帶籤鍵結")]
-    TaggedBond,
 
     // 正則表達式
     #[regex("/[^/]+/", extract_regex)]
@@ -125,21 +123,20 @@ mod tests {
     }
     #[test]
     fn test_keyword() {
-        let mut lexer = Token::lexer("單行 文本 數字 鍵結 帶籤鍵結 輸能");
+        let mut lexer = Token::lexer("單行 文本 數字 鍵結 輸能");
         assert_eq!(lexer.next(), Some(Token::OneLine));
         assert_eq!(lexer.next(), Some(Token::Text));
         assert_eq!(lexer.next(), Some(Token::Number));
         assert_eq!(lexer.next(), Some(Token::Bond));
-        assert_eq!(lexer.next(), Some(Token::TaggedBond));
         assert_eq!(lexer.next(), Some(Token::Transfuse));
         assert_eq!(lexer.next(), None);
     }
     #[test]
     fn test_identifier() {
-        let mut lexer = Token::lexer("單行文本數字鍵結帶籤鍵結輸能");
+        let mut lexer = Token::lexer("單行文本數字鍵結輸能");
         assert_eq!(
             lexer.next(),
-            Some(Token::Identifier("單行文本數字鍵結帶籤鍵結輸能".to_owned()))
+            Some(Token::Identifier("單行文本數字鍵結輸能".to_owned()))
         );
         lexer = Token::lexer("Gossip");
         assert_eq!(lexer.next(), Some(Token::Identifier("Gossip".to_owned())));

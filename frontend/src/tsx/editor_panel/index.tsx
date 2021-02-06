@@ -294,7 +294,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(() => {
 
 				for (let field of category.fields) {
-					if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+					if (field.datatype.t.kind == 'bond') {
 						if (field.datatype.kind == 'array') {
 							content[field.name] = content[field.name].map((id: number) => ({
 								energy: 0,

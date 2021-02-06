@@ -148,7 +148,7 @@ function get_bond_fields(force: Force, category_name: string): FieldPath[] {
 	let candidates: FieldPath[] = [];
 	for (let [_, category] of force.categories) {
 		for (let field of category.fields) {
-			if (field.datatype.t.kind == 'bond' || field.datatype.t.kind == 'tagged_bond') {
+			if (field.datatype.t.kind == 'bond') {
 				let bondee = field.datatype.t.bondee;
 				if (bondee.kind == 'all'
 					|| bondee.category.includes(category_name)

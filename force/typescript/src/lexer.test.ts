@@ -25,18 +25,17 @@ test('lexer 解析特殊符號', () => {
 });
 
 test('lexer 解析關鍵字', () => {
-	lexer.reset('單行 文本 數字 鍵結 帶籤鍵結 輸能');
+	lexer.reset('單行 文本 數字 鍵結 輸能');
 	expect(lexer.next()!.type!).toBe('one_line');
 	expect(lexer.next()!.type!).toBe('text');
 	expect(lexer.next()!.type!).toBe('number');
 	expect(lexer.next()!.type!).toBe('bond');
-	expect(lexer.next()!.type!).toBe('tagged_bond');
 	expect(lexer.next()!.type!).toBe('transfuse');
 	expect(lexer.next()).toBe(undefined);
 });
 
 test('lexer 解析識別子', () => {
-	lexer.reset('單行文本數字鍵結帶籤鍵結輸能');
+	lexer.reset('單行文本數字鍵結輸能');
 	expect(lexer.next()!.type!).toBe('identifier');
 	lexer.reset('Gossip');
 	expect(lexer.next()!.type!).toBe('identifier');
