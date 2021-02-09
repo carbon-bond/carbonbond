@@ -10,11 +10,6 @@ rustup update
 
 ## rustfmt
 
-安裝
-``` sh
-rustup component add rustfmt
-```
-
 欲將將整個專案的 rust 檔案都標準格式化，執行
 ``` sh
 cargo fmt
@@ -29,14 +24,7 @@ cargo fmt -- --check
 
 ## vscode 建議設定
 
-安裝 [Rust (rls) 外掛](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust)
-
-### 使用 stable 的 rls
-
-在 vscode 的 setting.json 設定
-```
-"rust-client.channel": "stable",
-```
+安裝 [rust-analyzer 外掛](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer)
 
 ### 存檔時格式化程式碼
 在 vscode 的 setting.json 設定
