@@ -12,3 +12,9 @@ steps:
   commands:
   - echo hello world
   - echo hello drone
+
+trigger:
+  branch:
+  - develop
+  event:
+  - push
