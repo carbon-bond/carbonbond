@@ -13,6 +13,7 @@ steps:
   - echo hello world
   - echo hello drone
   - echo hello drone2
+  - echo hello drone3
 
 trigger:
   branch:
