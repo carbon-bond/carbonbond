@@ -26,7 +26,9 @@ steps:
   - npx webpack -p
   - cd /carbonbond/
   - cp carbonbond.service /etc/systemd/system/carbonbond.service
-  - service restart carbonbond.service
+  - systemctl daemon-reload
+  - systemctl enable carbonbond.service
+  - systemctl restart carbonbond.service
 
 trigger:
   branch:
