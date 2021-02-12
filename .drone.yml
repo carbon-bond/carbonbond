@@ -11,6 +11,7 @@ steps:
 - name: greeting
   commands:
   - echo hello world
+  - cd /home/admin
   - touch qq.txt
 
 trigger:
