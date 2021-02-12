@@ -1,0 +1,10 @@
+[Unit]
+Description=carbonbond.cc
+
+[Service]
+Type=simple
+ExecStart=RUST_LOG=debug /carbonbond/target/release/server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
