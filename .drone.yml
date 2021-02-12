@@ -18,6 +18,7 @@ steps:
   - /root/.cargo/bin/cargo --version
   - pwd
   - echo $PATH
+  - source /root/.cargo/env
   - /root/.cargo/bin/cargo build --release
   - cd /carbonbond/frontend
   - npx webpack -p
