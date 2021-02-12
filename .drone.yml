@@ -10,6 +10,7 @@ platform:
 steps:
 - name: greeting
   commands:
+  - echo "git pull"
   - cd /carbonbond
   - git stash
   - git pull --rebase
