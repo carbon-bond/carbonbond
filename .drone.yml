@@ -15,7 +15,7 @@ steps:
   - git stash
   - git pull --rebase
   - git stash pop
-  - cargo build --release
+  - /root/.cargo/bin/cargo build --release
   - cd /carbonbond/frontend
   - npx webpack -p
   - cd /carbonbond/
