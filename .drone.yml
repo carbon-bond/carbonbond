@@ -11,9 +11,6 @@ steps:
 - name: greeting
   commands:
   - echo hello world
-  - echo hello drone
-  - echo hello drone2
-  - echo hello drone3
   - touch qq.txt
 
 trigger:
