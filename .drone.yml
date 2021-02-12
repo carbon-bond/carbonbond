@@ -16,6 +16,7 @@ steps:
   - git stash pop
   - /root/.cargo/bin/rustup default nightly-2020-11-12
   - /root/.cargo/bin/cargo --version
+  - pwd
   - /root/.cargo/bin/cargo build --release
   - cd /carbonbond/frontend
   - npx webpack -p
