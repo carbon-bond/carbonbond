@@ -2,8 +2,9 @@
 Description=carbonbond.cc
 
 [Service]
-Type=simple
-ExecStart=RUST_LOG=debug /carbonbond/target/release/server
+ExecStart=/carbonbond/target/release/server
+Environment="RUST_LOG=debug"
+StandardOutput=/var/log/carbonbond.log
 Restart=always
 
 [Install]
