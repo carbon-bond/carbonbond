@@ -17,6 +17,7 @@ steps:
   - /root/.cargo/bin/rustup default nightly-2020-11-12
   - /root/.cargo/bin/cargo --version
   - pwd
+  - echo $PATH
   - /root/.cargo/bin/cargo build --release
   - cd /carbonbond/frontend
   - npx webpack -p
