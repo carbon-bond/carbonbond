@@ -113,7 +113,8 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 	const [article, setArticle] = React.useState<Article | null>(null);
-	let [need_show_more, setNeedShowMore] = React.useState(false);
+	const [shrinkable, setShrinkable] = React.useState(false);
+	const [ready, setReady] = React.useState(false);
 
 	let user_name = '';
 	let category_name = '';
@@ -146,8 +147,11 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 					parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
 				let lines = Math.floor(height / line_height);
 				if (lines > MAX_BRIEF_LINE) {
-					setNeedShowMore(true);
+					setShrinkable(true);
+					setReady(true);
 					wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
+				} else {
+					expand();
 				}
 			}
 		}
@@ -156,6 +160,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
 				let article = unwrap(res);
 				setArticle(article);
+				setReady(true);
 			}).catch(err => {
 				toastErr(err);
 			});
@@ -175,15 +180,12 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 		}
 
 		function ShowMoreButton(): JSX.Element | null {
-			if (!need_show_more) {
-				return null;
-			}
 			return <>
 				<br/>
 				{
 					article == null ?
 						<a onClick={() => expand()}>...閱讀更多</a> :
-						<a onClick={() => setArticle(null)}>收起</a>
+						shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
 				}
 			</>;
 		}
@@ -195,8 +197,15 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 			</>;
 		}
 
+		const hidden_style: React.CSSProperties = {
+			opacity: 0,
+			position: 'absolute',
+		};
 		return <>
-			<div ref={div => onDivLoad(div, true)} styleName="articleContentWrapper">
+			<div ref={div => onDivLoad(div, true)}
+				style={ready ? undefined : hidden_style}
+				styleName="articleContentWrapper"
+			>
 				<div ref={div => onDivLoad(div, false)}>
 					{
 						category.fields.map(field => {
