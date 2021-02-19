@@ -1,4 +1,4 @@
-use crate::{custom_error::Fallible, db::user_relation::delete_relation};
+use crate::{api::model::ArticleDigest, custom_error::Fallible};
 use force::{
     BasicDataType::{self, *},
     Category,
@@ -110,9 +110,10 @@ impl Buff {
 }
 
 // 回傳值第二位是 `truncated`，意味著摘要是否被截斷
-pub fn create_article_digest(mut content: Value, category: Category) -> Fallible<(String, bool)> {
+pub fn create_article_digest(mut content: Value, category: Category) -> Fallible<ArticleDigest> {
     use force::DataType::*;
     let mut buff = Buff::new();
+    let backup = content.clone();
     let json = content.as_object_mut().unwrap();
 
     for field in category.fields.into_iter() {
@@ -134,9 +135,19 @@ pub fn create_article_digest(mut content: Value, category: Category) -> Fallible
         }
     }
 
-    Ok(if buff.has_txt() {
-        (serde_json::to_string(&buff.text_buff)?, buff.truncated)
+    Ok(if buff.truncated {
+        ArticleDigest {
+            content: if buff.has_txt() {
+                serde_json::to_string(&buff.text_buff)?
+            } else {
+                serde_json::to_string(&buff.nontxt_buff)?
+            },
+            truncated: true,
+        }
     } else {
-        (serde_json::to_string(&buff.nontxt_buff)?, buff.truncated)
+        ArticleDigest {
+            content: serde_json::to_string(&backup)?,
+            truncated: false,
+        }
     })
 }

@@ -148,6 +148,7 @@ CREATE TABLE article_bond_fields (
   article_id bigint REFERENCES articles (id) NOT NULL,
   name text NOT NULL,
   energy smallint NOT NULL DEFAULT 0,
+  tag text,
   value bigint REFERENCES articles (id) NOT NULL
 );
 

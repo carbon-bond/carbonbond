@@ -128,7 +128,8 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 
 	const category = parse_category(props.article.category_source);
 	// eslint-disable-next-line
-	let content: { [name: string]: any } = JSON.parse(props.article.digest);
+	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
+	let truncated = props.article.digest.truncated;
 	function Content(): JSX.Element {
 		let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
 		let content_ref = React.useRef<HTMLDivElement | null>(null);
@@ -157,6 +158,14 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 		}
 
 		function expand(): void {
+			if (!truncated) {
+				setArticle({
+					meta: props.article,
+					content: props.article.digest.content,
+				});
+				return;
+			}
+
 			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
 				let article = unwrap(res);
 				setArticle(article);

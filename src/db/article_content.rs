@@ -1,12 +1,21 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
-use serde_json::Value;
+use serde::Serialize;
+use serde_json::{to_value, Value};
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+#[derive(Debug, Default)]
+pub struct ArticleBondField {
+    pub article_id: i64,
+    pub name: String,
+    pub energy: i16,
+    pub tag: Option<String>,
+    pub value: i64,
+}
 #[derive(Debug, Default)]
 pub struct ArticleIntField {
     pub article_id: i64,
@@ -19,6 +28,10 @@ pub struct ArticleStringField {
     pub name: String,
     pub value: String,
 }
+
+impl DBObject for ArticleBondField {
+    const TYPE: DataType = DataType::BondField;
+}
 impl DBObject for ArticleIntField {
     const TYPE: DataType = DataType::IntField;
 }
@@ -26,43 +39,65 @@ impl DBObject for ArticleStringField {
     const TYPE: DataType = DataType::StringField;
 }
 
+// XXX: 這個東西似乎不是用來 insert to db 的？
 trait Insertable {
+    type Output: Serialize;
     fn get_id(&self) -> i64;
-    fn get_value(&self) -> Value;
-    fn get_name(&self) -> String;
+    fn get_value(&self) -> Self::Output;
+    fn get_name(&self) -> &str;
 }
 
 impl Insertable for ArticleIntField {
+    type Output = i64;
     fn get_id(&self) -> i64 {
         self.article_id
     }
-    fn get_value(&self) -> Value {
-        self.value.clone().into()
+    fn get_value(&self) -> Self::Output {
+        self.value
     }
-    fn get_name(&self) -> String {
-        self.name.clone()
+    fn get_name(&self) -> &str {
+        &self.name
     }
 }
 impl Insertable for ArticleStringField {
+    type Output = String;
     fn get_id(&self) -> i64 {
         self.article_id
     }
-    fn get_value(&self) -> Value {
-        self.value.clone().into()
+    fn get_value(&self) -> Self::Output {
+        self.value.clone()
     }
-    fn get_name(&self) -> String {
-        self.name.clone()
+    fn get_name(&self) -> &str {
+        &self.name
+    }
+}
+impl Insertable for ArticleBondField {
+    type Output = Bond;
+    fn get_id(&self) -> i64 {
+        self.article_id
+    }
+    fn get_value(&self) -> Self::Output {
+        Bond {
+            energy: self.energy,
+            target_article: self.value,
+            tag: self.tag.clone(),
+        }
+    }
+    fn get_name(&self) -> &str {
+        &self.name
     }
 }
 
 fn insert_kvs<T: Insertable>(kvs: &mut HashMap<String, Value>, fields: &Vec<T>) {
     for field in fields.into_iter() {
-        match kvs.get_mut(&field.get_name()) {
-            Some(array @ Value::Array(_)) => {
-                array.as_array_mut().unwrap().push(field.get_value().into());
+        let value = serde_json::to_value(field.get_value()).unwrap();
+        let name = field.get_name();
+        match kvs.get_mut(name) {
+            Some(Value::Array(array)) => {
+                array.push(value);
             }
             _ => {
-                kvs.insert(field.get_name(), field.get_value().into());
+                kvs.insert(name.to_owned(), value);
             }
         }
     }
@@ -137,10 +172,10 @@ pub async fn get_by_article_ids(
     .fetch_all(pool)
     .await?;
     insert_id_to_kvs(&ids, &mut id_to_kvs, int_fields);
-    let bond_fields: Vec<ArticleIntField> = sqlx::query_as!(
-        ArticleIntField,
+    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
+        ArticleBondField,
         "
-        SELECT article_id, name, value FROM article_bond_fields
+        SELECT article_id, name, tag, energy, value FROM article_bond_fields
         WHERE article_id = ANY($1);
         ",
         &ids
@@ -185,10 +220,10 @@ pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String>
     .fetch_all(pool)
     .await?;
     insert_kvs(&mut kvs, &int_fields);
-    let bond_fields: Vec<ArticleIntField> = sqlx::query_as!(
-        ArticleIntField,
+    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
+        ArticleBondField,
         "
-        SELECT article_id, name, value FROM article_bond_fields
+        SELECT article_id, name, tag, energy, value FROM article_bond_fields
         WHERE article_id = $1;
         ",
         id

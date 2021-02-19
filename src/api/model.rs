@@ -80,6 +80,12 @@ mod model {
         pub is_favorite: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct ArticleDigest {
+        pub content: String,
+        pub truncated: bool,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,
@@ -91,7 +97,7 @@ mod model {
         pub title: String,
         pub author_id: i64,
         pub author_name: String,
-        pub digest: String,
+        pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
 

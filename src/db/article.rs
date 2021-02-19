@@ -63,8 +63,11 @@ macro_rules! to_meta {
             title: $data.title,
             author_id: $data.author_id,
             author_name: $data.author_name,
-            digest: $data.digest,
             create_time: $data.create_time,
+            digest: crate::api::model::ArticleDigest {
+                content: $data.digest,
+                truncated: $data.digest_truncated,
+            },
 
             stat: Default::default(),
             personal_meta: Default::default(),
@@ -445,11 +448,11 @@ pub async fn create(
     )
     .await?;
 
-    let (digest, digest_truncated) = crate::util::create_article_digest(content, force_category)?;
+    let digest = crate::util::create_article_digest(content, force_category)?;
     sqlx::query!(
         "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
-        digest,
-        digest_truncated,
+        digest.content,
+        digest.truncated,
         article_id
     )
     .execute(&mut conn)

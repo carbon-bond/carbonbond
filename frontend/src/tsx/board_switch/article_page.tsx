@@ -4,7 +4,7 @@ import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCardById } from '../article_card';
 import '../../css/board_switch/article_page.css';
-import { Article, Board } from '../../ts/api/api_trait';
+import { Article, Board, Bond } from '../../ts/api/api_trait';
 import { parse_category, Field } from 'force';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
@@ -78,8 +78,9 @@ export function ShowText(props: { text: string }): JSX.Element {
 function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
 	const { field, value } = props;
 	if (field.datatype.t.kind == 'bond') {
+		let bond: Bond = value;
 		return <div styleName="cardWrap">
-			<SimpleArticleCardById article_id={value} />
+			<SimpleArticleCardById article_id={bond.target_article} />
 		</div>;
 	} else {
 		return <ShowText text={`${value}`} />;
