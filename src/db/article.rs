@@ -445,10 +445,11 @@ pub async fn create(
     )
     .await?;
 
-    let digest = crate::util::create_article_digest(content, force_category)?;
+    let (digest, digest_truncated) = crate::util::create_article_digest(content, force_category)?;
     sqlx::query!(
-        "UPDATE articles SET digest = $1 where id = $2",
+        "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
         digest,
+        digest_truncated,
         article_id
     )
     .execute(&mut conn)

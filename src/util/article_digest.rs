@@ -1,4 +1,4 @@
-use crate::custom_error::Fallible;
+use crate::{custom_error::Fallible, db::user_relation::delete_relation};
 use force::{
     BasicDataType::{self, *},
     Category,
@@ -7,15 +7,26 @@ use serde_json::{Map, Value};
 
 const MAX_TXT: usize = 200;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Buff {
     max_txt: usize,
     nontxt_count: usize,
     text_count: usize,
     nontxt_buff: Map<String, Value>,
     text_buff: Map<String, Value>,
+    truncated: bool,
 }
 impl Buff {
+    fn new() -> Self {
+        Buff {
+            max_txt: MAX_TXT,
+            nontxt_count: 0,
+            text_count: 0,
+            nontxt_buff: Default::default(),
+            text_buff: Default::default(),
+            truncated: false,
+        }
+    }
     fn is_done(&self) -> bool {
         if self.has_txt() {
             self.text_count > self.max_txt
@@ -36,7 +47,10 @@ impl Buff {
                 match $s.char_indices().nth(diff) {
                     None => (),
                     Some((idx, _)) => {
-                        $s.truncate(idx);
+                        if (idx != $s.len()) {
+                            $s.truncate(idx);
+                            self.truncated = true;
+                        }
                     }
                 }
                 $count += $s.chars().count();
@@ -95,12 +109,10 @@ impl Buff {
     }
 }
 
-pub fn create_article_digest(mut content: Value, category: Category) -> Fallible<String> {
+// 回傳值第二位是 `truncated`，意味著摘要是否被截斷
+pub fn create_article_digest(mut content: Value, category: Category) -> Fallible<(String, bool)> {
     use force::DataType::*;
-    let mut buff = Buff {
-        max_txt: MAX_TXT,
-        ..Buff::default()
-    };
+    let mut buff = Buff::new();
     let json = content.as_object_mut().unwrap();
 
     for field in category.fields.into_iter() {
@@ -123,8 +135,8 @@ pub fn create_article_digest(mut content: Value, category: Category) -> Fallible
     }
 
     Ok(if buff.has_txt() {
-        serde_json::to_string(&buff.text_buff)?
+        (serde_json::to_string(&buff.text_buff)?, buff.truncated)
     } else {
-        serde_json::to_string(&buff.nontxt_buff)?
+        (serde_json::to_string(&buff.nontxt_buff)?, buff.truncated)
     })
 }

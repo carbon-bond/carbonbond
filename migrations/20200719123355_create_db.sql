@@ -65,34 +65,34 @@ CREATE TABLE boards (
 );
 
 CREATE OR REPLACE FUNCTION check_board ()
-    RETURNS TRIGGER
-    AS $$
+  RETURNS TRIGGER
+  AS $$
 BEGIN
-    IF NEW.board_type = 'general' THEN
-        IF (
-            SELECT
-                count(*)
-            FROM
-                parties
-            WHERE
-                id = NEW.ruling_party_id) <> 1 THEN
-            RAISE EXCEPTION '一般看板需要有 ruling_party_id!';
-        END IF;
+  IF NEW.board_type = 'general' THEN
+    IF (
+      SELECT
+        count(*)
+      FROM
+        parties
+      WHERE
+        id = NEW.ruling_party_id) <> 1 THEN
+      RAISE EXCEPTION '一般看板需要有 ruling_party_id!';
     END IF;
-    IF NEW.board_type = 'personal' THEN
-        IF NEW.ruling_party_id != -1 THEN
-            RAISE EXCEPTION '個人看板需 ruling_party_id 需為 -1!';
-        END IF;
+  END IF;
+  IF NEW.board_type = 'personal' THEN
+    IF NEW.ruling_party_id != - 1 THEN
+      RAISE EXCEPTION '個人看板需 ruling_party_id 需為 -1!';
     END IF;
-    RETURN NEW;
+  END IF;
+  RETURN NEW;
 END;
 $$
 LANGUAGE plpgsql;
 
 CREATE TRIGGER update_board_trigger
-    BEFORE UPDATE OR INSERT ON boards
-    FOR EACH ROW
-    EXECUTE PROCEDURE check_board ();
+  BEFORE UPDATE OR INSERT ON boards
+  FOR EACH ROW
+  EXECUTE PROCEDURE check_board ();
 
 CREATE INDEX boards_board_name_index ON boards (board_name);
 
@@ -120,9 +120,10 @@ CREATE TABLE articles (
   board_id bigint REFERENCES boards (id) NOT NULL,
   category_id bigint REFERENCES categories (id) NOT NULL,
   title text NOT NULL,
-  digest text NOT NULL DEFAULT '',
   energy int NOT NULL DEFAULT 0,
-  create_time timestamptz NOT NULL DEFAULT NOW()
+  create_time timestamptz NOT NULL DEFAULT NOW(),
+  digest text NOT NULL DEFAULT '',
+  digest_truncated boolean NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX articles_create_time_name_index ON articles (create_time);
