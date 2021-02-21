@@ -57,7 +57,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
 小留言 @ [衛星] {
     鍵結[大文章] 本體
 }";
-    db::board::create(&model::NewBoard {
+    let board_id = db::board::create(&model::NewBoard {
         board_name: "測試板".to_string(),
         board_type: "general".to_string(),
         title: "整合測試測起來！".to_string(),
@@ -65,7 +65,20 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
         force: force.to_owned(),
         ruling_party_id,
     })
+    .await?;
+
+    db::board::create(&model::NewBoard {
+        board_name: "測試板2".to_string(),
+        board_type: "general".to_string(),
+        title: "整合測試測起來！".to_string(),
+        detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
+        force: force.to_owned(),
+        ruling_party_id,
+    })
     .await
+    .expect_err("一個政黨創兩個板？");
+
+    Ok(board_id)
 }
 async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
     use model::NotificationKind;

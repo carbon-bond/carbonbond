@@ -160,7 +160,8 @@ CREATE TABLE parties (
   energy int NOT NULL DEFAULT 0,
   ruling boolean NOT NULL DEFAULT FALSE,
   -- chairman_id BIGINT REFERENCES users(id) NOT NULL,
-  create_time timestamptz NOT NULL DEFAULT NOW()
+  create_time timestamptz NOT NULL DEFAULT NOW(),
+  CHECK (NOT board_id IS NULL OR NOT ruling) -- 流亡政黨不淮是執政黨
 );
 
 CREATE INDEX parties_party_name_index ON parties (party_name);

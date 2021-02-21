@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{Board, BoardName, BoardOverview, NewBoard};
-use crate::custom_error::{DataType, Fallible};
+use crate::custom_error::{DataType, Error, Fallible};
 use force::parser::parse;
 
 impl DBObject for Board {
@@ -71,6 +71,20 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     // TODO: 交易？
     let pool = get_pool();
     let force = parse(&board.force)?;
+    let prev_board_id = sqlx::query!(
+        "SELECT board_id FROM parties where id = $1",
+        board.ruling_party_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    if let Some(prev_board_id) = prev_board_id.board_id {
+        return Err(Error::new_internal(format!(
+            "政黨 {} 已擁有看板 {}",
+            board.ruling_party_id, prev_board_id
+        )));
+    }
+
     let board_id = sqlx::query!(
         "
         INSERT INTO boards (board_name, board_type, detail, title, force, ruling_party_id)

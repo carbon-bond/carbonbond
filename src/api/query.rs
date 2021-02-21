@@ -86,6 +86,8 @@ pub enum PartyQuery {
         party_name: String,
         board_name: Option<String>,
     },
+    #[chitin(request, response = "Vec<super::model::Party>")]
+    QueryBoardPartyList { board_id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
 pub enum ArticleQuery {

@@ -196,6 +196,13 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         let id = db::party::create(&party_name, board_name, id).await?;
         Ok(id)
     }
+    async fn query_board_party_list(
+        &self,
+        context: &mut crate::Ctx,
+        board_id: i64,
+    ) -> Fallible<Vec<model::Party>> {
+        db::party::get_by_board_id(board_id).await
+    }
 }
 
 #[derive(Default)]

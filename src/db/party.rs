@@ -6,34 +6,35 @@ impl DBObject for Party {
     const TYPE: DataType = DataType::Party;
 }
 
+macro_rules! parties {
+    ($remain:literal, $($arg:expr),*) => {
+        // XXX: 密切關注 sql issue-367，可以避免底下的 board_name 硬轉
+        sqlx::query_as!(
+            Party,
+            r#"
+        SELECT parties.*, boards.board_name as "board_name?" FROM parties
+        LEFT JOIN boards on boards.id = parties.board_id
+            "# + $remain,
+            $($arg),*
+        )
+    };
+}
 pub async fn get_by_name(name: &str) -> Fallible<Party> {
     let pool = get_pool();
-    // XXX: 密切關注 sql issue-367，可以避免底下的 board_name 硬轉
-    let party = sqlx::query_as!(
-        Party,
-        r#"
-    SELECT parties.*, boards.board_name as "board_name?" FROM parties
-    LEFT JOIN boards on boards.id = parties.board_id
-    WHERE parties.party_name = $1
-    "#,
-        name
-    )
-    .fetch_one(pool)
-    .await
-    .to_fallible(name)?;
+    let party = parties!("WHERE parties.party_name = $1", name)
+        .fetch_one(pool)
+        .await
+        .to_fallible(name)?;
     Ok(party)
 }
 
 pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
     let pool = get_pool();
-    // XXX: 密切關注 sql issue-367，可以避免底下的 board_name 硬轉
-    let parties: Vec<Party> = sqlx::query_as!(
-        Party,
-        r#"
-    SELECT parties.*, boards.board_name as "board_name?" FROM parties
+    let parties = parties!(
+        "
     INNER JOIN party_members ON parties.id = party_members.party_id
-    LEFT JOIN boards on boards.id = parties.board_id
-    WHERE user_id = $1;"#,
+    WHERE user_id = $1
+        ",
         id
     )
     .fetch_all(pool)
@@ -93,11 +94,19 @@ pub async fn create(
 pub async fn change_board(party_id: i64, board_id: i64) -> Fallible<()> {
     let pool = get_pool();
     sqlx::query!(
-        "UPDATE parties SET board_id = $1 where id = $2",
+        "UPDATE parties SET board_id = $1, ruling = true where id = $2",
         board_id,
         party_id
     )
     .execute(pool)
     .await?;
     Ok(())
+}
+
+pub async fn get_by_board_id(id: i64) -> Fallible<Vec<Party>> {
+    let pool = get_pool();
+    let parties = parties!("WHERE parties.board_id = $1", id)
+        .fetch_all(pool)
+        .await?;
+    Ok(parties)
 }

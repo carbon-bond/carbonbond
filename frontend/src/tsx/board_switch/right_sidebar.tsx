@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Board } from '../../ts/api/api_trait';
+import { Board, Party } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/right_sidebar.css';
@@ -14,10 +14,17 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 };
 
 export function BoardSidebar(props: Props): JSX.Element {
+	let [ parties, setParties ] = React.useState(new Array<Party>());
 	let { user_state } = UserState.useContainer();
 	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
 	let has_subscribed = subscribed_boards.has(props.board.id);
+
+	React.useEffect(() => {
+		API_FETCHER.queryBoardPartyList(props.board.id).then(res => {
+			setParties(unwrap(res));
+		}).catch(err => toastErr(err));
+	});
 
 	async function onUnsubscribeBoardClick(): Promise<void> {
 		console.log('按下取消追蹤看板');
@@ -91,27 +98,45 @@ export function BoardSidebar(props: Props): JSX.Element {
 		<div styleName="rightSidebarItem">
 			<div styleName="rightSidebarBlock">
 				<div styleName="header">政黨列表</div>
-				<div styleName="content">
-					<div styleName="partyItem mainPartyItem">
-						<div styleName="partyTitle">執政黨</div>
-						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore">8.7 萬<i> ☘ </i></div>
-					</div>
-
-					<div styleName="partyItem">
-						<div styleName="partyTitle">在野黨</div>
-						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore">2.2 萬<i> ☘ </i></div>
-					</div>
-					<div styleName="partyItem">
-						<div styleName="partyTitle"></div>
-						<div styleName="partyName">這裡是黨名</div>
-						<div styleName="partyScore">1328<i> ☘ </i></div>
-					</div>
-				</div>
-				<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
+				<PartyList parties={parties}/>
 			</div>
 		</div>
+	</>;
+}
+
+function PartyList(props: {parties: Party[]}): JSX.Element {
+	let oppositions = new Array<Party>();
+	let ruling: Party | null = null;
+	if (props.parties.length == 0) {
+		return <></>;
+	}
+	for (const p of props.parties) {
+		if (p.ruling) {
+			ruling = p;
+		} else {
+			oppositions.push(p);
+		}
+	}
+	return <>
+		<div styleName="content">
+			<div styleName="partyItem mainPartyItem">
+				<div styleName="partyTitle">執政黨</div>
+				<div styleName="partyName">{ruling!.party_name}</div>
+				<div styleName="partyScore"> {ruling!.energy} <i> ☘ </i></div>
+			</div>
+			{
+				oppositions.map((p, idx) => {
+					return <div key={p.id} styleName="partyItem">
+						<div styleName="partyTitle">
+							{idx == 0 ? '在野黨' : ''}
+						</div>
+						<div styleName="partyName">{p.party_name}</div>
+						<div styleName="partyScore">{p.energy}<i> ☘ </i></div>
+					</div>;
+				})
+			}
+		</div>
+		<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
 	</>;
 }
 
