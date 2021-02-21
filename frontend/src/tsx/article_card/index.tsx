@@ -151,7 +151,8 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 					setShrinkable(true);
 					setReady(true);
 					wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
-				} else {
+				} else if (!truncated) {
+					console.log(`${props.article.id}摘要完整且行數短，直接展開`);
 					expand();
 				}
 			}
