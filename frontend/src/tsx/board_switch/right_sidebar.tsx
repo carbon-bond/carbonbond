@@ -24,7 +24,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 		API_FETCHER.queryBoardPartyList(props.board.id).then(res => {
 			setParties(unwrap(res));
 		}).catch(err => toastErr(err));
-	});
+	}, [props.board.id]);
 
 	async function onUnsubscribeBoardClick(): Promise<void> {
 		console.log('按下取消追蹤看板');

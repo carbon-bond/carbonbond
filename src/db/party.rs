@@ -1,6 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::Party;
 use crate::custom_error::{DataType, Fallible};
+use sqlx::PgConnection;
 
 impl DBObject for Party {
     const TYPE: DataType = DataType::Party;
@@ -91,14 +92,13 @@ pub async fn create(
     Ok(party_id)
 }
 
-pub async fn change_board(party_id: i64, board_id: i64) -> Fallible<()> {
-    let pool = get_pool();
+pub async fn change_board(conn: &mut PgConnection, party_id: i64, board_id: i64) -> Fallible<()> {
     sqlx::query!(
         "UPDATE parties SET board_id = $1, ruling = true where id = $2",
         board_id,
         party_id
     )
-    .execute(pool)
+    .execute(conn)
     .await?;
     Ok(())
 }

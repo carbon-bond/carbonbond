@@ -109,30 +109,33 @@ type BoardConfig = {
 export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
-	let party_id = unwrap(
-		await API_FETCHER.createParty(
-			`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
-			null
-		)
-	);
 	try {
-		await Promise.all(boards.map((b) => injectBoard(b, party_id)));
+		await Promise.all(boards.map((b) => injectBoard(b)));
 	} catch (err) {
 		console.log(err);
 	}
 }
 
 type IDPosMap = { [pos: number]: number };
-async function injectBoard(
-	board: BoardConfig,
-	party_id: number
-): Promise<void> {
+async function injectBoard(board: BoardConfig): Promise<void> {
+	let party_id = unwrap(
+		await API_FETCHER.createParty(
+			`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
+			null
+		)
+	);
+
 	let force_str = board.force.join('\n');
 	let force = parse(force_str);
 	let categories = force.categories;
 	let id_pos_map: IDPosMap = {};
 	let board_id: number;
+
 	try {
+		let b = unwrap(await API_FETCHER.queryBoard(board.name, BoardType.General));
+		board_id = b.id;
+	} catch (err) {
+		console.log(`找不到看板 ${board.name}，嘗試創起來`);
 		board_id = unwrap(
 			await API_FETCHER.createBoard({
 				ruling_party_id: party_id,
@@ -143,11 +146,9 @@ async function injectBoard(
 				force: force_str,
 			})
 		);
-	} catch (_) {
-		let b = unwrap(await API_FETCHER.queryBoard(board.name, BoardType.General));
-		board_id = b.id;
+		console.log(`創板成功 ${board.name} = ${board_id}`);
 	}
-	console.log(`創板成功 ${board.name} = ${board_id}`);
+
 	for (let i = 0; i < board.articles.length; i++) {
 		let article = board.articles[i];
 		let category = categories.get(article.category);
