@@ -112,9 +112,6 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
-	const [article, setArticle] = React.useState<Article | null>(null);
-	const [shrinkable, setShrinkable] = React.useState(false);
-	const [ready, setReady] = React.useState(false);
 
 	let user_name = '';
 	let category_name = '';
@@ -124,115 +121,6 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	} catch {
 		user_name = '未知';
 		category_name = '未知';
-	}
-
-	const category = parse_category(props.article.category_source);
-	// eslint-disable-next-line
-	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
-	let truncated = props.article.digest.truncated;
-	function Content(): JSX.Element {
-		let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
-		let content_ref = React.useRef<HTMLDivElement | null>(null);
-
-		function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
-			if (is_wrapper) {
-				wrapper_ref.current = div;
-			} else {
-				content_ref.current = div;
-			}
-			if (content_ref.current && wrapper_ref.current) {
-				let wrapper = wrapper_ref.current;
-				let content_div = content_ref.current;
-				let height = content_div.offsetHeight;
-				let line_height =
-					parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
-				let lines = Math.floor(height / line_height);
-				if (lines > MAX_BRIEF_LINE) {
-					setShrinkable(true);
-					setReady(true);
-					wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
-				} else if (!truncated) {
-					console.log(`${props.article.id}摘要完整且行數短，直接展開`);
-					expand();
-				}
-			}
-		}
-
-		function expand(): void {
-			if (!truncated) {
-				setArticle({
-					meta: props.article,
-					content: props.article.digest.content,
-				});
-				return;
-			}
-
-			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
-				let article = unwrap(res);
-				setArticle(article);
-				setReady(true);
-			}).catch(err => {
-				toastErr(err);
-			});
-		}
-
-		let show_name = Object.keys(content).length > 1;
-		// eslint-disable-next-line
-		function formatValue(value: any): string {
-			if (Array.isArray(value)) {
-				return value.map(v => formatValue(v)).join('\n');
-			} else if (typeof value == 'string') {
-				return value.trim();
-			} else if (typeof value == 'number') {
-				return value.toString();
-			}
-			return '';
-		}
-
-		function ShowMoreButton(): JSX.Element | null {
-			return <>
-				<br/>
-				{
-					article == null ?
-						<a onClick={() => expand()}>...閱讀更多</a> :
-						shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
-				}
-			</>;
-		}
-
-		if (article) {
-			return <>
-				<ArticleContent article={article} />
-				<ShowMoreButton />
-			</>;
-		}
-
-		const hidden_style: React.CSSProperties = {
-			opacity: 0,
-			position: 'absolute',
-		};
-		return <>
-			<div ref={div => onDivLoad(div, true)}
-				style={ready ? undefined : hidden_style}
-				styleName="articleContentWrapper"
-			>
-				<div ref={div => onDivLoad(div, false)}>
-					{
-						category.fields.map(field => {
-							let inner = formatValue(content[field.name]);
-							if (inner.length == 0) {
-								return null;
-							}
-							return <div key={field.name}>
-								{show_name ? <h4>{field.name}</h4> : null}
-								<pre styleName="articleContent">{inner}</pre>
-							</div>;
-						})
-					}
-				</div>
-			</div>
-			<ShowMoreButton />
-		</>;
 	}
 
 	return (
@@ -245,7 +133,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 						category_name={category_name}
 						title={props.article.title}
 						id={props.article.id} />
-					<Content/>
+					<ArticleContentShrinkable article={props.article}/>
 				</div>
 			</div>
 			<ArticleFooter article={props.article} />
@@ -318,6 +206,120 @@ function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 		</div>
 	</div>;
 }
+
+function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element {
+	const [article, setArticle] = React.useState<Article | null>(null);
+	const [shrinkable, setShrinkable] = React.useState(false);
+	const [ready, setReady] = React.useState(false);
+	let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
+	let content_ref = React.useRef<HTMLDivElement | null>(null);
+
+	const category = parse_category(props.article.category_source);
+	// eslint-disable-next-line
+	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
+	let truncated = props.article.digest.truncated;
+
+	function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
+		if (is_wrapper) {
+			wrapper_ref.current = div;
+		} else {
+			content_ref.current = div;
+		}
+		if (content_ref.current && wrapper_ref.current) {
+			let wrapper = wrapper_ref.current;
+			let content_div = content_ref.current;
+			let height = content_div.offsetHeight;
+			let line_height =
+				parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
+			let lines = Math.floor(height / line_height);
+			if (lines > MAX_BRIEF_LINE) {
+				setShrinkable(true);
+				setReady(true);
+				wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
+			} else if (!truncated) {
+				console.log(`${props.article.id}摘要完整且行數短，直接展開`);
+				expand();
+			}
+		}
+	}
+
+	function expand(): void {
+		if (!truncated) {
+			setArticle({
+				meta: props.article,
+				content: props.article.digest.content,
+			});
+			return;
+		}
+
+		API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
+			let article = unwrap(res);
+			setArticle(article);
+			setReady(true);
+		}).catch(err => {
+			toastErr(err);
+		});
+	}
+
+	let show_name = Object.keys(content).length > 1;
+	// eslint-disable-next-line
+	function formatValue(value: any): string {
+		if (Array.isArray(value)) {
+			return value.map(v => formatValue(v)).join('\n');
+		} else if (typeof value == 'string') {
+			return value.trim();
+		} else if (typeof value == 'number') {
+			return value.toString();
+		}
+		return '';
+	}
+
+	function ShowMoreButton(): JSX.Element | null {
+		return <>
+			<br />
+			{
+				article == null ?
+					<a onClick={() => expand()}>...閱讀更多</a> :
+					shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
+			}
+		</>;
+	}
+
+	if (article) {
+		return <>
+			<ArticleContent article={article} />
+			<ShowMoreButton />
+		</>;
+	}
+
+	const hidden_style: React.CSSProperties = {
+		opacity: 0,
+		position: 'absolute',
+	};
+	return <>
+		<div ref={div => onDivLoad(div, true)}
+			style={ready ? undefined : hidden_style}
+			styleName="articleContentWrapper"
+		>
+			<div ref={div => onDivLoad(div, false)}>
+				{
+					category.fields.map(field => {
+						let inner = formatValue(content[field.name]);
+						if (inner.length == 0) {
+							return null;
+						}
+						return <div key={field.name}>
+							{show_name ? <h4>{field.name}</h4> : null}
+							<pre styleName="articleContent">{inner}</pre>
+						</div>;
+					})
+				}
+			</div>
+		</div>
+		<ShowMoreButton />
+	</>;
+}
+
 
 export {
 	ArticleCard,
