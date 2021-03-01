@@ -20,7 +20,7 @@
         background-color: rgba(0, 0, 0, 0.6);
         position: absolute;
         width: 100vw;
-        height: calc(100vh - 60px);
+        height: calc(100vh - var(--header-height));
         right: -15px;
     }
 }

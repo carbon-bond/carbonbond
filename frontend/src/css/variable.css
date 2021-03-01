@@ -1,4 +1,6 @@
 :root {
+    --header-height: 60px;
+
     --deep-gray: #212429;
     --gray: #616569;
     --lighter-gray: #aaaaaa;
