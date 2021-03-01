@@ -9,6 +9,7 @@ import { BoardCacheState } from '../../global_state/board_cache';
 
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
+import { SearchBar } from '../../header/search_bar';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div styleName="row" onClick={() => {
@@ -40,7 +41,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	function UserStatus(): JSX.Element {
 		return <>
 			{
-				user_state.login ? <div styleName="icon">🔔</div> : null
+				// user_state.login ? <div styleName="icon">🔔</div> : null
 			}
 			<div styleName="wrap">
 				<DropDown
@@ -63,8 +64,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						<img src="/img/icon.png" alt="" />
 					</div>
 					<div styleName="location" style={{ fontSize: 14 }}>{title}</div>
+					<SearchBar history={props.history} cur_board={cur_board} hide_select_board/>
 				</div>
-				<div style={{ flex: 1 }}/>
 				<div styleName="rightSet">
 					<UserStatus/>
 				</div>

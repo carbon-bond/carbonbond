@@ -36,7 +36,7 @@
         & .location {
             color: var(--light-font-color);
             font-size: 18px;
-            margin-right: 48px;
+            margin-right: 10px;
             cursor: pointer;
             width: auto;
             white-space: nowrap;

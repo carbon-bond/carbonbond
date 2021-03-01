@@ -25,7 +25,7 @@ import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
-import { GeneralBoard, PersonalBoard } from '../board_switch';
+import { BoardHeader, GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
 // import { LeftPanel } from '../left_panel';
 import { BottomPanel } from '../bottom_panel';
@@ -57,10 +57,14 @@ function App(): JSX.Element {
 					<UserPage {...props} />
 				} />
 				<Route path="/app/user_board/:profile_name" render={props =>
-					<PersonalBoard {...props} hide_sidebar />
+					<PersonalBoard {...props} render_header={
+						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
+					} />
 				} />
 				<Route path="/app/b/:board_name" render={props =>
-					<GeneralBoard {...props} hide_sidebar />
+					<GeneralBoard {...props} render_header={
+						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
+					} />
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />
