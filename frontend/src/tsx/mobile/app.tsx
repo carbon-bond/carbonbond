@@ -25,8 +25,9 @@ import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
-import { BoardHeader, GeneralBoard, PersonalBoard } from '../board_switch';
+import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
+import { BoardHeader } from './board_header';
 // import { LeftPanel } from '../left_panel';
 import { BottomPanel } from '../bottom_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
@@ -57,12 +58,12 @@ function App(): JSX.Element {
 					<UserPage {...props} />
 				} />
 				<Route path="/app/user_board/:profile_name" render={props =>
-					<PersonalBoard {...props} render_header={
+					<PersonalBoard {...props} hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
 				<Route path="/app/b/:board_name" render={props =>
-					<GeneralBoard {...props} render_header={
+					<GeneralBoard {...props} hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
@@ -78,7 +79,7 @@ function App(): JSX.Element {
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
-					console.log('載入追蹤看板');
+					console.log('載入訂閱看板');
 					try {
 						let result = await API_FETCHER.querySubcribedBoards();
 						let boards = unwrap(result);

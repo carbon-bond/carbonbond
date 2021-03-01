@@ -15,7 +15,7 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 	return boards;
 }
 
-// TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request
+// TODO: 應該用 context 記住熱門看板與訂閱看板，以免次切換測邊欄都要向後端發 request
 
 export function BrowseBar(): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -85,7 +85,7 @@ export function BrowseBar(): JSX.Element {
 				(() => {
 					if (user_state.login) {
 						return <ShrinkableBlock
-							title="追蹤看板"
+							title="訂閱看板"
 							expand={expand[2]}
 							onClick={() => onTitleClick(2)}
 						>

@@ -78,7 +78,7 @@ function App(): JSX.Element {
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
-					console.log('載入追蹤看板');
+					console.log('載入訂閱看板');
 					try {
 						let result = await API_FETCHER.querySubcribedBoards();
 						let boards = unwrap(result);

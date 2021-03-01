@@ -65,7 +65,7 @@ export function BoardHeader(props: { board: Board, url: string, subscribe_count:
 						props.board == null ? null : <div styleName="dataBox">
 							<div styleName="dataBoxItem">
 								<div styleName="number">{props.subscribe_count}</div>
-								<div styleName="text">追蹤人數</div>
+								<div styleName="text">訂閱人數</div>
 							</div>
 							<div styleName="dataBoxItem">
 								<div styleName="number">{props.board.popularity}</div>

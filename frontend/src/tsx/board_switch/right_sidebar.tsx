@@ -6,8 +6,7 @@ import { Board, Party } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import '../../css/board_switch/right_sidebar.css';
-import { SubscribedBoardsState } from '../global_state/subscribed_boards';
-import { toastErr } from '../utils';
+import { toastErr, useSubscribeBoard } from '../utils';
 
 type Props = RouteComponentProps<{ board_name: string }> & {
 	board: Board
@@ -16,9 +15,8 @@ type Props = RouteComponentProps<{ board_name: string }> & {
 export function BoardSidebar(props: Props): JSX.Element {
 	let [ parties, setParties ] = React.useState(new Array<Party>());
 	let { user_state } = UserState.useContainer();
-	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
-	let has_subscribed = subscribed_boards.has(props.board.id);
+	let { has_subscribed, toggleSubscribe } = useSubscribeBoard(props.board);
 
 	React.useEffect(() => {
 		API_FETCHER.queryBoardPartyList(props.board.id).then(res => {
@@ -26,30 +24,6 @@ export function BoardSidebar(props: Props): JSX.Element {
 		}).catch(err => toastErr(err));
 	}, [props.board.id]);
 
-	async function onUnsubscribeBoardClick(): Promise<void> {
-		console.log('按下取消追蹤看板');
-		try {
-			unwrap(await API_FETCHER.unsubscribeBoard(props.board.id));
-			unsubscribe(props.board.id);
-		} catch (err) {
-			toastErr(err);
-		}
-	}
-	async function onSubscribeBoardClick(): Promise<void> {
-		console.log('按下追蹤看板');
-		try {
-			unwrap(await API_FETCHER.subscribeBoard(props.board.id));
-			let b = props.board;
-			subscribe({
-				id: b.id,
-				board_name: b.board_name,
-				title: b.title,
-				popularity: 0
-			});
-		} catch (err) {
-			toastErr(err);
-		}
-	}
 	function onEditClick(): void {
 		console.log('press post');
 		if (editor_panel_data) {
@@ -67,12 +41,12 @@ export function BoardSidebar(props: Props): JSX.Element {
 
 	function SubscribeButton(): JSX.Element {
 		if (has_subscribed) {
-			return <div onClick={() => onUnsubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
-				<b>😭 </b>取消追蹤
+			return <div onClick={() => toggleSubscribe()} styleName="subscribeButton rightSidebarButton">
+				<b>😭 </b>取消訂閱
 			</div>;
 		} else {
-			return <div onClick={() => onSubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
-				<b>🔖 </b>追蹤看板
+			return <div onClick={() => toggleSubscribe()} styleName="subscribeButton rightSidebarButton">
+				<b>🔖 </b>訂閱看板
 			</div>;
 		}
 	}
@@ -91,7 +65,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 				<div styleName="content">
 					{props.board.detail}
 				</div>
-				{/* <div styleName="rightSidebarButton trackBoardButton">追蹤此看板</div> */}
+				{/* <div styleName="rightSidebarButton trackBoardButton">訂閱此看板</div> */}
 			</div>
 		</div>
 
