@@ -4,7 +4,9 @@ Description=carbonbond.cc
 [Service]
 ExecStart=/carbonbond/target/release/server
 Environment="RUST_LOG=debug"
-StandardOutput=/var/log/carbonbond.log
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=carbonbond
 Restart=always
 
 [Install]
