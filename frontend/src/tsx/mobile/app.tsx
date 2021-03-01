@@ -27,6 +27,7 @@ import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
+import { Footer, FooterState } from './footer';
 import { BoardHeader } from './board_header';
 // import { LeftPanel } from '../left_panel';
 import { BottomPanel } from '../bottom_panel';
@@ -44,6 +45,9 @@ function App(): JSX.Element {
 			<Switch>
 				<Route exact path="/app/signup/:signup_token" render={props => (
 					<SignupPage {...props} />
+				)} />
+				<Route exact path="/app/notification" render={() => (
+					<div>TODO: 通知</div>
 				)} />
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
@@ -102,11 +106,12 @@ function App(): JSX.Element {
 				</MainScrollState.Provider>
 				<BottomPanel></BottomPanel>
 			</div>
+			<Footer cur_state={FooterState.Home}/>
 		</Router>;
 	}
 
 	return (
-		<div className="app">
+		<div className="appMobile">
 			<UserState.Provider>
 				<SubscribedBoardsState.Provider>
 					<BottomPanelState.Provider>
