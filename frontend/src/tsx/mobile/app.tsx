@@ -27,27 +27,32 @@ import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
-import { Footer, FooterState } from './footer';
+import { Footer, FooterOption, FooterState } from './footer';
 import { BoardHeader } from './board_header';
 // import { LeftPanel } from '../left_panel';
-import { BottomPanel } from '../bottom_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { SearchPage } from '../search_page/search_page';
 import { toastErr } from '../utils';
+import { NotificationModal } from './notification';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
+
 	function MainBody(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
+		let { footer_option } = FooterState.useContainer();
+
 		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+			{
+				footer_option == FooterOption.Notification ?
+					<NotificationModal/> : null
+			}
+
 			<Switch>
 				<Route exact path="/app/signup/:signup_token" render={props => (
 					<SignupPage {...props} />
-				)} />
-				<Route exact path="/app/notification" render={() => (
-					<div>TODO: 通知</div>
 				)} />
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
@@ -98,15 +103,15 @@ function App(): JSX.Element {
 		}, [load, unload, user_state.login]);
 
 		return <Router>
-			<Header></Header>
-			<div className="other" >
-				{/* <LeftPanel></LeftPanel> */}
-				<MainScrollState.Provider>
-					<MainBody />
-				</MainScrollState.Provider>
-				<BottomPanel></BottomPanel>
-			</div>
-			<Footer cur_state={FooterState.Home}/>
+			<Header/>
+			<FooterState.Provider>
+				<div className="other" >
+					<MainScrollState.Provider>
+						<MainBody />
+					</MainScrollState.Provider>
+				</div>
+				<Footer/>
+			</FooterState.Provider>
 		</Router>;
 	}
 

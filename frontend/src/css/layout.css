@@ -27,6 +27,7 @@
     position: relative;
     overflow-y: hidden;
     & .mainBody {
+        display: relative;
         overflow-y: auto;
         height: 100%;
         flex: 1;
