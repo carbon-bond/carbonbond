@@ -117,18 +117,27 @@ async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> 
 async fn main() -> Fallible<()> {
     // 初始化紀錄器
     env_logger::init();
-    let prj_path = config::prj_path()?;
-    // 載入設定
+
+    // 解析命令行參數
     let args_config = clap::load_yaml!("args.yaml");
     let arg_matches = clap::App::from_yaml(args_config).get_matches();
+
+    // 載入設定
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
     config::init(config_file);
     let conf = config::get_config();
+
+    // 初始化資料庫
     log::info!("初始化資料庫連線池，位置：{}", &conf.database.get_url());
     db::init().await.unwrap();
+
+    // 初始化 redis
     log::info!("初始化 redis 客戶端");
     redis::init().await.unwrap();
+
+    // 設定前端
     log::info!("載入前端資源");
+    let prj_path = config::prj_path()?;
     let static_files = Static::new(prj_path.join("./frontend/static"));
 
     log::info!("載入首頁");
@@ -139,6 +148,7 @@ async fn main() -> Fallible<()> {
         .expect("讀取行動版首頁失敗");
     INDEX_MOBILE.set(content);
 
+    // 啓動伺服器
     log::info!("啟動伺服器");
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
