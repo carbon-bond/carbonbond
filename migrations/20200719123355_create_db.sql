@@ -214,3 +214,12 @@ CREATE TABLE favorite_articles (
   UNIQUE (user_id, article_id)
 );
 
+-- 邀請碼
+CREATE TABLE signup_invitations (
+  id bigserial PRIMARY KEY,
+  description text NOT NULL DEFAULT '',
+  from_user bigint REFERENCES users (id) NOT NULL,
+  to_user bigint REFERENCES users (id),
+  code text,
+  last_activate_time timestamptz
+);

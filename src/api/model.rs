@@ -105,6 +105,15 @@ mod model {
         pub personal_meta: ArticlePersonalMeta,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct SignupInvitation {
+        pub id: i64,
+        pub description: String,
+        pub from_user: i64,
+        pub to_user: Option<i64>,
+        pub code: Option<String>,
+        pub last_activate_time: Option<DateTime<Utc>>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Favorite {
         pub meta: ArticleMeta,
         pub create_time: DateTime<Utc>,

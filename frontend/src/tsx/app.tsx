@@ -25,6 +25,7 @@ import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
+import { SignupInvitationPage } from './signup_invitation_page';
 import { BoardHeader, GeneralBoard, PersonalBoard } from './board_switch';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
@@ -52,6 +53,9 @@ function App(): JSX.Element {
 				)} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
+				} />
+				<Route path="/app/signup_invite" render={() =>
+					<SignupInvitationPage />
 				} />
 				<Route path="/app/user/:profile_name" render={props =>
 					<UserPage {...props} />

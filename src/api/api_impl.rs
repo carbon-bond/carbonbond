@@ -1,9 +1,12 @@
 use super::{api_trait, model};
-use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::email;
 use crate::service;
 use crate::util::{HasArticleStats, HasBoardProps};
+use crate::{
+    custom_error::{DataType, Error, ErrorCode, Fallible},
+    db::signup_invitations::add_signup_invitation,
+};
 use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -350,6 +353,36 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         user: i64,
     ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hater(user).await
+    }
+    async fn query_signup_invitation_list(
+        &self,
+        context: &mut crate::Ctx,
+        user: i64,
+    ) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error> {
+        db::signup_invitations::query_signup_invitation(user).await
+    }
+    async fn add_signup_invitation(
+        &self,
+        context: &mut crate::Ctx,
+        user: i64,
+        description: String,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = db::signup_invitations::add_signup_invitation(user, &description).await?;
+        Ok(id)
+    }
+    async fn activate_signup_invitation(
+        &self,
+        context: &mut crate::Ctx,
+        signup_invitation_id: i64,
+    ) -> Result<String, crate::custom_error::Error> {
+        db::signup_invitations::activate_signup_invitation(signup_invitation_id).await
+    }
+    async fn deactivate_signup_invitation(
+        &self,
+        context: &mut crate::Ctx,
+        signup_invitation_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        db::signup_invitations::deactivate_signup_invitation(signup_invitation_id).await
     }
     async fn query_user(
         &self,

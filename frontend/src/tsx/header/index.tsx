@@ -106,6 +106,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<Row onClick={() => props.history.push(`/app/user_board/${user_state.user_name}`)}>🏯 我的個板</Row>
 					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
 					<Row onClick={() => props.history.push('/app/party')}>👥 我的政黨</Row>
+					<Row onClick={() => props.history.push('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
 					<Row onClick={() => logout_request()}>🏳 登出</Row>
 					<Row>⚙ 設定</Row>
 				</div>
@@ -138,7 +139,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
 				</div>
-				<div styleName="space"/>
+				<div styleName="space" />
 				<div ref={ref_user} styleName="wrap">
 					<DropDown
 						forced_expanded={expanding_user}
@@ -162,10 +163,10 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className="header" styleName="header">
-			<LoginModal logining={logining} setLogining={setLogining}/>
+			<LoginModal logining={logining} setLogining={setLogining} />
 			<SignupModal />
 			<div styleName="container">
-				<div styleName="space"/>
+				<div styleName="space" />
 				<div styleName="leftSet">
 					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
 						<img src="/img/icon_with_text.png" alt="" />
@@ -173,7 +174,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div styleName="location">{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} />
 				</div>
-				<div styleName="space"/>
+				<div styleName="space" />
 
 				<div styleName="rightSet">
 					{UserStatus()}
@@ -185,7 +186,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 const Header = withRouter(_Header);
 
-export function LoginModal(props: {logining: boolean, setLogining: (logining: boolean) => void}): JSX.Element {
+export function LoginModal(props: { logining: boolean, setLogining: (logining: boolean) => void }): JSX.Element {
 	const { setLogin } = UserState.useContainer();
 	let name = useInputValue('').input_props;
 	let password = useInputValue('').input_props;
