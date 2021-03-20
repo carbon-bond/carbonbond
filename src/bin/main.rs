@@ -12,6 +12,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Method, Request, Response, Server, StatusCode};
 use hyper_staticfile::Static;
 use state::Storage;
+use warp::Filter;
 
 static INDEX: Storage<String> = Storage::new();
 static INDEX_MOBILE: Storage<String> = Storage::new();
@@ -147,6 +148,9 @@ async fn main() -> Fallible<()> {
     let content = std::fs::read_to_string(prj_path.join("./frontend/static/m.index.html"))
         .expect("讀取行動版首頁失敗");
     INDEX_MOBILE.set(content);
+
+    let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
+    warp::serve(hello).run(([127, 0, 0, 1], 3030)).await;
 
     // 啓動伺服器
     log::info!("啟動伺服器");
