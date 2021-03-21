@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { produce } from 'immer';
 
-import { API_FETCHER, unwrap_or, unwrap } from '../ts/api/api';
+import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { UserState } from './global_state/user';
 import { SignupInvitation } from '../ts/api/api_trait';
 
@@ -40,7 +40,7 @@ async function getLink(invitation: SignupInvitation, i: number, invitations: Sig
 	if (code != '') {
 		let new_invitations = produce(invitations, invitations => {
 			invitations[i].code = code;
-		})
+		});
 		setInvitations(new_invitations);
 	}
 }
@@ -49,7 +49,7 @@ async function delLink(invitation: SignupInvitation, i: number, invitations: Sig
 	await deactivateInvitation(invitation);
 	let new_invitations = produce(invitations, invitations => {
 		invitations[i].code = '';
-	})
+	});
 	setInvitations(new_invitations);
 }
 
@@ -68,7 +68,7 @@ function InviteList(): JSX.Element {
 				setInvitations(tree);
 			}).catch(err => toastErr(err));
 		}
-	}, [user_state.login]);
+	}, [user_state]);
 
 	return <>
 		{
@@ -83,7 +83,7 @@ function InviteList(): JSX.Element {
 				</div>
 			))
 		}
-	</>
+	</>;
 }
 
 export function SignupInvitationPage(): JSX.Element {
