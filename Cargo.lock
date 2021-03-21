@@ -332,7 +332,6 @@ dependencies = [
  "env_logger",
  "force",
  "hyper",
- "hyper-staticfile",
  "lazy_static",
  "log",
  "openssl",
@@ -1087,23 +1086,6 @@ dependencies = [
  "tower-service",
  "tracing",
  "want",
-]
-
-[[package]]
-name = "hyper-staticfile"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf435f95723ba94d2e44991abf717dd547b73f505830a917dc442a9195df06b"
-dependencies = [
- "chrono",
- "futures-util",
- "http",
- "hyper",
- "mime_guess",
- "percent-encoding",
- "tokio",
- "url",
- "winapi",
 ]
 
 [[package]]

@@ -8,10 +8,10 @@ use carbonbond::{
     service::hot_boards,
     Ctx,
 };
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{header, Body, Method, Request, Response, Server, StatusCode};
-use hyper_staticfile::Static;
+use hyper::{body::Bytes, HeaderMap};
+use hyper::{Body, Response, StatusCode};
 use state::Storage;
+use std::convert::Infallible;
 use warp::Filter;
 
 static INDEX: Storage<String> = Storage::new();
@@ -29,79 +29,35 @@ fn not_found() -> Response<Body> {
     not_found
 }
 
-async fn on_request(
-    req: Request<Body>,
-    static_files: Static,
-) -> Result<Response<Body>, hyper::Error> {
-    let resp = on_request_inner(req, static_files).await;
+fn to_response(resp: Fallible<Response<Body>>) -> Response<Body> {
     match resp {
-        Ok(body) => Ok(body),
+        Ok(body) => body,
         Err(err) => {
             let err_msg = serde_json::to_string(&err).unwrap_or(String::default());
             let mut err_body = Response::new(Body::from(err_msg));
             *err_body.status_mut() = StatusCode::BAD_REQUEST;
-            Ok(err_body)
+            err_body
         }
     }
 }
 
-async fn on_request_inner(req: Request<Body>, static_files: Static) -> Fallible<Response<Body>> {
-    match (req.method(), req.uri().path()) {
-        (&Method::POST, "/api") => {
-            let (parts, body) = req.into_parts();
-            log::trace!("原始請求： {:#?}", body);
-
-            let mut context = Ctx {
-                headers: parts.headers,
-                resp: Response::new(String::new()),
-            };
-            let body = hyper::body::to_bytes(body).await?;
-
-            let query: query::RootQuery = serde_json::from_slice(&body.to_vec()).map_err(|e| {
-                ErrorCode::ParsingJson.context(format!("解析請求 {:?} 錯誤 {}", body, e,))
-            })?;
-            let resp = on_api(query, &mut context).await?;
-            context.resp.body_mut().push_str(&resp);
-            Ok(context.resp.map(|s| Body::from(s)))
+async fn _handle_avatar(user_name: String) -> Fallible<Response<Body>> {
+    match percent_encoding::percent_decode(user_name.as_bytes()).decode_utf8() {
+        Ok(user_name) => {
+            log::trace!("請求大頭貼： {}", user_name);
+            Ok(Response::new(Body::from(
+                db::avatar::get_avatar(&user_name).await?,
+            )))
         }
-        (&Method::GET, _) => {
-            let url = req.uri().path();
-            if url == "/" || url.starts_with("/app") {
-                // html 檔案
-                let (parts, _) = req.into_parts();
-                if let Some(user_agent) = parts.headers.get(header::USER_AGENT) {
-                    let user_agent = user_agent.to_str()?;
-                    if carbonbond::util::is_mobile(&user_agent) {
-                        return Ok(Response::new(Body::from(index_mobile())));
-                    }
-                }
-                Ok(Response::new(Body::from(index())))
-            } else if url.starts_with("/avatar") {
-                // 大頭貼
-                let dirs = req.uri().path().split("/").collect::<Vec<&str>>();
-                if dirs.len() == 3 {
-                    let user_name = dirs[2];
-                    match percent_encoding::percent_decode(user_name.as_bytes()).decode_utf8() {
-                        Ok(user_name) => {
-                            log::trace!("請求大頭貼： {}", user_name);
-                            Ok(Response::new(Body::from(
-                                db::avatar::get_avatar(&user_name).await?,
-                            )))
-                        }
-                        Err(_) => Ok(not_found()),
-                    }
-                } else {
-                    Ok(not_found())
-                }
-            } else {
-                log::trace!("靜態資源： {}", req.uri().path());
-                static_files.clone().serve(req).await.map_err(|e| e.into())
-            }
-        }
-        _ => Ok(not_found()),
+        Err(_) => Ok(not_found()),
     }
 }
-async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {
+
+async fn handle_avatar(user_name: String) -> Result<impl warp::Reply, Infallible> {
+    Ok(to_response(_handle_avatar(user_name).await))
+}
+
+async fn run_chitin(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> {
     log::info!("請求： {:?}", query);
     let root: api_impl::RootQueryRouter = Default::default();
     let resp = root
@@ -114,6 +70,26 @@ async fn on_api(query: query::RootQuery, context: &mut Ctx) -> Fallible<String> 
     }
     Ok(resp.0)
 }
+
+async fn _handle_api(body: Bytes, headers: HeaderMap) -> Fallible<Response<Body>> {
+    let mut context = Ctx {
+        headers: headers,
+        resp: Response::new(String::new()),
+    };
+
+    let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
+        .map_err(|e| ErrorCode::ParsingJson.context(format!("解析請求 {:?} 錯誤 {}", body, e,)))?;
+
+    let resp = run_chitin(query, &mut context).await?;
+
+    context.resp.body_mut().push_str(&resp);
+    Ok(context.resp.map(|s| Body::from(s)))
+}
+
+async fn handle_api(body: Bytes, headers: HeaderMap) -> Result<impl warp::Reply, Infallible> {
+    Ok(to_response(_handle_api(body, headers).await))
+}
+
 #[tokio::main]
 async fn main() -> Fallible<()> {
     // 初始化紀錄器
@@ -139,8 +115,8 @@ async fn main() -> Fallible<()> {
     // 設定前端
     log::info!("載入前端資源");
     let prj_path = config::prj_path()?;
-    let static_files = Static::new(prj_path.join("./frontend/static"));
 
+    // TODO: 改爲檔案串流
     log::info!("載入首頁");
     let content = std::fs::read_to_string(prj_path.join("./frontend/static/index.html"))
         .expect("讀取首頁失敗");
@@ -149,29 +125,35 @@ async fn main() -> Fallible<()> {
         .expect("讀取行動版首頁失敗");
     INDEX_MOBILE.set(content);
 
-    let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
-    warp::serve(hello).run(([127, 0, 0, 1], 3030)).await;
-
     // 啓動伺服器
-    log::info!("啟動伺服器");
+    let home = warp::path::end()
+        .or(warp::path("app"))
+        .and(warp::header("user-agent"))
+        .map(|_, user_agent: String| {
+            if carbonbond::util::is_mobile(&user_agent) {
+                Response::new(Body::from(index_mobile()))
+            } else {
+                Response::new(Body::from(index()))
+            }
+        });
+    let static_resource = warp::fs::dir(prj_path.join("./frontend/static"));
+    let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
+    let api = warp::post()
+        .and(warp::path!("api"))
+        .and(warp::body::bytes())
+        .and(warp::header::headers_cloned())
+        .and_then(handle_api);
+    let routes = warp::get().and(home.or(static_resource).or(avatar));
+
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
-    let service = make_service_fn(|_| {
-        let static_files = static_files.clone();
-        async {
-            Ok::<_, hyper::Error>(service_fn(move |req| on_request(req, static_files.clone())))
-        }
-    });
-    let server = Server::bind(&addr).serve(service);
+    log::info!("靜候於 http://{}", addr);
 
-    log::info!("Listening on http://{}", addr);
+    let web_service = warp::serve(routes.or(api)).run(addr);
+
     tokio::select! {
-        res = server => {
-            res?;
-        },
-        res = hot_boards::start() => {
-            res?;
-        }
+        _ = web_service => {},
+        res = hot_boards::start() => { res?; },
     };
 
     Ok(())
