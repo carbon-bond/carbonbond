@@ -13,6 +13,8 @@ pub mod email;
 #[cfg(not(feature = "prepare"))]
 pub mod redis;
 #[cfg(not(feature = "prepare"))]
+pub mod routes;
+#[cfg(not(feature = "prepare"))]
 pub mod service;
 #[cfg(not(feature = "prepare"))]
 pub mod util;
