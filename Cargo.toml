@@ -36,6 +36,7 @@ strum = { version = "0.19", features = ["derive"] }
 base64 = "0.13.0"
 percent-encoding = "2.1.0"
 warp = "0.3.0"
+futures = "0.3.13"
 
 [dependencies.openssl]
 version = "0.10.29"

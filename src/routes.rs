@@ -6,6 +6,8 @@ use crate::{
     custom_error::{Contextable, ErrorCode, Fallible},
     db, Ctx,
 };
+use futures::stream::StreamExt;
+use futures::FutureExt;
 use hyper::{body::Bytes, HeaderMap};
 use hyper::{Body, Response, StatusCode};
 use state::Storage;
@@ -116,12 +118,22 @@ pub fn get_routes(
         });
     let static_resource = warp::fs::dir(prj_path.join("./frontend/static"));
     let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
+    let chat = warp::path!("chat").and(warp::ws()).map(|ws: warp::ws::Ws| {
+        ws.on_upgrade(|websocket| {
+            let (tx, rx) = websocket.split();
+            rx.forward(tx).map(|result| {
+                if let Err(e) = result {
+                    eprintln!("websocket error: {:?}", e);
+                }
+            })
+        })
+    });
     let api = warp::path!("api")
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())
         .and_then(handle_api);
 
-    let gets = warp::get().and(static_resource.or(avatar).or(home));
+    let gets = warp::get().and(static_resource.or(avatar).or(home).or(chat));
 
     let posts = warp::post().and(api);
 
