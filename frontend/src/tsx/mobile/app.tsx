@@ -44,8 +44,11 @@ function App(): JSX.Element {
 	function MainBody(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
 		let { footer_option } = FooterState.useContainer();
+		let show_main_scroll = footer_option == FooterOption.Home;
 
-		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+		return <div className="mainBody"
+			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }}
+			ref={ref => setEmitter(ref)}>
 			{
 				footer_option == FooterOption.Notification ?
 					<NotificationModal/> : null
