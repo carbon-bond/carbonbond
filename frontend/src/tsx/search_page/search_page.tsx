@@ -182,7 +182,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
                 <>
                     {
                     	articles.map(article => {
-                    		return <div styleName="articleWrapper" key={`article-${article.id}`}>
+                    		return <div className="articleWrapper" key={`article-${article.id}`}>
                     			<ArticleCard article={article} />
                     		</div>;
                     	})

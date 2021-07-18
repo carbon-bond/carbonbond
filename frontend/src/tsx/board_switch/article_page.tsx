@@ -15,9 +15,9 @@ function ReplyList(props: { article: Article }): JSX.Element {
 	const { article } = props;
 	let [expanded, setExpanded] = React.useState<boolean>(false);
 
-	return <div styleName="replyCardList">
-		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
-			<span styleName="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
+	return <div className="replyCardList">
+		<div className="listTitle" onClick={() => setExpanded(!expanded)}>
+			<span className="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
 			<span>{article.meta.stat.replies} 篇回文</span>
 		</div>
 		<div>
@@ -30,12 +30,12 @@ function Satellites(props: { article: Article, board: Board }): JSX.Element {
 	const { article, board } = props;
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
-	return <div styleName="satellites">
-		<div styleName="listTitle" onClick={() => setExpanded(!expanded)}>
-			<span styleName="toggleButton">{expanded ? '⯆' : '⯈'} </span>
+	return <div className="satellites">
+		<div className="listTitle" onClick={() => setExpanded(!expanded)}>
+			<span className="toggleButton">{expanded ? '⯆' : '⯈'} </span>
 			<span>{article.meta.stat.satellite_replies} 則衛星</span>
 		</div>
-		<div styleName="contents">
+		<div className="contents">
 			<div>
 				<SatelliteCards expanded={expanded} article={article.meta}/>
 			</div>
@@ -79,7 +79,7 @@ function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
 	const { field, value } = props;
 	if (field.datatype.t.kind == 'bond') {
 		let bond: Bond = value;
-		return <div styleName="cardWrap">
+		return <div className="cardWrap">
 			<SimpleArticleCardById article_id={bond.target_article} />
 		</div>;
 	} else {
@@ -106,11 +106,11 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 	const category = parse_category(article.meta.category_source);
 	const content = JSON.parse(article.content);
 
-	return <div styleName="articleContent">
+	return <div className="articleContent">
 		{
 			category.fields.map(field =>
-				<div styleName="field" key={field.name}>
-					<div styleName="fieldName">{field.name}：</div>
+				<div className="field" key={field.name}>
+					<div className="fieldName">{field.name}：</div>
 					{
 						(() => {
 							const value = content[field.name];
@@ -137,7 +137,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 
 	const category_name = article.meta.category_name;
 
-	return <div styleName="articlePage">
+	return <div className="articlePage">
 		<ArticleHeader
 			user_name={article.meta.author_name}
 			board_name={article.meta.board_name}

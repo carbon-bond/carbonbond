@@ -11,19 +11,19 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 
 	function UnreadInfo(): JSX.Element {
 		if (props.chat instanceof DirectChatData) {
-			return <div styleName="lastMessage">
+			return <div className="lastMessage">
 				<span>{message.sender_name}</span>
 				：
 				<span>{message.content}</span>
 			</div>;
 		} else if (props.chat instanceof GroupChatData) {
 			let channels = props.chat.unreadChannels();
-			return <div styleName="unreadChannels">
+			return <div className="unreadChannels">
 				{
 					channels.size == 0 ?
-						<span styleName="allRead">所有頻道訊息皆已讀取</span> :
+						<span className="allRead">所有頻道訊息皆已讀取</span> :
 						channels.map(c => {
-							return <span key={c.name} styleName="channel">#{c.name}</span>;
+							return <span key={c.name} className="channel">#{c.name}</span>;
 						})
 				}
 			</div>;
@@ -36,9 +36,9 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	function LastDate(): JSX.Element {
 		const date = roughDate(message.time);
 		if (is_unread) {
-			return <div styleName="date"><span styleName="circle">⬤</span> {date}</div>;
+			return <div className="date"><span className="circle">⬤</span> {date}</div>;
 		} else {
-			return <div styleName="date">{date}</div>;
+			return <div className="date">{date}</div>;
 		}
 	}
 
@@ -55,14 +55,14 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 
-	return <div styleName={`chatUnit${is_unread ? ' bold' : ''}`} onClick={onClick}>
-		<div styleName="upSet">
-			<div styleName="title">
-				<span styleName="name">{props.chat.name}</span>
+	return <div className={`chatUnit${is_unread ? ' bold' : ''}`} onClick={onClick}>
+		<div className="upSet">
+			<div className="title">
+				<span className="name">{props.chat.name}</span>
 			</div>
 			<LastDate />
 		</div>
-		<div styleName="downSet">
+		<div className="downSet">
 			<UnreadInfo />
 		</div>
 	</div>;
@@ -82,7 +82,7 @@ function ChatBar(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	let chat_array: ChatData[] = Array.from(all_chat.direct.values());
 	chat_array = chat_array.concat(Array.from(all_chat.group.values()));
-	return <div styleName="chatbar">
+	return <div className="chatbar">
 		<input type="text" placeholder="🔍 尋找對話" />
 		{
 			chat_array.sort(date_cmp).map((r) => <ChatUnit key={r.name} chat={r} />)

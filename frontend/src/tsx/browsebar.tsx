@@ -60,13 +60,13 @@ export function BrowseBar(): JSX.Element {
 	if (fetching) {
 		return <></>;
 	} else {
-		return <div styleName="browseBar" style={{ gridTemplateRows: genGridTemplate() }}>
+		return <div className="browseBar" style={{ gridTemplateRows: genGridTemplate() }}>
 			<ShrinkableBlock
 				title="特化瀏覽"
 				expand={expand[0]}
 				onClick={() => onTitleClick(0)}
 			>
-				<div styleName="special">
+				<div className="special">
 					<div>📰 我的訂閱</div>
 					<div>🔥 全站熱門</div>
 					<div>🛹 所有看板</div>
@@ -103,11 +103,11 @@ export function BrowseBar(): JSX.Element {
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 	let board = props.board;
 	return <Link to={`/app/b/${board.board_name}`}>
-		<div styleName="boardBlock">
+		<div className="boardBlock">
 			<div>
-				<div styleName="boardName">😈 {board.board_name}</div>
-				<div styleName="boardHeat">🔥 {board.popularity}</div>
-				<div styleName="boardTitle">{board.title}</div>
+				<div className="boardName">😈 {board.board_name}</div>
+				<div className="boardHeat">🔥 {board.popularity}</div>
+				<div className="boardTitle">{board.title}</div>
 			</div>
 		</div>
 	</Link>;
@@ -120,7 +120,7 @@ function ShrinkableBlock(props: {
 	onClick: () => void,
 }): JSX.Element {
 	return <>
-		<div styleName="title" onClick={() => props.onClick()}>
+		<div className="title" onClick={() => props.onClick()}>
 			{props.expand ? ' ▼' : ' ▸'} {props.title}
 		</div>
 		<div style={{

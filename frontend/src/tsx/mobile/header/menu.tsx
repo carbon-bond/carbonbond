@@ -28,14 +28,14 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 				<Row>{props.children}</Row>
 			</Link>;
 		}
-		return <a styleName="row" onClick={() => {
+		return <a className="row" onClick={() => {
 			if ('onClick' in props) {
 				props.onClick();
 			}
 		}}>
-			<div styleName="space" />
+			<div className="space" />
 			{props.children}
-			<div styleName="space" />
+			<div className="space" />
 		</a>;
 	}
 	function BoardsRow(props: { name: string, fetchBoards: () => Promise<Result<BoardOverview[], Error>> }): JSX.Element {
@@ -78,9 +78,9 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 	}
 
 	return <>
-        <div styleName="wrap">
-        	<div styleName="cover" onClick={onCoverClicked} />
-        	<div styleName="menu">
+        <div className="wrap">
+        	<div className="cover" onClick={onCoverClicked} />
+        	<div className="menu">
         		{
         			!user_state.login ? null : <>
                         <Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>

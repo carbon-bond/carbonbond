@@ -51,25 +51,25 @@ function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_si
 
 export function BoardHeader(props: { board: Board, url: string, subscribe_count: number }): JSX.Element {
 	return <div className="switchHeader">
-		<div styleName="boardHeader">
+		<div className="boardHeader">
 			<div>
-				<div styleName="headerLeft">
-					<div styleName="boardTitle">
+				<div className="headerLeft">
+					<div className="boardTitle">
 						<Link to={props.url}>{props.board.board_name}</Link>
 					</div>
-					<div styleName="boardSubTitle">{props.board.title}</div>
+					<div className="boardSubTitle">{props.board.title}</div>
 				</div>
 
-				<div styleName="headerRight">
+				<div className="headerRight">
 					{
-						props.board == null ? null : <div styleName="dataBox">
-							<div styleName="dataBoxItem">
-								<div styleName="number">{props.subscribe_count}</div>
-								<div styleName="text">訂閱人數</div>
+						props.board == null ? null : <div className="dataBox">
+							<div className="dataBoxItem">
+								<div className="number">{props.subscribe_count}</div>
+								<div className="text">訂閱人數</div>
 							</div>
-							<div styleName="dataBoxItem">
-								<div styleName="number">{props.board.popularity}</div>
-								<div styleName="text">在線人數</div>
+							<div className="dataBoxItem">
+								<div className="number">{props.board.popularity}</div>
+								<div className="text">在線人數</div>
 							</div>
 						</div>
 					}

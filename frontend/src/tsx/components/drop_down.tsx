@@ -14,8 +14,8 @@ export function DropDown(props: {
 	if (typeof props.forced_expanded != 'undefined') {
 		should_expand = props.forced_expanded;
 	}
-	return <div styleName="wrap">
-		<div styleName="button" onClick={() => {
+	return <div className="wrap">
+		<div className="button" onClick={() => {
 			setExtended(!extended);
 			if (props.onExtended) {
 				props.onExtended();
@@ -23,11 +23,11 @@ export function DropDown(props: {
 		}}>
 			{props.button}
 		</div>
-		<div styleName="body">
+		<div className="body">
 			{
 				should_expand
 					? <>
-						{props.hide_triangle ? null : <div styleName="triangle"></div>}
+						{props.hide_triangle ? null : <div className="triangle"></div>}
 						<div style={{position: 'relative'}}> {props.body} </div>
 					</>
 					: null

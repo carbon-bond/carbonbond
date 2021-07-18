@@ -47,21 +47,21 @@ export function SignupPage(props: Props): JSX.Element {
 	}, [signup_token]);
 
 	if (email) {
-		return <div styleName="signupPage">
-			<div styleName="signupForm">
-				<div styleName="counter">你的email是：　{email}　</div>
-				<input styleName="username" type="text" placeholder="使用者名稱" {...name} autoFocus />
-				<input styleName="password" type="password" placeholder="密碼" {...password} autoFocus />
-				<input styleName="password" type="password" placeholder="確認密碼" {...repeated_password} autoFocus />
+		return <div className="signupPage">
+			<div className="signupForm">
+				<div className="counter">你的email是：　{email}　</div>
+				<input className="username" type="text" placeholder="使用者名稱" {...name} autoFocus />
+				<input className="password" type="password" placeholder="密碼" {...password} autoFocus />
+				<input className="password" type="password" placeholder="確認密碼" {...repeated_password} autoFocus />
 				<button onClick={() => signup_request(name.value, password.value, repeated_password.value)}>
 					註冊帳號
 				</button>
 			</div>
 		</div>;
 	} else if (err) {
-		return <div styleName="signupPage">
-			<div styleName="signupForm">
-				<div styleName="counter">註冊碼已過期或不存在！</div>
+		return <div className="signupPage">
+			<div className="signupForm">
+				<div className="counter">註冊碼已過期或不存在！</div>
 			</div>
 		</div>;
 	} else {

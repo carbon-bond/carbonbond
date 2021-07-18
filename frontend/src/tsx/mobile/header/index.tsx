@@ -12,14 +12,14 @@ import { DropDown } from '../../components/drop_down';
 import { SearchBar } from '../../header/search_bar';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
-	return <div styleName="row" onClick={() => {
+	return <div className="row" onClick={() => {
 		if (typeof props.onClick != 'undefined') {
 			props.onClick();
 		}
 	}}>
-		<div styleName="space" />
+		<div className="space" />
 		<div>{props.children}</div>
-		<div styleName="space" />
+		<div className="space" />
 	</div>;
 }
 
@@ -32,22 +32,22 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		if (!user_state.login) {
 			return null;
 		}
-		return <div styleName="userInfo">
+		return <div className="userInfo">
 			<img src={`/avatar/${user_state.user_name}`} />
-			<div styleName="userName">{user_state.user_name}</div>
-			<div styleName="energy">☘ {user_state.energy}</div>
+			<div className="userName">{user_state.user_name}</div>
+			<div className="energy">☘ {user_state.energy}</div>
 		</div>;
 	}
 	function UserStatus(): JSX.Element {
 		return <>
 			{
-				// user_state.login ? <div styleName="icon">🔔</div> : null
+				// user_state.login ? <div className="icon">🔔</div> : null
 			}
-			<div styleName="wrap">
+			<div className="wrap">
 				<DropDown
 					hide_triangle
 					forced_expanded={expanding_menu}
-					button={<div styleName="icon" onClick={() => setExpandingMenu(p => !p)}> ☰ </div>}
+					button={<div className="icon" onClick={() => setExpandingMenu(p => !p)}> ☰ </div>}
 					body={<Menu
 						userBlock={<UserBlock/>}
 						onCoverClicked={() => setExpandingMenu(false)}/>}
@@ -57,16 +57,16 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	}
 	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
-		<div className="header" styleName="header">
-			<div styleName="container">
-				<div styleName="leftSet">
-					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
+		<div className="header" className="header">
+			<div className="container">
+				<div className="leftSet">
+					<div className="carbonbond" onClick={() => props.history.push('/app')}>
 						<img src="/img/icon.png" alt="" />
 					</div>
-					<div styleName="location" style={{ fontSize: 14 }}>{title}</div>
+					<div className="location" style={{ fontSize: 14 }}>{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} hide_select_board/>
 				</div>
-				<div styleName="rightSet">
+				<div className="rightSet">
 					<UserStatus/>
 				</div>
 			</div>

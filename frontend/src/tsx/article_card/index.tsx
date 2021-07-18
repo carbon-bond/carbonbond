@@ -13,27 +13,27 @@ const MAX_BRIEF_LINE = 4;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
-	return <div styleName="articleHeader">
+	return <div className="articleHeader">
 		<Link to={`/app/user/${props.user_name}`}>
-			<div styleName="authorId">{props.user_name}</div>
+			<div className="authorId">{props.user_name}</div>
 		</Link>
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
-			<div styleName="articleBoard">{props.board_name}</div>
+			<div className="articleBoard">{props.board_name}</div>
 		</Link>
-		<div styleName="seperationDot">•</div>
-		<div styleName="articleTime">{date_string}</div>
+		<div className="seperationDot">•</div>
+		<div className="articleTime">{date_string}</div>
 	</div>;
 }
 
 export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
 
-	return <div styleName="articleLine">
-		<span styleName="articleType">{props.category_name}</span>
+	return <div className="articleLine">
+		<span className="articleType">{props.category_name}</span>
 		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
-			<span styleName="articleTitle">{props.title}</span>
+			<span className="articleTitle">{props.title}</span>
 		</a>
-		<Link styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link className="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -74,21 +74,21 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		setOpeningModal(ModalType.None);
 	}
 
-	return <div styleName="articleFooter">
-		<div styleName="articleBtns">
-			<div styleName="articleBtnItem">
-				☘️&nbsp;<span styleName="num">{props.article.energy}</span>鍵能
+	return <div className="articleFooter">
+		<div className="articleBtns">
+			<div className="articleBtnItem">
+				☘️&nbsp;<span className="num">{props.article.energy}</span>鍵能
 			</div>
-			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
+			<div className="articleBtnItem" onClick={() => openModal(ModalType.Satellite)}>
+				🗯️&nbsp;<span className="num">{props.article.stat.satellite_replies}</span>則衛星
 			</div>
-			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Reply)}>
-				➡️&nbsp;<span styleName="num">{props.article.stat.replies}</span>篇回文
+			<div className="articleBtnItem" onClick={() => openModal(ModalType.Reply)}>
+				➡️&nbsp;<span className="num">{props.article.stat.replies}</span>篇回文
 			</div>
-			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
+			<div className="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
 				{favorite ? '🌟 取消收藏' : '⭐ 收藏'}
 			</div>
-			<div styleName="articleBtnItem">
+			<div className="articleBtnItem">
 				📎 分享
 			</div>
 		</div>
@@ -124,10 +124,10 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	}
 
 	return (
-		<div styleName="articleContainer">
+		<div className="articleContainer">
 			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
-			<div styleName="articleBody">
-				<div styleName="leftPart">
+			<div className="articleBody">
+				<div className="leftPart">
 					<ArticleLine
 						board_name={props.article.board_name}
 						category_name={category_name}
@@ -153,7 +153,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
-	return <div styleName="simpleArticleCard">
+	return <div className="simpleArticleCard">
 		<div key={meta.title}>
 			<ArticleLine
 				board_name={meta.board_name}
@@ -165,7 +165,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		<Link styleName="overlay" to={url} target="_blank"></Link >
+		<Link className="overlay" to={url} target="_blank"></Link >
 		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
 	</div >;
 }
@@ -193,13 +193,13 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 
 function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div styleName="satelliteCard">
+	return <div className="satelliteCard">
 		<BondCard bond={props.bond} />
-		<div styleName="satelliteHeader">
+		<div className="satelliteHeader">
 			<Link to={`/app/user/${props.meta.author_name}`}>
-				<div styleName="authorId">{props.meta.author_name}</div>
+				<div className="authorId">{props.meta.author_name}</div>
 			</Link>
-			<div styleName="articleTime">{date_string} {props.meta.category_name}</div>
+			<div className="articleTime">{date_string} {props.meta.category_name}</div>
 		</div>
 		<div>
 			{props.meta.title}
@@ -299,7 +299,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 	return <>
 		<div ref={div => onDivLoad(div, true)}
 			style={ready ? undefined : hidden_style}
-			styleName="articleContentWrapper"
+			className="articleContentWrapper"
 		>
 			<div ref={div => onDivLoad(div, false)}>
 				{
@@ -310,7 +310,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 						}
 						return <div key={field.name}>
 							{show_name ? <h4>{field.name}</h4> : null}
-							<pre styleName="articleContent">{inner}</pre>
+							<pre className="articleContent">{inner}</pre>
 						</div>;
 					})
 				}

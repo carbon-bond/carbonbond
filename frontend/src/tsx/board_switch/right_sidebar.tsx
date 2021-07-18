@@ -41,11 +41,11 @@ export function BoardSidebar(props: Props): JSX.Element {
 
 	function SubscribeButton(): JSX.Element {
 		if (has_subscribed) {
-			return <div onClick={() => toggleSubscribe()} styleName="subscribeButton rightSidebarButton">
+			return <div onClick={() => toggleSubscribe()} className="subscribeButton rightSidebarButton">
 				<b>😭 </b>取消訂閱
 			</div>;
 		} else {
-			return <div onClick={() => toggleSubscribe()} styleName="subscribeButton rightSidebarButton">
+			return <div onClick={() => toggleSubscribe()} className="subscribeButton rightSidebarButton">
 				<b>🔖 </b>訂閱看板
 			</div>;
 		}
@@ -54,24 +54,24 @@ export function BoardSidebar(props: Props): JSX.Element {
 	return <>
 		{
 			user_state.login &&
-			<div styleName="rightSidebarItem">
-				<div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton"><b>🖉 </b>發表文章</div>
+			<div className="rightSidebarItem">
+				<div onClick={() => onEditClick()} className="postArticleButton rightSidebarButton"><b>🖉 </b>發表文章</div>
 				<SubscribeButton />
 			</div>
 		}
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">看板簡介</div>
-				<div styleName="content">
+		<div className="rightSidebarItem">
+			<div className="rightSidebarBlock">
+				<div className="header">看板簡介</div>
+				<div className="content">
 					{props.board.detail}
 				</div>
-				{/* <div styleName="rightSidebarButton trackBoardButton">訂閱此看板</div> */}
+				{/* <div className="rightSidebarButton trackBoardButton">訂閱此看板</div> */}
 			</div>
 		</div>
 
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">政黨列表</div>
+		<div className="rightSidebarItem">
+			<div className="rightSidebarBlock">
+				<div className="header">政黨列表</div>
 				<PartyList parties={parties}/>
 			</div>
 		</div>
@@ -92,36 +92,36 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 		}
 	}
 	return <>
-		<div styleName="content">
-			<div styleName="partyItem mainPartyItem">
-				<div styleName="partyTitle">執政黨</div>
-				<div styleName="partyName">{ruling!.party_name}</div>
-				<div styleName="partyScore"> {ruling!.energy} <i> ☘ </i></div>
+		<div className="content">
+			<div className="partyItem mainPartyItem">
+				<div className="partyTitle">執政黨</div>
+				<div className="partyName">{ruling!.party_name}</div>
+				<div className="partyScore"> {ruling!.energy} <i> ☘ </i></div>
 			</div>
 			{
 				oppositions.map((p, idx) => {
-					return <div key={p.id} styleName="partyItem">
-						<div styleName="partyTitle">
+					return <div key={p.id} className="partyItem">
+						<div className="partyTitle">
 							{idx == 0 ? '在野黨' : ''}
 						</div>
-						<div styleName="partyName">{p.party_name}</div>
-						<div styleName="partyScore">{p.energy}<i> ☘ </i></div>
+						<div className="partyName">{p.party_name}</div>
+						<div className="partyScore">{p.energy}<i> ☘ </i></div>
 					</div>;
 				})
 			}
 		</div>
-		<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
+		<div className="rightSidebarButton showPartyButton">顯示更多政黨</div>
 	</>;
 }
 
 export function ArticleSidebar(): JSX.Element {
 	return <>
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock"> 關於作者 </div>
+		<div className="rightSidebarItem">
+			<div className="rightSidebarBlock"> 關於作者 </div>
 		</div>
 
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock"> 廣告 </div>
+		<div className="rightSidebarItem">
+			<div className="rightSidebarBlock"> 廣告 </div>
 		</div>
 	</>;
 }

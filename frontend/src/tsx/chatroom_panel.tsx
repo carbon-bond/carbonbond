@@ -67,19 +67,19 @@ function aggregateMessages(messages: IMessage[]): AggMessage[] {
 
 function MessageShow(props: { content: string }): JSX.Element {
 	if (isEmojis(props.content)) {
-		return <div styleName="emojis">{props.content}</div>;
+		return <div className="emojis">{props.content}</div>;
 	} else if (isImageLink(props.content)) {
 		// 注意：如果是 ImageLink ，那必定是 Link ，所以本分支要先判斷
 		return <div>
-			<div styleName="normal"><a href={props.content} target="_blank">{props.content}</a></div>
-			<div styleName="image"><img src={props.content} /></div>
+			<div className="normal"><a href={props.content} target="_blank">{props.content}</a></div>
+			<div className="image"><img src={props.content} /></div>
 		</div>;
 	} else if (isLink(props.content)) {
-		return <div styleName="normal">
+		return <div className="normal">
 			<a href={props.content} target="_blank">{props.content}</a>
 		</div>;
 	} else {
-		return <div styleName="normal">{props.content}</div>;
+		return <div className="normal">{props.content}</div>;
 	}
 }
 
@@ -88,10 +88,10 @@ const MessageBlocks = React.memo((props: {messages: IMessage[]}): JSX.Element =>
 	return <>
 	{
 		// XXX: key 要改成能表示時間順序的 id
-		agg_messages.map(message => <div key={Number(message.date)} styleName="messageBlock">
-			<div styleName="meta">
-				<span styleName="who">{message.who}</span>
-				<span styleName="date">{relativeDate(message.date)}</span>
+		agg_messages.map(message => <div key={Number(message.date)} className="messageBlock">
+			<div className="meta">
+				<span className="who">{message.who}</span>
+				<span className="date">{relativeDate(message.date)}</span>
 			</div>
 			{
 				message.contents.map((content, index) => {
@@ -160,13 +160,13 @@ function InputBar(props: InputBarProp): JSX.Element {
 		setExtendEmoji(!extendEmoji);
 	}
 
-	return <div styleName="inputBar">
-		<div styleName="nonText" ref={ref}>
+	return <div className="inputBar">
+		<div className="nonText" ref={ref}>
 			<div onClick={onClick}>😎</div>
 			{
 				extendEmoji ?
-					<React.Suspense fallback={<div styleName="loading">載入中...</div>}>
-						<div styleName="emojiPicker">
+					<React.Suspense fallback={<div className="loading">載入中...</div>}>
+						<div className="emojiPicker">
 							<Picker
 								native={true}
 								showPreview={false}
@@ -216,27 +216,27 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			}
 		}
 
-		return <div styleName="chatPanel">
-			<div styleName="roomTitle">
-				<div styleName="leftSet">{props.room.name}</div>
-				<div styleName="middleSet" onClick={() => setExtended(false)}></div>
-				<div styleName="rightSet">
-					<div styleName="button">⚙</div>
-					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
+		return <div className="chatPanel">
+			<div className="roomTitle">
+				<div className="leftSet">{props.room.name}</div>
+				<div className="middleSet" onClick={() => setExtended(false)}></div>
+				<div className="rightSet">
+					<div className="button">⚙</div>
+					<div className="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div ref={scroll_bottom_ref} styleName="messages">
+			<div ref={scroll_bottom_ref} className="messages">
 				<MessageBlocks messages={chat!.history.toJS()}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
 	} else {
-		return <div styleName="chatPanel roomWidth">
-			<div styleName="roomTitle">
-				<div styleName="leftSet">{props.room.name}</div>
-				<div styleName="middleSet" onClick={() => setExtended(true)}></div>
-				<div styleName="rightSet">
-					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
+		return <div className="chatPanel roomWidth">
+			<div className="roomTitle">
+				<div className="leftSet">{props.room.name}</div>
+				<div className="middleSet" onClick={() => setExtended(true)}></div>
+				<div className="rightSet">
+					<div className="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 		</div>;
@@ -277,13 +277,13 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		}
 
 		function ChannelList(): JSX.Element {
-			return <div styleName="channelList">
+			return <div className="channelList">
 				{
 					chat!.channels.valueSeq().map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `channel${is_current ? ' selected' : ''}`;
-						return <div styleName={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
-							<span styleName="channelSymbol"># </span>
+						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
+							<span className="channelSymbol"># </span>
 							{c.name}
 						</div>;
 					}).toJS()
@@ -291,25 +291,25 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			</div>;
 		}
 
-		return <div styleName="chatPanel">
-			<div styleName="roomTitle">
-				<div styleName="leftSet">{props.room.name}</div>
-				<div styleName="middleSet" onClick={() => setExtended(false)}>#{props.room.channel}</div>
-				<div styleName="rightSet">
-					<div styleName="button">⚙</div>
-					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
+		return <div className="chatPanel">
+			<div className="roomTitle">
+				<div className="leftSet">{props.room.name}</div>
+				<div className="middleSet" onClick={() => setExtended(false)}>#{props.room.channel}</div>
+				<div className="rightSet">
+					<div className="button">⚙</div>
+					<div className="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div styleName="panelContent">
-				<div styleName="channels">
-					<div styleName="channelControl">
-						<div styleName="leftSet">頻道列表</div>
-						<div styleName="rightSet">➕</div>
+			<div className="panelContent">
+				<div className="channels">
+					<div className="channelControl">
+						<div className="leftSet">頻道列表</div>
+						<div className="rightSet">➕</div>
 					</div>
 					<ChannelList />
 				</div>
 				<div>
-					<div ref={scroll_bottom_ref} styleName="messages">
+					<div ref={scroll_bottom_ref} className="messages">
 						<MessageBlocks messages={channel!.history.toJS()} />
 					</div>
 					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
@@ -317,12 +317,12 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			</div>
 		</div>;
 	} else {
-		return <div styleName="chatPanel roomWidth">
-			<div styleName="roomTitle">
-				<div styleName="leftSet">{props.room.name}</div>
-				<div styleName="middleSet" onClick={() => setExtended(true)}>#{props.room.channel}</div>
-				<div styleName="rightSet">
-					<div styleName="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
+		return <div className="chatPanel roomWidth">
+			<div className="roomTitle">
+				<div className="leftSet">{props.room.name}</div>
+				<div className="middleSet" onClick={() => setExtended(true)}>#{props.room.channel}</div>
+				<div className="rightSet">
+					<div className="button" onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
 		</div>;

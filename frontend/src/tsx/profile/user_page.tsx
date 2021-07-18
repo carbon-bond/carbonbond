@@ -41,12 +41,12 @@ function EditSentence(props: { sentence: string, setSentence: Function }): JSX.E
 			</div>
 		</div>;
 	} else if (props.sentence == '') {
-		return <div styleName="noSentence">
+		return <div className="noSentence">
 			尚未設置一句話介紹
 			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
 		</div>;
 	} else {
-		return <div styleName="sentence">
+		return <div className="sentence">
 			{props.sentence}
 			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
 		</div>;
@@ -57,11 +57,11 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	if (props.is_me) {
 		return <EditSentence sentence={props.sentence} setSentence={props.setSentence} />;
 	} else if (props.sentence == '') {
-		return <div styleName="noSentence">
+		return <div className="noSentence">
 			尚未設置一句話介紹
 		</div>;
 	} else {
-		return <div styleName="sentence">{props.sentence}</div>;
+		return <div className="sentence">{props.sentence}</div>;
 	}
 }
 
@@ -103,19 +103,19 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		const [city, setCity] = React.useState<string>(props.city);
 
 		function getBody(): JSX.Element {
-			return <div styleName="editModal">
-				<div styleName="label">自我介紹</div>
+			return <div className="editModal">
+				<div className="label">自我介紹</div>
 				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => setIntroduction(e.target.value)} />
-				<div styleName="label">性別</div>
-				<div styleName="gender">
+				<div className="label">性別</div>
+				<div className="gender">
 					<input type="radio" name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />
 					<label>男</label>
 					<input type="radio" name="gender" value="女" defaultChecked={gender === '女'} onChange={(e) => setGender(e.target.value)} />
 					<label>女</label>
 				</div>
-				<div styleName="label">職業</div>
+				<div className="label">職業</div>
 				<input type="text" placeholder="職業" value={job} onChange={(e) => setJob(e.target.value)} />
-				<div styleName="label">居住城市</div>
+				<div className="label">居住城市</div>
 				<input type="text" placeholder="居住城市" value={city} onChange={(e) => setCity(e.target.value)} />
 			</div>;
 		}
@@ -135,19 +135,19 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
-	return <div styleName="detail">
+	return <div className="detail">
 		<div>
-			<div styleName="introduction">
-				<div styleName="title">自我介紹</div>
-				{is_me && <button styleName="editButton" onClick={() => setEditing(true)}>🖉</button>}
+			<div className="introduction">
+				<div className="title">自我介紹</div>
+				{is_me && <button className="editButton" onClick={() => setEditing(true)}>🖉</button>}
 			</div>
-			<div styleName="info">
-				<div styleName="item">{introduction}</div>
+			<div className="info">
+				<div className="item">{introduction}</div>
 			</div>
-			<div styleName="info">
-				<div styleName="item">性別<span styleName="key">{gender}</span></div>
-				<div styleName="item">職業為<span styleName="key">{job}</span></div>
-				<div styleName="item">現居<span styleName="key">{city}</span></div>
+			<div className="info">
+				<div className="item">性別<span className="key">{gender}</span></div>
+				<div className="item">職業為<span className="key">{job}</span></div>
+				<div className="item">現居<span className="key">{city}</span></div>
 			</div>
 		</div>
 		<EditModal introduction={introduction} gender={gender} job={job} city={city} />
@@ -238,31 +238,31 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
-	return <div styleName="up">
-		<div styleName="avatarContainer">
+	return <div className="up">
+		<div className="avatarContainer">
 			<Avatar is_me={is_me} name={props.profile_user.user_name} />
 		</div>
-		<div styleName="abstract">
-			<div styleName="username">{props.profile_user.user_name}</div>
+		<div className="abstract">
+			<div className="username">{props.profile_user.user_name}</div>
 			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={setSentence} />
-			<div styleName="data">
-				<div styleName="energy">{props.profile_user.energy} 鍵能</div>
-				<div styleName="trace">
+			<div className="data">
+				<div className="energy">{props.profile_user.energy} 鍵能</div>
+				<div className="trace">
 					<p>被 {props.profile_user.followed_count} 人追蹤</p>
 					<p>追蹤 {props.profile_user.following_count} 人</p>
 				</div>
-				<div styleName="hate">
+				<div className="hate">
 					<p>被 {props.profile_user.hated_count} 人仇視</p>
 					<p>仇視 {props.profile_user.hating_count} 人</p>
 				</div>
 			</div>
 		</div>
-		<div styleName="operation">
-			<div styleName="links">
+		<div className="operation">
+			<div className="links">
 				{
 					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-						<div styleName="relation">
+						<div className="relation">
 							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyFollow)}>
 								{relation == UserRelationKind.Follow || relation == UserRelationKind.OpenlyFollow ? '取消追蹤' : '追蹤'}
 							</button>
@@ -320,14 +320,14 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 		setSelectTab(tabIndex);
 	}
 
-	return <div styleName="works">
-		<div styleName="navigateBar">
-			<div styleName={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			<div styleName={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
-			<div styleName={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
-			<div styleName={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
+	return <div className="works">
+		<div className="navigateBar">
+			<div className={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
+			<div className={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
+			<div className={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
+			<div className={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
 		</div>
-		<div styleName="switchContent">
+		<div className="switchContent">
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Satellites />}
 			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
@@ -339,7 +339,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
 	return <div>
 		{props.articles.map((article, idx) => (
-			<div styleName="articleWrapper" key={`article-${idx}`}>
+			<div className="articleWrapper" key={`article-${idx}`}>
 				<ArticleCard article={article} />
 			</div>
 		))}
@@ -372,9 +372,9 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 	});
 	return <div>
 		{sortedFavorites.map((favorite, idx) => (
-			<div styleName="favoriteWrapper" key={`article-${idx}`}>
-				<div styleName="favoriteTitle">{relativeDate(new Date(favorite.create_time))}</div>
-				<div styleName="articleWrapper" >
+			<div className="favoriteWrapper" key={`article-${idx}`}>
+				<div className="favoriteTitle">{relativeDate(new Date(favorite.create_time))}</div>
+				<div className="articleWrapper" >
 					<ArticleCard article={favorite.meta} />
 				</div>
 			</div>
@@ -404,16 +404,16 @@ function Friendships(props: { user: User }): JSX.Element {
 		});
 	}, [props.user]);
 
-	return <div styleName="userListContainer">
-		<div styleName="userListHeader">💖追隨者</div>
+	return <div className="userListContainer">
+		<div className="userListHeader">💖追隨者</div>
 		{followers.map((user, idx) => (
-			<div styleName="friendshipWrapper" key={`friendship-follow-${idx}`}>
+			<div className="friendshipWrapper" key={`friendship-follow-${idx}`}>
 				<UserCard user={user} />
 			</div>
 		))}
-		<div styleName="userListHeader">⚔️仇視者</div>
+		<div className="userListHeader">⚔️仇視者</div>
 		{haters.map((user, idx) => (
-			<div styleName="friendshipWrapper" key={`friendship-hate-${idx}`}>
+			<div className="friendshipWrapper" key={`friendship-hate-${idx}`}>
 				<UserCard user={user} />
 			</div>
 		))}
@@ -464,7 +464,7 @@ function UserPage(props: Props): JSX.Element {
 	}
 	return <div>
 		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} />
-		<div styleName="down">
+		<div className="down">
 			<ProfileWorks profile_user={user} user_state={user_state} />
 			<ProfileDetail profile_user={user} user_state={user_state} />
 		</div>

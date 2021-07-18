@@ -14,14 +14,14 @@ use state::Storage;
 use std::convert::Infallible;
 use warp::Filter;
 
-static INDEX: Storage<String> = Storage::new();
-static INDEX_MOBILE: Storage<String> = Storage::new();
-fn index() -> &'static str {
-    INDEX.get()
-}
-fn index_mobile() -> &'static str {
-    INDEX_MOBILE.get()
-}
+// static INDEX: Storage<String> = Storage::new();
+// static INDEX_MOBILE: Storage<String> = Storage::new();
+// fn index() -> &'static str {
+//     INDEX.get()
+// }
+// fn index_mobile() -> &'static str {
+//     INDEX_MOBILE.get()
+// }
 
 fn not_found() -> Response<Body> {
     let mut not_found = Response::default();
@@ -93,30 +93,30 @@ async fn handle_api(body: Bytes, headers: HeaderMap) -> Result<impl warp::Reply,
 pub fn get_routes(
 ) -> Fallible<impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone> {
     // 設定前端
-    log::info!("載入前端資源");
-    let prj_path = config::prj_path()?;
+    // log::info!("載入前端資源");
+    // let prj_path = config::prj_path()?;
 
     // TODO: 改爲檔案串流
-    log::info!("載入首頁");
-    let content = std::fs::read_to_string(prj_path.join("./frontend/static/index.html"))
-        .expect("讀取首頁失敗");
-    INDEX.set(content);
-    let content = std::fs::read_to_string(prj_path.join("./frontend/static/m.index.html"))
-        .expect("讀取行動版首頁失敗");
-    INDEX_MOBILE.set(content);
+    // log::info!("載入首頁");
+    // let content = std::fs::read_to_string(prj_path.join("./frontend/static/index.html"))
+    //     .expect("讀取首頁失敗");
+    // INDEX.set(content);
+    // let content = std::fs::read_to_string(prj_path.join("./frontend/static/m.index.html"))
+    //     .expect("讀取行動版首頁失敗");
+    // INDEX_MOBILE.set(content);
 
     // 設定路由
-    let home = warp::path::end()
-        .or(warp::path("app"))
-        .and(warp::header("user-agent"))
-        .map(|_, user_agent: String| {
-            if crate::util::is_mobile(&user_agent) {
-                Response::new(Body::from(index_mobile()))
-            } else {
-                Response::new(Body::from(index()))
-            }
-        });
-    let static_resource = warp::fs::dir(prj_path.join("./frontend/static"));
+    // let home = warp::path::end()
+    //     .or(warp::path("app"))
+    //     .and(warp::header("user-agent"))
+    //     .map(|_, user_agent: String| {
+    //         if crate::util::is_mobile(&user_agent) {
+    //             Response::new(Body::from(index_mobile()))
+    //         } else {
+    //             Response::new(Body::from(index()))
+    //         }
+    //     });
+    // let static_resource = warp::fs::dir(prj_path.join("./frontend/static"));
     let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
     let chat = warp::path!("chat").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|websocket| {
@@ -133,7 +133,7 @@ pub fn get_routes(
         .and(warp::header::headers_cloned())
         .and_then(handle_api);
 
-    let gets = warp::get().and(static_resource.or(avatar).or(home).or(chat));
+    let gets = warp::get().and(avatar.or(chat));
 
     let posts = warp::post().and(api);
 

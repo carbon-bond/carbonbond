@@ -68,7 +68,7 @@ export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX
 		<div> 🙋️鍵結到本文 </div>
 		{
 			force ?
-				<div styleName="offset">
+				<div className="offset">
 					<ReplyArea force={force} candidates={candidates} article={article} board={board} />
 				</div> :
 				<></>

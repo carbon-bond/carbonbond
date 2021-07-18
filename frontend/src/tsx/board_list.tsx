@@ -17,8 +17,8 @@ function BoardBlock(props: { board: { board_name: string, board_type: string, ti
 	const title = props.board.title;
 	return <Link to={`/app/${type === BoardType.General ? 'b' : 'user_board'}/${name}`}>
 		<div>
-			<div styleName="name">{name}</div>
-			<div styleName="title">{title}</div>
+			<div className="name">{name}</div>
+			<div className="title">{title}</div>
 		</div>
 	</Link>;
 }
@@ -31,11 +31,11 @@ function BoardList(): JSX.Element {
 		});
 	}, []);
 
-	return <div styleName="boardList">
+	return <div className="boardList">
 		<div className="mainContent">
 			{
 				board_list.map(board => (
-					<div styleName="boardBlock" key={board.id}>
+					<div className="boardBlock" key={board.id}>
 						<BoardBlock board={board}></BoardBlock>
 					</div>
 				))

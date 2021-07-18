@@ -50,17 +50,17 @@ function EditorPanel(): JSX.Element | null {
 		}
 	}
 	if (editor_panel_data) {
-		return <div styleName="editorPanel">
-			<div styleName="roomTitle">
-				<div onClick={() => onTitleClick()} styleName="leftSet">
+		return <div className="editorPanel">
+			<div className="roomTitle">
+				<div onClick={() => onTitleClick()} className="leftSet">
 					{editor_panel_data.board.board_name + ' / ' +
 						(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
 				</div>
-				<div onClick={() => onTitleClick()} styleName="middleSet">
+				<div onClick={() => onTitleClick()} className="middleSet">
 				</div>
-				<div styleName="rightSet">
-					<div styleName="button">⇱</div>
-					<div styleName="button" onClick={() => deleteEditor()}>✗</div>
+				<div className="rightSet">
+					<div className="button">⇱</div>
+					<div className="button" onClick={() => deleteEditor()}>✗</div>
 				</div>
 			</div>
 			{
@@ -119,7 +119,7 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 // eslint-disable-next-line
 function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
 	if (props.t.kind == 'text') {
-		return <div styleName="textValueWrap">
+		return <div className="textValueWrap">
 			<ShowText text={props.value} />
 		</div>;
 	} else if (props.t.kind == 'bond') {
@@ -150,7 +150,7 @@ const ArrayField = (props: { field: Force.Field, validator: Validator }): JSX.El
 				{
 					list.map((item, index) => {
 						return <div key={index}>
-							<span styleName="deleteButton" onClick={() => {
+							<span className="deleteButton" onClick={() => {
 								const next_state = produce(editor_panel_data, nxt => {
 									(nxt.content[field.name] as string[]).splice(index, 1);
 								});
@@ -226,10 +226,10 @@ const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element
 	if (editor_panel_data == null) { return <></>; }
 
 	const Wrap = (element: JSX.Element): JSX.Element => {
-		return <div key={field.name} styleName="field">
+		return <div key={field.name} className="field">
 			<label htmlFor={field.name}>
 				{`${field.name}`}
-				<span styleName="dataType">{`${Force.show_data_type(field.datatype)}`}</span>
+				<span className="dataType">{`${Force.show_data_type(field.datatype)}`}</span>
 			</label>
 			{element}
 		</div>;
@@ -330,11 +330,11 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			});
 	};
 
-	return <div styleName="editorBody">
+	return <div className="editorBody">
 		<form onSubmit={handleSubmit(onSubmit)}>
-			<div styleName="location">
+			<div className="location">
 				<select required
-					styleName="board"
+					className="board"
 					value={board.id}
 					onChange={(evt) => {
 						API_FETCHER.queryBoardById(parseInt(evt.target.value))
@@ -355,7 +355,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					}
 				</select>
 				<select required
-					styleName="category"
+					className="category"
 					value={editor_panel_data.category}
 					onChange={(evt) => {
 						let category = force.categories.get(evt.target.value)!;
@@ -371,7 +371,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				</select>
 			</div>
 			<input
-				styleName="articleTitle"
+				className="articleTitle"
 				placeholder="文章標題"
 				name="title"
 				onChange={(evt) => {
@@ -396,7 +396,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 								key={field.name}
 								field={field} />);
 					}
-					return <div styleName="fields">{input_fields}</div>;
+					return <div className="fields">{input_fields}</div>;
 				})()
 			}
 			<button type="submit">發佈文章</button>

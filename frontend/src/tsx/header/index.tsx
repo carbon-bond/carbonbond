@@ -18,14 +18,14 @@ import { DropDown } from '../components/drop_down';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
-	return <div styleName="row" onClick={() => {
+	return <div className="row" onClick={() => {
 		if (typeof props.onClick != 'undefined') {
 			props.onClick();
 		}
 	}}>
-		<div styleName="space" />
+		<div className="space" />
 		<div>{props.children}</div>
-		<div styleName="space" />
+		<div className="space" />
 	</div>;
 }
 
@@ -72,7 +72,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		buttons.push({ text: '✗', handler: () => setSignuping(false) });
 
 		function getBody(): JSX.Element {
-			return <div styleName="signupModal">
+			return <div className="signupModal">
 				<input type="text" placeholder="😎 信箱" autoFocus {...email} />
 				{
 					(() => {
@@ -101,8 +101,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	function DropdownBody(): JSX.Element {
 		if (user_state.login) {
-			return <div styleName="dropdown">
-				<div styleName="features">
+			return <div className="dropdown">
+				<div className="features">
 					<Row onClick={() => props.history.push(`/app/user_board/${user_state.user_name}`)}>🏯 我的個板</Row>
 					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
 					<Row onClick={() => props.history.push('/app/party')}>👥 我的政黨</Row>
@@ -128,7 +128,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		});
 		if (user_state.login) {
 			return <>
-				<div ref={ref_noti} styleName="wrap">
+				<div ref={ref_noti} className="wrap">
 					<NotificationIcon icon={'🤍'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Good}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
@@ -139,44 +139,44 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
 						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
 				</div>
-				<div styleName="space" />
-				<div ref={ref_user} styleName="wrap">
+				<div className="space" />
+				<div ref={ref_user} className="wrap">
 					<DropDown
 						forced_expanded={expanding_user}
 						button={
-							<div styleName="userInfo" onClick={() => setExpandingUser(!expanding_user)}>
+							<div className="userInfo" onClick={() => setExpandingUser(!expanding_user)}>
 								<img src={`/avatar/${user_state.user_name}`} />
-								<div styleName="userName">{user_state.user_name}</div>
-								<div styleName="energy">☘ {user_state.energy}</div>
+								<div className="userName">{user_state.user_name}</div>
+								<div className="energy">☘ {user_state.energy}</div>
 							</div>}
 						body={<DropdownBody />}
 					/>
 				</div>
 			</>;
 		} else {
-			return <div styleName="wrap">
-				<div styleName="login" onClick={() => setLogining(true)}>登入 🔫</div>
-				<div styleName="login" onClick={() => setSignuping(true)}>註冊 ⭐</div>
+			return <div className="wrap">
+				<div className="login" onClick={() => setLogining(true)}>登入 🔫</div>
+				<div className="login" onClick={() => setSignuping(true)}>註冊 ⭐</div>
 			</div>;
 		}
 	}
 	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
-		<div className="header" styleName="header">
+		<div className="header" className="header">
 			<LoginModal logining={logining} setLogining={setLogining} />
 			<SignupModal />
-			<div styleName="container">
-				<div styleName="space" />
-				<div styleName="leftSet">
-					<div styleName="carbonbond" onClick={() => props.history.push('/app')}>
-						<img src="/img/icon_with_text.png" alt="" />
+			<div className="container">
+				<div className="space" />
+				<div className="leftSet">
+					<div className="carbonbond" onClick={() => props.history.push('/app')}>
+						<img src="/src/img/icon_with_text.png" alt="" />
 					</div>
-					<div styleName="location">{title}</div>
+					<div className="location">{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} />
 				</div>
-				<div styleName="space" />
+				<div className="space" />
 
-				<div styleName="rightSet">
+				<div className="rightSet">
 					{UserStatus()}
 				</div>
 			</div>
@@ -226,7 +226,7 @@ export function LoginModal(props: { logining: boolean, setLogining: (logining: b
 	buttons.push({ text: '✗', handler: () => props.setLogining(false) });
 
 	function getBody(): JSX.Element {
-		return <div styleName="loginModal">
+		return <div className="loginModal">
 			<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
 			<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
 		</div>;

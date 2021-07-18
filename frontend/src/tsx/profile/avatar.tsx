@@ -44,7 +44,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		}
 		return {};
 	}
-	return <div styleName="avatar isMine">
+	return <div className="avatar isMine">
 		<ReactModal
 			isOpen={is_editing}
 			onRequestClose={() => setIsEditing(false)}
@@ -64,14 +64,14 @@ function EditAvatar(props: { name: string }): JSX.Element {
 					<img src={preview_data} height="144" width="144"></img> :
 					<div>出了些問題......</div>
 			}
-			<div styleName="buttonSet">
+			<div className="buttonSet">
 				<button onClick={uploadAvatar}>確定</button>
 				<button onClick={() => setIsEditing(false)}>取消</button>
 			</div>
 		</ReactModal>
 		<label htmlFor="fileUploader">
-			<img styleName="isMine" src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
-			<div styleName="editPrompt">
+			<img className="isMine" src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
+			<div className="editPrompt">
 				換頭貼
 			</div>
 		</label>
@@ -88,7 +88,7 @@ function Avatar(props: { is_me: boolean, name: string }): JSX.Element {
 	if (props.is_me) {
 		return <EditAvatar name={props.name} />;
 	} else {
-		return <div styleName="avatar">
+		return <div className="avatar">
 			<img src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
 		</div>;
 	}

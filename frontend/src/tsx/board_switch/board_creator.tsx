@@ -74,7 +74,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 	});
 
 	function getBody(): JSX.Element {
-		return <div styleName="editModal">
+		return <div className="editModal">
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div>看板名稱</div>
 				<input name="board_name" placeholder="看板名稱" defaultValue={props.board_type == BoardType.Personal ? user_name : ''} disabled={props.board_type == BoardType.Personal} ref={register({ required: true })} autoFocus />
@@ -83,8 +83,8 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 				<input name="title" placeholder="版主的話" ref={register} />
 				<div>看板介紹</div>
 				<textarea name="detail" placeholder="看板介紹" ref={register} />
-				<div styleName="forceEditor">
-					<div styleName="forceEditorLeft">
+				<div className="forceEditor">
+					<div className="forceEditorLeft">
 						<div>力語言</div>
 						<textarea name="force" placeholder="力語言（定義看板分類、鍵結規則）" ref={register({
 							validate: (value) => {
@@ -99,12 +99,12 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 						})} value={forceValue} onChange={e => setForceValue(e.target.value)} />
 						{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
 					</div>
-					<div styleName="forceEditorRight">
+					<div className="forceEditorRight">
 						<div>範本</div>
-						<div styleName="forceExampleList">
+						<div className="forceExampleList">
 							{
 								forceExamples.map(example => (
-									<div styleName="forceExample" key={example.name} onClick={() => setForceValue(example.force.join('\n'))}>
+									<div className="forceExample" key={example.name} onClick={() => setForceValue(example.force.join('\n'))}>
 										{example.name}
 									</div>
 								))

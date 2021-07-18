@@ -25,7 +25,7 @@ export function SearchBar(props: { cur_board: string | null, hide_select_board?:
 			onSearch(board);
 		}
 	}
-	return <div styleName="searchPart">
+	return <div className="searchPart">
 		<input placeholder="搜尋"
 			size={1}
 			onChange={onChange} onKeyDown={onKeyDown} value={content} />

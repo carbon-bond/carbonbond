@@ -71,12 +71,12 @@ export function NotificationIcon(props: Props): JSX.Element {
 
 	return <DropDown
 		button={
-			<div styleName="icon">
+			<div className="icon">
 				{props.icon}
 				{
 					(() => {
 						if (unread_count > 0) {
-							return <div styleName="unreadCount">{unread_count}</div>;
+							return <div className="unreadCount">{unread_count}</div>;
 						}
 					})()
 				}
@@ -92,27 +92,27 @@ export function NotificationIcon(props: Props): JSX.Element {
 	/>;
 }
 function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
-	return <div styleName="row">
+	return <div className="row">
 		{
 			props.time ? <>
-				<div styleName="notificationSpace" />
+				<div className="notificationSpace" />
 				<img src="/img/icon.png" />
 				<div style={{ flex: 1 }} />
-				<p styleName="time">{relativeDate(props.time)}</p>
-				<div styleName="notificationSpace" />
+				<p className="time">{relativeDate(props.time)}</p>
+				<div className="notificationSpace" />
 				<div style={{ flexBasis: '100%' }} />
 			</> : null
 		}
 
-		<div styleName="notificationSpace" />
-		<div styleName="notificationMessage"> {props.children} </div>
-		<div styleName="notificationSpace" />
+		<div className="notificationSpace" />
+		<div className="notificationMessage"> {props.children} </div>
+		<div className="notificationSpace" />
 	</div>;
 }
 export function NotificationDropDown(props: { notifications: Notification[] }): JSX.Element {
-	return <div styleName="dropdown notificationDropdown" >
-		<div styleName="features">
-			<div styleName="notificationRow">
+	return <div className="dropdown notificationDropdown" >
+		<div className="features">
+			<div className="notificationRow">
 				{
 					(() => {
 						if (props.notifications.length == 0) {
@@ -123,7 +123,7 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 				{
 					props.notifications.map((n, i) => {
 						return <React.Fragment key={n.id}>
-							{ i == 0 ? null : <hr styleName="notificationSep" /> }
+							{ i == 0 ? null : <hr className="notificationSep" /> }
 							<NotificationBlock notification={n} />
 						</React.Fragment>;
 					})

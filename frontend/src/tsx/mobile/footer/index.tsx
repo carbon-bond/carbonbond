@@ -23,7 +23,7 @@ function _Footer(props: RouteComponentProps): JSX.Element {
 		setFooterOption(option);
 	}, [footer_option_str, setFooterOption]);
 
-	return <div className="footer" styleName="footer">
+	return <div className="footer" className="footer">
 		<IconBlock icon="🏠" option={FooterOption.Home} {...props} />
 		<IconBlock icon="🔔" option={FooterOption.Notification}  {...props} />
 	</div>;
@@ -43,8 +43,8 @@ function IconBlock(props: { icon: string, option: FooterOption } & RouteComponen
 		history.push(`${history.location.pathname}?${queryString.stringify(opt)}`);
 	}
 
-	return <div styleName={is_cur ? 'iconBlockSelected iconBlock' : 'iconBlock'}>
-		<div styleName="icon" onClick={onClick}>
+	return <div className={is_cur ? 'iconBlockSelected iconBlock' : 'iconBlock'}>
+		<div className="icon" onClick={onClick}>
 			{props.icon}
 		</div>
 	</div>;

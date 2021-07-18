@@ -36,16 +36,16 @@ export function ModalWindow(props: {
 			}
 		}} >
 
-		<div styleName="title">
-			<div styleName="leftSet">{props.title}</div>
-			<div styleName="middleSet"></div>
-			<div styleName="rightSet">
-				<div styleName="button" onClick={() => props.setVisible(false)}>✗</div>
+		<div className="title">
+			<div className="leftSet">{props.title}</div>
+			<div className="middleSet"></div>
+			<div className="rightSet">
+				<div className="button" onClick={() => props.setVisible(false)}>✗</div>
 			</div>
 		</div>
-		<div styleName="body">
+		<div className="body">
 			{props.body}
-			<div styleName="buttonBar">
+			<div className="buttonBar">
 				{buttons}
 			</div>
 		</div>

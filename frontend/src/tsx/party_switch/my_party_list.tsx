@@ -33,20 +33,20 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 	} if (fetching) {
 		return <div></div>;
 	} else {
-		return <div styleName="listBody">
+		return <div className="listBody">
 			<CreatePartyBlock {...props} />
 			{
 				party_list.map(party => {
-					return <div key={party.id} styleName="boardPartyBlock">
+					return <div key={party.id} className="boardPartyBlock">
 						{
 							(() => {
 								if (party.board_id == null) {
-									return <div styleName="boardName">{EXILED_PARTY_NAME}</div>;
+									return <div className="boardName">{EXILED_PARTY_NAME}</div>;
 								} else {
 									// XXX: 補看板名
 									let href = `/app/board/${party.board_name}`;
-									return <Link to={href} styleName="boardName">
-										<div styleName="boardName">{party.board_name}</div>
+									return <Link to={href} className="boardName">
+										<div className="boardName">{party.board_name}</div>
 									</Link>;
 								}
 							})()
@@ -54,13 +54,13 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 						<Link
 							to={`/app/party/${party.party_name}`}
 							key={party.id}
-							styleName="partyColumn"
+							className="partyColumn"
 						>
-							<div styleName="ruling">{party.ruling ? '執政 ' : ''}</div>
-							<div styleName="partyLabel">{party.party_name}</div>
-							<div styleName="partyLabel">☘ {party.energy}</div>
-							{/* <div styleName="partyLabel">👑{party.chairmanId}</div> */}
-							<div styleName="partyLabel">📊 10%</div>
+							<div className="ruling">{party.ruling ? '執政 ' : ''}</div>
+							<div className="partyLabel">{party.party_name}</div>
+							<div className="partyLabel">☘ {party.energy}</div>
+							{/* <div className="partyLabel">👑{party.chairmanId}</div> */}
+							<div className="partyLabel">📊 10%</div>
 						</Link>
 					</div>;
 				})
@@ -74,12 +74,12 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 	let [party_name, setPartyName] = React.useState('');
 	let [board_name, setBoardName] = React.useState('');
 	return <>
-		<div onClick={() => setExpand(!expand)} styleName="createParty"> 👥 創建政黨 </div>
+		<div onClick={() => setExpand(!expand)} className="createParty"> 👥 創建政黨 </div>
 		<div style={{ display: expand ? 'block' : 'none', textAlign: 'right' }}>
 			<input type="text"
 				value={party_name}
 				placeholder="政黨名稱"
-				styleName="createPartyInput"
+				className="createPartyInput"
 				onChange={evt => {
 					setPartyName(evt.target.value);
 					// TODO: 向後端詢問
@@ -88,7 +88,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			<input type="text"
 				value={board_name}
 				placeholder="依附於看板（預設為流亡政黨）"
-				styleName="createPartyInput"
+				className="createPartyInput"
 				onChange={evt => {
 					setBoardName(evt.target.value);
 					// TODO: 向後端詢問
