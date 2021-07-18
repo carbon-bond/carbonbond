@@ -73,3 +73,6 @@ doctest = false
 [features]
 default = ["hyper", "rust-argon2", "redis"]
 prepare = []
+
+[profile.release]
+lto = true

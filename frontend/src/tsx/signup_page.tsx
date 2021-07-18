@@ -4,7 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { toastErr, useInputValue } from './utils';
 import '../css/signup_page.css';
 import { API_FETCHER } from '../ts/api/api';
-import { Error } from '../ts/api/api_trait';
+import type { Error } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 
 type Props = RouteComponentProps<{ signup_token: string }>;

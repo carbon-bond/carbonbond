@@ -168,7 +168,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		} else {
 			delete opt.category;
 		}
-		if (search_fields !== {}) {
+		if (Object.keys(search_fields).length > 0) {
 			opt.fields = JSON.stringify(search_fields);
 		} else {
 			delete opt.fields;

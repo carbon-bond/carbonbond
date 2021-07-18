@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {
 	BrowserRouter as Router,
 	Switch,
@@ -9,10 +9,10 @@ import {
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css?global';
-import 'normalize.css?global';
-import '../css/variable.css?global';
-import '../css/layout.css?global';
-import '../css/global.css?global';
+// import 'normalize.css?global';
+// import '../css/variable.css?global';
+// import '../css/layout.css?global';
+// import '../css/global.css?global';
 
 import { UserState } from './global_state/user';
 import { BottomPanelState } from './global_state/bottom_panel';
