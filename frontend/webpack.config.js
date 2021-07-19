@@ -66,8 +66,8 @@ let config = {
 				test: /\.css$/,
 				oneOf: [
 					{
-						// import 時，後綴 ?global 代表 css 作用到全域
-						resourceQuery: /^\?global$/,
+						// import 時，後綴  代表 css 作用到全域
+						resourceQuery: /^\$/,
 						use: ['style-loader', 'cache-loader', 'css-loader', 'postcss-loader']
 					},
 					{

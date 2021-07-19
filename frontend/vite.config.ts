@@ -12,5 +12,10 @@ export default defineConfig({
 				ws: true,
 			},
 		}
+	},
+	css: {
+		modules: {
+			scopeBehaviour: 'local'
+		}
 	}
 });

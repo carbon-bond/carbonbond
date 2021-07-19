@@ -18,7 +18,7 @@ import {
 	isChannelRoomData
 } from './global_state/bottom_panel';
 import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
-import 'emoji-mart/css/emoji-mart.css?global';
+import 'emoji-mart/css/emoji-mart.css';
 import * as EmojiMart from 'emoji-mart';
 
 const Picker = React.lazy(() => {
