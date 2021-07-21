@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
-import '../../css/components/modal_window.css';
+import style from '../../css/components/modal_window.module.css';
 
 export type ModalButton = {
 	text: string,
@@ -36,16 +36,16 @@ export function ModalWindow(props: {
 			}
 		}} >
 
-		<div className="title">
-			<div className="leftSet">{props.title}</div>
-			<div className="middleSet"></div>
-			<div className="rightSet">
-				<div className="button" onClick={() => props.setVisible(false)}>✗</div>
+		<div className={style.title}>
+			<div className={style.leftSet}>{props.title}</div>
+			<div className={style.middleSet}></div>
+			<div className={style.rightSet}>
+				<div className={style.button} onClick={() => props.setVisible(false)}>✗</div>
 			</div>
 		</div>
-		<div className="body">
+		<div className={style.body}>
 			{props.body}
-			<div className="buttonBar">
+			<div className={style.buttonBar}>
 				{buttons}
 			</div>
 		</div>
