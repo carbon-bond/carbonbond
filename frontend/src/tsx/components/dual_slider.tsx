@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../../css/components/dual_slider.css';
+import style from '../../css/components/dual_slider.module.css';
 
 type Props = {
 	range: [number, number],
@@ -102,7 +102,7 @@ export function DualSlider(props: Props): JSX.Element {
 		left: left_pos[1] + '%',
 	};
 
-	return <div styleName="component"
+	return <div className={style.component}
 		onMouseMove={move}
 		onMouseLeave={stopMoving}
 		onMouseUp={stopMoving}
@@ -111,10 +111,10 @@ export function DualSlider(props: Props): JSX.Element {
 		onTouchEnd={stopMoving}
 		data-name="component">
 
-		<div styleName="sliders">
-			<div styleName="line"><div styleName="crossLine" style={style_crossline}></div></div>
+		<div className={style.sliders}>
+			<div className={style.line}><div className={style.crossLine} style={style_crossline}></div></div>
 			<div
-				styleName="selector"
+				className={style.selector}
 				style={style_selector0}
 				onMouseDown={evt => startMoving(evt, 0)}
 				onTouchStart={evt => startMoving(evt, 0)}
@@ -122,7 +122,7 @@ export function DualSlider(props: Props): JSX.Element {
 				<div></div>
 			</div>
 			<div
-				styleName="selector"
+				className={style.selector}
 				style={style_selector1}
 				onMouseDown={evt => startMoving(evt, 1)}
 				onTouchStart={evt => startMoving(evt, 1)}
@@ -131,11 +131,11 @@ export function DualSlider(props: Props): JSX.Element {
 			</div>
 		</div>
 
-		<div styleName="values">
-			<div styleName="limit" style={{left: '0%'}}>{props.range[0]}</div>
-			<div styleName="value" style={style_selector0}>{value[0]}</div>
-			<div styleName="value" style={style_selector1}>{value[1]}</div>
-			<div styleName="limit" style={{left: '100%'}}>{props.range[1]}</div>
+		<div className={style.values}>
+			<div className={style.limit} style={{left: '0%'}}>{props.range[0]}</div>
+			<div className={style.value} style={style_selector0}>{value[0]}</div>
+			<div className={style.value} style={style_selector1}>{value[1]}</div>
+			<div className={style.limit} style={{left: '100%'}}>{props.range[1]}</div>
 		</div>
 
 	</div>;

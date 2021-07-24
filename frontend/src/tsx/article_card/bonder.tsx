@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { SimpleArticleCard, BondCard, SatelliteCard } from './index';
 import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
-import { Force, Category } from 'force';
-import '../../css/board_switch/article_card.css';
+import { Force, Category } from '../../../../force/typescript';
+import style from '../../css/board_switch/article_card.module.css';
 import { get_force, useForce } from '../../ts/cache';
 import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
@@ -68,7 +68,7 @@ export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX
 		<div> 🙋️鍵結到本文 </div>
 		{
 			force ?
-				<div styleName="offset">
+				<div className={style.offset}>
 					<ReplyArea force={force} candidates={candidates} article={article} board={board} />
 				</div> :
 				<></>

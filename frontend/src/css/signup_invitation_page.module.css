@@ -1,0 +1,6 @@
+.signupInvitationWrapper {
+	border: 1px solid var(--border-color);	
+	& .description {
+		color: blue;
+	}
+}

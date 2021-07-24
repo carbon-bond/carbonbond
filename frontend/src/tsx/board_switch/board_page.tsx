@@ -6,8 +6,8 @@ import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { Board, ArticleMeta } from '../../ts/api/api_trait';
 
-import '../../css/article_wrapper.css';
-import '../../css/board_switch/board_page.css';
+import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
+const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
 import * as force_util from '../../ts/force_util';
 
@@ -38,7 +38,7 @@ async function fetchArticles(
 
 export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.board.board_name;
-
+	let { useScrollToBottom } = MainScrollState.useContainer();
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
 	const [is_end, setIsEnd] = React.useState<boolean>(false);
@@ -72,13 +72,12 @@ export function BoardPage(props: Props): JSX.Element {
 		});
 	}, [articles, min_article_id_ref, is_end, board_name]);
 
-	let { useScrollToBottom } = MainScrollState.useContainer();
 	useScrollToBottom(scrollHandler);
 
 	return <>
 		{
 			articles.map((article, pos) => (
-				<div styleName="articleWrapper" key={`${article.id}-${pos}`}>
+				<div className={articleWrapper} key={`${article.id}-${pos}`}>
 					<ArticleCard article={article} />
 				</div>
 			))

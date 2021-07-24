@@ -5,51 +5,25 @@ import { EditorPanelState } from '../global_state/editor_panel';
 import { Board, Party } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
-import '../../css/board_switch/right_sidebar.css';
-import { SubscribedBoardsState } from '../global_state/subscribed_boards';
-import { toastErr } from '../utils';
+import style from '../../css/board_switch/right_sidebar.module.css';
+import { toastErr, useSubscribeBoard } from '../utils';
 
 type Props = RouteComponentProps<{ board_name: string }> & {
 	board: Board
 };
 
 export function BoardSidebar(props: Props): JSX.Element {
-	let [ parties, setParties ] = React.useState(new Array<Party>());
 	let { user_state } = UserState.useContainer();
-	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
+	let [ parties, setParties ] = React.useState(new Array<Party>());
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
-	let has_subscribed = subscribed_boards.has(props.board.id);
+	let { has_subscribed, toggleSubscribe } = useSubscribeBoard(props.board);
 
 	React.useEffect(() => {
 		API_FETCHER.queryBoardPartyList(props.board.id).then(res => {
 			setParties(unwrap(res));
 		}).catch(err => toastErr(err));
-	});
+	}, [props.board.id]);
 
-	async function onUnsubscribeBoardClick(): Promise<void> {
-		console.log('按下取消追蹤看板');
-		try {
-			unwrap(await API_FETCHER.unsubscribeBoard(props.board.id));
-			unsubscribe(props.board.id);
-		} catch (err) {
-			toastErr(err);
-		}
-	}
-	async function onSubscribeBoardClick(): Promise<void> {
-		console.log('按下追蹤看板');
-		try {
-			unwrap(await API_FETCHER.subscribeBoard(props.board.id));
-			let b = props.board;
-			subscribe({
-				id: b.id,
-				board_name: b.board_name,
-				title: b.title,
-				popularity: 0
-			});
-		} catch (err) {
-			toastErr(err);
-		}
-	}
 	function onEditClick(): void {
 		console.log('press post');
 		if (editor_panel_data) {
@@ -67,12 +41,12 @@ export function BoardSidebar(props: Props): JSX.Element {
 
 	function SubscribeButton(): JSX.Element {
 		if (has_subscribed) {
-			return <div onClick={() => onUnsubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
-				<b>😭 </b>取消追蹤
+			return <div onClick={() => toggleSubscribe()} className={`${style.subscribeButton} ${style.rightSidebarButton}`}>
+				<b>😭 </b>取消訂閱
 			</div>;
 		} else {
-			return <div onClick={() => onSubscribeBoardClick()} styleName="subscribeButton rightSidebarButton">
-				<b>🔖 </b>追蹤看板
+			return <div onClick={() => toggleSubscribe()} className={`${style.subscribeButton} ${style.rightSidebarButton}`}>
+				<b>🔖 </b>訂閱看板
 			</div>;
 		}
 	}
@@ -80,24 +54,24 @@ export function BoardSidebar(props: Props): JSX.Element {
 	return <>
 		{
 			user_state.login &&
-			<div styleName="rightSidebarItem">
-				<div onClick={() => onEditClick()} styleName="postArticleButton rightSidebarButton"><b>🖉 </b>發表文章</div>
+			<div className={style.rightSidebarItem}>
+				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>🖉 </b>發表文章</div>
 				<SubscribeButton />
 			</div>
 		}
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">看板簡介</div>
-				<div styleName="content">
+		<div className={style.rightSidebarItem}>
+			<div className={style.rightSidebarBlock}>
+				<div className={style.header}>看板簡介</div>
+				<div className={style.content}>
 					{props.board.detail}
 				</div>
-				{/* <div styleName="rightSidebarButton trackBoardButton">追蹤此看板</div> */}
+				{/* <div className={style.rightSidebarButton trackBoardButton}>訂閱此看板</div> */}
 			</div>
 		</div>
 
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock">
-				<div styleName="header">政黨列表</div>
+		<div className={style.rightSidebarItem}>
+			<div className={style.rightSidebarBlock}>
+				<div className={style.header}>政黨列表</div>
 				<PartyList parties={parties}/>
 			</div>
 		</div>
@@ -118,36 +92,36 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 		}
 	}
 	return <>
-		<div styleName="content">
-			<div styleName="partyItem mainPartyItem">
-				<div styleName="partyTitle">執政黨</div>
-				<div styleName="partyName">{ruling!.party_name}</div>
-				<div styleName="partyScore"> {ruling!.energy} <i> ☘ </i></div>
+		<div className={style.content}>
+			<div className={`${style.partyItem} ${style.mainPartyItem}`}>
+				<div className={style.partyTitle}>執政黨</div>
+				<div className={style.partyName}>{ruling!.party_name}</div>
+				<div className={style.partyScore}> {ruling!.energy} <i> ☘ </i></div>
 			</div>
 			{
 				oppositions.map((p, idx) => {
-					return <div key={p.id} styleName="partyItem">
-						<div styleName="partyTitle">
+					return <div key={p.id} className={style.partyItem}>
+						<div className={style.partyTitle}>
 							{idx == 0 ? '在野黨' : ''}
 						</div>
-						<div styleName="partyName">{p.party_name}</div>
-						<div styleName="partyScore">{p.energy}<i> ☘ </i></div>
+						<div className={style.partyName}>{p.party_name}</div>
+						<div className={style.partyScore}>{p.energy}<i> ☘ </i></div>
 					</div>;
 				})
 			}
 		</div>
-		<div styleName="rightSidebarButton showPartyButton">顯示更多政黨</div>
+		<div className={`${style.rightSidebarButton} ${style.showPartyButton}`}>顯示更多政黨</div>
 	</>;
 }
 
 export function ArticleSidebar(): JSX.Element {
 	return <>
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock"> 關於作者 </div>
+		<div className={style.rightSidebarItem}>
+			<div className={style.rightSidebarBlock}> 關於作者 </div>
 		</div>
 
-		<div styleName="rightSidebarItem">
-			<div styleName="rightSidebarBlock"> 廣告 </div>
+		<div className={style.rightSidebarItem}>
+			<div className={style.rightSidebarBlock}> 廣告 </div>
 		</div>
 	</>;
 }

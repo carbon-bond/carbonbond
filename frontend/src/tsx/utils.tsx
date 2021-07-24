@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
+import { API_FETCHER, unwrap } from '../ts/api/api';
+import { Board } from '../ts/api/api_trait';
+import { SubscribedBoardsState } from './global_state/subscribed_boards';
 
 type InputEvent = React.ChangeEvent<HTMLInputElement>
 	| React.ChangeEvent<HTMLTextAreaElement>
@@ -7,6 +10,42 @@ type InputEvent = React.ChangeEvent<HTMLInputElement>
 
 export function toastErr(err: Object | null): void {
 	toast.error(JSON.stringify(err));
+}
+
+type ToggleSubscribe = () => Promise<void>;
+export function useSubscribeBoard(board: Board): { has_subscribed: boolean, toggleSubscribe: ToggleSubscribe } {
+	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
+	let has_subscribed = subscribed_boards.has(board.id);
+
+	async function onUnsubscribeBoardClick(): Promise<void> {
+		console.log('按下取消訂閱看板');
+		try {
+			unwrap(await API_FETCHER.unsubscribeBoard(board.id));
+			unsubscribe(board.id);
+		} catch (err) {
+			toastErr(err);
+		}
+	}
+	async function onSubscribeBoardClick(): Promise<void> {
+		console.log('按下訂閱看板');
+		try {
+			unwrap(await API_FETCHER.subscribeBoard(board.id));
+			subscribe({
+				id: board.id,
+				board_name: board.board_name,
+				title: board.title,
+				popularity: 0
+			});
+		} catch (err) {
+			toastErr(err);
+		}
+	}
+	return {
+		has_subscribed,
+		toggleSubscribe: () => {
+			return has_subscribed ? onUnsubscribeBoardClick() :onSubscribeBoardClick();
+		}
+	};
 }
 
 // 以返回的 value, onChange 綁定 input 的值

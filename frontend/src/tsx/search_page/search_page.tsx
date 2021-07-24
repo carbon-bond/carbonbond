@@ -7,11 +7,11 @@ import { ArticleMeta, HashMap, SearchField } from '../../ts/api/api_trait';
 import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
-import '../../css/article_wrapper.css';
+import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, parse_category, DataType } from 'force';
+import { Category, parse_category, DataType } from '../../../../force/typescript/index';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {
@@ -168,7 +168,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		} else {
 			delete opt.category;
 		}
-		if (search_fields !== {}) {
+		if (Object.keys(search_fields).length > 0) {
 			opt.fields = JSON.stringify(search_fields);
 		} else {
 			delete opt.fields;
@@ -182,7 +182,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
                 <>
                     {
                     	articles.map(article => {
-                    		return <div styleName="articleWrapper" key={`article-${article.id}`}>
+                    		return <div className={style.articleWrapper} key={`article-${article.id}`}>
                     			<ArticleCard article={article} />
                     		</div>;
                     	})

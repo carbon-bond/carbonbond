@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { History } from 'history';
-import '../../css/header.css';
+import style from '../../css/header.module.css';
 
-export function SearchBar(props: { cur_board: string | null, history: History }): JSX.Element {
+export function SearchBar(props: { cur_board: string | null, hide_select_board?: boolean, history: History }): JSX.Element {
 	let [content, setContent] = React.useState('');
 	let [board, setBoard] = React.useState<string | null>(null);
 	function onSearch(board_name: string | null): void {
@@ -25,30 +25,32 @@ export function SearchBar(props: { cur_board: string | null, history: History })
 			onSearch(board);
 		}
 	}
-	return <div styleName="searchPart">
+	return <div className={style.searchPart}>
 		<input placeholder="搜尋"
 			size={1}
 			onChange={onChange} onKeyDown={onKeyDown} value={content} />
-		<select onChange={(evt) => {
-			let name = evt.target.value;
-			if (name.length == 0) {
-				setBoard(null);
-				onSearch(null);
-			} else {
-				setBoard(name);
-				onSearch(name);
-			}
-		}}>
-			<option value="">全站搜尋</option>
-			{
-				(() => {
-					if (props.cur_board) {
-						return <option value={props.cur_board}>
-							{props.cur_board}
-						</option>;
-					}
-				})()
-			}
-		</select>
+		{
+			props.hide_select_board ? null : <select onChange={(evt) => {
+				let name = evt.target.value;
+				if (name.length == 0) {
+					setBoard(null);
+					onSearch(null);
+				} else {
+					setBoard(name);
+					onSearch(name);
+				}
+			}}>
+				<option value="">全站搜尋</option>
+				{
+					(() => {
+						if (props.cur_board) {
+							return <option value={props.cur_board}>
+								{props.cur_board}
+							</option>;
+						}
+					})()
+				}
+			</select>
+		}
 	</div>;
 }

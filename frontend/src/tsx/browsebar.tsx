@@ -6,7 +6,7 @@ import { UserState } from './global_state/user';
 import { STORAGE_NAME } from '../ts/constants';
 import { BoardOverview } from '../ts/api/api_trait';
 
-import '../css/browsebar.css';
+import style from '../css/browsebar.module.css';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
 
 async function fetchHotBoards(): Promise<BoardOverview[]> {
@@ -15,7 +15,7 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 	return boards;
 }
 
-// TODO: 應該用 context 記住熱門看板與追蹤看板，以免次切換測邊欄都要向後端發 request
+// TODO: 應該用 context 記住熱門看板與訂閱看板，以免次切換測邊欄都要向後端發 request
 
 export function BrowseBar(): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -47,7 +47,7 @@ export function BrowseBar(): JSX.Element {
 		localStorage[STORAGE_NAME.browsebar_expand] = JSON.stringify(new_expand);
 	}
 	function genGridTemplate(): string {
-		let g1 = expand[0] ? '25px 80px' : '25px 0px';
+		let g1 = expand[0] ? '25px 90px' : '25px 0px';
 		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
 		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
 		if (user_state.login) {
@@ -60,13 +60,13 @@ export function BrowseBar(): JSX.Element {
 	if (fetching) {
 		return <></>;
 	} else {
-		return <div styleName="browseBar" style={{ gridTemplateRows: genGridTemplate() }}>
+		return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
 			<ShrinkableBlock
 				title="特化瀏覽"
 				expand={expand[0]}
 				onClick={() => onTitleClick(0)}
 			>
-				<div styleName="special">
+				<div className={style.special}>
 					<div>📰 我的訂閱</div>
 					<div>🔥 全站熱門</div>
 					<div>🛹 所有看板</div>
@@ -85,7 +85,7 @@ export function BrowseBar(): JSX.Element {
 				(() => {
 					if (user_state.login) {
 						return <ShrinkableBlock
-							title="追蹤看板"
+							title="訂閱看板"
 							expand={expand[2]}
 							onClick={() => onTitleClick(2)}
 						>
@@ -103,11 +103,11 @@ export function BrowseBar(): JSX.Element {
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 	let board = props.board;
 	return <Link to={`/app/b/${board.board_name}`}>
-		<div styleName="boardBlock">
+		<div className={style.boardBlock}>
 			<div>
-				<div styleName="boardName">😈 {board.board_name}</div>
-				<div styleName="boardHeat">🔥 {board.popularity}</div>
-				<div styleName="boardTitle">{board.title}</div>
+				<div className={style.boardName}>😈 {board.board_name}</div>
+				<div className={style.boardHeat}>🔥 {board.popularity}</div>
+				<div className={style.boardTitle}>{board.title}</div>
 			</div>
 		</div>
 	</Link>;
@@ -120,7 +120,7 @@ function ShrinkableBlock(props: {
 	onClick: () => void,
 }): JSX.Element {
 	return <>
-		<div styleName="title" onClick={() => props.onClick()}>
+		<div className={style.title} onClick={() => props.onClick()}>
 			{props.expand ? ' ▼' : ' ▸'} {props.title}
 		</div>
 		<div style={{

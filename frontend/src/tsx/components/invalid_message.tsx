@@ -1,6 +1,6 @@
 import * as React from 'react';
-import '../../css/components/invalid_message.css';
+import style from '../../css/components/invalid_message.module.css';
 
 export function InvalidMessage(props: { msg: string }): JSX.Element {
-	return <span styleName="invalidMessage">⚠ {props.msg}</span>;
+	return <span className={style.invalidMessage}>⚠ {props.msg}</span>;
 }

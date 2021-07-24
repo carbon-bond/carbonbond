@@ -2,7 +2,7 @@
 	"name": "force",
 	"version": "0.1.0",
 	"description": "力語言",
-	"main": "index.js",
+	"main": "./index.ts",
 	"scripts": {
 		"lint": "eslint --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
 		"demo": "ts-node demo.ts",

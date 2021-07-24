@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import '../../css/header.css';
+import style from '../../css/header.module.css';
 
 import { API_FETCHER } from '../../ts/api/api';
 import { Notification, NotificationKind } from '../../ts/api/api_trait';
@@ -71,12 +71,12 @@ export function NotificationIcon(props: Props): JSX.Element {
 
 	return <DropDown
 		button={
-			<div styleName="icon">
+			<div className={style.icon}>
 				{props.icon}
 				{
 					(() => {
 						if (unread_count > 0) {
-							return <div styleName="unreadCount">{unread_count}</div>;
+							return <div className={style.unreadCount}>{unread_count}</div>;
 						}
 					})()
 				}
@@ -92,27 +92,27 @@ export function NotificationIcon(props: Props): JSX.Element {
 	/>;
 }
 function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
-	return <div styleName="row">
+	return <div className={style.row}>
 		{
 			props.time ? <>
-				<div styleName="notificationSpace" />
+				<div className={style.notificationSpace} />
 				<img src="/img/icon.png" />
 				<div style={{ flex: 1 }} />
-				<p styleName="time">{relativeDate(props.time)}</p>
-				<div styleName="notificationSpace" />
+				<p className={style.time}>{relativeDate(props.time)}</p>
+				<div className={style.notificationSpace} />
 				<div style={{ flexBasis: '100%' }} />
 			</> : null
 		}
 
-		<div styleName="notificationSpace" />
-		<div styleName="notificationMessage"> {props.children} </div>
-		<div styleName="notificationSpace" />
+		<div className={style.notificationSpace} />
+		<div className={style.notificationMessage}> {props.children} </div>
+		<div className={style.notificationSpace} />
 	</div>;
 }
 export function NotificationDropDown(props: { notifications: Notification[] }): JSX.Element {
-	return <div styleName="dropdown notificationDropdown" >
-		<div styleName="features">
-			<div styleName="notificationRow">
+	return <div className={`${style.dropdown} ${style.notificationDropdown}`} >
+		<div className={style.features}>
+			<div className={style.notificationRow}>
 				{
 					(() => {
 						if (props.notifications.length == 0) {
@@ -123,7 +123,7 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 				{
 					props.notifications.map((n, i) => {
 						return <React.Fragment key={n.id}>
-							{ i == 0 ? null : <hr styleName="notificationSep" /> }
+							{ i == 0 ? null : <hr className={style.notificationSep} /> }
 							<NotificationBlock notification={n} />
 						</React.Fragment>;
 					})

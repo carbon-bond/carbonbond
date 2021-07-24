@@ -24,8 +24,7 @@ pub async fn get_avatar(user_name: &str) -> Fallible<hyper::Body> {
     if let Some(image) = image {
         Ok(hyper::Body::from(image.raw_data))
     } else {
-        let image =
-            std::fs::read("./frontend/static/img/no-avatar.png").expect("讀取預設大頭貼失敗");
+        let image = std::fs::read("./frontend/src/img/no-avatar.png").expect("讀取預設大頭貼失敗");
         Ok(hyper::Body::from(image))
     }
 }

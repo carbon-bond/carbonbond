@@ -7,7 +7,7 @@ import { BoardCreator } from '../board_switch/board_creator';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 
-import '../../css/party/party_detail.css';
+import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';
 
 type Props = RouteComponentProps<{ party_name?: string }>;
@@ -36,17 +36,17 @@ export function PartyDetail(props: Props): JSX.Element {
 	if (fetching) {
 		return <div></div>;
 	} else if (party) {
-		return <div styleName="partyDetail">
+		return <div className={style.partyDetail}>
 			<div>
-				<span styleName="partyName">{party.party_name}</span>
+				<span className={style.partyName}>{party.party_name}</span>
 				{(() => {
 					if (party.board_name) {
 						let href = `/app/b/${party.board_name}`;
-						return <Link to={href} styleName="boardName">
+						return <Link to={href} className={style.boardName}>
 							<span>- b/{party.board_name}</span>
 						</Link>;
 					} else {
-						return <span styleName="boardName">{EXILED_PARTY_NAME}</span>;
+						return <span className={style.boardName}>{EXILED_PARTY_NAME}</span>;
 					}
 				})()}
 			</div>
@@ -68,8 +68,8 @@ export function PartyDetail(props: Props): JSX.Element {
 function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
 
-	return <div styleName="createBoardBlock">
-		<div onClick={() => setExpand(!expand)} styleName="createButton">🏂 創立看板</div>
+	return <div className={style.createBoardBlock}>
+		<div onClick={() => setExpand(!expand)} className={style.createButton}>🏂 創立看板</div>
 		<BoardCreator board_type={BoardType.General} party_id={props.party_id} visible={expand} setVisible={setExpand} history={props.rp.history} />
 	</div>;
 }

@@ -1,0 +1,20 @@
+.footer {
+    display: flex;
+    border-top: 1px var(--lightest-gray) solid;
+    & .iconBlock {
+        position: relative;
+        flex: 1;
+        & .icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+    & .iconBlock:not(.iconBlockSelected) {
+        border-top: 3px solid rgba(0, 0, 0, 0);
+    }
+    & .iconBlockSelected {
+        border-top: 3px solid var(--lighter-gray);
+    }
+}

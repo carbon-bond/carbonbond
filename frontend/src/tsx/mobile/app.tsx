@@ -8,11 +8,11 @@ import {
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import 'react-toastify/dist/ReactToastify.css?global';
-import 'normalize.css?global';
-import '../../css/variable.css?global';
-import '../../css/layout.css?global';
-import '../../css/global.css?global';
+import 'react-toastify/dist/ReactToastify.css';
+import 'normalize.css';
+import '../../css/variable.css';
+import '../../css/layout.css';
+import '../../css/global.css';
 
 import { UserState } from '../global_state/user';
 import { BottomPanelState } from '../global_state/bottom_panel';
@@ -25,21 +25,35 @@ import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { UserPage } from '../profile/user_page';
 import { PartySwitch } from '../party_switch';
+import { SignupInvitationPage } from '../signup_invitation_page';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
+import { Footer, FooterOption, FooterState } from './footer';
+import { BoardHeader } from './board_header';
 // import { LeftPanel } from '../left_panel';
-import { BottomPanel } from '../bottom_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { SearchPage } from '../search_page/search_page';
 import { toastErr } from '../utils';
+import { NotificationModal } from './notification';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
+
 	function MainBody(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
-		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+		let { footer_option } = FooterState.useContainer();
+		let show_main_scroll = footer_option == FooterOption.Home;
+
+		return <div className="mainBody"
+			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }}
+			ref={ref => setEmitter(ref)}>
+			{
+				footer_option == FooterOption.Notification ?
+					<NotificationModal/> : null
+			}
+
 			<Switch>
 				<Route exact path="/app/signup/:signup_token" render={props => (
 					<SignupPage {...props} />
@@ -48,19 +62,26 @@ function App(): JSX.Element {
 					<BoardList></BoardList>
 				)} />
 				<Route exact path="/app/search" render={props => (
-					<SearchPage {...props}/>
+					<SearchPage {...props} />
 				)} />
 				<Route path="/app/party" render={() =>
 					<PartySwitch />
+				} />
+				<Route path="/app/signup_invite" render={() =>
+					<SignupInvitationPage />
 				} />
 				<Route path="/app/user/:profile_name" render={props =>
 					<UserPage {...props} />
 				} />
 				<Route path="/app/user_board/:profile_name" render={props =>
-					<PersonalBoard {...props} hide_sidebar />
+					<PersonalBoard {...props} hide_sidebar render_header={
+						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
+					} />
 				} />
 				<Route path="/app/b/:board_name" render={props =>
-					<GeneralBoard {...props} hide_sidebar />
+					<GeneralBoard {...props} hide_sidebar render_header={
+						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
+					} />
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />
@@ -74,7 +95,7 @@ function App(): JSX.Element {
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
-					console.log('載入追蹤看板');
+					console.log('載入訂閱看板');
 					try {
 						let result = await API_FETCHER.querySubcribedBoards();
 						let boards = unwrap(result);
@@ -89,19 +110,20 @@ function App(): JSX.Element {
 		}, [load, unload, user_state.login]);
 
 		return <Router>
-			<Header></Header>
-			<div className="other" >
-				{/* <LeftPanel></LeftPanel> */}
-				<MainScrollState.Provider>
-					<MainBody />
-				</MainScrollState.Provider>
-				<BottomPanel></BottomPanel>
-			</div>
+			<Header/>
+			<FooterState.Provider>
+				<div className="other" >
+					<MainScrollState.Provider>
+						<MainBody />
+					</MainScrollState.Provider>
+				</div>
+				<Footer/>
+			</FooterState.Provider>
 		</Router>;
 	}
 
 	return (
-		<div className="app">
+		<div className="appMobile">
 			<UserState.Provider>
 				<SubscribedBoardsState.Provider>
 					<BottomPanelState.Provider>

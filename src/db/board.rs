@@ -68,14 +68,13 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
 }
 
 pub async fn create(board: &NewBoard) -> Fallible<i64> {
-    // TODO: 交易？
-    let pool = get_pool();
+    let mut conn = get_pool().begin().await?;
     let force = parse(&board.force)?;
     let prev_board_id = sqlx::query!(
         "SELECT board_id FROM parties where id = $1",
         board.ruling_party_id
     )
-    .fetch_one(pool)
+    .fetch_one(&mut conn)
     .await?;
 
     if let Some(prev_board_id) = prev_board_id.board_id {
@@ -98,7 +97,7 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
         board.force,
         board.ruling_party_id
     )
-    .fetch_one(pool)
+    .fetch_one(&mut conn)
     .await?
     .id;
     for (name, category) in &force.categories {
@@ -113,11 +112,12 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
             category.source,
             &category.family
         )
-        .fetch_one(pool)
+        .fetch_one(&mut conn)
         .await?
         .id;
     }
-    super::party::change_board(board.ruling_party_id, board_id).await?;
+    super::party::change_board(&mut conn, board.ruling_party_id, board_id).await?;
+    conn.commit().await?;
     Ok(board_id)
 }
 

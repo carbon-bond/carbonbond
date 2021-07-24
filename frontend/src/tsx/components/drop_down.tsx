@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../../css/components/drop_down.css';
+import style from '../../css/components/drop_down.module.css';
 
 // 點擊 Button 後，Body 將下拉顯示出來
 export function DropDown(props: {
@@ -14,8 +14,8 @@ export function DropDown(props: {
 	if (typeof props.forced_expanded != 'undefined') {
 		should_expand = props.forced_expanded;
 	}
-	return <div styleName="wrap">
-		<div styleName="button" onClick={() => {
+	return <div className={style.wrap}>
+		<div className={style.button} onClick={() => {
 			setExtended(!extended);
 			if (props.onExtended) {
 				props.onExtended();
@@ -23,11 +23,11 @@ export function DropDown(props: {
 		}}>
 			{props.button}
 		</div>
-		<div styleName="body">
+		<div className={style.body}>
 			{
 				should_expand
 					? <>
-						{props.hide_triangle ? null : <div styleName="triangle"></div>}
+						{props.hide_triangle ? null : <div className={style.triangle}></div>}
 						<div style={{position: 'relative'}}> {props.body} </div>
 					</>
 					: null

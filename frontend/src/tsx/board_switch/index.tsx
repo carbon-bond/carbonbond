@@ -1,26 +1,21 @@
 import * as React from 'react';
-import {
-	Link,
-	Switch,
-	Route,
-	Redirect,
-} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { RouteComponentProps } from 'react-router';
-import { BoardPage } from './board_page';
 import { BoardCreator } from './board_creator';
-import { ArticlePage } from './article_page';
-import { ArticleSidebar, BoardSidebar } from './right_sidebar';
+import { SwitchContent } from './switch_content';
 import { Board, BoardType } from '../../ts/api/api_trait';
-import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { UserState } from '../global_state/user';
 import { History } from 'history';
 
-import '../../css/board_switch/board_page.css';
+import '../../css/layout.css';
+import style from '../../css/board_switch/board_page.module.css';
 import { toastErr } from '../utils';
-import { GraphView } from './graph_view';
 
-function BoardSwitch(props: { board_name: string, board_type: string, hide_sidebar?: boolean, history: History }): JSX.Element {
+type RenderHeader = { render_header: (board: Board, url: string, subscribe_count: number) => JSX.Element };
+
+function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_sidebar?: boolean, history: History } &RenderHeader): JSX.Element {
 	let board_name = props.board_name;
 	let board_type = props.board_type;
 	let [fetching, setFetching] = React.useState(true);
@@ -39,117 +34,80 @@ function BoardSwitch(props: { board_name: string, board_type: string, hide_sideb
 				return Promise.reject(err);
 			}
 		}).then(res => {
-			setSubscribeCount(unwrap_or(res, 0));
+			setSubscribeCount(unwrap(res));
 		}).catch(err => {
 			toastErr(err);
 		}).finally(() => {
 			setFetching(false);
 		});
 	}, [board_name, board_type]);
-	if (!fetching && board == null) {
+	if (fetching) {
+		return <></>;
+	} else if (board == null) {
 		return <EmptyBoard board_name={props.board_name} board_type={props.board_type} history={props.history} />;
 	} else {
-		return <BoardContent board={board} hide_sidebar={hide_sidebar} subscribe_count={subscribe_count} board_type={props.board_type} />;
+		return <BoardBody board={board} hide_sidebar={hide_sidebar} subscribe_count={subscribe_count} board_type={props.board_type} render_header={props.render_header} />;
 	}
 }
 
-function BoardContent(props: { board: Board | null, hide_sidebar?: boolean, subscribe_count: number, board_type: string }): JSX.Element {
-	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
-
-	return props.board ? <div className="forumBody">
-		<div className="switchHeader">
-			<div styleName="boardHeader">
-				<div>
-					<div styleName="headerLeft">
-						{
-							props.board == null ? null : <>
-								<div styleName="boardTitle">
-									<Link to={`/app/${cur_board_type}/${props.board.board_name}`}>{props.board.board_name}</Link>
-								</div>
-								<div styleName="boardSubTitle">{props.board.title}</div>
-							</>
-						}
+export function BoardHeader(props: { board: Board, url: string, subscribe_count: number }): JSX.Element {
+	return <div className="switchHeader">
+		<div className={style.boardHeader}>
+			<div>
+				<div className={style.headerLeft}>
+					<div className={style.boardTitle}>
+						<Link to={props.url}>{props.board.board_name}</Link>
 					</div>
+					<div className={style.boardSubTitle}>{props.board.title}</div>
+				</div>
 
-					<div styleName="headerRight">
-						{
-							props.board == null ? null : <div styleName="dataBox">
-								<div styleName="dataBoxItem">
-									<div styleName="number">{props.subscribe_count}</div>
-									<div styleName="text">追蹤人數</div>
-								</div>
-								<div styleName="dataBoxItem">
-									<div styleName="number">{props.board.popularity}</div>
-									<div styleName="text">在線人數</div>
-								</div>
+				<div className={style.headerRight}>
+					{
+						props.board == null ? null : <div className={style.dataBox}>
+							<div className={style.dataBoxItem}>
+								<div className={style.number}>{props.subscribe_count}</div>
+								<div className={style.text}>訂閱人數</div>
 							</div>
-						}
-					</div>
+							<div className={style.dataBoxItem}>
+								<div className={style.number}>{props.board.popularity}</div>
+								<div className={style.text}>在線人數</div>
+							</div>
+						</div>
+					}
 				</div>
 			</div>
 		</div>
-		{
-			props.board == null ? null : <Switch>
-				<Route exact path={`/app/${cur_board_type}/:board_name/graph/:article_id`} render={x =>
-					<div style={{ display: 'flex', flexDirection: 'row' }}>
-						<div style={{ flex: 1 }}>
-							<GraphView {...x} />
-						</div>
-						{
-							props.hide_sidebar ? null : <div className="rightSideBar">
-								<ArticleSidebar />
-							</div>
-						}
-					</div>
-				} />
-				<Route render={() => <SwitchContent board={props.board!} hide_sidebar={props.hide_sidebar} board_type={props.board_type} />} />
-			</Switch>
-		}
-	</div> : <div></div>;
-}
-
-function SwitchContent(props: { board: Board, hide_sidebar?: boolean, board_type: String }): JSX.Element {
-	let board = props.board;
-	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
-	return <div className="switchContent">
-		<div className="mainContent">
-			<Switch>
-				<Route exact path={`/app/${cur_board_type}/:board_name`} render={props =>
-					<BoardPage {...props} board={board} />
-				} />
-				<Route exact path={`/app/${cur_board_type}/:board_name/a/:article_id`} render={props =>
-					<ArticlePage {...props} board={board} />
-				} />
-				<Redirect to="/app" />
-			</Switch>
-		</div>
-		{
-			props.hide_sidebar ? null : <div className="rightSideBar">
-				<Switch>
-					<Route exact path={`/app/${cur_board_type}/:board_name`} render={props =>
-						<BoardSidebar {...props} board={board} />
-					} />
-					<Route exact path={`/app/${cur_board_type}/:board_name/a/:article_id`} render={() =>
-						<ArticleSidebar />
-					} />
-				</Switch>
-			</div>
-		}
 	</div>;
 }
 
-type PersonalBoardProps = RouteComponentProps<{ profile_name: string }> & { hide_sidebar?: boolean };
+function BoardBody(props: { board: Board | null, hide_sidebar?: boolean, board_type: BoardType, subscribe_count: number } & RenderHeader): JSX.Element {
+	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
+	if (!props.board) {
+		return <></>;
+	}
+	return <div className="forumBody">
+		{
+			props.render_header(props.board, `/app/${cur_board_type}/${props.board.board_name}`, props.subscribe_count)
+		}
+		<SwitchContent {...props} board={props.board} />
+	</div>;
+}
+
+
+type PersonalBoardProps = RouteComponentProps<{ profile_name: string }> & { hide_sidebar?: boolean} & RenderHeader;
 
 export function PersonalBoard(props: PersonalBoardProps): JSX.Element {
 	return <BoardSwitch board_name={props.match.params.profile_name}
-		board_type={BoardType.Personal} hide_sidebar={props.hide_sidebar} history={props.history} />;
+		board_type={BoardType.Personal} hide_sidebar={props.hide_sidebar}
+		history={props.history} render_header={props.render_header} />;
 }
 
-type GeneralBoardProps = RouteComponentProps<{ board_name: string }> & { hide_sidebar?: boolean };
+type GeneralBoardProps = RouteComponentProps<{ board_name: string }> & { hide_sidebar?: boolean } & RenderHeader;
 
 export function GeneralBoard(props: GeneralBoardProps): JSX.Element {
 	return <BoardSwitch board_name={props.match.params.board_name}
-		board_type={BoardType.General} hide_sidebar={props.hide_sidebar} history={props.history} />;
+		board_type={BoardType.General} hide_sidebar={props.hide_sidebar}
+		history={props.history} render_header={props.render_header} />;
 }
 
 export function EmptyBoard(props: { board_name: string, board_type: string, history: History }): JSX.Element {

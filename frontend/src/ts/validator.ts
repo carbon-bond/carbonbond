@@ -1,4 +1,4 @@
-import * as force from 'force';
+import * as force from '../../../force/typescript/index';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { get_force } from '../ts/cache';
 

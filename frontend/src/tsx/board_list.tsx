@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
 
-import '../css/board_list.css';
-import '../css/layout.css?global';
+import style from '../css/board_list.module.css';
+import '../css/layout.css';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
@@ -17,8 +17,8 @@ function BoardBlock(props: { board: { board_name: string, board_type: string, ti
 	const title = props.board.title;
 	return <Link to={`/app/${type === BoardType.General ? 'b' : 'user_board'}/${name}`}>
 		<div>
-			<div styleName="name">{name}</div>
-			<div styleName="title">{title}</div>
+			<div className={style.name}>{name}</div>
+			<div className={style.title}>{title}</div>
 		</div>
 	</Link>;
 }
@@ -31,11 +31,11 @@ function BoardList(): JSX.Element {
 		});
 	}, []);
 
-	return <div styleName="boardList">
+	return <div className={style.boardList}>
 		<div className="mainContent">
 			{
 				board_list.map(board => (
-					<div styleName="boardBlock" key={board.id}>
+					<div className={style.boardBlock} key={board.id}>
 						<BoardBlock board={board}></BoardBlock>
 					</div>
 				))

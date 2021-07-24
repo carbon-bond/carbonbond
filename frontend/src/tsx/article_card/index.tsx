@@ -1,11 +1,12 @@
 import * as React from 'react';
-import '../../css/board_switch/article_card.css';
+import style from '../../css/board_switch/article_card.module.css';
+import '../../css/global.css';
 import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, ArticleMeta, Edge } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
-import { parse_category } from 'force';
+import { parse_category } from '../../../../force/typescript';
 import { ArticleContent } from '../board_switch/article_page';
 import { ReplyModal, SatelliteModal } from './modal';
 
@@ -13,27 +14,27 @@ const MAX_BRIEF_LINE = 4;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
-	return <div styleName="articleHeader">
+	return <div className={style.articleHeader}>
 		<Link to={`/app/user/${props.user_name}`}>
-			<div styleName="authorId">{props.user_name}</div>
+			<div className={style.authorId}>{props.user_name}</div>
 		</Link>
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
-			<div styleName="articleBoard">{props.board_name}</div>
+			<div className={style.articleBoard}>{props.board_name}</div>
 		</Link>
-		<div styleName="seperationDot">•</div>
-		<div styleName="articleTime">{date_string}</div>
+		<div className={style.seperationDot}>•</div>
+		<div className={style.articleTime}>{date_string}</div>
 	</div>;
 }
 
 export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
 
-	return <div styleName="articleLine">
-		<span styleName="articleType">{props.category_name}</span>
+	return <div className={style.articleLine}>
+		<span className={style.articleType}>{props.category_name}</span>
 		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
-			<span styleName="articleTitle">{props.title}</span>
+			<span className={style.articleTitle}>{props.title}</span>
 		</a>
-		<Link styleName="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -74,21 +75,21 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		setOpeningModal(ModalType.None);
 	}
 
-	return <div styleName="articleFooter">
-		<div styleName="articleBtns">
-			<div styleName="articleBtnItem">
-				☘️&nbsp;<span styleName="num">{props.article.energy}</span>鍵能
+	return <div className={style.articleFooter}>
+		<div className={style.articleBtns}>
+			<div className={style.articleBtnItem}>
+				☘️&nbsp;<span className={style.num}>{props.article.energy}</span>鍵能
 			</div>
-			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span styleName="num">{props.article.stat.satellite_replies}</span>則衛星
+			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Satellite)}>
+				🗯️&nbsp;<span className={style.num}>{props.article.stat.satellite_replies}</span>則衛星
 			</div>
-			<div styleName="articleBtnItem" onClick={() => openModal(ModalType.Reply)}>
-				➡️&nbsp;<span styleName="num">{props.article.stat.replies}</span>篇回文
+			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
+				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
-			<div styleName="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
+			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
 				{favorite ? '🌟 取消收藏' : '⭐ 收藏'}
 			</div>
-			<div styleName="articleBtnItem">
+			<div className={style.articleBtnItem}>
 				📎 分享
 			</div>
 		</div>
@@ -112,9 +113,6 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
-	const [article, setArticle] = React.useState<Article | null>(null);
-	const [shrinkable, setShrinkable] = React.useState(false);
-	const [ready, setReady] = React.useState(false);
 
 	let user_name = '';
 	let category_name = '';
@@ -126,126 +124,17 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 		category_name = '未知';
 	}
 
-	const category = parse_category(props.article.category_source);
-	// eslint-disable-next-line
-	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
-	let truncated = props.article.digest.truncated;
-	function Content(): JSX.Element {
-		let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
-		let content_ref = React.useRef<HTMLDivElement | null>(null);
-
-		function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
-			if (is_wrapper) {
-				wrapper_ref.current = div;
-			} else {
-				content_ref.current = div;
-			}
-			if (content_ref.current && wrapper_ref.current) {
-				let wrapper = wrapper_ref.current;
-				let content_div = content_ref.current;
-				let height = content_div.offsetHeight;
-				let line_height =
-					parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
-				let lines = Math.floor(height / line_height);
-				if (lines > MAX_BRIEF_LINE) {
-					setShrinkable(true);
-					setReady(true);
-					wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
-				} else if (!truncated) {
-					console.log(`${props.article.id}摘要完整且行數短，直接展開`);
-					expand();
-				}
-			}
-		}
-
-		function expand(): void {
-			if (!truncated) {
-				setArticle({
-					meta: props.article,
-					content: props.article.digest.content,
-				});
-				return;
-			}
-
-			API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
-				let article = unwrap(res);
-				setArticle(article);
-				setReady(true);
-			}).catch(err => {
-				toastErr(err);
-			});
-		}
-
-		let show_name = Object.keys(content).length > 1;
-		// eslint-disable-next-line
-		function formatValue(value: any): string {
-			if (Array.isArray(value)) {
-				return value.map(v => formatValue(v)).join('\n');
-			} else if (typeof value == 'string') {
-				return value.trim();
-			} else if (typeof value == 'number') {
-				return value.toString();
-			}
-			return '';
-		}
-
-		function ShowMoreButton(): JSX.Element | null {
-			return <>
-				<br/>
-				{
-					article == null ?
-						<a onClick={() => expand()}>...閱讀更多</a> :
-						shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
-				}
-			</>;
-		}
-
-		if (article) {
-			return <>
-				<ArticleContent article={article} />
-				<ShowMoreButton />
-			</>;
-		}
-
-		const hidden_style: React.CSSProperties = {
-			opacity: 0,
-			position: 'absolute',
-		};
-		return <>
-			<div ref={div => onDivLoad(div, true)}
-				style={ready ? undefined : hidden_style}
-				styleName="articleContentWrapper"
-			>
-				<div ref={div => onDivLoad(div, false)}>
-					{
-						category.fields.map(field => {
-							let inner = formatValue(content[field.name]);
-							if (inner.length == 0) {
-								return null;
-							}
-							return <div key={field.name}>
-								{show_name ? <h4>{field.name}</h4> : null}
-								<pre styleName="articleContent">{inner}</pre>
-							</div>;
-						})
-					}
-				</div>
-			</div>
-			<ShowMoreButton />
-		</>;
-	}
-
 	return (
-		<div styleName="articleContainer">
+		<div className={style.articleContainer}>
 			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
-			<div styleName="articleBody">
-				<div styleName="leftPart">
+			<div className={style.articleBody}>
+				<div className={style.leftPart}>
 					<ArticleLine
 						board_name={props.article.board_name}
 						category_name={category_name}
 						title={props.article.title}
 						id={props.article.id} />
-					<Content/>
+					<ArticleContentShrinkable article={props.article}/>
 				</div>
 			</div>
 			<ArticleFooter article={props.article} />
@@ -265,7 +154,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
-	return <div styleName="simpleArticleCard">
+	return <div className={style.simpleArticleCard}>
 		<div key={meta.title}>
 			<ArticleLine
 				board_name={meta.board_name}
@@ -277,7 +166,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		<Link styleName="overlay" to={url} target="_blank"></Link >
+		<Link className={style.overlay} to={url} target="_blank"></Link >
 		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
 	</div >;
 }
@@ -305,19 +194,133 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 
 function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div styleName="satelliteCard">
+	return <div className={style.satelliteCard}>
 		<BondCard bond={props.bond} />
-		<div styleName="satelliteHeader">
+		<div className={style.satelliteHeader}>
 			<Link to={`/app/user/${props.meta.author_name}`}>
-				<div styleName="authorId">{props.meta.author_name}</div>
+				<div className={style.authorId}>{props.meta.author_name}</div>
 			</Link>
-			<div styleName="articleTime">{date_string} {props.meta.category_name}</div>
+			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
 		</div>
 		<div>
 			{props.meta.title}
 		</div>
 	</div>;
 }
+
+function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element {
+	const [article, setArticle] = React.useState<Article | null>(null);
+	const [shrinkable, setShrinkable] = React.useState(false);
+	const [ready, setReady] = React.useState(false);
+	let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
+	let content_ref = React.useRef<HTMLDivElement | null>(null);
+
+	const category = parse_category(props.article.category_source);
+	// eslint-disable-next-line
+	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
+	let truncated = props.article.digest.truncated;
+
+	function onDivLoad(div: HTMLDivElement | null, is_wrapper: boolean): void {
+		if (is_wrapper) {
+			wrapper_ref.current = div;
+		} else {
+			content_ref.current = div;
+		}
+		if (content_ref.current && wrapper_ref.current) {
+			let wrapper = wrapper_ref.current;
+			let content_div = content_ref.current;
+			let height = content_div.offsetHeight;
+			let line_height =
+				parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
+			let lines = Math.floor(height / line_height);
+			if (lines > MAX_BRIEF_LINE) {
+				setShrinkable(true);
+				setReady(true);
+				wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
+			} else if (!truncated) {
+				console.log(`${props.article.id}摘要完整且行數短，直接展開`);
+				expand();
+			}
+		}
+	}
+
+	function expand(): void {
+		if (!truncated) {
+			setArticle({
+				meta: props.article,
+				content: props.article.digest.content,
+			});
+			return;
+		}
+
+		API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
+			let article = unwrap(res);
+			setArticle(article);
+			setReady(true);
+		}).catch(err => {
+			toastErr(err);
+		});
+	}
+
+	let show_name = Object.keys(content).length > 1;
+	// eslint-disable-next-line
+	function formatValue(value: any): string {
+		if (Array.isArray(value)) {
+			return value.map(v => formatValue(v)).join('\n');
+		} else if (typeof value == 'string') {
+			return value.trim();
+		} else if (typeof value == 'number') {
+			return value.toString();
+		}
+		return '';
+	}
+
+	function ShowMoreButton(): JSX.Element | null {
+		return <>
+			<br />
+			{
+				article == null ?
+					<a onClick={() => expand()}>...閱讀更多</a> :
+					shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
+			}
+		</>;
+	}
+
+	if (article) {
+		return <>
+			<ArticleContent article={article} />
+			<ShowMoreButton />
+		</>;
+	}
+
+	const hidden_style: React.CSSProperties = {
+		opacity: 0,
+		position: 'absolute',
+	};
+	return <>
+		<div ref={div => onDivLoad(div, true)}
+			style={ready ? undefined : hidden_style}
+			className={style.articleContentWrapper}
+		>
+			<div ref={div => onDivLoad(div, false)}>
+				{
+					category.fields.map(field => {
+						let inner = formatValue(content[field.name]);
+						if (inner.length == 0) {
+							return null;
+						}
+						return <div key={field.name}>
+							{show_name ? <h4>{field.name}</h4> : null}
+							<pre className={style.articleContent}>{inner}</pre>
+						</div>;
+					})
+				}
+			</div>
+		</div>
+		<ShowMoreButton />
+	</>;
+}
+
 
 export {
 	ArticleCard,

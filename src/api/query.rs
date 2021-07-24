@@ -65,6 +65,14 @@ pub enum UserQuery {
     QueryFollowerList { user: i64 },
     #[chitin(request, response = "Vec<super::model::UserMini>")]
     QueryHaterList { user: i64 },
+    #[chitin(request, response = "Vec<super::model::SignupInvitation>")]
+    QuerySignupInvitationList { user: i64 },
+    #[chitin(request, response = "i64")]
+    AddSignupInvitation { user: i64, description: String },
+    #[chitin(request, response = "String")]
+    ActivateSignupInvitation { signup_invitation_id: i64 },
+    #[chitin(request, response = "()")]
+    DeactivateSignupInvitation { signup_invitation_id: i64 },
     #[chitin(request, response = "()")]
     UpdateAvatar { image: String },
     #[chitin(request, response = "()")]
