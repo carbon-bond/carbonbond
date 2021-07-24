@@ -5,7 +5,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCardById } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, Bond } from '../../ts/api/api_trait';
-import { parse_category, Field } from 'force';
+import { parse_category, Field } from '../../../../force/typescript/index';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
 import { BonderCards, ReplyButtons, SatelliteButtons, SatelliteCards } from '../article_card/bonder';

@@ -1,4 +1,4 @@
-import { Category, Force } from 'force';
+import { Category, Force } from '../../../force/typescript/index';
 
 // 取得一個力語言定義中所有屬於 family 分類族的分類
 export function get_family_members(force: Force, family: string): string[] {

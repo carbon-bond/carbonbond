@@ -1,4 +1,4 @@
-import { parse, Category } from 'force';
+import { parse, Category } from '../../force/typescript/index';
 import { unwrap } from '../src/ts/api/api';
 import { Bond, RootQueryFetcher, BoardType } from '../src/ts/api/api_trait';
 import request from 'request';

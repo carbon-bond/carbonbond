@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { History } from 'history';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { InvalidMessage } from '../components/invalid_message';
-import { parse } from 'force';
+import { parse } from '../../../../force/typescript/index';
 
 import style from '../../css/board_switch/board_creator.module.css';
 import { toastErr } from '../utils';

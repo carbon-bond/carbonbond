@@ -10,14 +10,13 @@ import { BoardName, BoardType } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Validator } from '../../ts/validator';
-import * as Force from 'force';
+import * as Force from '../../../../force/typescript/index';
 import { ShowText } from '../../tsx/board_switch/article_page';
 
 
 import bottom_panel_style from  '../../css/bottom_panel/bottom_panel.module.css';
 const {roomTitle, leftSet, middleSet, rightSet, button} = bottom_panel_style;
 import style from '../../css/bottom_panel/editor.module.css';
-import { BasicDataType } from 'force';
 import { SimpleArticleCardById } from '../article_card';
 import { toastErr } from '../utils';
 import { new_content } from '../../ts/force_util';
@@ -118,7 +117,7 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 
 
 // eslint-disable-next-line
-function ShowItem(props: { t: BasicDataType, value: any }): JSX.Element {
+function ShowItem(props: { t: Force.BasicDataType, value: any }): JSX.Element {
 	if (props.t.kind == 'text') {
 		return <div className={style.textValueWrap}>
 			<ShowText text={props.value} />

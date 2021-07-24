@@ -11,7 +11,7 @@ import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, parse_category, DataType } from 'force';
+import { Category, parse_category, DataType } from '../../../../force/typescript/index';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {

@@ -1,4 +1,4 @@
-import { Force, parse } from 'force';
+import { Force, parse } from '../../../force/typescript/index';
 import { unwrap, API_FETCHER } from '../ts/api/api';
 import React from 'react';
 import { toastErr } from '../tsx/utils';

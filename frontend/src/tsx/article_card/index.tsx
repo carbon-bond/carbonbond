@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { Article, ArticleMeta, Edge } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
-import { parse_category } from 'force';
+import { parse_category } from '../../../../force/typescript';
 import { ArticleContent } from '../board_switch/article_page';
 import { ReplyModal, SatelliteModal } from './modal';
 

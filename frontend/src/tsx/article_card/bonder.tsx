@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { SimpleArticleCard, BondCard, SatelliteCard } from './index';
 import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
-import { Force, Category } from 'force';
+import { Force, Category } from '../../../../force/typescript';
 import style from '../../css/board_switch/article_card.module.css';
 import { get_force, useForce } from '../../ts/cache';
 import * as force_util from '../../ts/force_util';
