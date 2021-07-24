@@ -281,7 +281,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				{
 					chat!.channels.valueSeq().map(c => {
 						const is_current = c.name == channel!.name;
-						const channel_style = `channel${is_current ? ' selected' : ''}`;
+						const channel_style = `${channel} ${is_current ? style.selected : ''}`;
 						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
 							<span className={style.channelSymbol}># </span>
 							{c.name}
