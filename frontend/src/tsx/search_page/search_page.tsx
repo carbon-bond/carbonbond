@@ -7,7 +7,7 @@ import { ArticleMeta, HashMap, SearchField } from '../../ts/api/api_trait';
 import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
-import '../../css/article_wrapper.css';
+import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
@@ -182,7 +182,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
                 <>
                     {
                     	articles.map(article => {
-                    		return <div className="articleWrapper" key={`article-${article.id}`}>
+                    		return <div className={style.articleWrapper} key={`article-${article.id}`}>
                     			<ArticleCard article={article} />
                     		</div>;
                     	})

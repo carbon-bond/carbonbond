@@ -3,7 +3,7 @@ import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCardById } from '../article_card';
-import '../../css/board_switch/article_page.css';
+import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, Bond } from '../../ts/api/api_trait';
 import { parse_category, Field } from 'force';
 import { isImageLink, isLink } from '../../ts/regex_util';
@@ -15,9 +15,9 @@ function ReplyList(props: { article: Article }): JSX.Element {
 	const { article } = props;
 	let [expanded, setExpanded] = React.useState<boolean>(false);
 
-	return <div className="replyCardList">
-		<div className="listTitle" onClick={() => setExpanded(!expanded)}>
-			<span className="toggleButton"> {expanded ? '⯆' : '⯈'} </span>
+	return <div className={style.replyCardList}>
+		<div className={style.listTitle} onClick={() => setExpanded(!expanded)}>
+			<span className={style.toggleButton}> {expanded ? '⯆' : '⯈'} </span>
 			<span>{article.meta.stat.replies} 篇回文</span>
 		</div>
 		<div>
@@ -30,12 +30,12 @@ function Satellites(props: { article: Article, board: Board }): JSX.Element {
 	const { article, board } = props;
 	let [expanded, setExpanded] = React.useState<boolean>(true);
 
-	return <div className="satellites">
-		<div className="listTitle" onClick={() => setExpanded(!expanded)}>
-			<span className="toggleButton">{expanded ? '⯆' : '⯈'} </span>
+	return <div className={style.satellites}>
+		<div className={style.listTitle} onClick={() => setExpanded(!expanded)}>
+			<span className={style.toggleButton}>{expanded ? '⯆' : '⯈'} </span>
 			<span>{article.meta.stat.satellite_replies} 則衛星</span>
 		</div>
-		<div className="contents">
+		<div className={style.contents}>
 			<div>
 				<SatelliteCards expanded={expanded} article={article.meta}/>
 			</div>
@@ -79,7 +79,7 @@ function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
 	const { field, value } = props;
 	if (field.datatype.t.kind == 'bond') {
 		let bond: Bond = value;
-		return <div className="cardWrap">
+		return <div className={style.cardWrap}>
 			<SimpleArticleCardById article_id={bond.target_article} />
 		</div>;
 	} else {
@@ -106,11 +106,11 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 	const category = parse_category(article.meta.category_source);
 	const content = JSON.parse(article.content);
 
-	return <div className="articleContent">
+	return <div className={style.articleContent}>
 		{
 			category.fields.map(field =>
-				<div className="field" key={field.name}>
-					<div className="fieldName">{field.name}：</div>
+				<div className={style.field} key={field.name}>
+					<div className={style.fieldName}>{field.name}：</div>
 					{
 						(() => {
 							const value = content[field.name];
@@ -137,7 +137,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 
 	const category_name = article.meta.category_name;
 
-	return <div className="articlePage">
+	return <div className={style.articlePage}>
 		<ArticleHeader
 			user_name={article.meta.author_name}
 			board_name={article.meta.board_name}

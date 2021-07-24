@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../../../css/mobile/footer.css';
+import style from '../../../css/mobile/footer.module.css';
 import { createContainer } from 'unstated-next';
 import { withRouter } from 'react-router';
 import queryString from 'query-string';
@@ -23,7 +23,7 @@ function _Footer(props: RouteComponentProps): JSX.Element {
 		setFooterOption(option);
 	}, [footer_option_str, setFooterOption]);
 
-	return <div className="footer" className="footer">
+	return <div className={`footer ${style.footer}`}>
 		<IconBlock icon="🏠" option={FooterOption.Home} {...props} />
 		<IconBlock icon="🔔" option={FooterOption.Notification}  {...props} />
 	</div>;
@@ -44,7 +44,7 @@ function IconBlock(props: { icon: string, option: FooterOption } & RouteComponen
 	}
 
 	return <div className={is_cur ? 'iconBlockSelected iconBlock' : 'iconBlock'}>
-		<div className="icon" onClick={onClick}>
+		<div className={style.icon} onClick={onClick}>
 			{props.icon}
 		</div>
 	</div>;

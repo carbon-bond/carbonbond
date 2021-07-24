@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { History } from 'history';
-import '../../css/header.css';
+import style from '../../css/header.module.css';
 
 export function SearchBar(props: { cur_board: string | null, hide_select_board?: boolean, history: History }): JSX.Element {
 	let [content, setContent] = React.useState('');
@@ -25,7 +25,7 @@ export function SearchBar(props: { cur_board: string | null, hide_select_board?:
 			onSearch(board);
 		}
 	}
-	return <div className="searchPart">
+	return <div className={style.searchPart}>
 		<input placeholder="搜尋"
 			size={1}
 			onChange={onChange} onKeyDown={onKeyDown} value={content} />

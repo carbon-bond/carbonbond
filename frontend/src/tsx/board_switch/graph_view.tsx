@@ -7,7 +7,7 @@ import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
-import '../../css/board_switch/graph_view.css';
+import style from '../../css/board_switch/graph_view.module.css';
 
 type Props = RouteComponentProps<{ article_id: string }>;
 enum RadiusMode {
@@ -43,8 +43,8 @@ export function GraphView(props: Props): JSX.Element {
 
 	if (article_meta) {
 		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['衛星數', RadiusMode.SatelliteReply]];
-		return <div className="wrapper">
-			<div className="panel">
+		return <div className={style.wrapper}>
+			<div className={style.panel}>
 				<h3>文章半徑</h3>
 				<hr/>
 				<div onChange={e => {
@@ -455,7 +455,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 		return <></>;
 	}
 	return <>
-		<div ref={graph_div} className="svgBlock" style={{ position: 'relative' }}>
+		<div ref={graph_div} className={style.svgBlock} style={{ position: 'relative' }}>
 			{
 				(() => {
 					if (cur_hovering == null) {
@@ -466,7 +466,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 							left: (cur_hovering.x + r + init_offset_x) * scale + offset_x,
 							top: (cur_hovering.y + r + init_offset_y) * scale + offset_y,
 							opacity,
-						}} className="articleBlock">
+						}} className={style.articleBlock}>
 							<ArticleCard article={cur_hovering.meta} />
 						</div>;
 					}

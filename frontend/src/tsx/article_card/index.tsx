@@ -1,5 +1,6 @@
 import * as React from 'react';
-import '../../css/board_switch/article_card.css';
+import style from '../../css/board_switch/article_card.module.css';
+import '../../css/global.css';
 import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, ArticleMeta, Edge } from '../../ts/api/api_trait';
@@ -13,27 +14,27 @@ const MAX_BRIEF_LINE = 4;
 
 export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
-	return <div className="articleHeader">
+	return <div className={style.articleHeader}>
 		<Link to={`/app/user/${props.user_name}`}>
-			<div className="authorId">{props.user_name}</div>
+			<div className={style.authorId}>{props.user_name}</div>
 		</Link>
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
-			<div className="articleBoard">{props.board_name}</div>
+			<div className={style.articleBoard}>{props.board_name}</div>
 		</Link>
-		<div className="seperationDot">•</div>
-		<div className="articleTime">{date_string}</div>
+		<div className={style.seperationDot}>•</div>
+		<div className={style.articleTime}>{date_string}</div>
 	</div>;
 }
 
 export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
 
-	return <div className="articleLine">
-		<span className="articleType">{props.category_name}</span>
+	return <div className={style.articleLine}>
+		<span className={style.articleType}>{props.category_name}</span>
 		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
-			<span className="articleTitle">{props.title}</span>
+			<span className={style.articleTitle}>{props.title}</span>
 		</a>
-		<Link className="articleGraphViewIcon" to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -74,21 +75,21 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		setOpeningModal(ModalType.None);
 	}
 
-	return <div className="articleFooter">
-		<div className="articleBtns">
-			<div className="articleBtnItem">
-				☘️&nbsp;<span className="num">{props.article.energy}</span>鍵能
+	return <div className={style.articleFooter}>
+		<div className={style.articleBtns}>
+			<div className={style.articleBtnItem}>
+				☘️&nbsp;<span className={style.num}>{props.article.energy}</span>鍵能
 			</div>
-			<div className="articleBtnItem" onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span className="num">{props.article.stat.satellite_replies}</span>則衛星
+			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Satellite)}>
+				🗯️&nbsp;<span className={style.num}>{props.article.stat.satellite_replies}</span>則衛星
 			</div>
-			<div className="articleBtnItem" onClick={() => openModal(ModalType.Reply)}>
-				➡️&nbsp;<span className="num">{props.article.stat.replies}</span>篇回文
+			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
+				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
-			<div className="articleBtnItem" onClick={() => onFavoriteArticleClick()}>
+			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
 				{favorite ? '🌟 取消收藏' : '⭐ 收藏'}
 			</div>
-			<div className="articleBtnItem">
+			<div className={style.articleBtnItem}>
 				📎 分享
 			</div>
 		</div>
@@ -124,10 +125,10 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	}
 
 	return (
-		<div className="articleContainer">
+		<div className={style.articleContainer}>
 			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
-			<div className="articleBody">
-				<div className="leftPart">
+			<div className={style.articleBody}>
+				<div className={style.leftPart}>
 					<ArticleLine
 						board_name={props.article.board_name}
 						category_name={category_name}
@@ -153,7 +154,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
-	return <div className="simpleArticleCard">
+	return <div className={style.simpleArticleCard}>
 		<div key={meta.title}>
 			<ArticleLine
 				board_name={meta.board_name}
@@ -165,7 +166,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		<Link className="overlay" to={url} target="_blank"></Link >
+		<Link className={style.overlay} to={url} target="_blank"></Link >
 		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
 	</div >;
 }
@@ -193,13 +194,13 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 
 function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div className="satelliteCard">
+	return <div className={style.satelliteCard}>
 		<BondCard bond={props.bond} />
-		<div className="satelliteHeader">
+		<div className={style.satelliteHeader}>
 			<Link to={`/app/user/${props.meta.author_name}`}>
-				<div className="authorId">{props.meta.author_name}</div>
+				<div className={style.authorId}>{props.meta.author_name}</div>
 			</Link>
-			<div className="articleTime">{date_string} {props.meta.category_name}</div>
+			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
 		</div>
 		<div>
 			{props.meta.title}
@@ -299,7 +300,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 	return <>
 		<div ref={div => onDivLoad(div, true)}
 			style={ready ? undefined : hidden_style}
-			className="articleContentWrapper"
+			className={style.articleContentWrapper}
 		>
 			<div ref={div => onDivLoad(div, false)}>
 				{
@@ -310,7 +311,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 						}
 						return <div key={field.name}>
 							{show_name ? <h4>{field.name}</h4> : null}
-							<pre className="articleContent">{inner}</pre>
+							<pre className={style.articleContent}>{inner}</pre>
 						</div>;
 					})
 				}

@@ -11,7 +11,7 @@ import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
 import { Board, BoardType } from '../../ts/api/api_trait';
 
-import '../../css/board_switch/board_page.css';
+import '../../css/layout.css';
 import { GraphView } from './graph_view';
 
 export function SwitchContent(props: { board: Board, hide_sidebar?: boolean, board_type: string }): JSX.Element {

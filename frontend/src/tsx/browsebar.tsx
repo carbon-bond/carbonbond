@@ -6,7 +6,7 @@ import { UserState } from './global_state/user';
 import { STORAGE_NAME } from '../ts/constants';
 import { BoardOverview } from '../ts/api/api_trait';
 
-import '../css/browsebar.css';
+import style from '../css/browsebar.module.css';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
 
 async function fetchHotBoards(): Promise<BoardOverview[]> {
@@ -60,13 +60,13 @@ export function BrowseBar(): JSX.Element {
 	if (fetching) {
 		return <></>;
 	} else {
-		return <div className="browseBar" style={{ gridTemplateRows: genGridTemplate() }}>
+		return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
 			<ShrinkableBlock
 				title="特化瀏覽"
 				expand={expand[0]}
 				onClick={() => onTitleClick(0)}
 			>
-				<div className="special">
+				<div className={style.special}>
 					<div>📰 我的訂閱</div>
 					<div>🔥 全站熱門</div>
 					<div>🛹 所有看板</div>
@@ -103,11 +103,11 @@ export function BrowseBar(): JSX.Element {
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 	let board = props.board;
 	return <Link to={`/app/b/${board.board_name}`}>
-		<div className="boardBlock">
+		<div className={style.boardBlock}>
 			<div>
-				<div className="boardName">😈 {board.board_name}</div>
-				<div className="boardHeat">🔥 {board.popularity}</div>
-				<div className="boardTitle">{board.title}</div>
+				<div className={style.boardName}>😈 {board.board_name}</div>
+				<div className={style.boardHeat}>🔥 {board.popularity}</div>
+				<div className={style.boardTitle}>{board.title}</div>
 			</div>
 		</div>
 	</Link>;
@@ -120,7 +120,7 @@ function ShrinkableBlock(props: {
 	onClick: () => void,
 }): JSX.Element {
 	return <>
-		<div className="title" onClick={() => props.onClick()}>
+		<div className={style.title} onClick={() => props.onClick()}>
 			{props.expand ? ' ▼' : ' ▸'} {props.title}
 		</div>
 		<div style={{

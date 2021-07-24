@@ -7,7 +7,7 @@ import { SignupInvitation } from '../ts/api/api_trait';
 
 import { toastErr } from './utils';
 
-import '../css/signup_invitation_page.css';
+import style from '../css/signup_invitation_page.module.css';
 
 async function fetchSignupInvitationList(user_id: number): Promise<SignupInvitation[]> {
 	console.log('fetcSignupInvitationList');
@@ -73,13 +73,13 @@ function InviteList(): JSX.Element {
 	return <>
 		{
 			invitations.map((invitation, i) => (
-				<div className="signupInvitationWrapper" key={`${invitation.id}`}>
-					<div className="description">#{invitation.id}</div>
-					<div className="description">描述：{invitation.description}</div>
+				<div className={style.signupInvitationWrapper} key={`${invitation.id}`}>
+					<div className={style.description}>#{invitation.id}</div>
+					<div className={style.description}>描述：{invitation.description}</div>
 					<button onClick={() => getLink(invitation, i, invitations, setInvitations)}>產生並複製邀請連結</button>
 					<button onClick={() => delLink(invitation, i, invitations, setInvitations)}>關閉邀請連結</button>
-					<div className="description">邀請連結：{(invitation.code && invitation.code !== '') ? `http://localhost:8080/app/signup_page/${invitation.code}` : '未啟用'}</div>
-					<div className="description">使用狀況：{invitation.to_user ? '已使用' : '未使用'}</div>
+					<div className={style.description}>邀請連結：{(invitation.code && invitation.code !== '') ? `http://localhost:8080/app/signup_page/${invitation.code}` : '未啟用'}</div>
+					<div className={style.description}>使用狀況：{invitation.to_user ? '已使用' : '未使用'}</div>
 				</div>
 			))
 		}

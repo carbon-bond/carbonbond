@@ -9,7 +9,8 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { UserState } from '../global_state/user';
 import { History } from 'history';
 
-import '../../css/board_switch/board_page.css';
+import '../../css/layout.css';
+import style from '../../css/board_switch/board_page.module.css';
 import { toastErr } from '../utils';
 
 type RenderHeader = { render_header: (board: Board, url: string, subscribe_count: number) => JSX.Element };
@@ -51,25 +52,25 @@ function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_si
 
 export function BoardHeader(props: { board: Board, url: string, subscribe_count: number }): JSX.Element {
 	return <div className="switchHeader">
-		<div className="boardHeader">
+		<div className={style.boardHeader}>
 			<div>
-				<div className="headerLeft">
-					<div className="boardTitle">
+				<div className={style.headerLeft}>
+					<div className={style.boardTitle}>
 						<Link to={props.url}>{props.board.board_name}</Link>
 					</div>
-					<div className="boardSubTitle">{props.board.title}</div>
+					<div className={style.boardSubTitle}>{props.board.title}</div>
 				</div>
 
-				<div className="headerRight">
+				<div className={style.headerRight}>
 					{
-						props.board == null ? null : <div className="dataBox">
-							<div className="dataBoxItem">
-								<div className="number">{props.subscribe_count}</div>
-								<div className="text">訂閱人數</div>
+						props.board == null ? null : <div className={style.dataBox}>
+							<div className={style.dataBoxItem}>
+								<div className={style.number}>{props.subscribe_count}</div>
+								<div className={style.text}>訂閱人數</div>
 							</div>
-							<div className="dataBoxItem">
-								<div className="number">{props.board.popularity}</div>
-								<div className="text">在線人數</div>
+							<div className={style.dataBoxItem}>
+								<div className={style.number}>{props.board.popularity}</div>
+								<div className={style.text}>在線人數</div>
 							</div>
 						</div>
 					}

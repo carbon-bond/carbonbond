@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ChatBar } from '../tsx/chatbar';
 import { BrowseBar } from './browsebar';
-import '../css/sidebar.css';
+import style from '../css/sidebar.module.css';
 
 enum Option {
 	Browse,
@@ -15,15 +15,15 @@ enum Option {
 function PanelMain(props: { option: Option }): JSX.Element {
 	switch (props.option) {
 		case Option.Browse:
-			return <div className="sidebar"><BrowseBar /></div>;
+			return <div className={style.sidebar}><BrowseBar /></div>;
 		case Option.Chat:
-			return <div className="sidebar"><ChatBar /></div>;
+			return <div className={style.sidebar}><ChatBar /></div>;
 		case Option.DiscoverFriend:
-			return <div className="sidebar">交友</div>;
+			return <div className={style.sidebar}>交友</div>;
 		case Option.Draft:
-			return <div className="sidebar">草稿匣</div>;
+			return <div className={style.sidebar}>草稿匣</div>;
 		case Option.PluginStore:
-			return <div className="sidebar">市集</div>;
+			return <div className={style.sidebar}>市集</div>;
 		case Option.None:
 			return <></>;
 	}
@@ -44,15 +44,15 @@ function LeftPanel(): JSX.Element {
 
 	return (
 		<>
-			<div className="menubar">
-				<div className="topSet">
-					<div className="icon" onClick={toggleOption(Option.Browse)}>🗐</div>
-					<div className="icon" onClick={toggleOption(Option.Chat)}>🗨️</div>
-					<div className="icon" onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
-					<div className="icon" onClick={toggleOption(Option.Draft)}>稿</div>
+			<div className={style.menubar}>
+				<div className={style.topSet}>
+					<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+					<div className={style.icon} onClick={toggleOption(Option.Chat)}>🗨️</div>
+					<div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
+					<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
 				</div>
-				<div className="bottomSet">
-					<div className="icon" onClick={toggleOption(Option.PluginStore)}>🛍</div>
+				<div className={style.bottomSet}>
+					<div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div>
 				</div>
 			</div>
 			<PanelMain option={option}/>

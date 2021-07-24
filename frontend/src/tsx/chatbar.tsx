@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../css/chatbar.css';
+import style from '../css/chatbar.module.css';
 import { AllChatState, ChatData, DirectChatData, GroupChatData } from './global_state/chat';
 import { BottomPanelState } from './global_state/bottom_panel';
 import { roughDate } from '../ts/date';
@@ -11,19 +11,19 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 
 	function UnreadInfo(): JSX.Element {
 		if (props.chat instanceof DirectChatData) {
-			return <div className="lastMessage">
+			return <div className={style.lastMessage}>
 				<span>{message.sender_name}</span>
 				：
 				<span>{message.content}</span>
 			</div>;
 		} else if (props.chat instanceof GroupChatData) {
 			let channels = props.chat.unreadChannels();
-			return <div className="unreadChannels">
+			return <div className={style.unreadChannels}>
 				{
 					channels.size == 0 ?
-						<span className="allRead">所有頻道訊息皆已讀取</span> :
+						<span className={style.allRead}>所有頻道訊息皆已讀取</span> :
 						channels.map(c => {
-							return <span key={c.name} className="channel">#{c.name}</span>;
+							return <span key={c.name} className={style.channel}>#{c.name}</span>;
 						})
 				}
 			</div>;
@@ -36,9 +36,9 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	function LastDate(): JSX.Element {
 		const date = roughDate(message.time);
 		if (is_unread) {
-			return <div className="date"><span className="circle">⬤</span> {date}</div>;
+			return <div className={style.date}><span className={style.circle}>⬤</span> {date}</div>;
 		} else {
-			return <div className="date">{date}</div>;
+			return <div className={style.date}>{date}</div>;
 		}
 	}
 
@@ -55,14 +55,14 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 
-	return <div className={`chatUnit${is_unread ? ' bold' : ''}`} onClick={onClick}>
-		<div className="upSet">
-			<div className="title">
-				<span className="name">{props.chat.name}</span>
+	return <div className={style.chatUnit + (is_unread ? ' bold' : '')} onClick={onClick}>
+		<div className={style.upSet}>
+			<div className={style.title}>
+				<span className={style.name}>{props.chat.name}</span>
 			</div>
 			<LastDate />
 		</div>
-		<div className="downSet">
+		<div className={style.downSet}>
 			<UnreadInfo />
 		</div>
 	</div>;
@@ -82,7 +82,7 @@ function ChatBar(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	let chat_array: ChatData[] = Array.from(all_chat.direct.values());
 	chat_array = chat_array.concat(Array.from(all_chat.group.values()));
-	return <div className="chatbar">
+	return <div className={style.chatbar}>
 		<input type="text" placeholder="🔍 尋找對話" />
 		{
 			chat_array.sort(date_cmp).map((r) => <ChatUnit key={r.name} chat={r} />)

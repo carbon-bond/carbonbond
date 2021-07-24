@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { Board } from '../../ts/api/api_trait';
 import { useSubscribeBoard } from '../utils';
 
-import '../../css/board_switch/board_page.css';
+import style from '../../css/board_switch/board_page.module.css';
+import '../../css/layout.css';
 import { UserState } from '../global_state/user';
 
 export function BoardHeader(props: { board: Board, url: string, subscribe_count: number }): JSX.Element {
 	return <div className="switchHeader">
-		<div className="boardHeader">
+		<div className={style.boardHeader}>
 			<div>
-				<div className="headerLeft">
-					<div className="boardTitle">
+				<div className={style.headerLeft}>
+					<div className={style.boardTitle}>
 						<Link to={props.url}>{props.board.board_name}</Link>
 					</div>
-					<div className="boardSubTitle">{props.board.title}</div>
+					<div className={style.boardSubTitle}>{props.board.title}</div>
 				</div>
 
-				<div className="headerRight">
+				<div className={style.headerRight}>
 					<SubscribeButton board={props.board}/>
 				</div>
 			</div>

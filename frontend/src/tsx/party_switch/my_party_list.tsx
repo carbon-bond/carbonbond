@@ -54,12 +54,12 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 						<Link
 							to={`/app/party/${party.party_name}`}
 							key={party.id}
-							className="partyColumn"
+							className={style.partyColumn}
 						>
 							<div className={style.ruling}>{party.ruling ? '執政 ' : ''}</div>
 							<div className={style.partyLabel}>{party.party_name}</div>
 							<div className={style.partyLabel}>☘ {party.energy}</div>
-							{/* <div className="partyLabel">👑{party.chairmanId}</div> */}
+							{/* <div className={style.partyLabel}>👑{party.chairmanId}</div> */}
 							<div className={style.partyLabel}>📊 10%</div>
 						</Link>
 					</div>;

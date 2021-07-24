@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import '../../../css/mobile/menu.css';
+import style from '../../../css/mobile/menu.module.css';
 import { API_FETCHER, unwrap } from '../../../ts/api/api';
 import { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
 import { BoardBlock } from '../../browsebar';
@@ -28,14 +28,14 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 				<Row>{props.children}</Row>
 			</Link>;
 		}
-		return <a className="row" onClick={() => {
+		return <a className={style.row} onClick={() => {
 			if ('onClick' in props) {
 				props.onClick();
 			}
 		}}>
-			<div className="space" />
+			<div className={style.space} />
 			{props.children}
-			<div className="space" />
+			<div className={style.space} />
 		</a>;
 	}
 	function BoardsRow(props: { name: string, fetchBoards: () => Promise<Result<BoardOverview[], Error>> }): JSX.Element {
@@ -78,9 +78,9 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 	}
 
 	return <>
-        <div className="wrap">
-        	<div className="cover" onClick={onCoverClicked} />
-        	<div className="menu">
+        <div className={style.wrap}>
+        	<div className={style.cover} onClick={onCoverClicked} />
+        	<div className={style.menu}>
         		{
         			!user_state.login ? null : <>
                         <Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>
