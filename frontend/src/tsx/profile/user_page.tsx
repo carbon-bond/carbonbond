@@ -322,10 +322,10 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
-			<div className={'navigateTab' + (selectTab == 0 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			<div className={'navigateTab' + (selectTab == 1 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
-			<div className={'navigateTab' + (selectTab == 2 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
-			<div className={'navigateTab' + (selectTab == 3 ? ' navigateTabActive' : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
+			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
+			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
+			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
+			<div className={style.navigateTab + (selectTab == 3 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
 		</div>
 		<div className={style.switchContent}>
 			{selectTab == 0 && <Articles articles={articles} />}
