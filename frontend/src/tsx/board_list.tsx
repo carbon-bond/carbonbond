@@ -5,7 +5,7 @@ import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
 
 import style from '../css/board_list.module.css';
-import '../css/layout.css?global';
+import '../css/layout.css';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.queryBoardList(10), []);

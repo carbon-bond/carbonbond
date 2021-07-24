@@ -7,15 +7,6 @@ dist/
 # log
 *.log
 
-# codegen
-src/ts/api/gql.ts
-
-# chitin
-src/ts/api/api_trait.ts
-
-# protobuf
-src/ts/protobuf/
-
 # eslint
 .eslintcache
 

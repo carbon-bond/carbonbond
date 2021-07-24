@@ -10,8 +10,10 @@ import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 
-import {articleWrapper} from '../../css/article_wrapper.module.css';
-import {favoriteTitle, favoriteWrapper} from '../../css/favorite_wrapper.module.css';
+import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
+const { articleWrapper } = aritcle_wrapper_style;
+import favorite_wrapper_style from '../../css/favorite_wrapper.module.css';
+const {favoriteTitle, favoriteWrapper} = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 

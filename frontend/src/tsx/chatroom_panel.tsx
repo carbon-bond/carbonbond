@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} from '../css/bottom_panel/bottom_panel.module.css';
+import bottom_panel_style from '../css/bottom_panel/bottom_panel.module.css';
+const {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} = bottom_panel_style;
 import style from '../css/bottom_panel/chat_room.module.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
@@ -22,7 +23,7 @@ import 'emoji-mart/css/emoji-mart.css';
 import * as EmojiMart from 'emoji-mart';
 
 const Picker = React.lazy(() => {
-	return import(/* webpackChunkName: "emoji-mart" */ 'emoji-mart')
+	return import('emoji-mart')
 		.then(({ Picker }) => ({ default: Picker }));
 });
 

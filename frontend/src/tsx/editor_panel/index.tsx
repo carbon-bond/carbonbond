@@ -14,7 +14,8 @@ import * as Force from 'force';
 import { ShowText } from '../../tsx/board_switch/article_page';
 
 
-import {roomTitle, leftSet, middleSet, rightSet, button} from  '../../css/bottom_panel/bottom_panel.module.css';
+import bottom_panel_style from  '../../css/bottom_panel/bottom_panel.module.css';
+const {roomTitle, leftSet, middleSet, rightSet, button} = bottom_panel_style;
 import style from '../../css/bottom_panel/editor.module.css';
 import { BasicDataType } from 'force';
 import { SimpleArticleCardById } from '../article_card';

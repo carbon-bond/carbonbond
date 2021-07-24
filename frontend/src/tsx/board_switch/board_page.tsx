@@ -6,7 +6,8 @@ import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { Board, ArticleMeta } from '../../ts/api/api_trait';
 
-import { articleWrapper } from '../../css/article_wrapper.module.css';
+import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
+const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
 import * as force_util from '../../ts/force_util';
 
