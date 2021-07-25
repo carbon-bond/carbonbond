@@ -1,7 +1,11 @@
 import { Plugin, ViteDevServer } from 'vite';
 
 function isMobile(user_agent: string): boolean {
-	return /Mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|Opera Mini/i.test(user_agent);
+	if (/iPad/i.test(user_agent)) {
+		return false;
+	} else {
+		return /Mobile/i.test(user_agent);
+	}
 }
 
 const mobilePlugin = (): Plugin => ({
