@@ -96,7 +96,7 @@ function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
 		{
 			props.time ? <>
 				<div className={style.notificationSpace} />
-				<img src="/img/icon.png" />
+				<img src="/src/img/icon.png" />
 				<div style={{ flex: 1 }} />
 				<p className={style.time}>{relativeDate(props.time)}</p>
 				<div className={style.notificationSpace} />

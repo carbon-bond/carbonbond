@@ -61,7 +61,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			<div className={style.container}>
 				<div className={style.leftSet}>
 					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
-						<img src="/img/icon.png" alt="" />
+						<img src="/src/img/icon.png" alt="" />
 					</div>
 					<div className={style.location} style={{ fontSize: 14 }}>{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} hide_select_board/>
