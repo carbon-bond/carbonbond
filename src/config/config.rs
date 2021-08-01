@@ -122,7 +122,7 @@ impl From<RawUserConfig> for Fallible<UserConfig> {
 fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
     let mut path: PathBuf = path.as_ref().to_owned();
     if !path.is_absolute() {
-        path = prj_path()?.join(path);
+        path = project_path()?.join(path);
     }
     log::debug!("嘗試載入 {:?} 設定檔", path);
     let mut file = File::open(path)?;
@@ -133,7 +133,7 @@ fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
 
 /// 載入一至多個設定檔
 /// * `path` 一至多個檔案路徑，函式會選擇第一個讀取成功的設定檔
-fn load_content_with_prior(paths: &[&str]) -> Fallible<(PathBuf, String)> {
+fn load_content_with_priority(paths: &[&str]) -> Fallible<(PathBuf, String)> {
     if paths.len() == 0 {
         return Err(Error::new_op("未指定設定檔"));
     }
@@ -145,7 +145,7 @@ fn load_content_with_prior(paths: &[&str]) -> Fallible<(PathBuf, String)> {
     return Err(Error::new_op(format!("找不到任何設定檔: {:?}", paths)));
 }
 
-pub fn prj_path() -> Fallible<PathBuf> {
+pub fn project_path() -> Fallible<PathBuf> {
     let exe = std::env::current_exe()?;
     let mut p = &*exe;
     let mut n = 0;
@@ -166,14 +166,14 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     // 載入設定檔
     let mode = get_mode();
     let (file_name, content) = if let Some(path) = path {
-        load_content_with_prior(&[&*path])?
+        load_content_with_priority(&[&*path])?
     } else {
         let local_file = match get_mode() {
             Mode::Release => "config/carbonbond.release.toml",
             Mode::Dev => "config/carbonbond.dev.toml",
             Mode::Test => "config/carbonbond.test.toml",
         };
-        load_content_with_prior(&[local_file, "config/carbonbond.toml"])?
+        load_content_with_priority(&[local_file, "config/carbonbond.toml"])?
     };
 
     let raw_config: RawConfig = toml::from_str(&content)?;
