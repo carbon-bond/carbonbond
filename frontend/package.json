@@ -10,7 +10,7 @@
 		"lint": "eslint --cache --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
 		"check-ts": "tsc --skipLibCheck",
 		"check-css": "stylelint '**/*.css'",
-		"inject": "ts-node --ignore \"node_modules/(?!force)\" scripts/inject.ts"
+		"inject": "ts-node scripts/inject.ts"
 	},
 	"dependencies": {
 		"@types/emoji-mart": "^2.8.4",
