@@ -10,7 +10,8 @@
 		"lint": "eslint --cache --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
 		"check-ts": "tsc --skipLibCheck",
 		"check-css": "stylelint '**/*.css'",
-		"inject": "ts-node scripts/inject.ts"
+		"inject": "ts-node scripts/inject.ts",
+		"test": "jest --coverage"
 	},
 	"dependencies": {
 		"@types/emoji-mart": "^2.8.4",
@@ -39,6 +40,7 @@
 		"@babel/plugin-proposal-optional-chaining": "^7.11.0",
 		"@babel/plugin-syntax-dynamic-import": "^7.2.0",
 		"@types/d3": "^6.2.0",
+		"@types/jest": "^26.0.24",
 		"@types/node": "^14.14.6",
 		"@types/prompts": "^2.0.9",
 		"@types/react": "^16.8.18",
@@ -55,6 +57,8 @@
 		"eslint": "^5.16.0",
 		"eslint-plugin-react": "^7.13.0",
 		"eslint-plugin-react-hooks": "^1.6.1",
+		"identity-obj-proxy": "^3.0.0",
+		"jest": "^27.0.6",
 		"minimist": "^1.2.0",
 		"postcss": "^7.0.32",
 		"postcss-preset-env": "^6.7.0",
@@ -62,7 +66,7 @@
 		"request": "^2.88.2",
 		"stylelint": "^10.1.0",
 		"ts-node": "^9.0.0",
-		"typescript": "^4.0.2",
+		"typescript": "^4.3.5",
 		"typescript-plugin-css-modules": "^3.4.0",
 		"vite": "^2.4.2"
 	}

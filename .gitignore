@@ -23,3 +23,6 @@ node_modules/
 
 # chitin-codegen
 api_trait.rs
+
+# jest coverage
+frontend/coverage/
