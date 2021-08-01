@@ -47,7 +47,7 @@ export function BrowseBar(): JSX.Element {
 		localStorage[STORAGE_NAME.browsebar_expand] = JSON.stringify(new_expand);
 	}
 	function genGridTemplate(): string {
-		let g1 = expand[0] ? '25px 90px' : '25px 0px';
+		let g1 = expand[0] ? '25px 80px' : '25px 0px';
 		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
 		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
 		if (user_state.login) {

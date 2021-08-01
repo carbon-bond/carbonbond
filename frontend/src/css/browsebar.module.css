@@ -4,7 +4,7 @@
     transition: .2s;
     & .special {
         & div {
-            padding: 3px 5%;
+            padding: 4px 5%;
             font-size: 16px;
             cursor: pointer;
         }
@@ -22,7 +22,7 @@
     padding-left: 5%;
 }
 .boardBlock {
-    height: 48px;
+    height: 40px;
     display: inline-block;
     width: 100%;
     color: var(--font-color);

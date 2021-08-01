@@ -9,7 +9,7 @@ import {
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
-// import 'normalize.css';
+import 'normalize.css';
 import '../css/variable.css';
 import '../css/layout.css';
 import '../css/global.css';

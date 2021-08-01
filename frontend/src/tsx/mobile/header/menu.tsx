@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 
 import style from '../../../css/mobile/menu.module.css';
 import { API_FETCHER, unwrap } from '../../../ts/api/api';
-import { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
+import type { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
 import { BoardBlock } from '../../browsebar';
 import { LoginModal } from '../../header';
 import { UserState } from '../../global_state/user';
