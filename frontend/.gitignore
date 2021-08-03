@@ -1,12 +1,8 @@
+# node
 node_modules/
 
-# build
+# chitin-codegen
+api_trait.rs
+
+# 編譯產物
 dist/
-.cache
-
-# log
-*.log
-
-# eslint
-.eslintcache
-
