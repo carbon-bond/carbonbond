@@ -27,4 +27,5 @@ jobs:
     - run: yarn build
     - run: yarn check-ts
     - run: yarn check-css
+    - run: yarn test
 
