@@ -9,3 +9,6 @@ dist/
 
 # jest coverage
 coverage/
+
+# eslint
+.eslintcache
