@@ -1,0 +1,3373 @@
+{
+  "db": "PostgreSQL",
+  "00f65940fd4005e246950933fa3facb2b4763af768fb129a16aed6d0e318638f": {
+    "query": "\n        INSERT INTO categories (board_id, category_name, version, source, families)\n        VALUES ($1, $2, 1, $3, $4)\n        RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Text",
+          "TextArray"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "046804e8a1ed93ea44d70600d2045ce8e071d28649973c3d79a48a95543e3f2b": {
+    "query": "INSERT INTO user_relations (from_user, to_user, kind) VALUES ($1, $2, $3::text::user_relation_kind)\n        on CONFLICT(from_user, to_user) DO UPDATE set kind=$3::text::user_relation_kind",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "0606599be911fb20d416fd98e56aabe786139dcbf7007cd4dde8371d4d7501b6": {
+    "query": "\n        WITH replies AS (\n            SELECT abf.value AS id, abf.article_id, (categories.families && '{衛星}') AS is_satellite\n        FROM article_bond_fields abf\n            INNER JOIN articles ON articles.id = abf.article_id\n            INNER JOIN categories ON categories.id = articles.category_id\n        WHERE abf.value = ANY($1))\n        SELECT id, COUNT(DISTINCT article_id) as \"count!\", is_satellite as \"is_satellite!\" FROM replies\n        GROUP BY id, is_satellite\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_satellite!",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        null,
+        null
+      ]
+    }
+  },
+  "08a2f4be6bf7e693d0b1150fa2fea6dc6d023999da8c25b975f92d45738d03e1": {
+    "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            WHERE parties.board_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name?",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "08fa6d03c815aa9a35a6c9864bfa69578d82647cb25adc656edd143baa0dbc1a": {
+    "query": "\n        INSERT INTO favorite_articles (user_id, article_id)\n        VALUES ($1, $2) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "0bf301c69184642edf8e8728b7e2c3263a5fdf070860cf7d73b35efa50b8686d": {
+    "query": "UPDATE articles SET energy = energy + $1 WHERE id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "10ec31effdc0010f1b86c371d2bc454d54456f2771066dd66617c186c1ca1ef9": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT metas.*, favorite_articles.create_time AS favorite_create_time FROM metas \n        INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id\n        WHERE favorite_articles.user_id = $3\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        },
+        {
+          "ordinal": 14,
+          "name": "favorite_create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "115e3162f3fac9f2f805df118d1ed1a4b4b53abccdbea928b27833c4d3027f3c": {
+    "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_string_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2\n                    ) AND a.id = ANY($3)\n                    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "12b9665a686338f6ccead84798cd46cd9320e2e0698919d01ed8100156cf10d0": {
+    "query": "SELECT * FROM articles WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "root_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "show_in_list",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 7,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "146b4007114e60edd5cb539ce96b48cff4995505204b0583989093dc87153748": {
+    "query": "SELECT * FROM boards",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "14db105952e6d3dfd3dbc4a26d43aa793ed333957cb1c1883cd779d3ce412f36": {
+    "query": "INSERT INTO article_string_fields\n                        (article_id, name, value)\n                        VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "15f776367aedd20c1ad8bf16ab017f885043de74c32da2fee9ef304f97a18661": {
+    "query": "SELECT * FROM boards WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "18b0b8b14f55ff490a78b6d996f56260405c6d1605bac1f1f687710fa98e71f8": {
+    "query": "\n                INSERT INTO parties (party_name, board_id)\n                SELECT $1, boards.id\n                FROM boards\n                WHERE boards.board_name = $2\n                RETURNING id\n                ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "1fad9a11be067106f152f6af9b5bf889fa86987b9901a3b5d0f5d2c427f2e905": {
+    "query": "INSERT INTO users (user_name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bytea",
+          "Bytea",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "2365bf792a052456dbe52893734afe9cc9a9a9692c03247a06313dd8c5be42b9": {
+    "query": "\n        SELECT * FROM categories WHERE board_id = $1 AND category_name = $2\n        ORDER BY version DESC\n        LIMIT 1\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "version",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "families",
+          "type_info": "TextArray"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
+    "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "count",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        null
+      ]
+    }
+  },
+  "296ad24a0508a61e62dd39d5ed2ed1235a88caa19dd9a333bcbeb32003e9769e": {
+    "query": "\n        SELECT n.*, users.user_name as user2_name, boards.board_name, a1.title as article1_title, a2.title as article2_title\n        FROM notifications n\n        LEFT JOIN users on n.user2_id = users.id\n        LEFT JOIN boards on n.board_id = boards.id\n        LEFT JOIN articles a1 on n.article1_id = a1.id\n        LEFT JOIN articles a2 on n.article2_id = a2.id\n        WHERE user_id = $1 AND ($2 OR NOT n.read)\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "user2_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "article1_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "article2_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "kind",
+          "type_info": {
+            "Custom": {
+              "name": "notification_kind",
+              "kind": {
+                "Enum": [
+                  "follow",
+                  "hate",
+                  "article_replied",
+                  "article_bad_replied",
+                  "article_good_replied"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "ordinal": 7,
+          "name": "quality",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 8,
+          "name": "read",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 10,
+          "name": "user2_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "article1_title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "article2_title",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Bool"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "29e275a7248d92596c03596eb571e3e7aed48fa6103063cde9ba26f834dc4c03": {
+    "query": "\n        SELECT article_id, name, value FROM article_string_fields\n        WHERE article_id = $1;\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "value",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "2d680e691d71f2259578f9894d5b22d3ff786030a1ab286a201734ab19548fca": {
+    "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_type",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 7,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
+          "name": "popularity!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null
+      ]
+    }
+  },
+  "2e133fb70b6fb85f9d2f9d6cd8c64fd374727537151b44e07c51e82d8bcf361c": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 9,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "324a61b88acce3c7cce51c1cb201ec0ac1cb5d48847c28fd51ed83a5b89a3166": {
+    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    INNER JOIN party_members ON parties.id = party_members.party_id\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE user_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "333369cc0e6a43adc007f8ccd6afd2b9cf5b687e3b350981d3ebb7e6484af0e3": {
+    "query": "SELECT board_name, id FROM boards",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
+  "342c08cdf4a43faea8de89b498435b16c935451aad1678ae7cc2935285724644": {
+    "query": "\n        INSERT INTO article_contents (article_id, str_content, int_content)\n        VALUES ($1, $2, $3) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "TextArray",
+          "Int4Array"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "3a80771dae3b3fd0111e34c902e235e8905685558baa7467afca68eb74b142e7": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT \n        DISTINCT metas.*, abf.article_id as from, abf.value as to,\n        abf.energy as bond_energy, abf.name, abf.id as bond_id\n         FROM metas \n        INNER JOIN article_bond_fields abf on metas.id = abf.value\n        WHERE abf.article_id = $3\n        AND ($4 OR category_name = ANY($5))\n        ORDER BY create_time DESC\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        },
+        {
+          "ordinal": 14,
+          "name": "from",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 15,
+          "name": "to",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 16,
+          "name": "bond_energy",
+          "type_info": "Int2"
+        },
+        {
+          "ordinal": 17,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 18,
+          "name": "bond_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Int8",
+          "Bool",
+          "TextArray"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "3c8e27dadb8139140e3893d954e8fbbfd3bb1cd2d3eb075da73dff186ad31fb3": {
+    "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_type",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 7,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
+          "name": "popularity!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null
+      ]
+    }
+  },
+  "4104756a533debd76145aad3cab2fd65d4869592f4c72623ffaa8aff4423fc2f": {
+    "query": "SELECT source FROM categories WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "source",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "420806ff0fb30a53409a92f879884ca39cb442fdd3edfb41b4e758581f68a0eb": {
+    "query": "SELECT images.id\n        FROM images\n        INNER JOIN users\n        ON users.avatar = images.id\n        WHERE users.id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "43c73263c26a8949208908ecd1caef015ba378275b28e572f8186bec8b27be63": {
+    "query": "INSERT INTO article_bond_fields\n        (article_id, name, value, energy)\n        VALUES ($1, $2, $3, $4)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Int8",
+          "Int2"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "482dce2bc7d06dae44298101f21d7bef6512ae070cd04d0df5b95e8f1601e8b4": {
+    "query": "\n                INSERT INTO parties (party_name)\n                VALUES ($1) RETURNING id\n                ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "48a38bef5eb163b505f62fc6e62e3f92c45e3b6393ff34805a8c6191bb918260": {
+    "query": "INSERT INTO subscribed_boards (user_id, board_id) VALUES ($1, $2)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "4d5eef471182d3b57b29e3205dd8167c3c40b11add26eb92267a1cf8708995e5": {
+    "query": "SELECT kind FROM user_relations WHERE from_user = $1 AND to_user = $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "kind",
+          "type_info": {
+            "Custom": {
+              "name": "user_relation_kind",
+              "kind": {
+                "Enum": [
+                  "follow",
+                  "openly_follow",
+                  "hate",
+                  "openly_hate",
+                  "none"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "54740b965368edc1e1e816da92e3862ba7fd9c35ba5b138a9773aa8b34946f1f": {
+    "query": "SELECT token FROM signup_tokens WHERE email = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "token",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "54ab110278ba4c4873a52a64e11212349f9749dcd71e2a260865a23f05489135": {
+    "query": "SELECT board_name, id, title, 0::bigint as \"popularity!\" FROM boards WHERE id = ANY($1)",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "popularity!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        null
+      ]
+    }
+  },
+  "572ae4c8e843e40f3d8d46539190a654f2e52e3ec6276a522129a56e7e123091": {
+    "query": "SELECT salt, password_hashed from users WHERE user_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "salt",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 1,
+          "name": "password_hashed",
+          "type_info": "Bytea"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
+  "58ff33d6d4abb9ab5fde8237dd7ed7b0207219a9e0e400b9ccb03f1830f8beea": {
+    "query": "UPDATE signup_invitations SET code = $1, last_activate_time = $2 where id = $3",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Timestamptz",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "59af76e3ac42c8e43072b8135becebcfc1b7c899ccfbcb37037e7d04a96bd46a": {
+    "query": "INSERT INTO article_int_fields\n                        (article_id, name, value)\n                        VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "59eeeef374f570b29643dcd9e4bbfaa65c1707295efbe83ab3fb978ea7e15ac2": {
+    "query": "UPDATE images\n            SET raw_data = $1\n            WHERE images.id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Bytea",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "5e34f8a1ee2c8ba61f3e8d9d9473d1b250259d1d6aa1c3564abe4547ca6902ba": {
+    "query": "DELETE FROM signup_tokens WHERE token = $1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "604eb7064d1fd265096fd5b8bea00da56c83ed5296c1bfc2179c99b4d54d7bfe": {
+    "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n    INNER JOIN party_members ON parties.id = party_members.party_id\n    WHERE user_id = $1\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name?",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "61127bb28591b5f22a6a8b7bb135699206bf8a6031c0710aa9221cc4ea1eb5be": {
+    "query": "\n    SELECT boards.board_name, boards.title, boards.id, 0::bigint as \"popularity!\" FROM subscribed_boards\n    LEFT JOIN boards on boards.id = subscribed_boards.board_id\n    WHERE subscribed_boards.user_id = $1\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "popularity!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        null
+      ]
+    }
+  },
+  "6202c2d3ddc0ab0a65152d58f7dea8939f9f28b0b93bfac70b8cd1d277c8c1ce": {
+    "query": "\n        INSERT INTO articles (board_id, root_id, title, category_id, author_id)\n        VALUES ($1, $2, $3, $4, $5) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "681d2ae6fdae423bfb487311e0226f178bba32868535b156e1c82a441c342ec6": {
+    "query": "\n        SELECT article_id, name, tag, energy, value FROM article_bond_fields\n        WHERE article_id = $1;\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "tag",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int2"
+        },
+        {
+          "ordinal": 4,
+          "name": "value",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    }
+  },
+  "68424e1315dc62a4f2334eabd9b385a62f0adba65ef291c26dc615b725709929": {
+    "query": "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bool",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "6a7861ecb98272b3fc6616a224b5f77c9b29898e574654d8b9a540aa016c5df6": {
+    "query": "\n        INSERT INTO notifications (user_id, user2_id, board_id, article1_id, article2_id, kind, quality)\n        VALUES ($1, $2, $3, $4, $5, $6::text::notification_kind, $7)\n        RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Int8",
+          "Int8",
+          "Int8",
+          "Text",
+          "Bool"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "6b68ba94d748175546efbb288aeed12f76c5b935a4cc99c7f55770a855db8b18": {
+    "query": "\n        SELECT article_id, name, value FROM article_int_fields\n        WHERE article_id = ANY($1);\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "value",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "6fdc491f5d230a71cb89337b8a67ed305e252591ff8e239340c1a4d0a6504b01": {
+    "query": "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bytea",
+          "Bytea",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "75099c5616413a879114f5dd287941313aecebc8926b09b30cdd10533f1e3049": {
+    "query": "\n        SELECT article_id, name, value FROM article_int_fields\n        WHERE article_id = $1;\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "value",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "788d9643221ec526af991b0e29a21e8a2b3aeb8593ddc18480eaf224b9153d51": {
+    "query": "\n        UPDATE notifications SET read = true\n        WHERE id = ANY($1) AND user_id = $2\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8Array",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "78a8311641389a6675b1c9095d7aba42321db02c59e4a607118414ce71f80d94": {
+    "query": "\n\t\tSELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.from_user = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "description",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "from_user",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "to_user",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "code",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "last_activate_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ]
+    }
+  },
+  "78ce5558807adb5e8c503140bf84091126404ca09089a35b23d14b4eefa16fbb": {
+    "query": "\n        UPDATE users\n        SET sentence = $1\n        WHERE id = $2\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "78ee9888e1daedd495c655ead041afd7320541bc0fe6436a0df061633da7109c": {
+    "query": "INSERT INTO boards (board_name, detail, title, force, ruling_party_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "7ca503e08ff245158c27ef33697c2556c49e27b34d0a8f45b9dff5187f176095": {
+    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE parties.party_name = $1\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "843923b9a0257cf80f1dff554e7dc8fdfc05f489328e8376513124dfb42996e3": {
+    "query": "SELECT * FROM users WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "avatar",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "invitation_credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 7,
+          "name": "password_hashed",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 8,
+          "name": "salt",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 9,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "859975baf1436ec51c67f4e1b444a7e864d7a6cfdb107709e4068a6160d484d5": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT * FROM metas \n        WHERE board_name = $3 AND ($5 OR id < $6)\n        ORDER BY create_time DESC\n        LIMIT $4\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Text",
+          "Int8",
+          "Bool",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "878133d1b7280a75df5d7ec91de6e2eb385fb77670f1fe354c4ebe397bad8252": {
+    "query": "\n        INSERT INTO articles (author_id, board_id, title, category_id)\n        VALUES ($1, $2, $3, $4) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "8bdda9a40018df78b700c8838200b6d2d35f0276cbbe1199b18f542fba02cd5a": {
+    "query": "\n        INSERT INTO boards (board_name, board_type, detail, title, force, ruling_party_id)\n        VALUES ($1, $2, $3, $4, $5, $6)\n        RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "913389ee51adffa0340e23bc44566f8e12ff43529bcdf57a4ef1e490d4924906": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 9,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "9a99139262ba30777544cb4736dd8b268949dae607bd9a75792a0a1d26826203": {
+    "query": "\n            UPDATE users \n            SET avatar = $1\n            WHERE users.id = $2\n            ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "a3510cc5cc8c2a096167d31294dad559c31dbf55573bd28faafa254b2cb83928": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'openly_hate';",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "a662136e979f618508059dafb8ce52aafefea20670d5f71233c1dfb052173390": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT * FROM metas \n        WHERE ($3 OR board_name = $4)\n        AND ($5 OR author_name = $6)\n        AND ($7 OR category_id = $8)\n        AND ($9 OR create_time < $10)\n        AND ($11 OR create_time > $12)\n        AND ($13 OR title ~ $14)\n        ORDER BY create_time DESC\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Bool",
+          "Text",
+          "Bool",
+          "Text",
+          "Bool",
+          "Int8",
+          "Bool",
+          "Timestamptz",
+          "Bool",
+          "Timestamptz",
+          "Bool",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "a84766d86d329414f9ba641a7efba8c8abbb0aeacc20637c41aae44ad6be73ea": {
+    "query": "\n        SELECT images.raw_data\n        FROM images\n        INNER JOIN users\n        ON users.avatar = images.id\n        where users.user_name = $1\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "raw_data",
+          "type_info": "Bytea"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "aa9a69ba52da52796e1e06c2bf410140f810f9df5e0e9c298c699ded7fa2e1e7": {
+    "query": "INSERT INTO signup_invitations (from_user, description)\n        VALUES ($1, $2) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "b3671d1898574f4f9b13308de1ea841a99231296ad29dd973b5d1eee048a1e11": {
+    "query": "SELECT article_id FROM favorite_articles\n        WHERE user_id = $1 AND article_id = ANY($2)",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "b506cb22918be32cb2b1a42fe694e915f3fee2bb5c77a322c1f0c4a1b3b2683b": {
+    "query": "SELECT * FROM articles WHERE board_id = $1 LIMIT $2 OFFSET $3",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "root_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "show_in_list",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 7,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "b831f004b2cab32d33c603035cfe074c4e11cfa60f87e0b4b893b129e582cc1b": {
+    "query": "SELECT board_id FROM parties where id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "board_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        true
+      ]
+    }
+  },
+  "bf5c39f6689dcd23fd761e2348a5c941d4a30a99dffeead1fcc3e504f0b75125": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT * FROM metas WHERE id = $3",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "c3114ac0da1bbd5abdebac440d306268345eb22f1bd573f4faedcb1ba09e9a0b": {
+    "query": "\n            INSERT INTO images (raw_data)\n            VALUES ($1)\n            RETURNING images.id\n            ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bytea"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "c41456da64ff3d78075709fe14fe46e2d9a07b1703e73c245003188f5c51f5ad": {
+    "query": "\n        INSERT INTO party_members (party_id, user_id)\n        VALUES ($1, $2) RETURNING id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "c7dcb99fd3edbe88066b49e2dc5dc60a9765dccfa29b00cdf22166040c10c71f": {
+    "query": "SELECT article_id, str_content, int_content FROM article_contents WHERE article_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "str_content",
+          "type_info": "TextArray"
+        },
+        {
+          "ordinal": 2,
+          "name": "int_content",
+          "type_info": "Int4Array"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "c94d15d929573093f92613c33cfc632fbae5f50df997ac1332baf863a88e328d": {
+    "query": "UPDATE parties SET board_id = $1, ruling = true where id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "ca38fd2a9f64396d611309c31ecce2026d0134c81291671196ac76f434605bab": {
+    "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards WHERE board_name = $1 AND board_type = $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_type",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 7,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
+          "name": "popularity!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null
+      ]
+    }
+  },
+  "cd582445f11a63595926a45c6f081fee1be0030ea26647d340b42c8966560043": {
+    "query": "\n        UPDATE users\n        SET (introduction, gender, job, city) = ($2, $3, $4, $5)\n        WHERE id = $1\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Text",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "ce60d2217ab3c51f0a213d9bbb9c7a9dd4a66e0acc1fe5b7f9f3224c94e04642": {
+    "query": "DELETE FROM subscribed_boards WHERE user_id = $1 AND board_id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "d08992cf2c132fedbed21b94d545e154fa2a7a2a2bf79fd033341d1bb5a6c0f2": {
+    "query": "SELECT * FROM users WHERE name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "avatar",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "invitation_credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 7,
+          "name": "password_hashed",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 8,
+          "name": "salt",
+          "type_info": "Bytea"
+        },
+        {
+          "ordinal": 9,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "d16b3b129a9299630b856ce420adb43e9f8d958bb66e982c218bc7264391c253": {
+    "query": "DELETE FROM user_relations WHERE from_user = $1 AND to_user = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "d3093bce6f70ce18913ec58e3634b43e503e8a5284476d275e346b32bf6723f7": {
+    "query": "SELECT * FROM boards WHERE board_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "detail",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "force",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "ruling_party_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "d6bfba029661e5c2f01b44f6544706e894f7716cc0d01fc190108d5cab0afcf0": {
+    "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT \n        DISTINCT metas.*, abf.article_id as from, abf.value as to,\n        abf.energy as bond_energy, abf.name, abf.id as bond_id\n         FROM metas \n        INNER JOIN article_bond_fields abf ON metas.id = abf.article_id\n        WHERE abf.value = $3\n        AND ($4 OR category_name = ANY($5))\n        ORDER BY create_time DESC\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "category_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 6,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 11,
+          "name": "category_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 12,
+          "name": "category_source",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 13,
+          "name": "category_families",
+          "type_info": "TextArray"
+        },
+        {
+          "ordinal": 14,
+          "name": "from",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 15,
+          "name": "to",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 16,
+          "name": "bond_energy",
+          "type_info": "Int2"
+        },
+        {
+          "ordinal": 17,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 18,
+          "name": "bond_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "TextArray",
+          "Int8",
+          "Bool",
+          "TextArray"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "d9e4616504651408b86e3fb140f1f57ba6fb85422717ece155900a591336e9c2": {
+    "query": "INSERT INTO signup_tokens (email, token) VALUES ($1, $2)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "dbe16541da8f5e5888224200780e741286860136b1e50d90d7af30eb93ca3017": {
+    "query": "UPDATE parties SET board_id = $1 where id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "dbf0ec2e755aa70f56f210a34cc17484814ea3c05bbcde9f2718a3b50b14c822": {
+    "query": "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bytea",
+          "Bytea",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "dcf71e024bce8f58d3f9cb382f0b92ec7085b8b44a08b5e47a052297e66c353c": {
+    "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_int_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3\n                    ) AND a.id = ANY($4)\n                    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int8",
+          "Int8",
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "de0ad6b9556df4a670e1e8d7a98197595b305a43019633a0bc8191e8a163b64b": {
+    "query": "\n        SELECT article_id, name, tag, energy, value FROM article_bond_fields\n        WHERE article_id = ANY($1);\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "tag",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int2"
+        },
+        {
+          "ordinal": 4,
+          "name": "value",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    }
+  },
+  "eb8eea48ca99fc0446b6457aa7e7698ee0b36f322b98cbeacfda235a7c373954": {
+    "query": "\n        SELECT article_id, name, value FROM article_string_fields\n        WHERE article_id = ANY($1);\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "article_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "value",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "ed266310b4f50d977c0822f61c752af9f926c5697336c09484c6cbfe2398bd6e": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'openly_follow';",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "f1df4842f2a606e8cc26904c20883ec3a4e2288dd40af8ea2499be37f8754ab7": {
+    "query": "SELECT 1 as t from users where email = $1 LIMIT 1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "t",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        null
+      ]
+    }
+  },
+  "f379223294faf8264e24cf5e16ff6b801cd050c54bf16dd49f20a51c048001fe": {
+    "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            WHERE parties.party_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "party_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "ruling",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "board_name?",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "f51b3c983436737b65808402a0bc1df03ae999123255d473facae890c202046b": {
+    "query": "DELETE FROM favorite_articles WHERE user_id = $1 AND article_id = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "ffb298750f0e662348623f8e6d8819e65b6018baed303c50a9b58eb150590510": {
+    "query": "SELECT email FROM signup_tokens WHERE token = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  }
+}

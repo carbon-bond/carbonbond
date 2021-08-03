@@ -1,0 +1,10 @@
+# build
+/target
+**/*.rs.bk
+
+# db
+data/**
+
+# temp files
+.db_tool_history
+
