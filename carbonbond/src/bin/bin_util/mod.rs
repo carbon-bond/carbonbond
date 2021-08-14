@@ -1,9 +1,12 @@
 use carbonbond::{
-    config::DatabaseConfig,
+    config::{get_config, DatabaseConfig},
     custom_error::{Contextable, Error, Fallible},
 };
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
+
+use sqlx::migrate::{Migrate, MigrateError, Migrator};
+use sqlx::{AnyConnection, Connection};
 
 pub fn run_cmd(
     program: &str,
@@ -88,5 +91,33 @@ END $$;",
         &[("PGPASSWORD", &conf.password)],
         false,
     )?;
+    Ok(())
+}
+
+pub async fn migrate() -> Fallible<()> {
+    let conf = &get_config().database;
+    let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
+    let mut conn = AnyConnection::connect(&conf.get_url()).await?;
+
+    conn.ensure_migrations_table().await?;
+
+    let (version, dirty) = conn.version().await?.unwrap_or((0, false));
+
+    if dirty {
+        return Err(MigrateError::Dirty(version).into());
+    }
+
+    for migration in migrator.iter() {
+        if migration.version > version {
+            let elapsed = conn.apply(migration).await?;
+            println!(
+                "{}/遷移 {} ({:?})",
+                migration.version, migration.description, elapsed,
+            );
+        } else {
+            conn.validate(migration).await?;
+        }
+    }
+
     Ok(())
 }

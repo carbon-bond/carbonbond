@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=carbonbond
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - carbonbond-net
+  redis:
+    image: redis:alpine
+    restart: always
+    networks:
+      - carbonbond-net
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: deploy/Dockerfile
+    restart: always
+    ports:
+      - 80:80
+    networks:
+      - carbonbond-net
+  carbonbond:
+    build:
+      context: ../carbonbond
+      dockerfile: deploy/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    networks:
+      - carbonbond-net
+volumes:
+  postgres-data: {}
+
+networks:
+  carbonbond-net:
+    driver: bridge
