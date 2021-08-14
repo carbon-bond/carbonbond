@@ -1,6 +1,8 @@
 use carbonbond::{
-    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards, Ctx,
+    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards,
 };
+
+mod bin_util;
 
 #[tokio::main]
 async fn main() -> Fallible<()> {
@@ -15,6 +17,9 @@ async fn main() -> Fallible<()> {
     let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
     config::init(config_file);
     let conf = config::get_config();
+
+    log::info!("資料庫遷移");
+    bin_util::migrate().await.unwrap();
 
     // 初始化資料庫
     log::info!("初始化資料庫連線池，位置：{}", &conf.database.get_url());

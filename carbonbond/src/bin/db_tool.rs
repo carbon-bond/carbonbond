@@ -5,13 +5,11 @@ use carbonbond::{
     db,
 };
 use rustyline::Editor;
-use sqlx::migrate::{Migrate, MigrateError, Migrator};
-use sqlx::{AnyConnection, Connection};
 use std::io::Write;
 use structopt::StructOpt;
 
 mod bin_util;
-use bin_util::{clean_db, run_cmd};
+use bin_util::{clean_db, migrate, run_cmd};
 
 #[derive(StructOpt, Debug)]
 struct ArgRoot {
@@ -184,33 +182,6 @@ async fn handle_root(root: Root, user: &mut Option<User>) -> Fallible<bool> {
     Ok(false)
 }
 
-async fn migrate() -> Fallible<()> {
-    let conf = &get_config().database;
-    let migrator = Migrator::new(std::path::Path::new("./migrations")).await?;
-    let mut conn = AnyConnection::connect(&conf.get_url()).await?;
-
-    conn.ensure_migrations_table().await?;
-
-    let (version, dirty) = conn.version().await?.unwrap_or((0, false));
-
-    if dirty {
-        return Err(MigrateError::Dirty(version).into());
-    }
-
-    for migration in migrator.iter() {
-        if migration.version > version {
-            let elapsed = conn.apply(migration).await?;
-            println!(
-                "{}/遷移 {} ({:?})",
-                migration.version, migration.description, elapsed,
-            );
-        } else {
-            conn.validate(migration).await?;
-        }
-    }
-
-    Ok(())
-}
 fn list_db() -> Fallible<Vec<String>> {
     let conf = &get_config().database;
     let db_list = run_cmd(
