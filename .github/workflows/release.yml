@@ -3,13 +3,15 @@ name: release
 on:
   release:
     types: [ published ]
+  push:
+    branches: [ release ]
 
 defaults:
   run:
     shell: bash
 
 jobs:
-  frontend-build:
+  release:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
