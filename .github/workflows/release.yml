@@ -1,0 +1,20 @@
+name: release
+
+on:
+  release:
+    types: [ published ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - run: echo release
+
