@@ -9,7 +9,7 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: ./carbonbond
+    working-directory: ./api-service
 
 jobs:
   release:
@@ -23,7 +23,7 @@ jobs:
         override: true
     - uses: Swatinem/rust-cache@v1
       with:
-        working-directory: ./carbonbond
+        working-directory: ./api-service
     - name: 編譯
       run: sh ./build.sh
     - name: 登入 DockerHub
@@ -34,7 +34,7 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
-        context: ./carbonbond
+        context: ./api-service
         push: true
         tags: carbonbond/api-service:latest
-        file: ./carbonbond/deploy/Dockerfile
+        file: ./api-service/deploy/Dockerfile

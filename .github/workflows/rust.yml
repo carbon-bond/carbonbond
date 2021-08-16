@@ -7,7 +7,7 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: ./carbonbond
+    working-directory: ./api-service
 
 env:
   CARGO_TERM_COLOR: always
@@ -36,7 +36,7 @@ jobs:
         override: true
     - uses: Swatinem/rust-cache@v1
       with:
-        working-directory: ./carbonbond
+        working-directory: ./api-service
     - name: Prepare DB
       run: cargo run --verbose --features prepare --bin prepare -- -m
     - name: Build
