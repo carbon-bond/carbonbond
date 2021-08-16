@@ -1,4 +1,4 @@
-name: release
+name: frontend-build
 
 on:
   release:
