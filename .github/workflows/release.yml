@@ -28,7 +28,7 @@ jobs:
         directory: ./frontend
     - run: yarn install
     - run: yarn build
-    - name: Log in to the Container registry
+    - name: 登入 Container registry
       uses: docker/login-action@v1
       with:
         registry: ${{ env.REGISTRY }}
@@ -37,8 +37,7 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
-        context: .
+        context: ./frontend
         push: true
         tags: carbonbond/frontend:latest
         file: ./frontend/deploy/Dockerfile
-        context: ./frontend
