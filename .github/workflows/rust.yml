@@ -29,6 +29,11 @@ jobs:
         ports:
           - 5432:5432
     steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
     - uses: actions/cache@v2
       with:
         path: |
@@ -38,11 +43,6 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
     - name: Prepare DB
       run: cargo run --verbose --features prepare --bin prepare -- -m
     - name: Build
