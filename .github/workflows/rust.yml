@@ -35,6 +35,8 @@ jobs:
         toolchain: nightly
         override: true
     - uses: Swatinem/rust-cache@v1
+      with:
+        working-directory: ./carbonbond
     - name: Prepare DB
       run: cargo run --verbose --features prepare --bin prepare -- -m
     - name: Build
