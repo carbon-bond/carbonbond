@@ -41,5 +41,7 @@ jobs:
       run: cargo run --verbose --features prepare --bin prepare -- -m
     - name: Build
       run: cargo build --verbose
+      env:
+        SQLX_OFFLINE: true
     - name: Run tests
       run: cargo test --verbose
