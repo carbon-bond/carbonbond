@@ -156,6 +156,7 @@ pub fn project_path() -> Fallible<PathBuf> {
         for child in children {
             let path = child.unwrap().path();
             if path.is_dir() && path.ends_with("config") {
+                log::debug!("根目錄 {:?}", path);
                 return Ok(p.to_owned());
             }
         }

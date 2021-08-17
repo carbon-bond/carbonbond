@@ -1,8 +1,7 @@
 FROM ubuntu:20.04
 
-WORKDIR '/app/carbonbond'
+WORKDIR '/app/api-service'
 COPY target/release/server .
-COPY config ./config
 COPY assets ./assets
 COPY migrations ./migrations
 ENV RUST_LOG debug

@@ -22,7 +22,7 @@ services:
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../frontend
-    #   dockerfile: deploy/Dockerfile
+    #   dockerfile: ../frontend/deploy/Dockerfile
     restart: always
     ports:
       - 80:80
@@ -33,7 +33,9 @@ services:
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../api-service
-    #   dockerfile: deploy/Dockerfile
+    #   dockerfile: ../api-service/deploy/Dockerfile
+    volumes:
+      - ../api-service/config:/app/api-service/config
     depends_on:
       - postgres
       - redis
