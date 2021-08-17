@@ -37,6 +37,7 @@ jobs:
         tags: carbonbond/frontend:latest
         file: ./frontend/deploy/Dockerfile
     - name: 佈屬到開發環境
+      if: ${{ success() }}
       uses: distributhor/workflow-webhook@v2
       env:
         webhook_url: ${{ secrets.WEBHOOK_URL }}/hooks/redeploy-frontend
