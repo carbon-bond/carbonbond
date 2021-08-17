@@ -1,0 +1,40 @@
+name: api-service-build
+
+on:
+  release:
+    types: [ published ]
+  push:
+    branches: [ release ]
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./api-service
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - uses: Swatinem/rust-cache@v1
+      with:
+        working-directory: ./api-service
+    - name: 編譯
+      run: sh ./build.sh
+    - name: 登入 DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: ./api-service
+        push: true
+        tags: carbonbond/api-service:latest
+        file: ./api-service/deploy/Dockerfile

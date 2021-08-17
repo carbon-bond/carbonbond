@@ -18,18 +18,24 @@ services:
     networks:
       - carbonbond-net
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: deploy/Dockerfile
+    image: carbonbond/frontend:latest
+    # 欲自行建置 docker image ，以下三行取代上一行
+    # build:
+    #   context: ../frontend
+    #   dockerfile: ../frontend/deploy/Dockerfile
     restart: always
     ports:
       - 80:80
     networks:
       - carbonbond-net
-  carbonbond:
-    build:
-      context: ../carbonbond
-      dockerfile: deploy/Dockerfile
+  api-service:
+    image: carbonbond/api-service:latest
+    # 欲自行建置 docker image ，以下三行取代上一行
+    # build:
+    #   context: ../api-service
+    #   dockerfile: ../api-service/deploy/Dockerfile
+    volumes:
+      - ../api-service/config:/app/api-service/config
     depends_on:
       - postgres
       - redis

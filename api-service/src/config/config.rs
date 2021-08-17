@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -151,9 +152,13 @@ pub fn project_path() -> Fallible<PathBuf> {
     let mut n = 0;
     loop {
         p = p.parent().ok_or(Error::new_op("抓不到上層目錄= ="))?;
-        if p.to_string_lossy().ends_with("/carbonbond") {
-            // XXX: 有沒有更好的抓法？
-            return Ok(p.to_owned());
+        let children = fs::read_dir(p)?;
+        for child in children {
+            let path = child.unwrap().path();
+            if path.is_dir() && path.ends_with("config") {
+                log::debug!("根目錄 {:?}", path);
+                return Ok(p.to_owned());
+            }
         }
         n += 1;
         if n > 10 {
