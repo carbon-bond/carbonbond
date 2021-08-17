@@ -13,8 +13,7 @@
     --orange: #f5aa30;
     --pink: #FFDDAA;
 
-    --theme-color: var(--blue);
-    /* --theme-color: var(--red); */
+    --theme-color: var(--red);
     --sub-theme-color: var(--orange);
     --third-theme-color: var(--pink);
 
