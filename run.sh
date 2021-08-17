@@ -4,7 +4,7 @@ export NAME="cb/run"
 sudo service redis-server start
 sudo service postgresql start
 
-cd carbonbond
+cd api-service
 tmux new-session -s $NAME -d "cargo run; bash"
 cd ../frontend
 tmux split-window -h "yarn dev; bash"
