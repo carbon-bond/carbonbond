@@ -105,13 +105,18 @@ mod model {
         pub personal_meta: ArticlePersonalMeta,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct SignupInvitation {
+    pub struct SignupInvitationCredit {
         pub id: i64,
-        pub description: String,
-        pub from_user: i64,
-        pub to_user: Option<i64>,
-        pub code: Option<String>,
-        pub last_activate_time: Option<DateTime<Utc>>,
+        pub event_name: String,
+        pub credit: i32,
+        pub create_time: DateTime<chrono::Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct SignupInvitation {
+        pub email: String,
+        pub user_name: Option<String>,
+        pub create_time: DateTime<chrono::Utc>,
+        pub is_used: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Favorite {

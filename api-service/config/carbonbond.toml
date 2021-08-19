@@ -5,7 +5,8 @@ address = "127.0.0.1"
 port = 8080
 # mailgun_key_file 為一個檔案位置
 mailgun_key_file = "config/secret/MAILGUN_KEY.example"
-base_url = "http://localhost:8080"
+# base_url 為前端網址（若反向代理，前端、後端的 IP 跟埠口可能不同）
+base_url = "http://localhost:3000"
 mail_domain = "mail.carbon-bond.com"
 mail_from = "碳鍵 <noreply@mail.carbon-bond.com>"
 

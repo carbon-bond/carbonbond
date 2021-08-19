@@ -1,5 +1,43 @@
 {
   "db": "PostgreSQL",
+  "007ecb5687a38c75db199dac5e7f807112804bd85b02a33646b19f6f4898ba9f": {
+    "query": "SELECT signup_tokens.email, signup_tokens.create_time, signup_tokens.is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on signup_tokens.email = users.email\n         WHERE inviter_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_used",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "00f65940fd4005e246950933fa3facb2b4763af768fb129a16aed6d0e318638f": {
     "query": "\n        INSERT INTO categories (board_id, category_name, version, source, families)\n        VALUES ($1, $2, 1, $3, $4)\n        RETURNING id\n        ",
     "describe": {
@@ -287,122 +325,6 @@
       ]
     }
   },
-  "12b9665a686338f6ccead84798cd46cd9320e2e0698919d01ed8100156cf10d0": {
-    "query": "SELECT * FROM articles WHERE id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "root_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "show_in_list",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 7,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "146b4007114e60edd5cb539ce96b48cff4995505204b0583989093dc87153748": {
-    "query": "SELECT * FROM boards",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "detail",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "force",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "ruling_party_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "14db105952e6d3dfd3dbc4a26d43aa793ed333957cb1c1883cd779d3ce412f36": {
     "query": "INSERT INTO article_string_fields\n                        (article_id, name, value)\n                        VALUES ($1, $2, $3)",
     "describe": {
@@ -415,62 +337,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "15f776367aedd20c1ad8bf16ab017f885043de74c32da2fee9ef304f97a18661": {
-    "query": "SELECT * FROM boards WHERE id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "detail",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "force",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "ruling_party_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "18b0b8b14f55ff490a78b6d996f56260405c6d1605bac1f1f687710fa98e71f8": {
@@ -565,6 +431,56 @@
       },
       "nullable": [
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "243bd775ce8be30cf923e0a6049dc58fdda9b5cc5589a143b8a93d48f480bb77": {
+    "query": "SELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.inviter_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "token",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "inviter_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "invitee_email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 5,
+          "name": "is_used",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
         false,
         false,
         false,
@@ -738,6 +654,20 @@
       ]
     }
   },
+  "2b091fd60397645003da711e6a7efe070c7133f24b5eb08256f9227f41986c1f": {
+    "query": "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "2d680e691d71f2259578f9894d5b22d3ff786030a1ab286a201734ab19548fca": {
     "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards WHERE id = $1",
     "describe": {
@@ -892,44 +822,24 @@
       ]
     }
   },
-  "324a61b88acce3c7cce51c1cb201ec0ac1cb5d48847c28fd51ed83a5b89a3166": {
-    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    INNER JOIN party_members ON parties.id = party_members.party_id\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE user_id = $1;",
+  "30c97dfe04998f63b5cc013b4e1d5783d457533c152a6586bd5ab7f8a9b0d24d": {
+    "query": "SELECT event_name, credit, create_time\n        FROM invitation_credits WHERE user_id = $1",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
+          "name": "event_name",
+          "type_info": "Text"
         },
         {
           "ordinal": 1,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "party_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
+          "name": "credit",
           "type_info": "Int4"
         },
         {
-          "ordinal": 4,
-          "name": "ruling",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 5,
+          "ordinal": 2,
           "name": "create_time",
           "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 6,
-          "name": "board_name",
-          "type_info": "Text"
         }
       ],
       "parameters": {
@@ -938,10 +848,6 @@
         ]
       },
       "nullable": [
-        false,
-        true,
-        false,
-        false,
         false,
         false,
         false
@@ -968,28 +874,6 @@
       },
       "nullable": [
         false,
-        false
-      ]
-    }
-  },
-  "342c08cdf4a43faea8de89b498435b16c935451aad1678ae7cc2935285724644": {
-    "query": "\n        INSERT INTO article_contents (article_id, str_content, int_content)\n        VALUES ($1, $2, $3) RETURNING id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "TextArray",
-          "Int4Array"
-        ]
-      },
-      "nullable": [
         false
       ]
     }
@@ -1232,6 +1116,28 @@
       ]
     }
   },
+  "42f337281318e08d5153800e7c0fddfe1943aea6227ea6801dc0d8568746e13a": {
+    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email, code)\n        VALUES ($1, $2, $3) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Varchar"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
   "43c73263c26a8949208908ecd1caef015ba378275b28e572f8186bec8b27be63": {
     "query": "INSERT INTO article_bond_fields\n        (article_id, name, value, energy)\n        VALUES ($1, $2, $3, $4)",
     "describe": {
@@ -1311,6 +1217,64 @@
       },
       "nullable": [
         false
+      ]
+    }
+  },
+  "50a32f9f8e8fe35ce70d23c04cdae33e5d851fd3940ac39604918e2cb96cdae6": {
+    "query": "SELECT signup_tokens.email, signup_tokens.create_time, signup_tokens.is_used, users.user_name as \"user_name?\"\n         FROM signup_tokens\n         LEFT JOIN users on signup_tokens.email = users.email\n         WHERE inviter_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_used",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_name?",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "52d0365358cbdf1826d63dbeed672f4e3adbcac68cc228339b27240f2d7fac23": {
+    "query": "SELECT\n                (SELECT SUM(credit) FROM invitation_credits WHERE user_id = $1)\n                -\n                (SELECT COUNT(*) FROM signup_tokens WHERE inviter_id = $1)\n                as remaining\n            ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "remaining",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        null
       ]
     }
   },
@@ -1396,20 +1360,6 @@
         false,
         false
       ]
-    }
-  },
-  "58ff33d6d4abb9ab5fde8237dd7ed7b0207219a9e0e400b9ccb03f1830f8beea": {
-    "query": "UPDATE signup_invitations SET code = $1, last_activate_time = $2 where id = $3",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Timestamptz",
-          "Int8"
-        ]
-      },
-      "nullable": []
     }
   },
   "59af76e3ac42c8e43072b8135becebcfc1b7c899ccfbcb37037e7d04a96bd46a": {
@@ -1545,8 +1495,8 @@
       ]
     }
   },
-  "6202c2d3ddc0ab0a65152d58f7dea8939f9f28b0b93bfac70b8cd1d277c8c1ce": {
-    "query": "\n        INSERT INTO articles (board_id, root_id, title, category_id, author_id)\n        VALUES ($1, $2, $3, $4, $5) RETURNING id\n        ",
+  "65af8b103f9edc2b2037d12dce23579a3e8bc5b40362df8bc47f58dbc6d2952f": {
+    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email)\n        VALUES ($1, $2) RETURNING id",
     "describe": {
       "columns": [
         {
@@ -1558,10 +1508,7 @@
       "parameters": {
         "Left": [
           "Int8",
-          "Int8",
-          "Text",
-          "Int8",
-          "Int8"
+          "Text"
         ]
       },
       "nullable": [
@@ -1685,25 +1632,84 @@
       ]
     }
   },
-  "6fdc491f5d230a71cb89337b8a67ed305e252591ff8e239340c1a4d0a6504b01": {
-    "query": "INSERT INTO users (name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
+  "70f8c3120049caf1d7404fb6c79528fb4dfe2d8b8d3e63a01073e96ec9b3d806": {
+    "query": "SELECT id, event_name, credit, create_time\n         FROM invitation_credits WHERE user_id = $1",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
           "name": "id",
           "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "event_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "create_time",
+          "type_info": "Timestamptz"
         }
       ],
       "parameters": {
         "Left": [
-          "Text",
-          "Bytea",
-          "Bytea",
-          "Text"
+          "Int8"
         ]
       },
       "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "7309c5348c30e514c988b4d544fdd79395a7d66a151056e60bb9c706efb60293": {
+    "query": "SELECT * FROM invitation_credits\n\t\tWHERE user_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "event_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 4,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
         false
       ]
     }
@@ -1740,52 +1746,29 @@
       ]
     }
   },
-  "788d9643221ec526af991b0e29a21e8a2b3aeb8593ddc18480eaf224b9153d51": {
-    "query": "\n        UPDATE notifications SET read = true\n        WHERE id = ANY($1) AND user_id = $2\n        ",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int8Array",
-          "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
-  "78a8311641389a6675b1c9095d7aba42321db02c59e4a607118414ce71f80d94": {
-    "query": "\n\t\tSELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.from_user = $1;",
+  "771b54a44262b6add4910ed03a5932801d3b6071b0765bbd9750d8735022386d": {
+    "query": "SELECT signup_tokens.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
+          "name": "email",
+          "type_info": "Text"
         },
         {
           "ordinal": 1,
-          "name": "description",
-          "type_info": "Text"
+          "name": "create_time",
+          "type_info": "Timestamptz"
         },
         {
           "ordinal": 2,
-          "name": "from_user",
-          "type_info": "Int8"
+          "name": "is_used",
+          "type_info": "Bool"
         },
         {
           "ordinal": 3,
-          "name": "to_user",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "code",
+          "name": "user_name",
           "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "last_activate_time",
-          "type_info": "Timestamptz"
         }
       ],
       "parameters": {
@@ -1797,10 +1780,21 @@
         false,
         false,
         false,
-        true,
-        true,
-        true
+        false
       ]
+    }
+  },
+  "788d9643221ec526af991b0e29a21e8a2b3aeb8593ddc18480eaf224b9153d51": {
+    "query": "\n        UPDATE notifications SET read = true\n        WHERE id = ANY($1) AND user_id = $2\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8Array",
+          "Int8"
+        ]
+      },
+      "nullable": []
     }
   },
   "78ce5558807adb5e8c503140bf84091126404ca09089a35b23d14b4eefa16fbb": {
@@ -1816,139 +1810,29 @@
       "nullable": []
     }
   },
-  "78ee9888e1daedd495c655ead041afd7320541bc0fe6436a0df061633da7109c": {
-    "query": "INSERT INTO boards (board_name, detail, title, force, ruling_party_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+  "7effd785b11190283f8428f7f744768d7f29b8d6d1cd1e5ec632e31f158e8b82": {
+    "query": "SELECT users.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text",
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
-  "7ca503e08ff245158c27ef33697c2556c49e27b34d0a8f45b9dff5187f176095": {
-    "query": "\n    SELECT parties.*, boards.board_name FROM parties\n    LEFT JOIN boards on boards.id = parties.board_id\n    WHERE parties.party_name = $1\n    ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "party_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 4,
-          "name": "ruling",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 5,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 6,
-          "name": "board_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "843923b9a0257cf80f1dff554e7dc8fdfc05f489328e8376513124dfb42996e3": {
-    "query": "SELECT * FROM users WHERE id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
           "name": "email",
           "type_info": "Text"
         },
         {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 4,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "avatar",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "invitation_credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 7,
-          "name": "password_hashed",
-          "type_info": "Bytea"
-        },
-        {
-          "ordinal": 8,
-          "name": "salt",
-          "type_info": "Bytea"
-        },
-        {
-          "ordinal": 9,
+          "ordinal": 1,
           "name": "create_time",
           "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_used",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_name",
+          "type_info": "Text"
         }
       ],
       "parameters": {
@@ -1957,12 +1841,6 @@
         ]
       },
       "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
         false,
         false,
         false,
@@ -2121,6 +1999,44 @@
       ]
     }
   },
+  "90e672943daed55d3160653932ff58f36da4b9cd43c3ff7f5d2046a04300ad44": {
+    "query": "SELECT users.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_used",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "913389ee51adffa0340e23bc44566f8e12ff43529bcdf57a4ef1e490d4924906": {
     "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
     "describe": {
@@ -2207,6 +2123,18 @@
       ]
     }
   },
+  "97e01a176cf9a10c8aee79827bba52e4531ab3bdffcc2e5a72e95c902b5ff347": {
+    "query": "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "9a99139262ba30777544cb4736dd8b268949dae607bd9a75792a0a1d26826203": {
     "query": "\n            UPDATE users \n            SET avatar = $1\n            WHERE users.id = $2\n            ",
     "describe": {
@@ -2218,6 +2146,46 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "9b12f077f9847127d5b69f190b25ad6a7512b43f130dabbffaf0875928076912": {
+    "query": "SELECT (user_id, event_name, credit, create_time) FROM invitation_credits\n\t\tWHERE user_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "row",
+          "type_info": "Record"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        null
+      ]
+    }
+  },
+  "9ba2b449f921b2d264878ebd3d46605bfde138d351ce20756dfabc74e60cc5c9": {
+    "query": "SELECT 1 as t from signup_tokens where email = $1 LIMIT 1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "t",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        null
+      ]
     }
   },
   "a3510cc5cc8c2a096167d31294dad559c31dbf55573bd28faafa254b2cb83928": {
@@ -2389,25 +2357,16 @@
       ]
     }
   },
-  "aa9a69ba52da52796e1e06c2bf410140f810f9df5e0e9c298c699ded7fa2e1e7": {
-    "query": "INSERT INTO signup_invitations (from_user, description)\n        VALUES ($1, $2) RETURNING id",
+  "adb94b87d6e170f1bc3819b7c57ece0556c68bacac5fcb4b9a4b8150b2a1fab1": {
+    "query": "UPDATE signup_invitations SET is_used = TRUE where code = $1",
     "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
+      "columns": [],
       "parameters": {
         "Left": [
-          "Int8",
           "Text"
         ]
       },
-      "nullable": [
-        false
-      ]
+      "nullable": []
     }
   },
   "b3671d1898574f4f9b13308de1ea841a99231296ad29dd973b5d1eee048a1e11": {
@@ -2431,70 +2390,6 @@
       ]
     }
   },
-  "b506cb22918be32cb2b1a42fe694e915f3fee2bb5c77a322c1f0c4a1b3b2683b": {
-    "query": "SELECT * FROM articles WHERE board_id = $1 LIMIT $2 OFFSET $3",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "root_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "show_in_list",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 7,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "b831f004b2cab32d33c603035cfe074c4e11cfa60f87e0b4b893b129e582cc1b": {
     "query": "SELECT board_id FROM parties where id = $1",
     "describe": {
@@ -2512,6 +2407,94 @@
       },
       "nullable": [
         true
+      ]
+    }
+  },
+  "bc2332684b727709b2967f8a1c29cdec0fb450436a0f10b771cf86846e92ed62": {
+    "query": "SELECT user_id, event_name, credit, create_time FROM invitation_credits\n\t\tWHERE user_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "event_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 3,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "bd200175d8b568c4fd2de1de5f2d194a2817358deadc20115d9c2bd9a92bc5b5": {
+    "query": " SELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.inviter_id = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "code",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "inviter_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "invitee_email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 5,
+          "name": "is_used",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
       ]
     }
   },
@@ -2656,38 +2639,6 @@
       ]
     }
   },
-  "c7dcb99fd3edbe88066b49e2dc5dc60a9765dccfa29b00cdf22166040c10c71f": {
-    "query": "SELECT article_id, str_content, int_content FROM article_contents WHERE article_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "article_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "str_content",
-          "type_info": "TextArray"
-        },
-        {
-          "ordinal": 2,
-          "name": "int_content",
-          "type_info": "Int4Array"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "c94d15d929573093f92613c33cfc632fbae5f50df997ac1332baf863a88e328d": {
     "query": "UPDATE parties SET board_id = $1, ruling = true where id = $2",
     "describe": {
@@ -2799,80 +2750,6 @@
       "nullable": []
     }
   },
-  "d08992cf2c132fedbed21b94d545e154fa2a7a2a2bf79fd033341d1bb5a6c0f2": {
-    "query": "SELECT * FROM users WHERE name = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 4,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "avatar",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "invitation_credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 7,
-          "name": "password_hashed",
-          "type_info": "Bytea"
-        },
-        {
-          "ordinal": 8,
-          "name": "salt",
-          "type_info": "Bytea"
-        },
-        {
-          "ordinal": 9,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "d16b3b129a9299630b856ce420adb43e9f8d958bb66e982c218bc7264391c253": {
     "query": "DELETE FROM user_relations WHERE from_user = $1 AND to_user = $2",
     "describe": {
@@ -2884,62 +2761,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "d3093bce6f70ce18913ec58e3634b43e503e8a5284476d275e346b32bf6723f7": {
-    "query": "SELECT * FROM boards WHERE board_name = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "detail",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "force",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "ruling_party_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "d6bfba029661e5c2f01b44f6544706e894f7716cc0d01fc190108d5cab0afcf0": {
@@ -3087,43 +2908,6 @@
       "nullable": []
     }
   },
-  "dbe16541da8f5e5888224200780e741286860136b1e50d90d7af30eb93ca3017": {
-    "query": "UPDATE parties SET board_id = $1 where id = $2",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
-  "dbf0ec2e755aa70f56f210a34cc17484814ea3c05bbcde9f2718a3b50b14c822": {
-    "query": "INSERT INTO users (name, password_hashed, salt, email, sentence) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Bytea",
-          "Bytea",
-          "Text",
-          "Text"
-        ]
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
   "dcf71e024bce8f58d3f9cb382f0b92ec7085b8b44a08b5e47a052297e66c353c": {
     "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_int_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3\n                    ) AND a.id = ANY($4)\n                    ",
     "describe": {
@@ -3145,6 +2929,18 @@
       "nullable": [
         false
       ]
+    }
+  },
+  "dd29bdcb4abaeafef2c978872e02803bfd705a628cacb2a01cf9fe57a48632b4": {
+    "query": "UPDATE signup_invitations SET is_used = TRUE where token = $1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": []
     }
   },
   "de0ad6b9556df4a670e1e8d7a98197595b305a43019633a0bc8191e8a163b64b": {
@@ -3189,6 +2985,48 @@
         false,
         false
       ]
+    }
+  },
+  "e26c2e42f9660e9eb72ac88e375714cbcdec34dd50f3dd69cb821fdd07bac825": {
+    "query": "SELECT event_name, credit, create_time\n         FROM invitation_credits WHERE user_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "event_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "credit",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855": {
+    "query": "",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": []
     }
   },
   "eb8eea48ca99fc0446b6457aa7e7698ee0b36f322b98cbeacfda235a7c373954": {
@@ -3281,6 +3119,38 @@
       ]
     }
   },
+  "f33e6afdb6de39dff0f5f0aa5384a43d9a1d6348e9efd7b1f16a72a3987a1707": {
+    "query": "SELECT email, create_time, is_used \n         FROM signup_tokens\n         WHERE inviter_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 2,
+          "name": "is_used",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "f379223294faf8264e24cf5e16ff6b801cd050c54bf16dd49f20a51c048001fe": {
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            WHERE parties.party_name = $1",
     "describe": {
@@ -3333,6 +3203,28 @@
         false,
         false,
         false,
+        false
+      ]
+    }
+  },
+  "f381b0b1f45447592f56127b078c187280fa939b0623f93e53cb6fffa5a7e0d7": {
+    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email, token)\n        VALUES ($1, $2, $3) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Varchar"
+        ]
+      },
+      "nullable": [
         false
       ]
     }

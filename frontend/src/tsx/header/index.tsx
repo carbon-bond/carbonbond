@@ -60,7 +60,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				if (!isEmail(email)) {
 					throw '信箱格式異常';
 				}
-				unwrap(await API_FETCHER.sendSignupEmail(email));
+				// unwrap(await API_FETCHER.sendSignupEmail(email));
 				setSignupSent(true);
 			} catch (err) {
 				toastErr(err);

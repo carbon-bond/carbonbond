@@ -8,7 +8,7 @@ pub trait UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::User>, crate::custom_error::Error>;
     async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Party>, crate::custom_error::Error>;
     async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Favorite>, crate::custom_error::Error>;
-    async fn send_signup_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
+    async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::User, crate::custom_error::Error>;
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
     async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::User>, crate::custom_error::Error>;
@@ -24,10 +24,8 @@ pub trait UserQueryRouter {
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::UserRelationKind, crate::custom_error::Error>;
     async fn query_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error>;
     async fn query_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error>;
-    async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error>;
-    async fn add_signup_invitation(&self, context: &mut crate::Ctx, user: i64, description: String) -> Result<i64, crate::custom_error::Error>;
-    async fn activate_signup_invitation(&self, context: &mut crate::Ctx, signup_invitation_id: i64) -> Result<String, crate::custom_error::Error>;
-    async fn deactivate_signup_invitation(&self, context: &mut crate::Ctx, signup_invitation_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn query_signup_invitation_credit_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::SignupInvitationCredit>, crate::custom_error::Error>;
+    async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error>;
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
     async fn update_sentence(&self, context: &mut crate::Ctx, sentence: String) -> Result<(), crate::custom_error::Error>;
     async fn update_information(&self, context: &mut crate::Ctx, introduction: String, gender: String, job: String, city: String) -> Result<(), crate::custom_error::Error>;
@@ -48,8 +46,8 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
-             UserQuery::SendSignupEmail { email } => {
-                 let resp = self.send_signup_email(context, email).await;
+             UserQuery::SendSignupEmail { email, is_invite } => {
+                 let resp = self.send_signup_email(context, email, is_invite).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
@@ -128,23 +126,13 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
-             UserQuery::QuerySignupInvitationList { user } => {
-                 let resp = self.query_signup_invitation_list(context, user).await;
+             UserQuery::QuerySignupInvitationCreditList {  } => {
+                 let resp = self.query_signup_invitation_credit_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
-             UserQuery::AddSignupInvitation { user, description } => {
-                 let resp = self.add_signup_invitation(context, user, description).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-             }
-             UserQuery::ActivateSignupInvitation { signup_invitation_id } => {
-                 let resp = self.activate_signup_invitation(context, signup_invitation_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-             }
-             UserQuery::DeactivateSignupInvitation { signup_invitation_id } => {
-                 let resp = self.deactivate_signup_invitation(context, signup_invitation_id).await;
+             UserQuery::QuerySignupInvitationList {  } => {
+                 let resp = self.query_signup_invitation_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }

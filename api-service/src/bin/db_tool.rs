@@ -69,8 +69,6 @@ enum AddSubCommand {
         name: String,
         board_name: Option<String>,
     },
-    #[structopt(alias = "i")]
-    Invitation { user_id: i64, description: String },
 }
 
 #[tokio::main]
@@ -285,16 +283,10 @@ async fn handle_add(subcmd: AddSubCommand, user: &mut Option<User>) -> Fallible<
             board_name,
             party_name,
         } => {
-            let user = check_login(user)?;
+            let _user = check_login(user)?;
         }
         AddSubCommand::Party { board_name, name } => {
-            let user = check_login(user)?;
-        }
-        AddSubCommand::Invitation {
-            user_id,
-            description,
-        } => {
-            db::signup_invitations::add_signup_invitation(user_id, &description).await?;
+            let _user = check_login(user)?;
         }
     }
     Ok(())

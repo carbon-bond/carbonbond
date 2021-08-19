@@ -1,12 +1,8 @@
 use super::{api_trait, model};
+use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
-use crate::email;
 use crate::service;
 use crate::util::{HasArticleStats, HasBoardProps};
-use crate::{
-    custom_error::{DataType, Error, ErrorCode, Fallible},
-    db::signup_invitations::add_signup_invitation,
-};
 use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -284,15 +280,17 @@ pub struct UserQueryRouter {}
 impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn send_signup_email(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         email: String,
+        is_invite: bool,
     ) -> Result<(), crate::custom_error::Error> {
-        let token = db::user::create_signup_token(&email).await?;
-        if db::user::email_used(&email).await? {
-            Err(ErrorCode::DuplicateRegister.into())
+        let inviter_id = if is_invite {
+            Some(context.get_id_strict().await?)
         } else {
-            email::send_signup_email(&token, &email)
-        }
+            None
+        };
+        db::user::create_signup_token(&email, inviter_id).await?;
+        Ok(())
     }
     async fn signup(
         &self,
@@ -357,32 +355,16 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_signup_invitation_list(
         &self,
         context: &mut crate::Ctx,
-        user: i64,
     ) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error> {
-        db::signup_invitations::query_signup_invitation(user).await
+        let id = context.get_id_strict().await?;
+        db::user::get_signup_invitations(id).await
     }
-    async fn add_signup_invitation(
+    async fn query_signup_invitation_credit_list(
         &self,
         context: &mut crate::Ctx,
-        user: i64,
-        description: String,
-    ) -> Result<i64, crate::custom_error::Error> {
-        let id = db::signup_invitations::add_signup_invitation(user, &description).await?;
-        Ok(id)
-    }
-    async fn activate_signup_invitation(
-        &self,
-        context: &mut crate::Ctx,
-        signup_invitation_id: i64,
-    ) -> Result<String, crate::custom_error::Error> {
-        db::signup_invitations::activate_signup_invitation(signup_invitation_id).await
-    }
-    async fn deactivate_signup_invitation(
-        &self,
-        context: &mut crate::Ctx,
-        signup_invitation_id: i64,
-    ) -> Result<(), crate::custom_error::Error> {
-        db::signup_invitations::deactivate_signup_invitation(signup_invitation_id).await
+    ) -> Result<Vec<super::model::SignupInvitationCredit>, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::get_signup_invitation_credit(id).await
     }
     async fn query_user(
         &self,

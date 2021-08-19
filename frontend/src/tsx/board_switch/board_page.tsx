@@ -38,11 +38,11 @@ async function fetchArticles(
 
 export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.board.board_name;
-	let { useScrollToBottom } = MainScrollState.useContainer();
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
 	const [is_end, setIsEnd] = React.useState<boolean>(false);
 	const min_article_id_ref = React.useRef<null | number>(0);
+	let { useScrollToBottom } = MainScrollState.useContainer();
 	min_article_id_ref.current = min_article_id;
 
 	const { setCurBoard } = BoardCacheState.useContainer();

@@ -12,7 +12,6 @@ pub mod board;
 pub mod favorite;
 pub mod notification;
 pub mod party;
-pub mod signup_invitations;
 pub mod subscribed_boards;
 pub mod user;
 pub mod user_relation;

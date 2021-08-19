@@ -53,8 +53,12 @@ mod inner {
         NeedLogin,
         #[display(fmt = "權限不足")]
         PermissionDenied,
+        #[display(fmt = "邀請餘額不足")]
+        CreditExhausted,
         #[display(fmt = "找不到{}： {}", "_0", "_1")]
         NotFound(DataType, String),
+        #[display(fmt = "重複邀請")]
+        DuplicateInvitation,
         #[display(fmt = "重複註冊")]
         DuplicateRegister,
         #[display(fmt = "JSON 解析錯誤")]
@@ -160,7 +164,10 @@ mod inner {
 
     impl From<ErrorCode> for Error {
         fn from(code: ErrorCode) -> Error {
-            Error::LogicError { msg: vec![], code }
+            Error::LogicError {
+                msg: vec![format!("{}", code.to_string())],
+                code,
+            }
         }
     }
 
