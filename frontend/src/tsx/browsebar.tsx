@@ -15,7 +15,7 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 	return boards;
 }
 
-// TODO: 應該用 context 記住熱門看板與訂閱看板，以免次切換測邊欄都要向後端發 request
+// TODO: 應該用 context 記住熱門看板與訂閱看板，以免每次切換測邊欄都要向後端發 request
 
 export function BrowseBar(): JSX.Element {
 	let { user_state } = UserState.useContainer();

@@ -184,9 +184,9 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
     // 4. 寄信
     if let Some(id) = inviter_id {
         let inviter_name = get_by_id(id).await?.user_name;
-        send_invitation_email(&token, &email, inviter_name);
+        send_invitation_email(&token, &email, inviter_name).await?;
     } else {
-        send_signup_email(&token, &email);
+        send_signup_email(&token, &email).await?;
     }
 
     conn.commit().await?;

@@ -7,3 +7,6 @@
 
 # log
 **/*.log
+
+# rust
+target/

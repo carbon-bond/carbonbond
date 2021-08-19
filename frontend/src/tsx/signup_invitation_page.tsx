@@ -25,7 +25,7 @@ function CreditList(props: { credits: SignupInvitationCredit[], total: number })
 		<div className={style.title}>共獲得邀請碼 {total} 張</div>
 		{
 			credits.map((credit) => (
-				<div className={style.credit}>
+				<div className={style.credit} key={credit.id}>
 					<span>{credit.event_name}</span>
 					<span> {credit.credit}</span>
 				</div>
