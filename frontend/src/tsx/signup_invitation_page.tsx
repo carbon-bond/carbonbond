@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { toastErr } from './utils';
 
 import style from '../css/signup_invitation_page.module.css';
+import { toast } from 'react-toastify';
 
 async function fetchInvitationList(): Promise<SignupInvitation[]> {
 	return unwrap_or(await API_FETCHER.querySignupInvitationList(), []);
@@ -65,6 +66,7 @@ function InvitationInput(props: {setRerun: Function, remaining: number}): JSX.El
 		API_FETCHER.sendSignupEmail(data.email, true)
 		.then((result) => {
 			unwrap(result);
+			toast('已送出邀請信！');
 			props.setRerun((x: number) => x + 1);
 		})
 		.catch(err => toastErr(err));
