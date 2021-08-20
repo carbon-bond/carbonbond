@@ -1,8 +1,12 @@
 ## 版本
 
-1.37.0-nightly 以上
+1.56.0-nightly 以上
 
-安裝
+## 安裝
+
+參考 [官方網站](https://www.rust-lang.org/tools/install)。
+
+將工具鏈版本設置爲 nightly。
 ``` sh
 rustup default nightly
 rustup update

@@ -3,11 +3,18 @@ import { unwrap } from '../src/ts/api/api';
 import { Bond, RootQueryFetcher, BoardType } from '../src/ts/api/api_trait';
 import request from 'request';
 import prompts from 'prompts';
+import minimist from 'minimist';
 
 let path = require('path');
 let fs = require('fs');
 
-const URL = 'http://localhost:8080/api';
+const args = minimist(process.argv.slice(2));
+const host = args['host'] || 'localhost';
+const port = args['port'] || '8080';
+const protocal = args['s'] ? 'https' : 'http';
+const URL = `${protocal}://${host}:${port}/api`;
+
+console.log(`URL = ${URL}`);
 export class InjectFetcher extends RootQueryFetcher {
 	token: string[] = [];
 	is_logining = false;
