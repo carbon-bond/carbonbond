@@ -1,44 +1,81 @@
 use crate::config::get_config;
-use crate::custom_error::{Contextable, Fallible};
-use std::process::Command;
+use crate::custom_error::{Error, Fallible};
+use reqwest;
+use std::collections::HashMap;
 
-// XXX: 這會不會堵住線程？
-fn send_html_email(recv_email: &str, title: &str, html_content: &str) -> Fallible<String> {
-    let mailgun_api_key = &get_config().server.mailgun_api_key;
-    let cmd = format!(
-        "curl -s --user 'api:{}' \
-         https://api.mailgun.net/v3/mail.carbon-bond.com/messages \
-         -F from='碳鍵 <noreply@mail.carbon-bond.com>' \
-         -F to='{}' \
-         -F subject='{}' \
-         --form-string html='{}'",
-        mailgun_api_key, recv_email, title, html_content
+async fn send_html_email(
+    email_address: &str,
+    subject: &str,
+    html_content: &str,
+) -> Fallible<String> {
+    let mailgun_api_key = get_config().server.mailgun_api_key.as_str();
+    let mail_from = get_config().server.mail_from.as_str();
+    let mail_domain = get_config().server.mail_domain.as_str();
+    let mut form = HashMap::new();
+    form.insert("from", mail_from);
+    form.insert("to", email_address);
+    form.insert("subject", subject);
+    form.insert("html", html_content);
+    let url = format!(
+        "https://api:{}@api.mailgun.net/v3/{}/messages",
+        mailgun_api_key, mail_domain
     );
+    let response = reqwest::Client::new().post(url).form(&form).send().await?;
 
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .output()
-        .context("寄信失敗")?;
-
-    let msg: String = output.stdout.iter().map(|ch| *ch as char).collect();
-    return Ok(msg);
+    if response.status().is_success() {
+        Ok(response.text().await?)
+    } else {
+        Err(Error::new_internal(response.text().await?))
+    }
 }
 
-pub fn send_signup_email(token: &str, recv_email: &str) -> Fallible<()> {
-    log::debug!("對 {} 寄發邀請信", recv_email);
-    let url = format!("http://carbon-bond.com/app/signup/{}", token);
-    let welcome_title = format!("您註冊碳鍵囉^Q^");
+pub async fn send_signup_email(token: &str, email_address: &str) -> Fallible<()> {
+    log::debug!("對 {} 寄發註冊確認信", email_address);
+    let base_url = &get_config().server.base_url;
+    let url = format!("{}/app/signup/{}", base_url, token);
+    let subject = format!("您註冊碳鍵囉^Q^");
     let welcome_msg = format!(
         "<html> \
          <h1>歡迎加入碳鍵！</h1> \
-         <p>點選以下連結，嘴爆那些笨蛋吧！</p> \
+         <p>點選以下連結，一起嘴爆那些笨蛋吧！</p> \
          <a href=\"{}\">{}</a> <br/> \
          </html>",
         url, url
     );
 
-    let ret_msg = send_html_email(recv_email, &welcome_title, &welcome_msg)?;
+    log::debug!("寄信");
+    log::debug!("url： {}", url);
+    log::debug!("主旨：{}", subject);
+    log::debug!("內文：{}", welcome_msg);
+
+    let ret_msg = send_html_email(email_address, &subject, &welcome_msg).await?;
+    log::debug!("寄信回傳訊息：{}", ret_msg);
+    Ok(())
+}
+
+pub async fn send_invitation_email(
+    token: &str,
+    email_address: &str,
+    inviter_name: String,
+) -> Fallible<()> {
+    log::debug!("{} 對 {} 寄發邀請信", inviter_name, email_address);
+    let base_url = &get_config().server.base_url;
+    let url = format!("{}/app/signup/{}", base_url, token);
+    let subject = format!("{} 邀請您加入碳鍵", inviter_name);
+    let welcome_msg = format!(
+        "<html> \
+         <h1>歡迎加入碳鍵！</h1> \
+         <p>點選以下連結，和 {} 一起嘴爆那些笨蛋吧！</p> \
+         <a href=\"{}\">{}</a> <br/> \
+         </html>",
+        inviter_name, url, url
+    );
+    log::debug!("寄信");
+    log::debug!("url： {}", url);
+    log::debug!("主旨：{}", subject);
+    log::debug!("內文：{}", welcome_msg);
+
+    let ret_msg = send_html_email(email_address, &subject, &welcome_msg).await?;
     log::debug!("寄信回傳訊息：{}", ret_msg);
     Ok(())
 }

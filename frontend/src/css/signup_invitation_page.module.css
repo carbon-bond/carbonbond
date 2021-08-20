@@ -1,6 +1,23 @@
-.signupInvitationWrapper {
-	border: 1px solid var(--border-color);	
-	& .description {
-		color: blue;
+.title {
+	font-size: 20px;
+	margin-top: 30px;
+	margin-bottom: 12px;
+}
+.invitationList {
+	margin-top: 30px;
+	& .invitation {
+		border: 1px solid var(--border-color);	
+		& .email {
+			color: blue;
+		}
+		& .isUsed {
+			margin-left: 20px;
+		}
+	}
+}
+.creditList {
+	margin-top: 30px;
+	& .credit {
+		border: 1px solid var(--border-color);	
 	}
 }

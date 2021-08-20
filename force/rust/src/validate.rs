@@ -21,7 +21,7 @@ pub trait ValidatorTrait {
         log::trace!("驗證力語言基本型態： {:?} => {:?}", data_type, data);
         macro_rules! ret {
             ($err:expr) => {
-                return Err($err);
+                return Err($err)
             };
         }
         match (data_type, data) {

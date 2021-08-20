@@ -2,7 +2,7 @@ use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde::Serialize;
-use serde_json::{to_value, Value};
+use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;

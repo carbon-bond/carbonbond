@@ -19,7 +19,8 @@ export type NewBoard = {     board_name: string; board_type: string; title: stri
 export type ArticlePersonalMeta = { is_favorite: boolean };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category_id: number; category_name: string; category_source: string;     title: string; author_id: number; author_name: string; digest:     ArticleDigest; category_families: string []; create_time: string; stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
-export type SignupInvitation = {     id: number; description: string; from_user: number; to_user: number     | null; code: string | null; last_activate_time: string|     null };
+export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
+export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type Favorite = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
 export type Article = { meta: ArticleMeta; content: string };
@@ -48,7 +49,9 @@ export type BondError =
 export type ErrorCode = 
  | "NeedLogin" 
  | "PermissionDenied" 
+ | "CreditExhausted" 
  | { NotFound: [DataType, string] } 
+ | "DuplicateInvitation" 
  | "DuplicateRegister" 
  | "ParsingJson" 
  | { ForceValidate: ForceValidateError<BondError>} 
@@ -69,8 +72,8 @@ export abstract class RootQueryFetcher {
     async queryMyFavoriteArticleList(): Promise<Result<Array<Favorite>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyFavoriteArticleList": {  } } }));
     }
-    async sendSignupEmail(email: string): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email } } }));
+    async sendSignupEmail(email: string, is_invite: boolean): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email, is_invite } } }));
     }
     async signup(user_name: string, password: string, token: string): Promise<Result<User, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Signup": { user_name, password, token } } }));
@@ -117,17 +120,11 @@ export abstract class RootQueryFetcher {
     async queryHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryHaterList": { user } } }));
     }
-    async querySignupInvitationList(user: number): Promise<Result<Array<SignupInvitation>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationList": { user } } }));
+    async querySignupInvitationCreditList(): Promise<Result<Array<SignupInvitationCredit>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationCreditList": {  } } }));
     }
-    async addSignupInvitation(user: number, description: string): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "AddSignupInvitation": { user, description } } }));
-    }
-    async activateSignupInvitation(signup_invitation_id: number): Promise<Result<string, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "ActivateSignupInvitation": { signup_invitation_id } } }));
-    }
-    async deactivateSignupInvitation(signup_invitation_id: number): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "DeactivateSignupInvitation": { signup_invitation_id } } }));
+    async querySignupInvitationList(): Promise<Result<Array<SignupInvitation>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationList": {  } } }));
     }
     async updateAvatar(image: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateAvatar": { image } } }));

@@ -23,7 +23,7 @@ function ReplyList(props: { article: Article }): JSX.Element {
 		<div>
 			<BonderCards expanded={expanded} article={article.meta} />
 		</div>
-	</div> ;
+	</div>;
 }
 
 function Satellites(props: { article: Article, board: Board }): JSX.Element {
@@ -37,10 +37,10 @@ function Satellites(props: { article: Article, board: Board }): JSX.Element {
 		</div>
 		<div className={style.contents}>
 			<div>
-				<SatelliteCards expanded={expanded} article={article.meta}/>
+				<SatelliteCards expanded={expanded} article={article.meta} />
 			</div>
 			<div>
-				<SatelliteButtons board={board} article={article.meta}/>
+				<SatelliteButtons board={board} article={article.meta} />
 			</div>
 		</div>
 	</div>;
@@ -58,7 +58,7 @@ export function ShowText(props: { text: string }): JSX.Element {
 					<p key={key++}>
 						<a target="_blank" href={line}>
 							{line}
-							<img key={key++} src={line.trim()} width="100%" alt="圖片"/>
+							<img key={key++} src={line.trim()} width="100%" alt="圖片" />
 						</a>
 					</p>
 				</>;
@@ -130,9 +130,8 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 
 function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
-
-	let scrollHandler = React.useCallback(() => { }, []);
 	let { useScrollToBottom } = MainScrollState.useContainer();
+	let scrollHandler = React.useCallback(() => { }, []);
 	useScrollToBottom(scrollHandler);
 
 	const category_name = article.meta.category_name;
@@ -149,7 +148,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			title={article.meta.title} />
 		<ReplyButtons article={article.meta} board={board} />
 		<ArticleContent article={article} />
-		<ArticleFooter  article={article.meta}/>
+		<ArticleFooter article={article.meta} />
 		<ReplyList article={article} />
 		<Satellites article={article} board={board} />
 	</div>;
