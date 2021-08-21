@@ -6,6 +6,8 @@ import useOnClickOutside from 'use-onclickoutside';
 
 import style from '../../css/header/index.module.css';
 
+import iconWithTextURL from '../../img/icon_with_text.png';
+
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
@@ -121,7 +123,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 				<div className={style.leftSet}>
 					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
 						{/* TODO: 修正 vite 路徑 */}
-						<img src="/src/img/icon_with_text.png" alt="" />
+						<img src={iconWithTextURL} alt="" />
 					</div>
 					<div className={style.location}>{title}</div>
 					<SearchBar history={props.history} cur_board={cur_board} />
