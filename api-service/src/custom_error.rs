@@ -65,6 +65,8 @@ mod inner {
         DuplicateInvitation,
         #[display(fmt = "重複註冊")]
         DuplicateRegister,
+        #[display(fmt = "目前不開放自行註冊，請找朋友邀請")]
+        NotAllowSelfSignup,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
         #[display(fmt = "力語言驗證： {:?}", "_0")]

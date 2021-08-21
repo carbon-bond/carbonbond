@@ -53,6 +53,7 @@ export type ErrorCode =
  | { NotFound: [DataType, string] } 
  | "DuplicateInvitation" 
  | "DuplicateRegister" 
+ | "NotAllowSelfSignup" 
  | "ParsingJson" 
  | { ForceValidate: ForceValidateError<BondError>} 
  | "UnImplemented" 

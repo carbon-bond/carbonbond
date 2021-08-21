@@ -284,6 +284,10 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         email: String,
         is_invite: bool,
     ) -> Result<(), crate::custom_error::Error> {
+        let conf = crate::config::get_config();
+        if !conf.account.allow_self_signup && !is_invite {
+            return Err(ErrorCode::NotAllowSelfSignup.into());
+        }
         let inviter_id = if is_invite {
             Some(context.get_id_strict().await?)
         } else {
