@@ -33,10 +33,14 @@ mod inner {
         Party,
         #[display(fmt = "使用者")]
         User,
+        #[display(fmt = "信箱")]
+        Email,
         #[display(fmt = "通知")]
         Notification,
         #[display(fmt = "註冊碼")]
         SignupToken,
+        #[display(fmt = "重置密碼碼")]
+        ResetPasswordToken,
     }
 
     #[derive(Serialize, Display, Debug, TypeScriptify)]

@@ -23,6 +23,7 @@ import { EditorPanelState } from './global_state/editor_panel';
 import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
+import { ResetPassword } from './reset_password';
 import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
 import { SignupInvitationPage } from './signup_invitation_page';
@@ -42,8 +43,11 @@ function App(): JSX.Element {
 		let { setEmitter } = MainScrollState.useContainer();
 		return <div className="mainBody" ref={ref => setEmitter(ref)}>
 			<Switch>
-				<Route exact path="/app/signup/:signup_token" render={props => (
+				<Route exact path="/app/signup/:token" render={props => (
 					<SignupPage {...props} />
+				)} />
+				<Route exact path="/app/reset_password/:token" render={props => (
+					<ResetPassword {...props} />
 				)} />
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>

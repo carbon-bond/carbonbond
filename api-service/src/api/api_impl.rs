@@ -197,7 +197,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
     }
     async fn query_board_party_list(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         board_id: i64,
     ) -> Fallible<Vec<model::Party>> {
         db::party::get_by_board_id(board_id).await
@@ -289,8 +289,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         } else {
             None
         };
-        db::user::create_signup_token(&email, inviter_id).await?;
-        Ok(())
+        db::user::create_signup_token(&email, inviter_id).await
+    }
+    async fn send_reset_password_email(
+        &self,
+        _context: &mut crate::Ctx,
+        email: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        db::user::send_reset_password_email(email).await
     }
     async fn signup(
         &self,
@@ -299,7 +305,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         password: String,
         token: String,
     ) -> Result<super::model::User, crate::custom_error::Error> {
-        db::user::signup_with_token(&user_name, &password, &token).await?;
+        db::user::signup_by_token(&user_name, &password, &token).await?;
         self.login(context, password, user_name.clone())
             .await?
             .ok_or(Error::new_internal(format!(
@@ -312,11 +318,28 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         _context: &mut crate::Ctx,
         token: String,
     ) -> Result<String, crate::custom_error::Error> {
-        if let Some(email) = db::user::get_email_by_token(&token).await? {
+        if let Some(email) = db::user::get_email_by_signup_token(&token).await? {
             Ok(email)
         } else {
             Err(ErrorCode::NotFound(DataType::SignupToken, token).into())
         }
+    }
+
+    async fn query_user_name_by_reset_password_token(
+        &self,
+        _context: &mut crate::Ctx,
+        token: String,
+    ) -> Result<Option<String>, crate::custom_error::Error> {
+        db::user::get_user_name_by_reset_password_token(&token).await
+    }
+
+    async fn reset_password_by_token(
+        &self,
+        _context: &mut crate::Ctx,
+        password: String,
+        token: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        db::user::reset_password_by_token(&password, &token).await
     }
 
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {

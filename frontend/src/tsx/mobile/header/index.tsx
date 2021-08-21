@@ -2,7 +2,7 @@ import * as React from 'react';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
-import style from '../../../css/header.module.css';
+import style from '../../../css/header/index.module.css';
 
 import { UserState } from '../../global_state/user';
 import { BoardCacheState } from '../../global_state/board_cache';

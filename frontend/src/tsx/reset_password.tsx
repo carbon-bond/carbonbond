@@ -2,41 +2,40 @@ import * as React from 'react';
 import { toast } from 'react-toastify';
 import { RouteComponentProps } from 'react-router';
 import { toastErr, useInputValue } from './utils';
-import style from '../css/signup_page.module.css';
+import style from '../css/reset_password.module.css';
 import { API_FETCHER } from '../ts/api/api';
 import type { Error } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 
 type Props = RouteComponentProps<{ token: string }>;
 
-export function SignupPage(props: Props): JSX.Element {
-	let name = useInputValue('').input_props;
+export function ResetPassword(props: Props): JSX.Element {
 	let password = useInputValue('').input_props;
 	let repeated_password = useInputValue('').input_props;
-	let [email, setEmail] = React.useState<null | string>(null);
+	let [user_name, setUserName] = React.useState<null | string>(null);
 	let [err, setErr] = React.useState<Error | null>(null);
-	let token = props.match.params.token;
 	let { getLoginState } = UserState.useContainer();
+	let token = props.match.params.token;
 
-	async function signup_request(name: string, password: string, repeated_password: string): Promise<void> {
+	async function reset_password_request(password: string, repeated_password: string): Promise<void> {
 		try {
 			if (repeated_password != password) {
 				throw '兩次密碼輸入不同';
 			}
-			await API_FETCHER.signup(name, password, token);
+			await API_FETCHER.resetPasswordByToken(password, token);
 			props.history.push('/app/');
 			getLoginState();
-			toast('註冊成功');
+			toast('重設密碼成功，請再次登入');
 		} catch (err) {
 			toastErr(err);
 		}
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryEmailByToken(token).then(res => {
+		API_FETCHER.queryUserNameByResetPasswordToken(token).then(res => {
 			try {
 				if ('Ok' in res) {
-					setEmail(res.Ok);
+					setUserName(res.Ok);
 				} else {
 					setErr(res.Err);
 				}
@@ -46,22 +45,21 @@ export function SignupPage(props: Props): JSX.Element {
 		});
 	}, [token]);
 
-	if (email) {
+	if (user_name) {
 		return <div className={style.signupPage}>
 			<div className={style.signupForm}>
-				<div className={style.counter}>你的email是：　{email}　</div>
-				<input className={style.username} type="text" placeholder="使用者名稱" {...name} autoFocus />
-				<input className={style.password} type="password" placeholder="密碼" {...password} autoFocus />
+				<div className={style.counter}> {user_name} ，歡迎歸來！　</div>
+				<input className={style.password} type="password" placeholder="新密碼" {...password} autoFocus />
 				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} autoFocus />
-				<button onClick={() => signup_request(name.value, password.value, repeated_password.value)}>
-					註冊帳號
+				<button onClick={() => reset_password_request(password.value, repeated_password.value)}>
+					重置密碼
 				</button>
 			</div>
 		</div>;
 	} else if (err) {
 		return <div className={style.signupPage}>
 			<div className={style.signupForm}>
-				<div className={style.counter}>註冊碼已過期或不存在！</div>
+				<div className={style.counter}>重置碼已過期或不存在！</div>
 			</div>
 		</div>;
 	} else {

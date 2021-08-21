@@ -4,18 +4,17 @@ import { RouteComponentProps } from 'react-router';
 import { toast } from 'react-toastify';
 import useOnClickOutside from 'use-onclickoutside';
 
-import style from '../../css/header.module.css';
+import style from '../../css/header/index.module.css';
 
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { isEmail } from '../../ts/regex_util';
-import { toastErr, useInputValue } from '../utils';
+import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
 import { BoardCacheState } from '../global_state/board_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
-import { ModalButton, ModalWindow } from '../components/modal_window';
+import { SignupModal, LoginModal } from './login_modal';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -49,54 +48,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			toastErr(err);
 		}
 		return {};
-	}
-	function SignupModal(): JSX.Element {
-		const [signup_sent, setSignupSent] = React.useState(false);
-		let email = useInputValue('').input_props;
-		let ref_all = React.useRef(null);
-		useOnClickOutside(ref_all, () => setSignuping(false));
-		async function signup_request(email: string): Promise<void> {
-			try {
-				if (!isEmail(email)) {
-					throw '信箱格式異常';
-				}
-				// unwrap(await API_FETCHER.sendSignupEmail(email));
-				setSignupSent(true);
-			} catch (err) {
-				toastErr(err);
-			}
-			return;
-		}
-		let buttons: ModalButton[] = [];
-		buttons.push({ text: signup_sent ? '再次寄發註冊信' : '寄發註冊信', handler: () => signup_request(email.value) });
-		buttons.push({ text: '✗', handler: () => setSignuping(false) });
-
-		function getBody(): JSX.Element {
-			return <div className={style.signupModal}>
-				<input type="text" placeholder="😎 信箱" autoFocus {...email} />
-				{
-					(() => {
-						if (signup_sent) {
-							return <>
-								<p>已寄出註冊碼</p>
-							</>;
-						} else {
-							return <>
-								<p>&nbsp;</p>
-							</>;
-						}
-					})()
-				}
-			</div>;
-		}
-
-		return <ModalWindow
-			title="註冊"
-			body={getBody()}
-			buttons={buttons}
-			visible={signuping}
-			setVisible={setSignuping}
-		/>;
 	}
 
 	function DropdownBody(): JSX.Element {
@@ -163,12 +114,13 @@ function _Header(props: RouteComponentProps): JSX.Element {
 	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
 	return (
 		<div className={`header ${style.header}`}>
-			<LoginModal logining={logining} setLogining={setLogining} />
-			<SignupModal />
+			{logining ? <LoginModal setLogining={setLogining} /> : null}
+			{signuping ? <SignupModal setSignuping={setSignuping}/> : null}
 			<div className={style.container}>
 				<div className={style.space} />
 				<div className={style.leftSet}>
 					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
+						{/* TODO: 修正 vite 路徑 */}
 						<img src="/src/img/icon_with_text.png" alt="" />
 					</div>
 					<div className={style.location}>{title}</div>
@@ -185,61 +137,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 }
 
 const Header = withRouter(_Header);
-
-export function LoginModal(props: { logining: boolean, setLogining: (logining: boolean) => void }): JSX.Element {
-	const { setLogin } = UserState.useContainer();
-	let name = useInputValue('').input_props;
-	let password = useInputValue('').input_props;
-	let ref_all = React.useRef(null);
-	useOnClickOutside(ref_all, () => props.setLogining(false));
-
-	async function login_request(name: string, password: string): Promise<void> {
-		try {
-			let user = unwrap(await API_FETCHER.login(name, password));
-			props.setLogining(false);
-			if (user) {
-				setLogin({
-					user_name: user.user_name,
-					energy: user.energy,
-				});
-				toast('登入成功');
-			} else {
-				toast('帳號或密碼錯誤');
-			}
-		} catch (err) {
-			toastErr(err);
-		}
-		return;
-	}
-
-
-	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-		if (e.key == 'Enter') {
-			login_request(name.value, password.value);
-		} else if (e.key == 'Escape') {
-			props.setLogining(false);
-		}
-	}
-
-	let buttons: ModalButton[] = [];
-	buttons.push({ text: '登入', handler: () => login_request(name.value, password.value) });
-	buttons.push({ text: '✗', handler: () => props.setLogining(false) });
-
-	function getBody(): JSX.Element {
-		return <div className={style.loginModal}>
-			<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
-			<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-		</div>;
-	}
-
-	return <ModalWindow
-		title="登入"
-		body={getBody()}
-		buttons={buttons}
-		visible={props.logining}
-		setVisible={props.setLogining}
-	/>;
-}
 
 function useNotification(login: boolean): Notification[] | null {
 	let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
