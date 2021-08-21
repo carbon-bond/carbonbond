@@ -60,8 +60,8 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
 					<Row onClick={() => props.history.push('/app/party')}>👥 我的政黨</Row>
 					<Row onClick={() => props.history.push('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
+					<Row onClick={() => props.history.push('/app/setting')}>⚙ 設定</Row>
 					<Row onClick={() => logout_request()}>🏳 登出</Row>
-					<Row>⚙ 設定</Row>
 				</div>
 			</div>;
 		} else {

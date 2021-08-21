@@ -50,7 +50,7 @@ export function ResetPassword(props: Props): JSX.Element {
 			<div className={style.signupForm}>
 				<div className={style.counter}> {user_name} ，歡迎歸來！　</div>
 				<input className={style.password} type="password" placeholder="新密碼" {...password} autoFocus />
-				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} autoFocus />
+				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} />
 				<button onClick={() => reset_password_request(password.value, repeated_password.value)}>
 					重置密碼
 				</button>

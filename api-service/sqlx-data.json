@@ -322,6 +322,18 @@
       ]
     }
   },
+  "19de6f6cfa21262734f4bda33b12dd368af9513346913067fe1635887a67c7cc": {
+    "query": "UPDATE reset_password SET is_used = TRUE\n        FROM users\n        WHERE reset_password.user_id = (SELECT user_id from reset_password where code = $1)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "1fad9a11be067106f152f6af9b5bf889fa86987b9901a3b5d0f5d2c427f2e905": {
     "query": "INSERT INTO users (user_name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
     "describe": {
@@ -758,6 +770,98 @@
       ]
     }
   },
+  "34573abd012f87de113533854e4a22c26070c054d7ce984b27b4c432783c4bcf": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 9,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 12,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
   "3a80771dae3b3fd0111e34c902e235e8905685558baa7467afca68eb74b142e7": {
     "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT \n        DISTINCT metas.*, abf.article_id as from, abf.value as to,\n        abf.energy as bond_energy, abf.name, abf.id as bond_id\n         FROM metas \n        INNER JOIN article_bond_fields abf on metas.id = abf.value\n        WHERE abf.article_id = $3\n        AND ($4 OR category_name = ANY($5))\n        ORDER BY create_time DESC\n        ",
     "describe": {
@@ -953,26 +1057,6 @@
         false,
         false,
         null
-      ]
-    }
-  },
-  "3dc2b0d98a727a3aa96fb092ff85fba7c34503d90db39d7a337bd2db8b71f6b7": {
-    "query": "SELECT users.id FROM reset_password\n         JOIN users on reset_password.user_id = users.id\n         WHERE code = $1 AND is_used = false",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false
       ]
     }
   },
@@ -1600,19 +1684,6 @@
         "Left": [
           "Text",
           "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
-  "7a3f303707d7fe3a8a80ec944a832a181e32c8920909d227412734d9e2f8ebd2": {
-    "query": "INSERT INTO reset_password (user_id, code) VALUES ($1, $2)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Varchar"
         ]
       },
       "nullable": []
@@ -2265,32 +2336,6 @@
       ]
     }
   },
-  "c4bf952d8bb2fde8d3d31e75538a31be98fe844150b3ec03c706c25e117c5dc6": {
-    "query": "UPDATE reset_password SET is_used = TRUE WHERE id = $1",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
-  "c9461fa5f24a49bd555d2a65efd35d3e3cc0ce6034a214e028a45a08f093528c": {
-    "query": "\n        UPDATE users SET (password_hashed, salt) = ($1, $2)\n        FROM reset_password\n        WHERE reset_password.code = $3 and reset_password.user_id = users.id\n    ",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Bytea",
-          "Bytea",
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "c94d15d929573093f92613c33cfc632fbae5f50df997ac1332baf863a88e328d": {
     "query": "UPDATE parties SET board_id = $1, ruling = true where id = $2",
     "describe": {
@@ -2784,6 +2829,98 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "fb6ae592fb1d4ef692a2517a358c88fb6980e7056df75574458b203c85999f51": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 9,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 12,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
+      ]
     }
   },
   "ffb298750f0e662348623f8e6d8819e65b6018baed303c50a9b58eb150590510": {

@@ -9,7 +9,7 @@ export type Result<T, E> = {
 } | {
     'Err': E
 };
-export type User = {     id: number; user_name: string; energy: number; sentence: string;     hated_count: number; followed_count: number; hating_count: number;     following_count: number; introduction: string; gender: string; job:     string; city: string };
+export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hated_count: number; followed_count: number;     hating_count: number; following_count: number; introduction: string;     gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };

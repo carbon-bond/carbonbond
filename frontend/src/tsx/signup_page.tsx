@@ -51,8 +51,8 @@ export function SignupPage(props: Props): JSX.Element {
 			<div className={style.signupForm}>
 				<div className={style.counter}>你的email是：　{email}　</div>
 				<input className={style.username} type="text" placeholder="使用者名稱" {...name} autoFocus />
-				<input className={style.password} type="password" placeholder="密碼" {...password} autoFocus />
-				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} autoFocus />
+				<input className={style.password} type="password" placeholder="密碼" {...password} />
+				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} />
 				<button onClick={() => signup_request(name.value, password.value, repeated_password.value)}>
 					註冊帳號
 				</button>

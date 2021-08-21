@@ -10,12 +10,14 @@ export type UserStateType = {
 	login: true,
 	id: number,
 	user_name: string,
+	email: string,
 	energy: number
 };
 
 interface LoginData {
 	id: number,
 	user_name: string,
+	email: string,
 	energy: number
 }
 
@@ -29,6 +31,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 				setUserState({
 					login: true,
 					user_name: user.user_name,
+					email: user.email,
 					id: user.id,
 					energy: user.energy,
 				});
@@ -50,6 +53,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 			login: true,
 			id: data.id,
 			user_name: data.user_name,
+			email: data.email,
 			energy: data.energy,
 		});
 	}

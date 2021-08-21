@@ -2,7 +2,6 @@ use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{SignupInvitation, SignupInvitationCredit, User};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_invitation_email, send_signup_email};
-use rand::Rng;
 
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
@@ -18,6 +17,7 @@ macro_rules! users {
             WITH metas AS (SELECT
                 users.id,
                 users.user_name,
+                users.email,
                 users.sentence,
                 users.energy,
                 users.introduction,
@@ -291,7 +291,7 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     sqlx::query!(
         "UPDATE reset_password SET is_used = TRUE
         FROM users
-        WHERE users.id = reset_password.user_id AND code = $1",
+        WHERE reset_password.user_id = (SELECT user_id from reset_password where code = $1)",
         token
     )
     .execute(pool)
