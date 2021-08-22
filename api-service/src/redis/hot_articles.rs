@@ -28,14 +28,21 @@ pub async fn set_hot_article_score(article_id: i64) -> Fallible {
 pub async fn get_hot_articles() -> Fallible<Vec<i64>> {
     log::info!("查詢熱門文章");
     let mut conn = get_conn().await?;
-    let map: HashMap<i64, i64> = conn.zrevrange(KEY, 0, 49).await.unwrap_or_default();
 
-    let mut hash_vec: Vec<_> = map.iter().collect();
-    hash_vec.sort_by(|a, b| b.1.cmp(a.1));
+    if !conn.exists(KEY).await? {
+        log::info!("目前資料庫中沒有熱門文章 :(");
+        let hot_articles: Vec<i64> = Vec::new();
+        Ok(hot_articles)
+    } else {
+        let map: HashMap<i64, i64> = conn.zrevrange(KEY, 0, 49).await.unwrap_or_default();
 
-    let hot_articles = hash_vec.iter().map(|&x| x.0).collect::<Vec<_>>();
+        let mut hash_vec: Vec<_> = map.iter().collect();
+        hash_vec.sort_by(|a, b| b.1.cmp(a.1));
 
-    let hot_articles_value = hot_articles.into_iter().cloned().collect();
+        let hot_articles = hash_vec.iter().map(|&x| x.0).collect::<Vec<_>>();
 
-    Ok(hot_articles_value)
+        let hot_articles_value = hot_articles.into_iter().cloned().collect();
+
+        Ok(hot_articles_value)
+    }
 }
