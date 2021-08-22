@@ -11,6 +11,7 @@ mod model {
     pub struct User {
         pub id: i64,
         pub user_name: String,
+        pub email: String,
         pub energy: i64,
         pub sentence: String,
 

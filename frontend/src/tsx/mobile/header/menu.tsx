@@ -6,7 +6,7 @@ import style from '../../../css/mobile/menu.module.css';
 import { API_FETCHER, unwrap } from '../../../ts/api/api';
 import type { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
 import { BoardBlock } from '../../browsebar';
-import { LoginModal } from '../../header';
+import { LoginModal } from '../../header/login_modal';
 import { UserState } from '../../global_state/user';
 import { toastErr } from '../../utils';
 
@@ -99,6 +99,6 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
         		}
         	</div>
         </div>
-		<LoginModal setLogining={setLogining} logining={logining}/>
+		{ logining ? <LoginModal setLogining={setLogining}/> : null }
     </>;
 }

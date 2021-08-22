@@ -6,3 +6,6 @@ pub use article_digest::*;
 
 mod article;
 pub use article::*;
+
+mod token;
+pub use token::*;

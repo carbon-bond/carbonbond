@@ -18,8 +18,8 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 // TODO: 應該用 context 記住熱門看板與訂閱看板，以免每次切換測邊欄都要向後端發 request
 
 export function BrowseBar(): JSX.Element {
-	let { user_state } = UserState.useContainer();
 	let { subscribed_boards } = SubscribedBoardsState.useContainer();
+	let { user_state } = UserState.useContainer();
 	let default_expand = (() => {
 		try {
 			let exp = JSON.parse(localStorage[STORAGE_NAME.browsebar_expand]);

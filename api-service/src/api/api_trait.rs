@@ -9,8 +9,11 @@ pub trait UserQueryRouter {
     async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Party>, crate::custom_error::Error>;
     async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Favorite>, crate::custom_error::Error>;
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
+    async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
     async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::User, crate::custom_error::Error>;
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
+    async fn query_user_name_by_reset_password_token(&self, context: &mut crate::Ctx, token: String) -> Result<Option<String>, crate::custom_error::Error>;
+    async fn reset_password_by_token(&self, context: &mut crate::Ctx, password: String, token: String) -> Result<(), crate::custom_error::Error>;
     async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::User>, crate::custom_error::Error>;
     async fn logout(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
     async fn query_user(&self, context: &mut crate::Ctx, name: String) -> Result<super::model::User, crate::custom_error::Error>;
@@ -51,6 +54,11 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
+             UserQuery::SendResetPasswordEmail { email } => {
+                 let resp = self.send_reset_password_email(context, email).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+             }
              UserQuery::Signup { user_name, password, token } => {
                  let resp = self.signup(context, user_name, password, token).await;
                  let s = serde_json::to_string(&resp)?;
@@ -58,6 +66,16 @@ pub trait UserQueryRouter {
              }
              UserQuery::QueryEmailByToken { token } => {
                  let resp = self.query_email_by_token(context, token).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+             }
+             UserQuery::QueryUserNameByResetPasswordToken { token } => {
+                 let resp = self.query_user_name_by_reset_password_token(context, token).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+             }
+             UserQuery::ResetPasswordByToken { password, token } => {
+                 let resp = self.reset_password_by_token(context, password, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
              }
