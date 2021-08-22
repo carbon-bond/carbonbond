@@ -203,7 +203,7 @@ pub async fn send_reset_password_email(email: String) -> Fallible<()> {
     let token = crate::util::generate_token();
     // TODO: 爲統一命名，把資料庫表格中的 code 改成 token
     sqlx::query!(
-        "INSERT INTO reset_password (user_id, code) VALUES
+        "INSERT INTO reset_password (user_id, token) VALUES
         ((SELECT id FROM users WHERE email = $1), $2)",
         email,
         token,
@@ -264,7 +264,7 @@ pub async fn get_user_name_by_reset_password_token(token: &str) -> Fallible<Opti
     let record = sqlx::query!(
         "SELECT user_name FROM reset_password
          JOIN users on reset_password.user_id = users.id
-         WHERE code = $1 AND is_used = false",
+         WHERE token = $1 AND is_used = false",
         token
     )
     .fetch_optional(pool)
@@ -280,7 +280,7 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     sqlx::query!(
         "UPDATE users SET (password_hashed, salt) = ($1, $2)
         FROM reset_password
-        WHERE reset_password.code = $3 and reset_password.user_id = users.id",
+        WHERE reset_password.token = $3 and reset_password.user_id = users.id",
         hash,
         salt,
         token,
@@ -291,7 +291,7 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     sqlx::query!(
         "UPDATE reset_password SET is_used = TRUE
         FROM users
-        WHERE reset_password.user_id = (SELECT user_id from reset_password where code = $1)",
+        WHERE reset_password.user_id = (SELECT user_id from reset_password where token = $1)",
         token
     )
     .execute(pool)
