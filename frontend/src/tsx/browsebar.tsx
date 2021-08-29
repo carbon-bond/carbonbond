@@ -68,7 +68,9 @@ export function BrowseBar(): JSX.Element {
 			>
 				<div className={style.special}>
 					<div>📰 我的訂閱</div>
-					<div>🔥 全站熱門</div>
+					<Link to={'/app/pop_article'}>
+						<div>🔥 全站熱門</div>
+					</Link>
 					<div>🛹 所有看板</div>
 				</div>
 			</ShrinkableBlock>

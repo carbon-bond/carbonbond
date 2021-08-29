@@ -24,6 +24,7 @@ import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { SettingPage } from './setting_page';
+import { PopArticlePage } from './pop_article_page';
 import { ResetPassword } from './reset_password';
 import { UserPage } from './profile/user_page';
 import { PartySwitch } from './party_switch';
@@ -77,6 +78,9 @@ function App(): JSX.Element {
 					<GeneralBoard {...props} render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
+				} />
+				<Route path="/app/pop_article" render={() =>
+					<PopArticlePage />
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />
