@@ -1,5 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
+use crate::service;
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde::Serialize;
 use serde_json::Value;
@@ -347,6 +348,9 @@ async fn insert_field(
     value: Value,
 ) -> Fallible<()> {
     log::debug!("插入文章內容 {:?} {:?}", field, value);
+
+    service::hot_articles::set_hot_article_score(article_id).await?;
+
     match field.datatype.basic_type() {
         force::BasicDataType::Number => match value {
             Value::Number(number) => {
