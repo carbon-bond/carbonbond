@@ -9,7 +9,7 @@ export type Result<T, E> = {
 } | {
     'Err': E
 };
-export type User = {     id: number; user_name: string; energy: number; sentence: string;     hated_count: number; followed_count: number; hating_count: number;     following_count: number; introduction: string; gender: string; job:     string; city: string };
+export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hated_count: number; followed_count: number;     hating_count: number; following_count: number; introduction: string;     gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
@@ -39,7 +39,7 @@ export type FamilyFilter =
  | { BlackList: string [] } 
  | "None";
 export type Bond = { energy: number; target_article: number; tag: string | null };
-export enum DataType {     Category = "Category", IntField = "IntField", StringField = "StringField",     BondField = "BondField", Board = "Board", Article = "Article", Party =     "Party", User = "User", Notification = "Notification", SignupToken =     "SignupToken" };
+export enum DataType {     Category = "Category", IntField = "IntField", StringField = "StringField",     BondField = "BondField", Board = "Board", Article = "Article", Party =     "Party", User = "User", Email = "Email", Notification = "Notification",     SignupToken = "SignupToken", ResetPasswordToken = "ResetPasswordToken" };
 export type BondError = 
  | { Custom: Error } 
  | "TargetNotFound" 
@@ -53,6 +53,7 @@ export type ErrorCode =
  | { NotFound: [DataType, string] } 
  | "DuplicateInvitation" 
  | "DuplicateRegister" 
+ | "NotAllowSelfSignup" 
  | "ParsingJson" 
  | { ForceValidate: ForceValidateError<BondError>} 
  | "UnImplemented" 
@@ -75,11 +76,20 @@ export abstract class RootQueryFetcher {
     async sendSignupEmail(email: string, is_invite: boolean): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email, is_invite } } }));
     }
+    async sendResetPasswordEmail(email: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SendResetPasswordEmail": { email } } }));
+    }
     async signup(user_name: string, password: string, token: string): Promise<Result<User, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Signup": { user_name, password, token } } }));
     }
     async queryEmailByToken(token: string): Promise<Result<string, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryEmailByToken": { token } } }));
+    }
+    async queryUserNameByResetPasswordToken(token: string): Promise<Result<Option<string>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryUserNameByResetPasswordToken": { token } } }));
+    }
+    async resetPasswordByToken(password: string, token: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "ResetPasswordByToken": { password, token } } }));
     }
     async login(user_name: string, password: string): Promise<Result<Option<User>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Login": { user_name, password } } }));

@@ -78,7 +78,7 @@ function InvitationInput(props: {setRerun: Function, remaining: number}): JSX.El
 			props.remaining > 0 ?
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<span>邀請 </span>
-					<input ref={register} name="email" placeholder="輸入 email" />
+					<input ref={register} type="email" name="email" placeholder="輸入 email" />
 				</form> :
 				null
 		}

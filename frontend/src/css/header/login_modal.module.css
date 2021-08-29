@@ -1,0 +1,29 @@
+.loginModal {
+    width: 300px;
+    height: 150px;
+}
+
+.signupModal {
+    width: 300px;
+    height: 100px;
+}
+
+.loginModal, .signupModal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    & input {
+        position: relative;
+        width: 100%;
+        height: 40px;
+		margin-top: 10px;
+    }
+	& .fogetPassword {
+		margin-top: 3px;
+		color: var(--light-font-color);
+		font-size: 12px;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+}

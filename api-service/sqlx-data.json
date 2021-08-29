@@ -1,43 +1,5 @@
 {
   "db": "PostgreSQL",
-  "007ecb5687a38c75db199dac5e7f807112804bd85b02a33646b19f6f4898ba9f": {
-    "query": "SELECT signup_tokens.email, signup_tokens.create_time, signup_tokens.is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on signup_tokens.email = users.email\n         WHERE inviter_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 2,
-          "name": "is_used",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 3,
-          "name": "user_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "00f65940fd4005e246950933fa3facb2b4763af768fb129a16aed6d0e318638f": {
     "query": "\n        INSERT INTO categories (board_id, category_name, version, source, families)\n        VALUES ($1, $2, 1, $3, $4)\n        RETURNING id\n        ",
     "describe": {
@@ -440,56 +402,6 @@
       ]
     }
   },
-  "243bd775ce8be30cf923e0a6049dc58fdda9b5cc5589a143b8a93d48f480bb77": {
-    "query": "SELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.inviter_id = $1;",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "token",
-          "type_info": "Varchar"
-        },
-        {
-          "ordinal": 2,
-          "name": "inviter_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "invitee_email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 5,
-          "name": "is_used",
-          "type_info": "Bool"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
     "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    ",
     "describe": {
@@ -736,124 +648,6 @@
       ]
     }
   },
-  "2e133fb70b6fb85f9d2f9d6cd8c64fd374727537151b44e07c51e82d8bcf361c": {
-    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "introduction",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "gender",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "job",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "city",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "hated_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 9,
-          "name": "followed_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 10,
-          "name": "hating_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 11,
-          "name": "following_count!",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        null,
-        null,
-        null,
-        null
-      ]
-    }
-  },
-  "30c97dfe04998f63b5cc013b4e1d5783d457533c152a6586bd5ab7f8a9b0d24d": {
-    "query": "SELECT event_name, credit, create_time\n        FROM invitation_credits WHERE user_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "event_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "333369cc0e6a43adc007f8ccd6afd2b9cf5b687e3b350981d3ebb7e6484af0e3": {
     "query": "SELECT board_name, id FROM boards",
     "describe": {
@@ -875,6 +669,98 @@
       "nullable": [
         false,
         false
+      ]
+    }
+  },
+  "34573abd012f87de113533854e4a22c26070c054d7ce984b27b4c432783c4bcf": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 9,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 12,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
       ]
     }
   },
@@ -1109,28 +995,6 @@
       "parameters": {
         "Left": [
           "Int8"
-        ]
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
-  "42f337281318e08d5153800e7c0fddfe1943aea6227ea6801dc0d8568746e13a": {
-    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email, code)\n        VALUES ($1, $2, $3) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Text",
-          "Varchar"
         ]
       },
       "nullable": [
@@ -1389,18 +1253,6 @@
       "nullable": []
     }
   },
-  "5e34f8a1ee2c8ba61f3e8d9d9473d1b250259d1d6aa1c3564abe4547ca6902ba": {
-    "query": "DELETE FROM signup_tokens WHERE token = $1",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "604eb7064d1fd265096fd5b8bea00da56c83ed5296c1bfc2179c99b4d54d7bfe": {
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n    INNER JOIN party_members ON parties.id = party_members.party_id\n    WHERE user_id = $1\n        ",
     "describe": {
@@ -1492,27 +1344,6 @@
         false,
         false,
         null
-      ]
-    }
-  },
-  "65af8b103f9edc2b2037d12dce23579a3e8bc5b40362df8bc47f58dbc6d2952f": {
-    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email)\n        VALUES ($1, $2) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Text"
-        ]
-      },
-      "nullable": [
-        false
       ]
     }
   },
@@ -1670,50 +1501,6 @@
       ]
     }
   },
-  "7309c5348c30e514c988b4d544fdd79395a7d66a151056e60bb9c706efb60293": {
-    "query": "SELECT * FROM invitation_credits\n\t\tWHERE user_id = $1;",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "event_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 4,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "75099c5616413a879114f5dd287941313aecebc8926b09b30cdd10533f1e3049": {
     "query": "\n        SELECT article_id, name, value FROM article_int_fields\n        WHERE article_id = $1;\n        ",
     "describe": {
@@ -1746,44 +1533,6 @@
       ]
     }
   },
-  "771b54a44262b6add4910ed03a5932801d3b6071b0765bbd9750d8735022386d": {
-    "query": "SELECT signup_tokens.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 2,
-          "name": "is_used",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 3,
-          "name": "user_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "788d9643221ec526af991b0e29a21e8a2b3aeb8593ddc18480eaf224b9153d51": {
     "query": "\n        UPDATE notifications SET read = true\n        WHERE id = ANY($1) AND user_id = $2\n        ",
     "describe": {
@@ -1808,44 +1557,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "7effd785b11190283f8428f7f744768d7f29b8d6d1cd1e5ec632e31f158e8b82": {
-    "query": "SELECT users.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         LEFT JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 2,
-          "name": "is_used",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 3,
-          "name": "user_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "859975baf1436ec51c67f4e1b444a7e864d7a6cfdb107709e4068a6160d484d5": {
@@ -1999,128 +1710,16 @@
       ]
     }
   },
-  "90e672943daed55d3160653932ff58f36da4b9cd43c3ff7f5d2046a04300ad44": {
-    "query": "SELECT users.email, signup_tokens.create_time, is_used, users.user_name\n         FROM signup_tokens\n         JOIN users on users.email = signup_tokens.email\n         WHERE inviter_id = $1",
+  "93c639136fb231f8b7f6797ba96d8cb94180e3324302e6ec7a06c7a4f9a7047a": {
+    "query": "UPDATE reset_password SET is_used = TRUE\n        FROM users\n        WHERE reset_password.user_id = (SELECT user_id from reset_password where token = $1)",
     "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 2,
-          "name": "is_used",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 3,
-          "name": "user_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "913389ee51adffa0340e23bc44566f8e12ff43529bcdf57a4ef1e490d4924906": {
-    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "introduction",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "gender",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "job",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "city",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "hated_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 9,
-          "name": "followed_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 10,
-          "name": "hating_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 11,
-          "name": "following_count!",
-          "type_info": "Int8"
-        }
-      ],
+      "columns": [],
       "parameters": {
         "Left": [
           "Text"
         ]
       },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        null,
-        null,
-        null,
-        null
-      ]
+      "nullable": []
     }
   },
   "97e01a176cf9a10c8aee79827bba52e4531ab3bdffcc2e5a72e95c902b5ff347": {
@@ -2146,26 +1745,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "9b12f077f9847127d5b69f190b25ad6a7512b43f130dabbffaf0875928076912": {
-    "query": "SELECT (user_id, event_name, credit, create_time) FROM invitation_credits\n\t\tWHERE user_id = $1;",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "row",
-          "type_info": "Record"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        null
-      ]
     }
   },
   "9ba2b449f921b2d264878ebd3d46605bfde138d351ce20756dfabc74e60cc5c9": {
@@ -2224,6 +1803,20 @@
         false,
         false
       ]
+    }
+  },
+  "a5694a6fc51bd98daf7d483a05402539226e6b969b818914aa70d8e4ee4e904f": {
+    "query": "UPDATE users SET (password_hashed, salt) = ($1, $2)\n        FROM reset_password\n        WHERE reset_password.token = $3 and reset_password.user_id = users.id",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Bytea",
+          "Bytea",
+          "Text"
+        ]
+      },
+      "nullable": []
     }
   },
   "a662136e979f618508059dafb8ce52aafefea20670d5f71233c1dfb052173390": {
@@ -2357,18 +1950,6 @@
       ]
     }
   },
-  "adb94b87d6e170f1bc3819b7c57ece0556c68bacac5fcb4b9a4b8150b2a1fab1": {
-    "query": "UPDATE signup_invitations SET is_used = TRUE where code = $1",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "b3671d1898574f4f9b13308de1ea841a99231296ad29dd973b5d1eee048a1e11": {
     "query": "SELECT article_id FROM favorite_articles\n        WHERE user_id = $1 AND article_id = ANY($2)",
     "describe": {
@@ -2407,94 +1988,6 @@
       },
       "nullable": [
         true
-      ]
-    }
-  },
-  "bc2332684b727709b2967f8a1c29cdec0fb450436a0f10b771cf86846e92ed62": {
-    "query": "SELECT user_id, event_name, credit, create_time FROM invitation_credits\n\t\tWHERE user_id = $1;",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "user_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "event_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 3,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "bd200175d8b568c4fd2de1de5f2d194a2817358deadc20115d9c2bd9a92bc5b5": {
-    "query": " SELECT * FROM signup_invitations\n\t\tWHERE signup_invitations.inviter_id = $1;",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "code",
-          "type_info": "Varchar"
-        },
-        {
-          "ordinal": 2,
-          "name": "inviter_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "invitee_email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 5,
-          "name": "is_used",
-          "type_info": "Bool"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     }
   },
@@ -2763,6 +2256,19 @@
       "nullable": []
     }
   },
+  "d3ac55606496f5a8a6be358c6e20a7d2959decdc0dcfadf7be02d2cddb379f27": {
+    "query": "INSERT INTO reset_password (user_id, token) VALUES\n        ((SELECT id FROM users WHERE email = $1), $2)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Varchar"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "d6bfba029661e5c2f01b44f6544706e894f7716cc0d01fc190108d5cab0afcf0": {
     "query": "\n            WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1\n                AND NOT categories.families && $2)\n                OR (NOT $1\n                AND categories.families && $2))\n            SELECT \n        DISTINCT metas.*, abf.article_id as from, abf.value as to,\n        abf.energy as bond_energy, abf.name, abf.id as bond_id\n         FROM metas \n        INNER JOIN article_bond_fields abf ON metas.id = abf.article_id\n        WHERE abf.value = $3\n        AND ($4 OR category_name = ANY($5))\n        ORDER BY create_time DESC\n        ",
     "describe": {
@@ -2895,19 +2401,6 @@
       ]
     }
   },
-  "d9e4616504651408b86e3fb140f1f57ba6fb85422717ece155900a591336e9c2": {
-    "query": "INSERT INTO signup_tokens (email, token) VALUES ($1, $2)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "dcf71e024bce8f58d3f9cb382f0b92ec7085b8b44a08b5e47a052297e66c353c": {
     "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_int_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value >= $2 AND f.value <= $3\n                    ) AND a.id = ANY($4)\n                    ",
     "describe": {
@@ -2929,18 +2422,6 @@
       "nullable": [
         false
       ]
-    }
-  },
-  "dd29bdcb4abaeafef2c978872e02803bfd705a628cacb2a01cf9fe57a48632b4": {
-    "query": "UPDATE signup_invitations SET is_used = TRUE where token = $1",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": []
     }
   },
   "de0ad6b9556df4a670e1e8d7a98197595b305a43019633a0bc8191e8a163b64b": {
@@ -2987,48 +2468,6 @@
       ]
     }
   },
-  "e26c2e42f9660e9eb72ac88e375714cbcdec34dd50f3dd69cb821fdd07bac825": {
-    "query": "SELECT event_name, credit, create_time\n         FROM invitation_credits WHERE user_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "event_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "credit",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 2,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855": {
-    "query": "",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": []
-    }
-  },
   "eb8eea48ca99fc0446b6457aa7e7698ee0b36f322b98cbeacfda235a7c373954": {
     "query": "\n        SELECT article_id, name, value FROM article_string_fields\n        WHERE article_id = ANY($1);\n        ",
     "describe": {
@@ -3057,6 +2496,26 @@
       "nullable": [
         false,
         false,
+        false
+      ]
+    }
+  },
+  "ec3515677b92862026b92dbefb01389c8934076c39cc30c7311fa01428add2be": {
+    "query": "SELECT user_name FROM reset_password\n         JOIN users on reset_password.user_id = users.id\n         WHERE token = $1 AND is_used = false",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
         false
       ]
     }
@@ -3119,38 +2578,6 @@
       ]
     }
   },
-  "f33e6afdb6de39dff0f5f0aa5384a43d9a1d6348e9efd7b1f16a72a3987a1707": {
-    "query": "SELECT email, create_time, is_used \n         FROM signup_tokens\n         WHERE inviter_id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 2,
-          "name": "is_used",
-          "type_info": "Bool"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "f379223294faf8264e24cf5e16ff6b801cd050c54bf16dd49f20a51c048001fe": {
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            WHERE parties.party_name = $1",
     "describe": {
@@ -3207,28 +2634,6 @@
       ]
     }
   },
-  "f381b0b1f45447592f56127b078c187280fa939b0623f93e53cb6fffa5a7e0d7": {
-    "query": "INSERT INTO signup_invitations (inviter_id, invitee_email, token)\n        VALUES ($1, $2, $3) RETURNING id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Text",
-          "Varchar"
-        ]
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
   "f51b3c983436737b65808402a0bc1df03ae999123255d473facae890c202046b": {
     "query": "DELETE FROM favorite_articles WHERE user_id = $1 AND article_id = $2",
     "describe": {
@@ -3240,6 +2645,98 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "fb6ae592fb1d4ef692a2517a358c88fb6980e7056df75574458b203c85999f51": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 9,
+          "name": "hated_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "followed_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "hating_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 12,
+          "name": "following_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null
+      ]
     }
   },
   "ffb298750f0e662348623f8e6d8819e65b6018baed303c50a9b58eb150590510": {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import style from '../../css/header.module.css';
+import style from '../../css/header/index.module.css';
 
 import { API_FETCHER } from '../../ts/api/api';
 import { Notification, NotificationKind } from '../../ts/api/api_trait';

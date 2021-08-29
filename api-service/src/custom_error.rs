@@ -33,10 +33,14 @@ mod inner {
         Party,
         #[display(fmt = "使用者")]
         User,
+        #[display(fmt = "信箱")]
+        Email,
         #[display(fmt = "通知")]
         Notification,
         #[display(fmt = "註冊碼")]
         SignupToken,
+        #[display(fmt = "重置密碼碼")]
+        ResetPasswordToken,
     }
 
     #[derive(Serialize, Display, Debug, TypeScriptify)]
@@ -61,6 +65,8 @@ mod inner {
         DuplicateInvitation,
         #[display(fmt = "重複註冊")]
         DuplicateRegister,
+        #[display(fmt = "目前不開放自行註冊，請找朋友邀請")]
+        NotAllowSelfSignup,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
         #[display(fmt = "力語言驗證： {:?}", "_0")]

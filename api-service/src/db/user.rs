@@ -1,8 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{SignupInvitation, SignupInvitationCredit, User};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::email::{send_invitation_email, send_signup_email};
-use rand::{distributions::Alphanumeric, Rng};
+use crate::email::{self, send_invitation_email, send_signup_email};
 
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
@@ -18,6 +17,7 @@ macro_rules! users {
             WITH metas AS (SELECT
                 users.id,
                 users.user_name,
+                users.email,
                 users.sentence,
                 users.energy,
                 users.introduction,
@@ -118,10 +118,10 @@ pub async fn get_signup_invitation_credit(user_id: i64) -> Fallible<Vec<SignupIn
     .await?;
     Ok(credits)
 }
-pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallible<String> {
+pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallible<()> {
     let mut conn = get_pool().begin().await?;
 
-    // 1. 若是受邀，檢查發出邀請者的邀請額度是否足夠
+    // 1. 若是邀請註冊，檢查發出邀請者的邀請額度是否足夠
     if let Some(inviter_id) = inviter_id {
         struct Ret {
             remaining: Option<i64>,
@@ -168,10 +168,7 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
     }
 
     // 3. 生成 token
-    let token = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(32)
-        .collect::<String>();
+    let token = crate::util::generate_token();
     sqlx::query!(
         "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)",
         email,
@@ -190,19 +187,46 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
     }
 
     conn.commit().await?;
-
-    Ok(token)
+    Ok(())
 }
-pub async fn get_email_by_token(token: &str) -> Fallible<Option<String>> {
+pub async fn send_reset_password_email(email: String) -> Fallible<()> {
+    let mut conn = get_pool().begin().await?;
+    // 1. 檢查是否有此信箱
+    let arr = sqlx::query!("SELECT 1 as t from users where email = $1 LIMIT 1", email)
+        .fetch_all(&mut conn)
+        .await?;
+    if arr.len() == 0 {
+        return Err(ErrorCode::NotFound(DataType::Email, email).into());
+    }
+
+    // 2. 生成 token
+    let token = crate::util::generate_token();
+    // TODO: 爲統一命名，把資料庫表格中的 code 改成 token
+    sqlx::query!(
+        "INSERT INTO reset_password (user_id, token) VALUES
+        ((SELECT id FROM users WHERE email = $1), $2)",
+        email,
+        token,
+    )
+    .execute(&mut conn)
+    .await?;
+
+    // 3. 寄信
+    email::send_reset_password_email(&token, &email).await?;
+
+    conn.commit().await?;
+    Ok(())
+}
+pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<String>> {
     let pool = get_pool();
     let record = sqlx::query!("SELECT email FROM signup_tokens WHERE token = $1", token)
         .fetch_optional(pool)
         .await?;
     Ok(record.map(|r| r.email))
 }
-pub async fn signup_with_token(name: &str, password: &str, token: &str) -> Fallible<i64> {
+pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallible<i64> {
     log::trace!("使用者用註冊碼註冊");
-    let email = get_email_by_token(token).await?;
+    let email = get_email_by_signup_token(token).await?;
     if let Some(email) = email {
         let pool = get_pool();
         let id = signup(name, password, &email).await?;
@@ -218,9 +242,9 @@ pub async fn signup_with_token(name: &str, password: &str, token: &str) -> Falli
     }
 }
 pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
-    let salt = rand::thread_rng().gen::<[u8; 16]>();
-    let hash = argon2::hash_raw(password.as_bytes(), &salt, &argon2::Config::default())?;
+    let (salt, hash) = crate::util::generate_password_hash(password)?;
     log::trace!("生成使用者 {}:{} 的鹽及雜湊", name, email);
+
     let pool = get_pool();
     let res = sqlx::query!(
         "INSERT INTO users (user_name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -235,6 +259,46 @@ pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
     Ok(res.id)
 }
 
+pub async fn get_user_name_by_reset_password_token(token: &str) -> Fallible<Option<String>> {
+    let pool = get_pool();
+    let record = sqlx::query!(
+        "SELECT user_name FROM reset_password
+         JOIN users on reset_password.user_id = users.id
+         WHERE token = $1 AND is_used = false",
+        token
+    )
+    .fetch_optional(pool)
+    .await?;
+    Ok(record.map(|r| r.user_name))
+}
+
+pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()> {
+    log::trace!("使用者重置密碼");
+    let pool = get_pool();
+    // 更新密碼
+    let (salt, hash) = crate::util::generate_password_hash(password)?;
+    sqlx::query!(
+        "UPDATE users SET (password_hashed, salt) = ($1, $2)
+        FROM reset_password
+        WHERE reset_password.token = $3 and reset_password.user_id = users.id",
+        hash,
+        salt,
+        token,
+    )
+    .execute(pool)
+    .await?;
+    // 設同用戶的所有 token 無效
+    sqlx::query!(
+        "UPDATE reset_password SET is_used = TRUE
+        FROM users
+        WHERE reset_password.user_id = (SELECT user_id from reset_password where token = $1)",
+        token
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub async fn login(name: &str, password: &str) -> Fallible<User> {
     let pool = get_pool();
     let record = sqlx::query!(
@@ -243,7 +307,7 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
     )
     .fetch_optional(pool)
     .await?
-    .ok_or(ErrorCode::PermissionDenied.context("密碼錯誤"))?;
+    .ok_or(ErrorCode::PermissionDenied.context("查無使用者"))?;
     let equal = argon2::verify_raw(
         password.as_bytes(),
         &record.salt,
@@ -253,7 +317,7 @@ pub async fn login(name: &str, password: &str) -> Fallible<User> {
     if equal {
         get_by_name(name).await
     } else {
-        Err(ErrorCode::PermissionDenied.context("查無使用者"))
+        Err(ErrorCode::PermissionDenied.context("密碼錯誤"))
     }
 }
 

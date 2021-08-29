@@ -29,7 +29,7 @@ pub fn get_mode() -> Mode {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub user: RawUserConfig,
+    pub account: RawAccountConfig,
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
 }
@@ -45,7 +45,8 @@ pub struct RawServerConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RawUserConfig {
+pub struct RawAccountConfig {
+    pub allow_self_signup: bool,
     pub email_whitelist: Vec<String>,
 }
 
@@ -55,7 +56,7 @@ pub struct Config {
     pub mode: Mode,
     pub server: ServerConfig,
     pub database: DatabaseConfig,
-    pub user: UserConfig,
+    pub account: AccountConfig,
     pub redis: RedisConfig,
 }
 
@@ -92,7 +93,8 @@ pub struct ServerConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UserConfig {
+pub struct AccountConfig {
+    pub allow_self_signup: bool,
     pub email_whitelist: Vec<String>,
 }
 
@@ -112,9 +114,10 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
     }
 }
 
-impl From<RawUserConfig> for Fallible<UserConfig> {
-    fn from(orig: RawUserConfig) -> Fallible<UserConfig> {
-        Ok(UserConfig {
+impl From<RawAccountConfig> for Fallible<AccountConfig> {
+    fn from(orig: RawAccountConfig) -> Fallible<AccountConfig> {
+        Ok(AccountConfig {
+            allow_self_signup: orig.allow_self_signup,
             email_whitelist: orig.email_whitelist,
         })
     }
@@ -186,7 +189,7 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         mode,
         file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        user: Fallible::<UserConfig>::from(raw_config.user)?,
+        account: Fallible::<AccountConfig>::from(raw_config.account)?,
         database: raw_config.database,
         redis: raw_config.redis,
     };

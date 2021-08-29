@@ -43,10 +43,7 @@ pub async fn send_signup_email(token: &str, email_address: &str) -> Fallible<()>
         url, url
     );
 
-    log::debug!("寄信");
-    log::debug!("url： {}", url);
-    log::debug!("主旨：{}", subject);
-    log::debug!("內文：{}", welcome_msg);
+    log::debug!("邀請註冊網址： {}", url);
 
     let ret_msg = send_html_email(email_address, &subject, &welcome_msg).await?;
     log::debug!("寄信回傳訊息：{}", ret_msg);
@@ -70,12 +67,28 @@ pub async fn send_invitation_email(
          </html>",
         inviter_name, url, url
     );
-    log::debug!("寄信");
-    log::debug!("url： {}", url);
-    log::debug!("主旨：{}", subject);
-    log::debug!("內文：{}", welcome_msg);
+    log::debug!("邀請註冊網址： {}", url);
 
     let ret_msg = send_html_email(email_address, &subject, &welcome_msg).await?;
+    log::debug!("寄信回傳訊息：{}", ret_msg);
+    Ok(())
+}
+
+pub async fn send_reset_password_email(token: &str, email_address: &str) -> Fallible<()> {
+    log::debug!("給 {} 寄發重置密碼信", email_address);
+    let base_url = &get_config().server.base_url;
+    let url = format!("{}/app/reset_password/{}", base_url, token);
+    let subject = format!("重置碳鍵密碼");
+    let html_content = format!(
+        "<html> \
+         <p>點選以下連結，即時重返戰場！</p> \
+         <a href=\"{}\">{}</a> <br/> \
+         </html>",
+        url, url
+    );
+    log::debug!("重置密碼網址： {}", url);
+
+    let ret_msg = send_html_email(email_address, &subject, &html_content).await?;
     log::debug!("寄信回傳訊息：{}", ret_msg);
     Ok(())
 }

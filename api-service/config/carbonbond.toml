@@ -24,7 +24,8 @@ max_conn = 10
 [redis]
 host = "redis://127.0.0.1/"
 
-[user]
+[account]
+allow_self_signup = false
 email_whitelist = [
     # 臺大
     '@ntu\.edu\.tw$',

@@ -27,6 +27,8 @@ pub enum UserQuery {
 
     #[chitin(request, response = "()")]
     SendSignupEmail { email: String, is_invite: bool },
+    #[chitin(request, response = "()")]
+    SendResetPasswordEmail { email: String },
     #[chitin(request, response = "super::model::User")]
     Signup {
         user_name: String,
@@ -35,6 +37,11 @@ pub enum UserQuery {
     },
     #[chitin(request, response = "String")]
     QueryEmailByToken { token: String },
+
+    #[chitin(request, response = "Option<String>")]
+    QueryUserNameByResetPasswordToken { token: String },
+    #[chitin(request, response = "()")]
+    ResetPasswordByToken { password: String, token: String },
 
     #[chitin(request, response = "Option<super::model::User>")]
     Login { user_name: String, password: String },
