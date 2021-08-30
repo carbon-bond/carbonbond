@@ -78,6 +78,23 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         .await?;
         complete_article(meta, context).await
     }
+    async fn search_pop_article(
+        &self,
+        context: &mut crate::Ctx,
+        count: usize,
+    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+        let mut articles: Vec<model::ArticleMeta> = Vec::new();
+        let hot_article_ids = service::hot_articles::get_hot_articles().await?;
+        for hot_article_id in hot_article_ids.iter() {
+            let res: i64 = (*hot_article_id).clone();
+            let article = db::article::get_meta_by_id(res).await?;
+            articles.push(article);
+            if articles.len() >= count {
+                break;
+            }
+        }
+        complete_article(articles, context).await
+    }
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,

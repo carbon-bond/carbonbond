@@ -339,6 +339,7 @@ async fn insert_bond_field(
     .execute(&mut *conn)
     .await?;
     super::article::update_energy(conn, bond.target_article, bond.energy).await?;
+    service::hot_articles::modify_article_energy(bond.target_article, bond.energy).await?;
     Ok(())
 }
 async fn insert_field(
