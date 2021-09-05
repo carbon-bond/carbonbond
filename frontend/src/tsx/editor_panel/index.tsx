@@ -74,6 +74,8 @@ function EditorPanel(): JSX.Element | null {
 	}
 }
 
+type ChangeEvent = { target: { value: string } };
+
 const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
 	const { field, validator } = props;
 	const [validate_info, setValidateInfo] = useState<undefined | string>(undefined);
@@ -92,7 +94,7 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 		placeholder: field.name,
 		id: field.name,
 		value: content[field.name],
-		onChange: (evt: { target: { value: string } }) => {
+		onChange: (evt: ChangeEvent) => {
 			setEditorPanelData({
 				...editor_panel_data,
 				content: {
@@ -105,6 +107,39 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 	if (field.datatype.t.kind == 'text') {
 		return <>
 			<textarea {...input_props} />
+			{validate_info && <InvalidMessage msg={validate_info} />}
+		</>;
+	} else if (field.datatype.t.kind == 'bond') {
+		const onChange = (bond_field: string) => {
+			return (evt: ChangeEvent) => {
+				setEditorPanelData({
+					...editor_panel_data,
+					content: {
+						...editor_panel_data.content,
+						[field.name]: {
+							...editor_panel_data.content[field.name],
+							[bond_field]: evt.target.value
+						}
+					}
+				});
+			};
+		};
+		return <>
+			<div className={style.bond}>
+				<input className={style.id} placeholder="文章 ID"
+					value={editor_panel_data.content[field.name].target_article}
+					onChange={onChange('target_article')} />
+				<input className={style.tag} placeholder="標籤"
+					value={editor_panel_data.content[field.name].tag}
+					onChange={onChange('tag')} />
+			</div>
+			<select
+				value={editor_panel_data.content[field.name].energy}
+				onChange={onChange('energy')} >
+				<option value="1">正面</option>
+				<option value="0">中立</option>
+				<option value="-1">負面</option>
+			</select>
 			{validate_info && <InvalidMessage msg={validate_info} />}
 		</>;
 	} else {
@@ -194,7 +229,7 @@ const ArrayField = (props: { field: Force.Field, validator: Validator }): JSX.El
 		placeholder: field.name,
 		id: field.name,
 		value,
-		onChange: (evt: { target: { value: string } }) => {
+		onChange: (evt: ChangeEvent) => {
 			setValue(evt.target.value);
 			props.validator.validate_basic_datatype(field.datatype.t, evt.target.value)
 				.then(res => setInputValidateInfo(res));
@@ -267,13 +302,12 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	if (editor_panel_data == null) { return <></>; }
 
 	// @ts-ignore
-	const onSubmit = (data): void => {
-		console.log(data);
+	const onSubmit = (): void => {
 		let category = force.categories.get(editor_panel_data.category!)!;
 		// eslint-disable-next-line
 		let content: { [index: string]: any } = {};
 		for (let field of category.fields) {
-			if (field.datatype.t.kind == 'number' || field.datatype.t.kind == 'bond') {
+			if (field.datatype.t.kind == 'number') {
 				if (field.datatype.kind == 'array') {
 					content[field.name] = (editor_panel_data.content[field.name] as string[]).map(Number);
 				} else {
@@ -295,21 +329,29 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 
 				for (let field of category.fields) {
 					if (field.datatype.t.kind == 'bond') {
+						type Bond = {
+							target_article: string,
+							energy: string,
+							tag: string,
+						};
 						if (field.datatype.kind == 'array') {
-							content[field.name] = content[field.name].map((id: number) => ({
-								energy: 0,
-								target_article: id,
-								tag: null
+							content[field.name] = content[field.name].map((bond: Bond) => ({
+								energy: Number(bond.energy),
+								target_article: Number(bond.target_article),
+								tag: bond.tag.trim() == '' ? null : bond.tag
 							}));
 						} else {
+							let bond = content[field.name];
 							content[field.name] = {
-								energy: 0,
-								target_article: content[field.name],
-								tag: null
+								energy: Number(bond.energy),
+								target_article: Number(bond.target_article),
+								tag: bond.tag.trim() == '' ? null : bond.tag
 							};
 						}
 					}
 				}
+
+				console.log(content, null, 2);
 
 				return API_FETCHER.createArticle(
 					board.id,
@@ -399,7 +441,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					return <div className={style.fields}>{input_fields}</div>;
 				})()
 			}
-			<button type="submit">發佈文章</button>
+			<button className={style.submit} type="submit">發佈文章</button>
 		</form>
 	</div>;
 }

@@ -8,7 +8,8 @@ export type EditorPanelData = {
 	board: Board,
 	category?: string,
 	title: string,
-	content: { [index: string]: string | string[] },
+	// eslint-disable-next-line
+	content: { [index: string]: any },
 };
 
 function useEditorPanelState(): {

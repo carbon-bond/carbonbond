@@ -192,7 +192,7 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 						nxt.content[props.field_name] = [`${article.id}`];
 					}
 				} else {
-					nxt.content[props.field_name] = `${article.id}`;
+					nxt.content[props.field_name].target_article = `${article.id}`;
 				}
 			});
 			setEditorPanelData(data);

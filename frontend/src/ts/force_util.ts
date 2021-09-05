@@ -22,11 +22,19 @@ export function get_non_family_members(force: Force, family: string): string[] {
 }
 
 // 創造一個符合力語言型別的空實例
-export function new_content(category: Category): { [index: string]: string | string[] } {
-	let content: { [index: string]: string | string[] } = {};
+// eslint-disable-next-line
+export function new_content(category: Category): { [index: string]: any } {
+// eslint-disable-next-line
+	let content: { [index: string]: any } = {};
 	for (let field of category.fields) {
 		if (field.datatype.kind == 'array') {
 			content[field.name] = [];
+		} else if (field.datatype.t.kind == 'bond') {
+			content[field.name] = {
+				target_article: '',
+				energy: '0',
+				tag: ''
+			};
 		} else {
 			content[field.name] = '';
 		}
