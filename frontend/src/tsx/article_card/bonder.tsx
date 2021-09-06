@@ -186,11 +186,7 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 			});
 			data = produce(data, nxt => {
 				if (props.is_array) {
-					if (nxt.content[props.field_name] instanceof Array) {
-						(nxt.content[props.field_name] as string[]).push(`${article.id}`);
-					} else {
-						nxt.content[props.field_name] = [`${article.id}`];
-					}
+					nxt.content[props.field_name].candidate.target_article = `${article.id}`;
 				} else {
 					nxt.content[props.field_name].target_article = `${article.id}`;
 				}

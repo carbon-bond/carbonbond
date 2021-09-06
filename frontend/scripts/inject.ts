@@ -10,7 +10,7 @@ let fs = require('fs');
 
 const args = minimist(process.argv.slice(2));
 const host = args['host'] || 'localhost';
-const port = args['port'] || '3000';
+const port = args['port'] || '8080';
 const protocal = args['s'] ? 'https' : 'http';
 const scripts = args._;
 const URL = `${protocal}://${host}:${port}/api`;
