@@ -4,7 +4,7 @@ import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect, useMemo } = React;
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { EditorPanelState } from '../global_state/editor_panel';
+import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { BoardName, BoardType } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
@@ -12,63 +12,109 @@ import { toast } from 'react-toastify';
 import { Validator } from '../../ts/validator';
 import * as Force from '../../../../force/typescript/index';
 import { ShowText } from '../../tsx/board_switch/article_page';
+import { Modal } from '../../tsx/article_card/modal';
 
 
-import bottom_panel_style from  '../../css/bottom_panel/bottom_panel.module.css';
-const {roomTitle, leftSet, middleSet, rightSet, button} = bottom_panel_style;
+import bottom_panel_style from '../../css/bottom_panel/bottom_panel.module.css';
+const { roomTitle, leftSet, middleSet, rightSet, button } = bottom_panel_style;
 import style from '../../css/bottom_panel/editor.module.css';
 import { SimpleArticleCardById } from '../article_card';
 import { toastErr } from '../utils';
 import { new_content, new_bond } from '../../ts/force_util';
 
-function EditorPanel(): JSX.Element | null {
-	const { is_open, editor_panel_data, closeEditorPanel, openEditorPanel, setEditorPanelData }
+function useDeleteEditor(): () => void {
+	const { setEditorPanelData }
 		= EditorPanelState.useContainer();
-	function onTitleClick(): void {
-		if (is_open) {
-			closeEditorPanel();
-		} else {
-			openEditorPanel();
-		}
-	}
-	function deleteEditor(): void {
-		let do_delete = true;
-		if (editor_panel_data) {
-			if (editor_panel_data.title != '') {
-				do_delete = confirm('確定要結束發文？');
-			} else {
-				for (let k of Object.keys(editor_panel_data.content)) {
-					if (editor_panel_data.content[k] != '') {
-						do_delete = confirm('確定要結束發文？');
-						break;
-					}
-				}
-			}
-		}
-		if (do_delete) {
+	return () => {
+		if (confirm('確定要結束發文？')) {
 			setEditorPanelData(null);
 		}
+	};
+}
+
+function EditorUpperBar(): JSX.Element {
+	const { window_state, editor_panel_data, minimizeEditorPanel, expandEditorPanel, openEditorPanel }
+		= EditorPanelState.useContainer();
+	const deleteEditor = useDeleteEditor();
+	function onTitleClick(): void {
+		if (window_state == WindowState.Minimize) {
+			openEditorPanel();
+		} else {
+			minimizeEditorPanel();
+		}
 	}
-	if (editor_panel_data) {
-		return <div className={style.editorPanel}>
-			<div className={roomTitle}>
-				<div onClick={() => onTitleClick()} className={leftSet}>
-					{editor_panel_data.board.board_name + ' / ' +
-						(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
-				</div>
-				<div onClick={() => onTitleClick()} className={middleSet}>
-				</div>
-				<div className={rightSet}>
-					<div className={button}>⇱</div>
-					<div className={button} onClick={() => deleteEditor()}>✗</div>
-				</div>
-			</div>
+	if (editor_panel_data == null) { return <></>; }
+	return <div className={roomTitle}>
+		<div onClick={() => onTitleClick()} className={leftSet}>
+			{editor_panel_data.board.board_name + ' / ' +
+				(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
+		</div>
+		<div onClick={() => onTitleClick()} className={middleSet}>
+		</div>
+		<div className={rightSet}>
 			{
-				is_open ?
-					<EditorBody /> :
-					<></>
+				(function () {
+					if (window_state == WindowState.Minimize) {
+						return <>
+							<div className={button} onClick={openEditorPanel}>↑</div>
+							<div className={button} onClick={expandEditorPanel}>⇱</div>
+							<div className={button} onClick={deleteEditor}>✗</div>
+						</>;
+					} else if (window_state == WindowState.Bottom) {
+						return <>
+							<div className={button} onClick={minimizeEditorPanel}>↓</div>
+							<div className={button} onClick={expandEditorPanel}>⇱</div>
+							<div className={button} onClick={deleteEditor}>✗</div>
+						</>;
+					} else if (window_state == WindowState.Expanded) {
+						return <>
+							<div className={button} onClick={minimizeEditorPanel}>↓</div>
+							<div className={button} onClick={openEditorPanel}>⇲</div>
+							<div className={button} onClick={deleteEditor}>✗</div>
+						</>;
+					}
+				})()
 			}
-		</div>;
+		</div>
+	</div>;
+};
+
+function MinimizeEditor(): JSX.Element {
+	return <div className={style.editorPanel}>
+		<EditorUpperBar />
+	</div>;
+}
+
+function BottomEditor(): JSX.Element {
+	return <div className={style.editorPanel}>
+		<EditorUpperBar />
+		<EditorBody />
+	</div>;
+}
+
+function ExpandedEditor(): JSX.Element {
+	const { minimizeEditorPanel }
+		= EditorPanelState.useContainer();
+	return <Modal close={minimizeEditorPanel}>
+		<div className={style.editorPanel}>
+			<EditorUpperBar />
+			<EditorBody />
+		</div>
+	</Modal>;
+}
+
+function EditorPanel(): JSX.Element | null {
+	const { window_state, editor_panel_data }
+		= EditorPanelState.useContainer();
+	if (editor_panel_data) {
+		if (window_state == WindowState.Minimize) {
+			return <MinimizeEditor />;
+		} else if (window_state == WindowState.Bottom) {
+			return <BottomEditor />;
+		} else if (window_state == WindowState.Expanded) {
+			return <ExpandedEditor />;
+		}
+		throw new Error('WindowState 未窮盡');
 	} else {
 		return null;
 	}
@@ -309,7 +355,7 @@ const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element
 };
 
 function _EditorBody(props: RouteComponentProps): JSX.Element {
-	const { closeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { handleSubmit } = useForm();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
@@ -394,7 +440,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(data => unwrap(data))
 			.then(id => {
 				toast('發文成功');
-				closeEditorPanel();
+				minimizeEditorPanel();
 				props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 				setEditorPanelData(null);
 			})
