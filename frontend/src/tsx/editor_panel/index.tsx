@@ -96,7 +96,7 @@ function ExpandedEditor(): JSX.Element {
 	const { minimizeEditorPanel }
 		= EditorPanelState.useContainer();
 	return <Modal close={minimizeEditorPanel}>
-		<div className={style.editorPanel}>
+		<div className={style.expandedEditorPanel}>
 			<EditorUpperBar />
 			<EditorBody />
 		</div>
