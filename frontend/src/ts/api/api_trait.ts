@@ -1,14 +1,15 @@
 /*eslint-disable*/
-export type Option<T> = T | null;
 export type BoxedErr = string
 export type ForceValidateError<T> = string
 // @ts-ignore
 export type HashMap<K extends string | number, T> = { [key: K]: T };
+export type Option<T> = T | undefined | null;
 export type Result<T, E> = {
     'Ok': T
 } | {
     'Err': E
 };
+export type Fetcher = (query: Object) => Promise<string>;
 export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hated_count: number; followed_count: number;     hating_count: number; following_count: number; introduction: string;     gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
@@ -62,8 +63,28 @@ export type Error =
  | { OperationError: { msg: string [] } } 
  | { LogicError: { msg: string []; code: ErrorCode } } 
  | { InternalError: { msg: string []; source: BoxedErr } };
-export abstract class RootQueryFetcher {
-    abstract fetchResult(query: Object): Promise<string>;
+export class RootQuery {
+    fetchResult: Fetcher;
+    userQuery: UserQuery
+    partyQuery: PartyQuery
+    articleQuery: ArticleQuery
+    boardQuery: BoardQuery
+    notificationQuery: NotificationQuery
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+        this.userQuery = new UserQuery(fetcher)
+        this.partyQuery = new PartyQuery(fetcher)
+        this.articleQuery = new ArticleQuery(fetcher)
+        this.boardQuery = new BoardQuery(fetcher)
+        this.notificationQuery = new NotificationQuery(fetcher)
+    }
+}
+
+export class UserQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+    }
     async queryMe(): Promise<Result<Option<User>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMe": {  } } }));
     }
@@ -145,6 +166,13 @@ export abstract class RootQueryFetcher {
     async updateInformation(introduction: string, gender: string, job: string, city: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, gender, job, city } } }));
     }
+}
+
+export class PartyQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+    }
     async queryParty(party_name: string): Promise<Result<Party, Error>> {
         return JSON.parse(await this.fetchResult({ "Party": { "QueryParty": { party_name } } }));
     }
@@ -153,6 +181,13 @@ export abstract class RootQueryFetcher {
     }
     async queryBoardPartyList(board_id: number): Promise<Result<Array<Party>, Error>> {
         return JSON.parse(await this.fetchResult({ "Party": { "QueryBoardPartyList": { board_id } } }));
+    }
+}
+
+export class ArticleQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
     }
     async queryArticleList(count: number, max_id: Option<number>, author_name: Option<string>, board_name: Option<string>, family_filter: FamilyFilter): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleList": { count, max_id, author_name, board_name, family_filter } } }));
@@ -181,6 +216,13 @@ export abstract class RootQueryFetcher {
     async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set, family_filter } } }));
     }
+}
+
+export class BoardQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+    }
     async queryBoardList(count: number): Promise<Result<Array<Board>, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryBoardList": { count } } }));
     }
@@ -205,6 +247,13 @@ export abstract class RootQueryFetcher {
     async queryCategoryById(id: number): Promise<Result<string, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryCategoryById": { id } } }));
     }
+}
+
+export class NotificationQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+    }
     async queryNotificationByUser(all: boolean): Promise<Result<Array<Notification>, Error>> {
         return JSON.parse(await this.fetchResult({ "Notification": { "QueryNotificationByUser": { all } } }));
     }
@@ -212,3 +261,4 @@ export abstract class RootQueryFetcher {
         return JSON.parse(await this.fetchResult({ "Notification": { "ReadNotifications": { ids } } }));
     }
 }
+

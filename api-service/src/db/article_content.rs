@@ -373,11 +373,6 @@ async fn insert_field(
             // validate 過，不可能發生
             _ => {}
         },
-        _ => {
-            return Err(
-                ErrorCode::Other(format!("力語言尚未支援 {:?} 型別", field.datatype)).into(),
-            );
-        }
     }
     Ok(())
 }

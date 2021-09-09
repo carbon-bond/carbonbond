@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum RootQuery {
     #[chitin(router)]
     User(UserQuery),
@@ -16,71 +16,71 @@ pub enum RootQuery {
     #[chitin(router)]
     Notification(NotificationQuery),
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum UserQuery {
-    #[chitin(request, response = "Option<super::model::User>")]
+    #[chitin(leaf, response = "Option<super::model::User>")]
     QueryMe {},
-    #[chitin(request, response = "Vec<super::model::Party>")]
+    #[chitin(leaf, response = "Vec<super::model::Party>")]
     QueryMyPartyList {},
-    #[chitin(request, response = "Vec<super::model::Favorite>")]
+    #[chitin(leaf, response = "Vec<super::model::Favorite>")]
     QueryMyFavoriteArticleList {},
 
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     SendSignupEmail { email: String, is_invite: bool },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     SendResetPasswordEmail { email: String },
-    #[chitin(request, response = "super::model::User")]
+    #[chitin(leaf, response = "super::model::User")]
     Signup {
         user_name: String,
         password: String,
         token: String,
     },
-    #[chitin(request, response = "String")]
+    #[chitin(leaf, response = "String")]
     QueryEmailByToken { token: String },
 
-    #[chitin(request, response = "Option<String>")]
+    #[chitin(leaf, response = "Option<String>")]
     QueryUserNameByResetPasswordToken { token: String },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     ResetPasswordByToken { password: String, token: String },
 
-    #[chitin(request, response = "Option<super::model::User>")]
+    #[chitin(leaf, response = "Option<super::model::User>")]
     Login { user_name: String, password: String },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     Logout {},
-    #[chitin(request, response = "super::model::User")]
+    #[chitin(leaf, response = "super::model::User")]
     QueryUser { name: String },
-    #[chitin(request, response = "Vec<super::model::BoardOverview>")]
+    #[chitin(leaf, response = "Vec<super::model::BoardOverview>")]
     QuerySubcribedBoards {},
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     SubscribeBoard { board_id: i64 },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     UnsubscribeBoard { board_id: i64 },
-    #[chitin(request, response = "i64")]
+    #[chitin(leaf, response = "i64")]
     FavoriteArticle { article_id: i64 },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     UnfavoriteArticle { article_id: i64 },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     CreateUserRelation {
         target_user: i64,
         kind: super::model::UserRelationKind,
     },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     DeleteUserRelation { target_user: i64 },
-    #[chitin(request, response = "super::model::UserRelationKind")]
+    #[chitin(leaf, response = "super::model::UserRelationKind")]
     QueryUserRelation { target_user: i64 },
-    #[chitin(request, response = "Vec<super::model::UserMini>")]
+    #[chitin(leaf, response = "Vec<super::model::UserMini>")]
     QueryFollowerList { user: i64 },
-    #[chitin(request, response = "Vec<super::model::UserMini>")]
+    #[chitin(leaf, response = "Vec<super::model::UserMini>")]
     QueryHaterList { user: i64 },
-    #[chitin(request, response = "Vec<super::model::SignupInvitationCredit>")]
+    #[chitin(leaf, response = "Vec<super::model::SignupInvitationCredit>")]
     QuerySignupInvitationCreditList {},
-    #[chitin(request, response = "Vec<super::model::SignupInvitation>")]
+    #[chitin(leaf, response = "Vec<super::model::SignupInvitation>")]
     QuerySignupInvitationList {},
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     UpdateAvatar { image: String },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     UpdateSentence { sentence: String },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     UpdateInformation {
         introduction: String,
         gender: String,
@@ -88,21 +88,21 @@ pub enum UserQuery {
         city: String,
     },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum PartyQuery {
-    #[chitin(request, response = "super::model::Party")]
+    #[chitin(leaf, response = "super::model::Party")]
     QueryParty { party_name: String },
-    #[chitin(request, response = "i64")]
+    #[chitin(leaf, response = "i64")]
     CreateParty {
         party_name: String,
         board_name: Option<String>,
     },
-    #[chitin(request, response = "Vec<super::model::Party>")]
+    #[chitin(leaf, response = "Vec<super::model::Party>")]
     QueryBoardPartyList { board_id: i64 },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum ArticleQuery {
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
     QueryArticleList {
         count: usize,
         max_id: Option<i64>,
@@ -110,18 +110,18 @@ pub enum ArticleQuery {
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,
     },
-    #[chitin(request, response = "super::model::Article")]
+    #[chitin(leaf, response = "super::model::Article")]
     QueryArticle { id: i64 },
-    #[chitin(request, response = "super::model::ArticleMeta")]
+    #[chitin(leaf, response = "super::model::ArticleMeta")]
     QueryArticleMeta { id: i64 },
-    #[chitin(request, response = "Vec<(super::model::Edge, super::model::Article)>")]
+    #[chitin(leaf, response = "Vec<(super::model::Edge, super::model::Article)>")]
     QueryBonder {
         id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     },
     #[chitin(
-        request,
+        leaf,
         response = "Vec<(super::model::Edge, super::model::ArticleMeta)>"
     )]
     QueryBonderMeta {
@@ -129,14 +129,14 @@ pub enum ArticleQuery {
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     },
-    #[chitin(request, response = "i64")]
+    #[chitin(leaf, response = "i64")]
     CreateArticle {
         board_id: i64,
         category_name: String,
         title: String,
         content: String,
     },
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
     SearchArticle {
         author_name: Option<String>,
         board_name: Option<String>,
@@ -146,40 +146,40 @@ pub enum ArticleQuery {
         title: Option<String>,
         content: HashMap<String, super::model::SearchField>,
     },
-    #[chitin(request, response = "Vec<super::model::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
     SearchPopArticle { count: usize },
-    #[chitin(request, response = "super::model::Graph")]
+    #[chitin(leaf, response = "super::model::Graph")]
     QueryGraph {
         article_id: i64,
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     },
 }
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum BoardQuery {
-    #[chitin(request, response = "Vec<super::model::Board>")]
+    #[chitin(leaf, response = "Vec<super::model::Board>")]
     QueryBoardList { count: usize },
-    #[chitin(request, response = "Vec<super::model::BoardName>")]
+    #[chitin(leaf, response = "Vec<super::model::BoardName>")]
     QueryBoardNameList {},
-    #[chitin(request, response = "super::model::Board")]
+    #[chitin(leaf, response = "super::model::Board")]
     QueryBoard { name: String, style: String },
-    #[chitin(request, response = "super::model::Board")]
+    #[chitin(leaf, response = "super::model::Board")]
     QueryBoardById { id: i64 },
-    #[chitin(request, response = "usize")]
+    #[chitin(leaf, response = "usize")]
     QuerySubscribedUserCount { id: i64 },
-    #[chitin(request, response = "i64")]
+    #[chitin(leaf, response = "i64")]
     CreateBoard { new_board: super::model::NewBoard },
-    #[chitin(request, response = "Vec<super::model::BoardOverview>")]
+    #[chitin(leaf, response = "Vec<super::model::BoardOverview>")]
     QueryHotBoards {},
 
-    #[chitin(request, response = "String")]
+    #[chitin(leaf, response = "String")]
     QueryCategoryById { id: i64 },
 }
 
-#[derive(Serialize, Deserialize, ChitinCodegen, Debug, Clone)]
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum NotificationQuery {
-    #[chitin(request, response = "Vec<super::model::Notification>")]
+    #[chitin(leaf, response = "Vec<super::model::Notification>")]
     QueryNotificationByUser { all: bool },
-    #[chitin(request, response = "()")]
+    #[chitin(leaf, response = "()")]
     ReadNotifications { ids: Vec<i64> },
 }

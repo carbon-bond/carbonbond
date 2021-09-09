@@ -13,10 +13,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
 
-fn default<T: Default>() -> T {
-    Default::default()
-}
-
 // XXX: 密切關注 sqlx user defined macro
 macro_rules! metas {
     ($select:literal, $remain:literal, $is_black_list:expr, $family_filter:expr, $($arg:expr),*) => {

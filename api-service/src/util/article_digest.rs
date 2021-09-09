@@ -71,7 +71,7 @@ impl Buff {
             }
             _ => {
                 // XXX: 錯誤處理，或改用強型別鍵結
-                let bond: BondInstance = serde_json::from_value(value.clone()).unwrap();
+                // let bond: BondInstance = serde_json::from_value(value.clone()).unwrap();
                 // TODO: 處理籤？
                 // log::warn!("未知的型別 {}", value);
                 self.block_txt_count += BOND_EQUIVILENT_TXT_COUNT;
