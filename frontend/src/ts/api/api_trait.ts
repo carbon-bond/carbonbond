@@ -3,7 +3,7 @@ export type BoxedErr = string
 export type ForceValidateError<T> = string
 // @ts-ignore
 export type HashMap<K extends string | number, T> = { [key: K]: T };
-export type Option<T> = T | undefined | null;
+export type Option<T> = T | null;
 export type Result<T, E> = {
     'Ok': T
 } | {

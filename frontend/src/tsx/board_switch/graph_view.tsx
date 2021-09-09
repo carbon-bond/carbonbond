@@ -32,7 +32,7 @@ export function GraphView(props: Props): JSX.Element {
 			toastErr(`${props.match.params.article_id} 不是合法的文章 id`);
 			return;
 		}
-		API_FETCHER.queryArticleMeta(article_id).then(res => {
+		API_FETCHER.articleQuery.queryArticleMeta(article_id).then(res => {
 			if ('Err' in res) {
 				toastErr(res.Err);
 			} else {
@@ -198,7 +198,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryGraph(props.meta.id, null, { BlackList: [force_util.SATELLITE] }).then(res => {
+		API_FETCHER.articleQuery.queryGraph(props.meta.id, null, { BlackList: [force_util.SATELLITE] }).then(res => {
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {

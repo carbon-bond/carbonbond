@@ -364,7 +364,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		board_name: board.board_name,
 	}]);
 	useEffect(() => {
-		API_FETCHER.queryBoardNameList()
+		API_FETCHER.boardQuery.queryBoardNameList()
 			.then(data => unwrap(data))
 			.then(data => setBoardOptions(data))
 			.catch(err => console.log(err));
@@ -428,7 +428,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					}
 				}
 
-				return API_FETCHER.createArticle(
+				return API_FETCHER.articleQuery.createArticle(
 					board.id,
 					category.name,
 					editor_panel_data.title,
@@ -454,7 +454,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					className={style.board}
 					value={board.id}
 					onChange={(evt) => {
-						API_FETCHER.queryBoardById(parseInt(evt.target.value))
+						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
 							.then(data => unwrap(data))
 							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '' }))
 							.catch(err => console.error(err));

@@ -25,11 +25,11 @@ function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_si
 	React.useEffect(() => {
 		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
-		API_FETCHER.queryBoard(board_name, board_type).then(res => {
+		API_FETCHER.boardQuery.queryBoard(board_name, board_type).then(res => {
 			try {
 				let board = unwrap(res);
 				setBoard(board);
-				return API_FETCHER.querySubscribedUserCount(board.id);
+				return API_FETCHER.boardQuery.querySubscribedUserCount(board.id);
 			} catch (err) {
 				return Promise.reject(err);
 			}

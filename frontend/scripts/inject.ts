@@ -1,6 +1,6 @@
 import { parse, Category } from '../../force/typescript/index';
 import { unwrap } from '../src/ts/api/api';
-import { Bond, RootQueryFetcher, BoardType } from '../src/ts/api/api_trait';
+import { Bond, RootQuery, BoardType } from '../src/ts/api/api_trait';
 import request from 'request';
 import prompts from 'prompts';
 import minimist from 'minimist';
@@ -15,21 +15,58 @@ const protocal = args['s'] ? 'https' : 'http';
 const scripts = args._;
 const URL = `${protocal}://${host}:${port}/api`;
 
+type Context = { token: string[], is_logining: boolean };
+
 console.log(`URL = ${URL}`);
-export class InjectFetcher extends RootQueryFetcher {
-	token: string[] = [];
-	is_logining = false;
-	constructor() {
-		super();
+
+
+let { API_FETCHER, doLogin} = (() => {
+	const context: Context  = {
+		token: [],
+		is_logining: false
 	};
-	async doLogin(): Promise<void> {
-		this.is_logining = true;
+	const fetcher = async (query: Object): Promise<string> => {
+		const jar = request.jar();
+		if (!context.is_logining) {
+			let rand = Math.floor(Math.random() * context.token.length);
+			const cookie = request.cookie(context.token[rand])!;
+			jar.setCookie(cookie, URL);
+		}
+		return new Promise((resolve, reject) => {
+			request(
+				{
+					url: URL,
+					jar,
+					method: 'POST',
+					json: query,
+				},
+				(err, resp, body) => {
+					if (err) {
+						reject(err);
+					} else {
+						if (context.is_logining) {
+							let cookies = resp.headers['set-cookie'];
+							if (typeof cookies == 'undefined' || cookies.length == 0) {
+								reject(`登入失敗！${JSON.stringify(body)}`);
+							} else {
+								context.token.push(cookies[0]);
+							}
+						}
+						resolve(JSON.stringify(body));
+					}
+				}
+			);
+		});
+	};
+	const API_FETCHER = new RootQuery(fetcher);
+	const doLogin = async (): Promise<void> => {
+		context.is_logining = true;
 		let user_env = process.env.USERS;
 		if (user_env) {
 			for (let tuple of user_env.split(';')) {
 				let [user, password] = tuple.split(',');
 				try {
-					unwrap(await this.login(user, password));
+					unwrap(await API_FETCHER.userQuery.login(user, password));
 				} catch (e) {
 					console.error(e);
 				}
@@ -52,53 +89,20 @@ export class InjectFetcher extends RootQueryFetcher {
 					message: '密碼',
 				});
 				try {
-					unwrap(await this.login(user.username, password.password));
+					unwrap(await API_FETCHER.userQuery.login(user.username, password.password));
 				} catch (e) {
 					console.error(e);
 				}
 			}
 		}
-		if (this.token.length == 0) {
+		if (context.token.length == 0) {
 			throw '至少須登入一個帳號！';
 		}
-		this.is_logining = false;
-	}
-	fetchResult(query: Object): Promise<string> {
-		const jar = request.jar();
-		if (!this.is_logining) {
-			let rand = Math.floor(Math.random() * this.token.length);
-			const cookie = request.cookie(this.token[rand])!;
-			jar.setCookie(cookie, URL);
-		}
-		return new Promise((resolve, reject) => {
-			request(
-				{
-					url: URL,
-					jar,
-					method: 'POST',
-					json: query,
-				},
-				(err, resp, body) => {
-					if (err) {
-						reject(err);
-					} else {
-						if (this.is_logining) {
-							let cookies = resp.headers['set-cookie'];
-							if (typeof cookies == 'undefined' || cookies.length == 0) {
-								reject(`登入失敗！${JSON.stringify(body)}`);
-							} else {
-								this.token.push(cookies[0]);
-							}
-						}
-						resolve(JSON.stringify(body));
-					}
-				}
-			);
-		});
-	}
-}
+		context.is_logining = false;
 
-let API_FETCHER = new InjectFetcher();
+	};
+	return { doLogin, API_FETCHER };
+})();
 
 type ArticleConentElt = number | string | Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
@@ -127,7 +131,7 @@ export async function inject(file: string): Promise<void> {
 type IDPosMap = { [pos: number]: number };
 async function injectBoard(board: BoardConfig): Promise<void> {
 	let party_id = unwrap(
-		await API_FETCHER.createParty(
+		await API_FETCHER.partyQuery.createParty(
 			`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
 			null
 		)
@@ -140,12 +144,12 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 	let board_id: number;
 
 	try {
-		let b = unwrap(await API_FETCHER.queryBoard(board.name, BoardType.General));
+		let b = unwrap(await API_FETCHER.boardQuery.queryBoard(board.name, BoardType.General));
 		board_id = b.id;
 	} catch (err) {
 		console.log(`找不到看板 ${board.name}，嘗試創起來`);
 		board_id = unwrap(
-			await API_FETCHER.createBoard({
+			await API_FETCHER.boardQuery.createBoard({
 				ruling_party_id: party_id,
 				board_name: board.name,
 				board_type: BoardType.General,
@@ -200,7 +204,7 @@ async function injectArticle(
 		}
 	}
 	let id = unwrap(
-		await API_FETCHER.createArticle(
+		await API_FETCHER.articleQuery.createArticle(
 			board_id,
 			category.name,
 			article.title,
@@ -231,7 +235,7 @@ function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
 
 async function main(): Promise<void> {
 	try {
-		await API_FETCHER.doLogin();
+		await doLogin();
 		if (scripts.length > 0) {
 			for (let file of scripts) {
 				await inject(file);

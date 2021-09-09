@@ -24,7 +24,7 @@ function LoginStatus(
 	const { setLogin } = UserState.useContainer();
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
-			let user = unwrap(await API_FETCHER.login(name, password));
+			let user = unwrap(await API_FETCHER.userQuery.login(name, password));
 			props.setLogining(false);
 			if (user) {
 				setLogin({
@@ -85,7 +85,7 @@ function ForgetPasswordStatus(
 			if (!isEmail(email)) {
 				throw '信箱格式異常';
 			}
-			unwrap(await API_FETCHER.sendResetPasswordEmail(email));
+			unwrap(await API_FETCHER.userQuery.sendResetPasswordEmail(email));
 			setSent(true);
 		} catch (err) {
 			toastErr(err);
@@ -138,7 +138,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 			if (!isEmail(email)) {
 				throw '信箱格式異常';
 			}
-			unwrap(await API_FETCHER.sendSignupEmail(email, false));
+			unwrap(await API_FETCHER.userQuery.sendSignupEmail(email, false));
 			setSent(true);
 		} catch (err) {
 			toastErr(err);

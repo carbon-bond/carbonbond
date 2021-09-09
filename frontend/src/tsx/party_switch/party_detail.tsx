@@ -13,7 +13,7 @@ import { toastErr } from '../utils';
 type Props = RouteComponentProps<{ party_name?: string }>;
 
 async function fetchPartyDetail(party_name: string): Promise<Party> {
-	return unwrap(await API_FETCHER.queryParty(party_name));
+	return unwrap(await API_FETCHER.partyQuery.queryParty(party_name));
 }
 
 export function PartyDetail(props: Props): JSX.Element {

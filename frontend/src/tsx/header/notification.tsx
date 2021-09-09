@@ -59,7 +59,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 			props.setExpandingQuality(null);
 		} else {
 			props.setExpandingQuality(props.quality);
-			API_FETCHER.readNotifications(notifications.map(n => n.id)).then(res => {
+			API_FETCHER.notificationQuery.readNotifications(notifications.map(n => n.id)).then(res => {
 				if ('Err' in res) {
 					toastErr(res.Err);
 				} else {

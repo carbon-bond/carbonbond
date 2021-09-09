@@ -10,7 +10,7 @@ import style from '../css/browsebar.module.css';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
 
 async function fetchHotBoards(): Promise<BoardOverview[]> {
-	let boards = unwrap_or(await API_FETCHER.queryHotBoards(), []);
+	let boards = unwrap_or(await API_FETCHER.boardQuery.queryHotBoards(), []);
 	boards.sort((b1, b2) => b2.popularity - b1.popularity);
 	return boards;
 }

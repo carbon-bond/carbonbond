@@ -12,11 +12,11 @@ import style from '../css/signup_invitation_page.module.css';
 import { toast } from 'react-toastify';
 
 async function fetchInvitationList(): Promise<SignupInvitation[]> {
-	return unwrap_or(await API_FETCHER.querySignupInvitationList(), []);
+	return unwrap_or(await API_FETCHER.userQuery.querySignupInvitationList(), []);
 }
 
 async function fetchCreditList(): Promise<SignupInvitationCredit[]> {
-	return unwrap_or(await API_FETCHER.querySignupInvitationCreditList(), []);
+	return unwrap_or(await API_FETCHER.userQuery.querySignupInvitationCreditList(), []);
 }
 
 function CreditList(props: { credits: SignupInvitationCredit[], total: number }): JSX.Element {
@@ -63,7 +63,7 @@ function InvitationInput(props: {setRerun: Function, remaining: number}): JSX.El
 	};
 	const { register, handleSubmit, reset } = useForm<Input>();
 	const onSubmit = (data: Input): void => {
-		API_FETCHER.sendSignupEmail(data.email, true)
+		API_FETCHER.userQuery.sendSignupEmail(data.email, true)
 		.then((result) => {
 			unwrap(result);
 			toast('已送出邀請信！');

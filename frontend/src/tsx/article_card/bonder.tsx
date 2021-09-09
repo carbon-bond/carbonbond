@@ -14,7 +14,7 @@ export function SatelliteCards(props: { article: ArticleMeta, expanded: boolean 
 	let { article, expanded }= props;
 	let [satellite_articles, setSatelliteArticles] = React.useState<[Edge, Article][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.queryBonder(article.id, null, { WhiteList: [force_util.SATELLITE] }).then(data => {
+		API_FETCHER.articleQuery.queryBonder(article.id, null, { WhiteList: [force_util.SATELLITE] }).then(data => {
 			setSatelliteArticles(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
@@ -36,7 +36,7 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
 	let { article, expanded } = props;
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.queryBonderMeta(article.id, null, { BlackList: [force_util.SATELLITE] }).then(data => {
+		API_FETCHER.articleQuery.queryBonderMeta(article.id, null, { BlackList: [force_util.SATELLITE] }).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);

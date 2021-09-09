@@ -10,7 +10,7 @@ export const get_force: (id: number) => Promise<Force> = (() => {
 		if (force != undefined) {
 			return force;
 		} else {
-			const board = unwrap(await API_FETCHER.queryBoardById(id));
+			const board = unwrap(await API_FETCHER.boardQuery.queryBoardById(id));
 			force = parse(board.force);
 			cache.set(id, force);
 			return force;

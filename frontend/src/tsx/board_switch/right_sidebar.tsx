@@ -19,7 +19,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 	let { has_subscribed, toggleSubscribe } = useSubscribeBoard(props.board);
 
 	React.useEffect(() => {
-		API_FETCHER.queryBoardPartyList(props.board.id).then(res => {
+		API_FETCHER.partyQuery.queryBoardPartyList(props.board.id).then(res => {
 			setParties(unwrap(res));
 		}).catch(err => toastErr(err));
 	}, [props.board.id]);

@@ -68,7 +68,7 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
 
 	async function logout_request(): Promise<{}> {
 		try {
-			unwrap(await API_FETCHER.logout());
+			unwrap(await API_FETCHER.userQuery.logout());
 			setLogout();
 			toast('您已登出');
 		} catch (err) {
@@ -85,13 +85,13 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
         			!user_state.login ? null : <>
                         <Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>
 						<Row onClick={logout_request}>登出</Row>
-						<BoardsRow name="訂閱看板" fetchBoards={async () => await API_FETCHER.querySubcribedBoards()} />
+						<BoardsRow name="訂閱看板" fetchBoards={async () => await API_FETCHER.userQuery.querySubcribedBoards()} />
                     </>
         		}
         		{
         			user_state.login ? null : <Row onClick={() => setLogining(true)}>登入</Row>
         		}
-        		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.queryHotBoards()} />
+        		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.boardQuery.queryHotBoards()} />
         		{
         			!user_state.login ? null : <>
                         <Row to={`/app/user_board/${user_state.user_name}`}>我的個板</Row>
