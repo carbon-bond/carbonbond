@@ -20,7 +20,7 @@ export class Validator extends force.ValidatorTrait {
 		let meta, force;
 		try {
 			force = await get_force(this.board_id);
-			meta = unwrap(await API_FETCHER.queryArticleMeta(article_id));
+			meta = unwrap(await API_FETCHER.articleQuery.queryArticleMeta(article_id));
 		} catch {
 			return '非預期的網路錯誤';
 		}

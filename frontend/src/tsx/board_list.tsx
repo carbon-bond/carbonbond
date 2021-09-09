@@ -8,7 +8,7 @@ import style from '../css/board_list.module.css';
 import '../css/layout.css';
 
 async function fetchBoardList(): Promise<Board[]> {
-	return unwrap_or(await API_FETCHER.queryBoardList(10), []);
+	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
 }
 
 function BoardBlock(props: { board: { board_name: string, board_type: string, title: string } }): JSX.Element {

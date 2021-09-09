@@ -23,7 +23,7 @@ export function SignupPage(props: Props): JSX.Element {
 			if (repeated_password != password) {
 				throw '兩次密碼輸入不同';
 			}
-			await API_FETCHER.signup(name, password, token);
+			await API_FETCHER.userQuery.signup(name, password, token);
 			props.history.push('/app/');
 			getLoginState();
 			toast('註冊成功');
@@ -33,7 +33,7 @@ export function SignupPage(props: Props): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryEmailByToken(token).then(res => {
+		API_FETCHER.userQuery.queryEmailByToken(token).then(res => {
 			try {
 				if ('Ok' in res) {
 					setEmail(res.Ok);

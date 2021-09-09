@@ -26,7 +26,7 @@ function useUserState(): { user_state: UserStateType, setLogin: Function, setLog
 
 	async function getLoginState(): Promise<void> {
 		try {
-			const user = unwrap(await API_FETCHER.queryMe());
+			const user = unwrap(await API_FETCHER.userQuery.queryMe());
 			if (user) {
 				setUserState({
 					login: true,

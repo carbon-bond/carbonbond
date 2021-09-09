@@ -8,7 +8,7 @@ type InputEvent = React.ChangeEvent<HTMLInputElement>
 	| React.ChangeEvent<HTMLTextAreaElement>
 	| React.ChangeEvent<HTMLSelectElement>;
 
-export function toastErr(err: Object | null): void {
+export function toastErr(err: unknown): void {
 	toast.error(JSON.stringify(err));
 }
 
@@ -20,7 +20,7 @@ export function useSubscribeBoard(board: Board): { has_subscribed: boolean, togg
 	async function onUnsubscribeBoardClick(): Promise<void> {
 		console.log('按下取消訂閱看板');
 		try {
-			unwrap(await API_FETCHER.unsubscribeBoard(board.id));
+			unwrap(await API_FETCHER.userQuery.unsubscribeBoard(board.id));
 			unsubscribe(board.id);
 		} catch (err) {
 			toastErr(err);
@@ -29,7 +29,7 @@ export function useSubscribeBoard(board: Board): { has_subscribed: boolean, togg
 	async function onSubscribeBoardClick(): Promise<void> {
 		console.log('按下訂閱看板');
 		try {
-			unwrap(await API_FETCHER.subscribeBoard(board.id));
+			unwrap(await API_FETCHER.userQuery.subscribeBoard(board.id));
 			subscribe({
 				id: board.id,
 				board_name: board.board_name,

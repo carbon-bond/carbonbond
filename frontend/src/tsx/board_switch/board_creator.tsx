@@ -28,7 +28,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 
 	function onSubmit(data: CreateBoardInput): void {
 		if (user_state.login) {
-			API_FETCHER.createBoard({
+			API_FETCHER.boardQuery.createBoard({
 				board_type: props.board_type,
 				ruling_party_id: props.party_id,
 				...data

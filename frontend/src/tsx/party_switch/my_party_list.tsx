@@ -11,7 +11,7 @@ import { EXILED_PARTY_NAME } from './index';
 import { toastErr } from '../utils';
 
 async function fetchPartyList(): Promise<Party[]> {
-	let party_list = unwrap_or(await API_FETCHER.queryMyPartyList(), []);
+	let party_list = unwrap_or(await API_FETCHER.userQuery.queryMyPartyList(), []);
 	return party_list;
 }
 
@@ -96,7 +96,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 			/>
 			<br />
 			<button onClick={() => {
-				API_FETCHER.createParty(
+				API_FETCHER.partyQuery.createParty(
 					party_name,
 					board_name.length == 0 ? null : board_name,
 				).then(res => {

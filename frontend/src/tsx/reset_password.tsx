@@ -22,7 +22,7 @@ export function ResetPassword(props: Props): JSX.Element {
 			if (repeated_password != password) {
 				throw '兩次密碼輸入不同';
 			}
-			await API_FETCHER.resetPasswordByToken(password, token);
+			await API_FETCHER.userQuery.resetPasswordByToken(password, token);
 			props.history.push('/app/');
 			getLoginState();
 			toast('重設密碼成功，請再次登入');
@@ -32,7 +32,7 @@ export function ResetPassword(props: Props): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.queryUserNameByResetPasswordToken(token).then(res => {
+		API_FETCHER.userQuery.queryUserNameByResetPasswordToken(token).then(res => {
 			try {
 				if ('Ok' in res) {
 					setUserName(res.Ok);

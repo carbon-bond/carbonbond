@@ -1,7 +1,7 @@
-use async_trait::async_trait;
 use crate::api::query::*;
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
+use async_trait::async_trait;
 use serde_json::error::Error;
 #[async_trait]
 pub trait UserQueryRouter {
@@ -38,137 +38,137 @@ pub trait UserQueryRouter {
                  let resp = self.query_me(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryMyPartyList {  } => {
                  let resp = self.query_my_party_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryMyFavoriteArticleList {  } => {
                  let resp = self.query_my_favorite_article_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::SendSignupEmail { email, is_invite } => {
                  let resp = self.send_signup_email(context, email, is_invite).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::SendResetPasswordEmail { email } => {
                  let resp = self.send_reset_password_email(context, email).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::Signup { user_name, password, token } => {
                  let resp = self.signup(context, user_name, password, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryEmailByToken { token } => {
                  let resp = self.query_email_by_token(context, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryUserNameByResetPasswordToken { token } => {
                  let resp = self.query_user_name_by_reset_password_token(context, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::ResetPasswordByToken { password, token } => {
                  let resp = self.reset_password_by_token(context, password, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::Login { user_name, password } => {
                  let resp = self.login(context, user_name, password).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::Logout {  } => {
                  let resp = self.logout(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryUser { name } => {
                  let resp = self.query_user(context, name).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QuerySubcribedBoards {  } => {
                  let resp = self.query_subcribed_boards(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::SubscribeBoard { board_id } => {
                  let resp = self.subscribe_board(context, board_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::UnsubscribeBoard { board_id } => {
                  let resp = self.unsubscribe_board(context, board_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::FavoriteArticle { article_id } => {
                  let resp = self.favorite_article(context, article_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::UnfavoriteArticle { article_id } => {
                  let resp = self.unfavorite_article(context, article_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::CreateUserRelation { target_user, kind } => {
                  let resp = self.create_user_relation(context, target_user, kind).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::DeleteUserRelation { target_user } => {
                  let resp = self.delete_user_relation(context, target_user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryUserRelation { target_user } => {
                  let resp = self.query_user_relation(context, target_user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryFollowerList { user } => {
                  let resp = self.query_follower_list(context, user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QueryHaterList { user } => {
                  let resp = self.query_hater_list(context, user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QuerySignupInvitationCreditList {  } => {
                  let resp = self.query_signup_invitation_credit_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::QuerySignupInvitationList {  } => {
                  let resp = self.query_signup_invitation_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::UpdateAvatar { image } => {
                  let resp = self.update_avatar(context, image).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::UpdateSentence { sentence } => {
                  let resp = self.update_sentence(context, sentence).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              UserQuery::UpdateInformation { introduction, gender, job, city } => {
                  let resp = self.update_information(context, introduction, gender, job, city).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
         }
     }
 }
@@ -183,17 +183,17 @@ pub trait PartyQueryRouter {
                  let resp = self.query_party(context, party_name).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              PartyQuery::CreateParty { party_name, board_name } => {
                  let resp = self.create_party(context, party_name, board_name).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              PartyQuery::QueryBoardPartyList { board_id } => {
                  let resp = self.query_board_party_list(context, board_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
         }
     }
 }
@@ -214,47 +214,47 @@ pub trait ArticleQueryRouter {
                  let resp = self.query_article_list(context, count, max_id, author_name, board_name, family_filter).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::QueryArticle { id } => {
                  let resp = self.query_article(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::QueryArticleMeta { id } => {
                  let resp = self.query_article_meta(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::QueryBonder { id, category_set, family_filter } => {
                  let resp = self.query_bonder(context, id, category_set, family_filter).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::QueryBonderMeta { id, category_set, family_filter } => {
                  let resp = self.query_bonder_meta(context, id, category_set, family_filter).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::CreateArticle { board_id, category_name, title, content } => {
                  let resp = self.create_article(context, board_id, category_name, title, content).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::SearchArticle { author_name, board_name, start_time, end_time, category, title, content } => {
                  let resp = self.search_article(context, author_name, board_name, start_time, end_time, category, title, content).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::SearchPopArticle { count } => {
                  let resp = self.search_pop_article(context, count).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              ArticleQuery::QueryGraph { article_id, category_set, family_filter } => {
                  let resp = self.query_graph(context, article_id, category_set, family_filter).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
         }
     }
 }
@@ -274,42 +274,42 @@ pub trait BoardQueryRouter {
                  let resp = self.query_board_list(context, count).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QueryBoardNameList {  } => {
                  let resp = self.query_board_name_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QueryBoard { name, style } => {
                  let resp = self.query_board(context, name, style).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QueryBoardById { id } => {
                  let resp = self.query_board_by_id(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QuerySubscribedUserCount { id } => {
                  let resp = self.query_subscribed_user_count(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::CreateBoard { new_board } => {
                  let resp = self.create_board(context, new_board).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QueryHotBoards {  } => {
                  let resp = self.query_hot_boards(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              BoardQuery::QueryCategoryById { id } => {
                  let resp = self.query_category_by_id(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
         }
     }
 }
@@ -323,12 +323,12 @@ pub trait NotificationQueryRouter {
                  let resp = self.query_notification_by_user(context, all).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
              NotificationQuery::ReadNotifications { ids } => {
                  let resp = self.read_notifications(context, ids).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
-             }
+            }
         }
     }
 }
@@ -339,28 +339,28 @@ pub trait RootQueryRouter {
     type ArticleQueryRouter: ArticleQueryRouter + Sync;
     type BoardQueryRouter: BoardQueryRouter + Sync;
     type NotificationQueryRouter: NotificationQueryRouter + Sync;
-    fn user_router(&self) -> &Self::UserQueryRouter;
-    fn party_router(&self) -> &Self::PartyQueryRouter;
-    fn article_router(&self) -> &Self::ArticleQueryRouter;
-    fn board_router(&self) -> &Self::BoardQueryRouter;
-    fn notification_router(&self) -> &Self::NotificationQueryRouter;
+   fn user_router(&self) -> &Self::UserQueryRouter;
+   fn party_router(&self) -> &Self::PartyQueryRouter;
+   fn article_router(&self) -> &Self::ArticleQueryRouter;
+   fn board_router(&self) -> &Self::BoardQueryRouter;
+   fn notification_router(&self) -> &Self::NotificationQueryRouter;
     async fn handle(&self, context: &mut crate::Ctx, query: RootQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              RootQuery::User(query) => {
                  self.user_router().handle(context, query).await
-             }
+            }
              RootQuery::Party(query) => {
                  self.party_router().handle(context, query).await
-             }
+            }
              RootQuery::Article(query) => {
                  self.article_router().handle(context, query).await
-             }
+            }
              RootQuery::Board(query) => {
                  self.board_router().handle(context, query).await
-             }
+            }
              RootQuery::Notification(query) => {
                  self.notification_router().handle(context, query).await
-             }
+            }
         }
     }
 }

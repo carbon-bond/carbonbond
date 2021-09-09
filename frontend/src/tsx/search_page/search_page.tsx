@@ -112,7 +112,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.searchArticle(query.author, query.board, query.start_time, query.end_time, query.category, query.title, query.fields).then(res => {
+		API_FETCHER.articleQuery.searchArticle(query.author, query.board, query.start_time, query.end_time, query.category, query.title, query.fields).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
@@ -256,7 +256,7 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 			setCategory(null);
 			setInputs({});
 		} else {
-			API_FETCHER.queryCategoryById(category_id).then(res => {
+			API_FETCHER.boardQuery.queryCategoryById(category_id).then(res => {
 				try {
 					let category_src = unwrap(res);
 					setCategory(parse_category(category_src));

@@ -96,7 +96,7 @@ function App(): JSX.Element {
 				if (user_state.login) {
 					console.log('載入訂閱看板');
 					try {
-						let result = await API_FETCHER.querySubcribedBoards();
+						let result = await API_FETCHER.userQuery.querySubcribedBoards();
 						let boards = unwrap(result);
 						load(boards);
 					} catch (err) {

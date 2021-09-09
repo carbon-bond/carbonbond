@@ -41,7 +41,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 
 	async function logout_request(): Promise<{}> {
 		try {
-			unwrap(await API_FETCHER.logout());
+			unwrap(await API_FETCHER.userQuery.logout());
 			setLogout();
 			setExpandingUser(false);
 			setExpandingQuality(null);
@@ -146,7 +146,7 @@ function useNotification(login: boolean): Notification[] | null {
 		if (!login) {
 			return;
 		}
-		API_FETCHER.queryNotificationByUser(true).then((res) => {
+		API_FETCHER.notificationQuery.queryNotificationByUser(true).then((res) => {
 			if ('Err' in res) {
 				toastErr(res.Err);
 				return;

@@ -165,7 +165,7 @@ export function ArticlePage(props: Props): JSX.Element {
 	let [article, setArticle] = React.useState<Article | null>(null);
 
 	React.useEffect(() => {
-		API_FETCHER.queryArticle(article_id).then(data => {
+		API_FETCHER.articleQuery.queryArticle(article_id).then(data => {
 			setArticle(unwrap(data));
 			setFetching(false);
 		}).catch(err => {

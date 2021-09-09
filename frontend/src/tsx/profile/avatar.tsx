@@ -35,7 +35,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		e.preventDefault();
 		try {
 			if (preview_data != null) {
-				unwrap(await API_FETCHER.updateAvatar(preview_data.split(',')[1]));
+				unwrap(await API_FETCHER.userQuery.updateAvatar(preview_data.split(',')[1]));
 			}
 			setIsEditing(false);
 			location.reload();

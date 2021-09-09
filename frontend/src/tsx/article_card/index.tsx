@@ -52,7 +52,7 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		if (favorite) {
 			console.log('按下取消收藏');
 			try {
-				unwrap(await API_FETCHER.unfavoriteArticle(props.article.id));
+				unwrap(await API_FETCHER.userQuery.unfavoriteArticle(props.article.id));
 				setFavorite(false);
 			} catch (err) {
 				toastErr(err);
@@ -60,7 +60,7 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		} else {
 			console.log('按下收藏');
 			try {
-				unwrap(await API_FETCHER.favoriteArticle(props.article.id));
+				unwrap(await API_FETCHER.userQuery.favoriteArticle(props.article.id));
 				setFavorite(true);
 			} catch (err) {
 				toastErr(err);
@@ -190,7 +190,7 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	let [meta, setMeta] = React.useState<ArticleMeta | null>(null);
 
 	React.useEffect(() => {
-		API_FETCHER.queryArticleMeta(props.article_id).then(data => {
+		API_FETCHER.articleQuery.queryArticleMeta(props.article_id).then(data => {
 			setMeta(unwrap(data));
 			// setFetching(false);
 		}).catch(err => {
@@ -268,7 +268,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			return;
 		}
 
-		API_FETCHER.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
+		API_FETCHER.articleQuery.queryArticle(props.article.id).then(res => { // TODO: 避免重複詢問 meta?
 			let article = unwrap(res);
 			setArticle(article);
 			setReady(true);

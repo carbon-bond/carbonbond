@@ -1,24 +1,25 @@
 import * as api_trait from './api_trait';
 import { toastErr } from '../../tsx/utils';
 
-export class ApiFetcher extends api_trait.RootQueryFetcher {
-	async fetchResult(query: Object): Promise<string> {
-		let info = JSON.stringify(query);
-		if (info.length > 300) {
-			info = '';
-		}
-		const url = `http://${window.location.hostname}:${window.location.port}/api?query=${info}`;
-
-		const response = await fetch(url, {
-			body: JSON.stringify(query),
-			method: 'POST'
-		});
-
-		const text = await response.text();
-
-		return (text);
+async function fetchResult(query: Object): Promise<string> {
+	let info = JSON.stringify(query);
+	if (info.length > 300) {
+		info = '太長，省略';
 	}
+	// TODO: 支援 https
+	const url = `http://${window.location.hostname}:${window.location.port}/api?query=${info}`;
+
+	const response = await fetch(url, {
+		body: JSON.stringify(query),
+		method: 'POST'
+	});
+
+	const text = await response.text();
+
+	return (text);
 }
+
+export const API_FETCHER = new api_trait.RootQuery(fetchResult);
 
 export function unwrap<T, E>(result: api_trait.Result<T, E>): T {
 	if ('Ok' in result) {
@@ -53,5 +54,3 @@ export function unwrap_or<T, E>(result: api_trait.Result<T, E>, alt: T): T {
 		return alt;
 	}
 }
-
-export const API_FETCHER = new ApiFetcher();

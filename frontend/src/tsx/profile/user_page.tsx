@@ -26,7 +26,7 @@ function EditSentence(props: { sentence: string, setSentence: Function }): JSX.E
 
 	async function updateSentence(): Promise<void> {
 		try {
-			await API_FETCHER.updateSentence(input_props.value);
+			await API_FETCHER.userQuery.updateSentence(input_props.value);
 			props.setSentence(input_props.value);
 		} catch (err) {
 			toastErr(err);
@@ -77,7 +77,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	async function updateInformation(introduction: string, gender: string, job: string, city: string): Promise<{}> {
 		console.log('更新我的資料');
 		try {
-			await API_FETCHER.updateInformation(introduction, gender, job, city);
+			await API_FETCHER.userQuery.updateInformation(introduction, gender, job, city);
 			setIntroduction(introduction);
 			setGender(gender);
 			setJob(job);
@@ -172,7 +172,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	async function createUserRelation(kind: UserRelationKind): Promise<{}> {
 		if (props.profile_user) {
 			try {
-				await API_FETCHER.createUserRelation(props.profile_user.id, kind);
+				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind);
 			} catch (err) {
 				toastErr(err);
 			}
@@ -183,7 +183,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	async function deleteUserRelation(): Promise<{}> {
 		if (props.profile_user) {
 			try {
-				await API_FETCHER.deleteUserRelation(props.profile_user.id);
+				await API_FETCHER.userQuery.deleteUserRelation(props.profile_user.id);
 			} catch (err) {
 				toastErr(err);
 			}
@@ -224,7 +224,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		async function queryUserRelation(): Promise<{}> {
 			if (props.profile_user) {
 				try {
-					await API_FETCHER.queryUserRelation(props.profile_user.id).then((res) => {
+					await API_FETCHER.userQuery.queryUserRelation(props.profile_user.id).then((res) => {
 						setRelation(unwrap(res));
 					});
 				} catch (err) {
@@ -426,19 +426,19 @@ function Friendships(props: { user: User }): JSX.Element {
 async function fetchArticles(
 	author_name: string,
 ): Promise<ArticleMeta[]> {
-	return unwrap_or(await API_FETCHER.searchArticle(author_name, null, null, null, null, null, new Map()), []);
+	return unwrap_or(await API_FETCHER.articleQuery.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 
 async function fetchFavorites(): Promise<Favorite[]> {
-	return unwrap_or(await API_FETCHER.queryMyFavoriteArticleList(), []);
+	return unwrap_or(await API_FETCHER.userQuery.queryMyFavoriteArticleList(), []);
 }
 
 async function fetchFollowers(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.queryFollowerList(user_id), []);
+	return unwrap_or(await API_FETCHER.userQuery.queryFollowerList(user_id), []);
 }
 
 async function fetchHaters(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.queryHaterList(user_id), []);
+	return unwrap_or(await API_FETCHER.userQuery.queryHaterList(user_id), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;
@@ -451,7 +451,7 @@ function UserPage(props: Props): JSX.Element {
 
 	React.useEffect(() => {
 		Promise.all([
-			API_FETCHER.queryUser(profile_name)
+			API_FETCHER.userQuery.queryUser(profile_name)
 		]).then(([user]) => {
 			try {
 				setUser(unwrap(user));
