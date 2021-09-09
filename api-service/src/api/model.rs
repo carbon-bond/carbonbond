@@ -216,6 +216,7 @@ mod model {
         pub to: i64,
         pub energy: i16,
         pub name: String,
+        pub tag: Option<String>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct Graph {

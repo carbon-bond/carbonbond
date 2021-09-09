@@ -5,7 +5,7 @@ import { ArticleMeta, Board } from '../../ts/api/api_trait';
 import { toastErr } from '../utils';
 import { BonderCards, ReplyButtons, SatelliteButtons, SatelliteCards } from './bonder';
 
-function Modal<T>(props: { close: () => void, children: T }): JSX.Element {
+export function Modal<T>(props: { close: () => void, children: T }): JSX.Element {
 	ReactModal.setAppElement('body');
 	return <ReactModal
 		isOpen={true}

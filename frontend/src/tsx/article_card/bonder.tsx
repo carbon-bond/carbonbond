@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SimpleArticleCard, BondCard, SatelliteCard } from './index';
+import { SimpleArticleCard, SatelliteCard } from './index';
 import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
 import { Force, Category } from '../../../../force/typescript';
 import style from '../../css/board_switch/article_card.module.css';
@@ -49,8 +49,8 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
         {
         	bonders.map(([bond, meta]) => {
         		return <div>
-        			<BondCard bond={bond} />
-        			<SimpleArticleCard key={meta.id} meta={meta} />
+        			{/* <BondCard bond={bond} /> */}
+        			<SimpleArticleCard key={meta.id} meta={meta} bond={bond}/>
         		</div>;
         	})
         }
@@ -186,13 +186,9 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 			});
 			data = produce(data, nxt => {
 				if (props.is_array) {
-					if (nxt.content[props.field_name] instanceof Array) {
-						(nxt.content[props.field_name] as string[]).push(`${article.id}`);
-					} else {
-						nxt.content[props.field_name] = [`${article.id}`];
-					}
+					nxt.content[props.field_name].candidate.target_article = `${article.id}`;
 				} else {
-					nxt.content[props.field_name] = `${article.id}`;
+					nxt.content[props.field_name].target_article = `${article.id}`;
 				}
 			});
 			setEditorPanelData(data);

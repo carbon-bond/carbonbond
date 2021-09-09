@@ -57,7 +57,7 @@ export class GroupChatData extends Record({
 	unreadChannels(): List<ChannelData> {
 		return this.channels.valueSeq().toList().filter(channel => channel.isUnread());
 	}
-	// TODO: 改名爲 newestMessage
+	// TODO: 改名為 newestMessage
 	newestMessage(): Message | undefined {
 		if (this.is_upgraded) {
 			return undefined;
@@ -120,7 +120,7 @@ function useAllChatState(): {
 					'VOLTS 四天王': new ChannelData({
 						name: 'VOLTS 四天王',
 						history: List([
-							new Message({ sender_name: '冬木士度', content: '那時我認爲他是個怪人', time: new Date(2019, 6, 14) }),
+							new Message({ sender_name: '冬木士度', content: '那時我認為他是個怪人', time: new Date(2019, 6, 14) }),
 							new Message({ sender_name: '風鳥院花月', content: '我也是', time: new Date(2019, 6, 15) })
 						]),
 						read_time: new Date(2019, 7, 13)

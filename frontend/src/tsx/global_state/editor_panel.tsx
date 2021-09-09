@@ -8,32 +8,44 @@ export type EditorPanelData = {
 	board: Board,
 	category?: string,
 	title: string,
-	content: { [index: string]: string | string[] },
+	// eslint-disable-next-line
+	content: { [index: string]: any },
+};
+
+export enum WindowState {
+	Minimize,
+	Bottom,
+	Expanded,
 };
 
 function useEditorPanelState(): {
-	is_open: boolean,
+	window_state: WindowState,
+	expandEditorPanel: () => void,
 	openEditorPanel: () => void,
-	closeEditorPanel: () => void,
+	minimizeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: (data: EditorPanelData | null) => void,
 	} {
 	let [data, setData] = useState<EditorPanelData | null>(null);
-	let [is_open, setOpen] = useState(false);
+	let [window_state, setWindowState] = useState(WindowState.Minimize);
 
-	function openEditorPanel(): void {
-		setOpen(true);
+	function expandEditorPanel(): void {
+		setWindowState(WindowState.Expanded);
 	}
-	function closeEditorPanel(): void {
-		setOpen(false);
+	function openEditorPanel(): void {
+		setWindowState(WindowState.Bottom);
+	}
+	function minimizeEditorPanel(): void {
+		setWindowState(WindowState.Minimize);
 	}
 	function setEditorPanelData(data: EditorPanelData | null): void {
 		setData(data);
 	}
 	return {
-		is_open,
+		window_state,
+		expandEditorPanel,
 		openEditorPanel,
-		closeEditorPanel,
+		minimizeEditorPanel,
 		editor_panel_data: data,
 		setEditorPanelData,
 	};

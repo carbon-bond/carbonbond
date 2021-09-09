@@ -1,7 +1,7 @@
 # 忽略所有檔案
 *
 
-# 以下爲白名單
+# 以下為白名單
 !target/release/server
 !config/
 !migrations/

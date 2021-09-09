@@ -87,7 +87,7 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
 			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
-				{favorite ? '🌟 取消收藏' : '⭐ 收藏'}
+				{favorite ? '🌟 取消收藏' : '⚝ 收藏'}
 			</div>
 			<div className={style.articleBtnItem}>
 				📎 分享
@@ -143,19 +143,27 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 }
 
 function BondCard(props: { bond: Edge }): JSX.Element {
-	let energy_icon = '😐';
+	let energy_icon = '👊';
 	if (props.bond.energy > 0) {
-		energy_icon = '😊';
+		energy_icon = '👍';
 	} else if (props.bond.energy < 0) {
-		energy_icon = '😡';
+		energy_icon = '👎';
 	}
-	return <div>TODO: 優化鍵結 {props.bond.name}({energy_icon})</div>;
+	return <div>
+		<div className={style.upperSet}>
+			<span>{props.bond.tag}</span> <span>{energy_icon}</span>
+		</div>
+		<div className={style.lowerSet}>
+			<span>{props.bond.name}</span>
+		</div>
+	</div>;
 }
-function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
+
+function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
-		<div key={meta.title}>
+		<div key={meta.title} className={style.leftSet}>
 			<ArticleLine
 				board_name={meta.board_name}
 				title={meta.title}
@@ -166,9 +174,16 @@ function SimpleArticleCard(props: { meta: ArticleMeta }): JSX.Element {
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
+		{
+			props.bond ?
+				<div className={style.rightSet}>
+					<BondCard bond={props.bond}/>
+				</div>
+				: <></>
+		}
 		<Link className={style.overlay} to={url} target="_blank"></Link >
 		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
-	</div >;
+	</div>;
 }
 
 function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
@@ -184,7 +199,7 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 		});
 	}, [props.article_id]);
 
-	// TODO: 改爲 fetching 圖標
+	// TODO: 改為 fetching 圖標
 	if (meta == null) {
 		return <></>;
 	} else {

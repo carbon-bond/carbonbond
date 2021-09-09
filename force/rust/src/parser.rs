@@ -170,7 +170,7 @@ impl Parser {
             Token::At => {
                 self.advance();
                 self.eat(Token::LeftSquareBracket)?;
-                // 不允許分類族爲空
+                // 不允許分類族為空
                 let name = self.get_identifier()?;
                 let mut family = vec![name];
                 loop {

@@ -127,7 +127,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 	useOnClickOutside(ref, () => setExtendEmoji(false));
 
 	function onSelect(emoji: EmojiMart.EmojiData): void {
-		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+		if (inputElement && inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
 			inputElement.current.focus();
 			const value = props.input_props.value;
 			const start = inputElement.current.selectionStart;
@@ -155,7 +155,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 	}
 
 	function onClick(): void {
-		if (inputElement && inputElement.current) {  // 判斷式只是爲了 TS 的型別檢查
+		if (inputElement && inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
 			inputElement.current.focus();
 		}
 		setExtendEmoji(!extendEmoji);

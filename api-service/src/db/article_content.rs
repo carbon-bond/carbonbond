@@ -141,7 +141,7 @@ fn insert_id_to_kvs<T: Insertable>(
     }
 }
 
-// ids[i] 的分類爲 categories[i]
+// ids[i] 的分類為 categories[i]
 pub async fn get_by_article_ids(
     ids: Vec<i64>,
     categories: Vec<Arc<Category>>,
@@ -329,12 +329,13 @@ async fn insert_bond_field(
 ) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_bond_fields
-        (article_id, name, value, energy)
-        VALUES ($1, $2, $3, $4)",
+        (article_id, name, value, energy, tag)
+        VALUES ($1, $2, $3, $4, $5)",
         article_id,
         field_name,
         bond.target_article,
-        bond.energy
+        bond.energy,
+        bond.tag,
     )
     .execute(&mut *conn)
     .await?;
