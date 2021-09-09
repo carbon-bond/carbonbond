@@ -1,5 +1,5 @@
 export type Bond = {
 	energy: number,
 	target_article: number,
-	tag: string | undefined
+	tag: string | null
 };

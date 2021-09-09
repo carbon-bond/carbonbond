@@ -9,11 +9,11 @@ export class Validator extends force.ValidatorTrait {
 		this.board_id = board_id;
 	}
 	// eslint-disable-next-line
-	async validate_bondee(bondee: force.Bondee, data: any): Promise<string | undefined> {
-		if (data.length == 0) {
-			return '空字串並非合法文章代碼';
+	async validate_article_id(bondee: force.Bondee, data: any): Promise<string | undefined> {
+		if (data.target_article.length == 0) {
+			return '文章代碼不可為空';
 		}
-		const article_id = Number(data);
+		const article_id = Number(data.target_article);
 		if (isNaN(article_id) || !Number.isInteger(article_id)) {
 			return '文章代碼必須是整數';
 		}
@@ -40,12 +40,41 @@ export class Validator extends force.ValidatorTrait {
 		}
 		return '無法指向該文章分類';
 	}
+
+	// eslint-disable-next-line
+	validate_energy(data: any): string | undefined {
+		if (data.energy == '1' || data.energy == '0' || data.energy == '-1') {
+			return undefined;
+		} else {
+			return '鍵能異常';
+		}
+	}
+	// eslint-disable-next-line
+	validate_tag(data: any): string | undefined {
+		if (data.tag.length > 5) {
+			return '標籤不得超過五個字';
+		} else if (data.tag.trim() != data.tag) {
+			return '標籤前後不得有空白';
+		} else {
+			return undefined;
+		}
+	}
+	// eslint-disable-next-line
+	async validate_bondee(bondee: force.Bondee, data: any): Promise<string | undefined> {
+		let messages = [
+			await this.validate_article_id(bondee, data),
+			this.validate_energy(data),
+			this.validate_tag(data),
+		];
+		let s = messages.filter(m => m != undefined).join(', ');
+		return s == '' ? undefined : s;
+	}
 	// eslint-disable-next-line
 	async validate_number(data: any): Promise<string | undefined> {
-		if (data.length == 0) { return '不可爲空'; }
+		if (data.length == 0) { return '不可為空'; }
 		const n = Number(data);
 		if (isNaN(n)) {
-			return '無法解析爲數字';
+			return '無法解析為數字';
 		} else if (!Number.isInteger(n)) {
 			return '必須是整數';
 		}

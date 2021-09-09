@@ -6,7 +6,7 @@
 
 參考 [官方網站](https://www.rust-lang.org/tools/install)。
 
-將工具鏈版本設置爲 nightly。
+將工具鏈版本設置為 nightly。
 ``` sh
 rustup default nightly
 rustup update

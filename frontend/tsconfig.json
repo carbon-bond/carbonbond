@@ -12,7 +12,7 @@
     ],
     "moduleResolution": "node",
     "jsx": "react",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
-    // 因爲我們是用 babel 來轉換，所以不要輸出檔案（直接使用 tsc 指令，就只有檢查型別的功能）
+    // 因為我們是用 babel 來轉換，所以不要輸出檔案（直接使用 tsc 指令，就只有檢查型別的功能）
     "noEmit": true,                        /* Do not emit outputs. */
     "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
 

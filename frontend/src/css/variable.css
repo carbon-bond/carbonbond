@@ -19,6 +19,8 @@
 
     --font-color: var(--deep-gray);
     --light-font-color: var(--gray);
+    --reverse-font-color: var(--white);
+    --light-reverse-font-color: #e9dffa;
 
     --disabled-color: var(--lighter-gray);
 

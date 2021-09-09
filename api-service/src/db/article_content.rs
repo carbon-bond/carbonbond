@@ -1,5 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
+use crate::service;
 use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
 use serde::Serialize;
 use serde_json::Value;
@@ -140,7 +141,7 @@ fn insert_id_to_kvs<T: Insertable>(
     }
 }
 
-// ids[i] 的分類爲 categories[i]
+// ids[i] 的分類為 categories[i]
 pub async fn get_by_article_ids(
     ids: Vec<i64>,
     categories: Vec<Arc<Category>>,
@@ -328,16 +329,18 @@ async fn insert_bond_field(
 ) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_bond_fields
-        (article_id, name, value, energy)
-        VALUES ($1, $2, $3, $4)",
+        (article_id, name, value, energy, tag)
+        VALUES ($1, $2, $3, $4, $5)",
         article_id,
         field_name,
         bond.target_article,
-        bond.energy
+        bond.energy,
+        bond.tag,
     )
     .execute(&mut *conn)
     .await?;
     super::article::update_energy(conn, bond.target_article, bond.energy).await?;
+    service::hot_articles::modify_article_energy(bond.target_article, bond.energy).await?;
     Ok(())
 }
 async fn insert_field(
@@ -347,6 +350,9 @@ async fn insert_field(
     value: Value,
 ) -> Fallible<()> {
     log::debug!("插入文章內容 {:?} {:?}", field, value);
+
+    service::hot_articles::set_hot_article_score(article_id).await?;
+
     match field.datatype.basic_type() {
         force::BasicDataType::Number => match value {
             Value::Number(number) => {

@@ -17,9 +17,9 @@ async function fetchPartyList(): Promise<Party[]> {
 
 // TODO: 再發一個請求取得看板資訊
 export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
-	let { user_state } = UserState.useContainer();
 	let [fetching, setFetching] = React.useState(true);
 	let [party_list, setPartyList] = React.useState<Party[]>([]);
+	let { user_state } = UserState.useContainer();
 
 	React.useEffect(() => {
 		fetchPartyList().then(tree => {

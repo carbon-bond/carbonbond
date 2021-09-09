@@ -21,16 +21,45 @@ export function get_non_family_members(force: Force, family: string): string[] {
 	return non_members;
 }
 
+type Bond = {
+	target_article: string,
+	energy: string,
+	tag: string
+};
+
+export function new_bond(id: string = ''): Bond {
+	return {
+		target_article: id,
+		energy: '0',
+		tag: ''
+	};
+}
+
 // 創造一個符合力語言型別的空實例
-export function new_content(category: Category): { [index: string]: string | string[] } {
-	let content: { [index: string]: string | string[] } = {};
+// eslint-disable-next-line
+export function new_content(category: Category): { [index: string]: any } {
+// eslint-disable-next-line
+	let content: { [index: string]: any } = {};
 	for (let field of category.fields) {
 		if (field.datatype.kind == 'array') {
-			content[field.name] = [];
+			if (field.datatype.t.kind == 'bond') {
+				content[field.name] = {
+					confirmed: [],
+					candidate: new_bond()
+				};
+			} else {
+				content[field.name] = {
+					confirmed: [],
+					candidate: ''
+				};
+			}
+		} else if (field.datatype.t.kind == 'bond') {
+			content[field.name] = new_bond();
 		} else {
 			content[field.name] = '';
 		}
 	}
+	console.log(`new_content = ${JSON.stringify(content, null, 2)}`);
 	return content;
 }
 

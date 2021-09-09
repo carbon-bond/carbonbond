@@ -4,12 +4,12 @@ import { List } from 'immutable';
 import { createContainer } from 'unstated-next';
 
 export type SimpleRoomData = {
-	// XXX: 之後要改爲 id ，因爲可能會撞名
+	// XXX: 之後要改為 id ，因為可能會撞名
 	name: string
 };
 
 export type ChannelRoomData = {
-	// XXX: 之後要改爲 id ，因爲可能會撞名
+	// XXX: 之後要改為 id ，因為可能會撞名
 	name: string,
 	channel: string
 };

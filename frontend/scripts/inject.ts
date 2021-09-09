@@ -12,6 +12,7 @@ const args = minimist(process.argv.slice(2));
 const host = args['host'] || 'localhost';
 const port = args['port'] || '8080';
 const protocal = args['s'] ? 'https' : 'http';
+const scripts = args._;
 const URL = `${protocal}://${host}:${port}/api`;
 
 console.log(`URL = ${URL}`);
@@ -231,8 +232,8 @@ function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
 async function main(): Promise<void> {
 	try {
 		await API_FETCHER.doLogin();
-		if (process.argv.length > 2) {
-			for (let file of process.argv.slice(2)) {
+		if (scripts.length > 0) {
+			for (let file of scripts) {
 				await inject(file);
 			}
 		} else {

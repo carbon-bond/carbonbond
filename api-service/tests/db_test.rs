@@ -2,7 +2,7 @@ use carbonbond::{
     api::model,
     config,
     custom_error::{BondError, DataType, Error, ErrorCode, Fallible},
-    db,
+    db, redis,
 };
 use force::error::{ValidationError, ValidationErrorCode};
 
@@ -18,6 +18,7 @@ async fn setup() {
     child.wait().unwrap();
     config::init(None);
     db::init().await.unwrap();
+    redis::init().await.unwrap();
 }
 
 async fn user_test() -> Fallible<(i64, i64)> {

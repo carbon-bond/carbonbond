@@ -32,7 +32,7 @@ export type Notification = {     id: number; kind: NotificationKind; user_id: nu
 export type SearchField = 
  | { String: string } 
  | { Range: [number, number] };
-export type Edge = {     id: number; from: number; to: number; energy: number; name:     string };
+export type Edge = {     id: number; from: number; to: number; energy: number; name:     string; tag: string | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
 export type FamilyFilter = 
  | { WhiteList: string [] } 
@@ -174,6 +174,9 @@ export abstract class RootQueryFetcher {
     }
     async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));
+    }
+    async searchPopArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "SearchPopArticle": { count } } }));
     }
     async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set, family_filter } } }));
