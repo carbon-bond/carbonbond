@@ -90,6 +90,7 @@ macro_rules! to_bond_and_meta {
                 to: $data.to,
                 energy: $data.bond_energy,
                 name: $data.name,
+                tag: $data.tag,
                 id: $data.bond_id,
             },
             to_meta!($data),
@@ -275,7 +276,7 @@ pub async fn get_bondee_meta(
     let data = metas!(
         "
         DISTINCT metas.*, abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name, abf.id as bond_id
+        abf.energy as bond_energy, abf.name, abf.id as bond_id, abf.tag
         ",
         "
         INNER JOIN article_bond_fields abf on metas.id = abf.value
@@ -305,7 +306,7 @@ pub async fn get_bonder_meta(
     let data = metas!(
         "
         DISTINCT metas.*, abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name, abf.id as bond_id
+        abf.energy as bond_energy, abf.name, abf.id as bond_id, abf.tag
         ",
         "
         INNER JOIN article_bond_fields abf ON metas.id = abf.article_id

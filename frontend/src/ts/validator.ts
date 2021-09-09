@@ -11,7 +11,7 @@ export class Validator extends force.ValidatorTrait {
 	// eslint-disable-next-line
 	async validate_article_id(bondee: force.Bondee, data: any): Promise<string | undefined> {
 		if (data.target_article.length == 0) {
-			return '空字串並非合法文章代碼';
+			return '文章代碼不可為空';
 		}
 		const article_id = Number(data.target_article);
 		if (isNaN(article_id) || !Number.isInteger(article_id)) {
@@ -61,7 +61,6 @@ export class Validator extends force.ValidatorTrait {
 	}
 	// eslint-disable-next-line
 	async validate_bondee(bondee: force.Bondee, data: any): Promise<string | undefined> {
-		// TODO: 檢查 data.tag, data.energy
 		let messages = [
 			await this.validate_article_id(bondee, data),
 			this.validate_energy(data),
@@ -72,10 +71,10 @@ export class Validator extends force.ValidatorTrait {
 	}
 	// eslint-disable-next-line
 	async validate_number(data: any): Promise<string | undefined> {
-		if (data.length == 0) { return '不可爲空'; }
+		if (data.length == 0) { return '不可為空'; }
 		const n = Number(data);
 		if (isNaN(n)) {
-			return '無法解析爲數字';
+			return '無法解析為數字';
 		} else if (!Number.isInteger(n)) {
 			return '必須是整數';
 		}

@@ -23,7 +23,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		e.target.value = '';
 
 		reader.onloadend = () => {
-			setPreviewData(reader.result as string); // 因爲使用 readAsDataURL ，故 result 爲字串
+			setPreviewData(reader.result as string); // 因為使用 readAsDataURL ，故 result 為字串
 			setIsEditing(true);
 		};
 

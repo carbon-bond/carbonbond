@@ -5,7 +5,7 @@ export const VALIDATE_INFO = {
 	REGEXP_FAIL: '不符合正則表達式',
 	JSON_TYPE_MISMATCH: '資料的型別不符',
 	array_length_out_of_range: (min: number, max: number, length: number): string => {
-		return `陣列範圍爲 [${min}, ${max}] ，實際長度爲 ${length}`;
+		return `陣列範圍為 [${min}, ${max}] ，實際長度為 ${length}`;
 	},
 	array_element_fail: (index: number, element_info: string): string => {
 		return `陣列中第 ${index} 元素有誤： ${element_info}`;

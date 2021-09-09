@@ -182,20 +182,20 @@ type UnProcessedBond = {
 function EditBond(props: { onChange: BondOnChange, bond: UnProcessedBond, validate_info: string | undefined }): JSX.Element {
 	return <>
 		<div className={style.bond}>
-			<input className={style.id} placeholder="文章 ID"
+			<input className={style.id} placeholder="文章代碼"
 				value={props.bond.target_article}
 				onChange={props.onChange('target_article')} />
 			<input className={style.tag} placeholder="標籤（選填）"
 				value={props.bond.tag}
 				onChange={props.onChange('tag')} />
+			<select
+				value={props.bond.energy}
+				onChange={props.onChange('energy')} >
+				<option value="1">正面</option>
+				<option value="0">中立</option>
+				<option value="-1">負面</option>
+			</select>
 		</div>
-		<select
-			value={props.bond.energy}
-			onChange={props.onChange('energy')} >
-			<option value="1">正面</option>
-			<option value="0">中立</option>
-			<option value="-1">負面</option>
-		</select>
 		{props.validate_info && <InvalidMessage msg={props.validate_info} />}
 	</>;
 }
@@ -328,6 +328,16 @@ const ArrayField = (props: { field: Force.Field, validator: Validator }): JSX.El
 	}
 };
 
+const Wrap = (element: JSX.Element, field: Force.Field): JSX.Element => {
+	return <div key={field.name} className={style.field}>
+		<label htmlFor={field.name}>
+			{`${field.name}`}
+			<span className={style.dataType}>{`${Force.show_data_type(field.datatype)}`}</span>
+		</label>
+		{element}
+	</div>;
+};
+
 // @ts-ignore
 const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
 	const { field } = props;
@@ -335,22 +345,13 @@ const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element
 
 	if (editor_panel_data == null) { return <></>; }
 
-	const Wrap = (element: JSX.Element): JSX.Element => {
-		return <div key={field.name} className={style.field}>
-			<label htmlFor={field.name}>
-				{`${field.name}`}
-				<span className={style.dataType}>{`${Force.show_data_type(field.datatype)}`}</span>
-			</label>
-			{element}
-		</div>;
-	};
 	if (field.datatype.kind == 'single') {
-		return Wrap(<SingleField {...props} />);
+		return Wrap(<SingleField {...props}/>, field);
 	} else if (field.datatype.kind == 'optional') {
-		// TODO: 改爲可選
-		return Wrap(<SingleField {...props} />);
+		// TODO: 改為可選
+		return Wrap(<SingleField {...props} />, field);
 	} else if (field.datatype.kind == 'array') {
-		return Wrap(<ArrayField {...props} />);
+		return Wrap(<ArrayField {...props} />, field);
 	}
 };
 
@@ -373,6 +374,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 		[board]
 	);
 	const validator = new Validator(board.id);
+	/// XXX: editor_panel_data context 更動就會導致重複創造 validator
+	console.log('new validator');
 
 	if (editor_panel_data == null) { return <></>; }
 
@@ -494,7 +497,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				placeholder="文章標題"
 				name="title"
 				onChange={(evt) => {
-					setEditorPanelData({ ...editor_panel_data, title: evt.target.value });
+					const nxt_state = produce(editor_panel_data, (draft) => {draft.title = evt.target.value;});
+					setEditorPanelData(nxt_state);
 				}}
 				value={editor_panel_data.title}
 			></input>

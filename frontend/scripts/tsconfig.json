@@ -17,7 +17,7 @@
     // "outDir": "./",                        /* Redirect output structure to the directory. */
     // "rootDir": "./",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     // "removeComments": true,                /* Do not emit comments to output. */
-    // 因爲我們是用 babel 來轉換，所以不要輸出檔案（直接使用 tsc 指令，就只有檢查型別的功能）
+    // 因為我們是用 babel 來轉換，所以不要輸出檔案（直接使用 tsc 指令，就只有檢查型別的功能）
     "noEmit": true,                        /* Do not emit outputs. */
     // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
     // "downlevelIteration": true,            /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
