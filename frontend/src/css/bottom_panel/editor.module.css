@@ -102,14 +102,16 @@
     }
 }
 
-label {
-    padding: 5px 10px 0px 10px;
-    background-color: var(--deep-gray);
-    color: var(--reverse-font-color);
-    border-radius: 20% 20% 0 0;
-    & .dataType {
-        color: var(--light-reverse-font-color);
-        margin-left: 20px;
+.editorBody {
+    & label {
+        padding: 5px 10px 0px 10px;
+        background-color: var(--deep-gray);
+        color: var(--reverse-font-color);
+        border-radius: 20% 20% 0 0;
+        & .dataType {
+            color: var(--light-reverse-font-color);
+            margin-left: 20px;
+        }
     }
 }
 
