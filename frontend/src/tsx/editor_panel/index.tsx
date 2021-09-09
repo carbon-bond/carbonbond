@@ -369,13 +369,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(data => setBoardOptions(data))
 			.catch(err => console.log(err));
 	}, []);
-	const force = useMemo(
-		() => Force.parse(board.force),
-		[board]
-	);
-	const validator = new Validator(board.id);
-	/// XXX: editor_panel_data context 更動就會導致重複創造 validator
-	console.log('new validator');
+	const force = useMemo( () => Force.parse(board.force), [board]);
+	const validator = useMemo(() => new Validator(board.id), [board]);
 
 	if (editor_panel_data == null) { return <></>; }
 

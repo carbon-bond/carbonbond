@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SimpleArticleCard, BondCard, SatelliteCard } from './index';
+import { SimpleArticleCard, SatelliteCard } from './index';
 import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
 import { Force, Category } from '../../../../force/typescript';
 import style from '../../css/board_switch/article_card.module.css';
