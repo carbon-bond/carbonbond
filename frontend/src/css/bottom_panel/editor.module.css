@@ -8,7 +8,6 @@
     & .editorBody {
         height: 450px;
         max-height: 70vh;
-        overflow-y: auto;
         & .fields {
             padding: 0px 15px;
             & .field {
@@ -43,8 +42,6 @@
     & .editorBody {
         height: 100vh;
         max-height: 550px;
-        overflow-y: auto;
-        
         & .fields {
             padding: 0px 15px;
             display: flex;
@@ -103,11 +100,39 @@
             margin-left: 20px;
         }
     }
+    display: flex;
+    flex-direction: column;
+
+    & .form {
+        flex: 1;
+        overflow-y: auto;
+    }
     & .buttonBar {
-        & .submit {
-            font-size: 20px;
-            margin-top: 20px;
-            margin-left: 15px;
+        height: 30px;
+        font-size: 18px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        button {
+            margin: 4px;
+            cursor: pointer;
+        }
+        & .leftSet {
+            display: flex;
+            flex-direction: row;
+            & .publish {
+                width: 50px;
+            }
+            & .save {
+                width: 50px;
+            }
+        }
+        & .rightSet {
+            display: flex;
+            flex-direction: row;
+            & .delete {
+
+            }
         }
     }
 }
