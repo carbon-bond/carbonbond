@@ -32,11 +32,6 @@
                 }
             }
         }
-        & .submit {
-            font-size: 20px;
-            margin-top: 20px;
-            margin-left: 15px;
-        }
     }
 }
 
@@ -94,11 +89,6 @@
                 }
             }
         }
-        & .submit {
-            font-size: 20px;
-            margin-top: 20px;
-            margin-left: 15px;
-        }
     }
 }
 
@@ -111,6 +101,13 @@
         & .dataType {
             color: var(--light-reverse-font-color);
             margin-left: 20px;
+        }
+    }
+    & .buttonBar {
+        & .submit {
+            font-size: 20px;
+            margin-top: 20px;
+            margin-left: 15px;
         }
     }
 }

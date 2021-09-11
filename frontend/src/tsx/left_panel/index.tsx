@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { ChatBar } from '../tsx/chatbar';
-import { BrowseBar } from './browsebar';
-import style from '../css/sidebar.module.css';
+import { ChatBar } from './chat_bar';
+import { BrowseBar } from './browse_bar';
+import { DraftBar } from './draft_bar';
+import style from '../../css/sidebar.module.css';
 
 enum Option {
 	Browse,
@@ -21,7 +22,7 @@ function PanelMain(props: { option: Option }): JSX.Element {
 		case Option.DiscoverFriend:
 			return <div className={style.sidebar}>交友</div>;
 		case Option.Draft:
-			return <div className={style.sidebar}>草稿匣</div>;
+			return <div className={style.sidebar}><DraftBar /></div>;
 		case Option.PluginStore:
 			return <div className={style.sidebar}>市集</div>;
 		case Option.None:

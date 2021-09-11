@@ -448,7 +448,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	};
 
 	return <div className={style.editorBody}>
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<form>
 			<div className={style.location}>
 				<select required
 					className={style.board}
@@ -517,8 +517,12 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					return <div className={style.fields}>{input_fields}</div>;
 				})()
 			}
-			<button className={style.submit} type="submit">發佈文章</button>
 		</form>
+		{/* TODO: 讓 buttonBar 停在編輯器最下方 */}
+		<div className={style.buttonBar}>
+			<button className={style.submit} onClick={handleSubmit(onSubmit)}>發佈文章</button>
+			<button className={style.submit}>儲存草稿</button>
+		</div>
 	</div>;
 }
 
