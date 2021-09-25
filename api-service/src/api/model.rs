@@ -79,6 +79,7 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticlePersonalMeta {
         pub is_favorite: bool,
+        pub is_tracking: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleDigest {
@@ -121,6 +122,11 @@ mod model {
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Favorite {
+        pub meta: ArticleMeta,
+        pub create_time: DateTime<Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Tracking {
         pub meta: ArticleMeta,
         pub create_time: DateTime<Utc>,
     }

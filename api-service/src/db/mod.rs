@@ -14,6 +14,7 @@ pub mod favorite;
 pub mod notification;
 pub mod party;
 pub mod subscribed_boards;
+pub mod tracking;
 pub mod user;
 pub mod user_relation;
 

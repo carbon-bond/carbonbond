@@ -22,6 +22,8 @@ pub trait UserQueryRouter {
     async fn unsubscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn favorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
     async fn unfavorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn tracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
+    async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::UserRelationKind) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::UserRelationKind, crate::custom_error::Error>;
@@ -116,6 +118,16 @@ pub trait UserQueryRouter {
             }
              UserQuery::UnfavoriteArticle { article_id } => {
                  let resp = self.unfavorite_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::TrackingArticle { article_id } => {
+                 let resp = self.tracking_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::UntrackingArticle { article_id } => {
+                 let resp = self.untracking_article(context, article_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

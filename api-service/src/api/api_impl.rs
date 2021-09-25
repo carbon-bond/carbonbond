@@ -515,6 +515,23 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let id = context.get_id_strict().await?;
         db::favorite::unfavorite(id, article_id).await
     }
+    async fn tracking_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        let tracking_id = db::tracking::tracking(id, article_id).await?;
+        Ok(tracking_id)
+    }
+    async fn untracking_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::tracking::untracking(id, article_id).await
+    }
     async fn create_user_relation(
         &self,
         context: &mut crate::Ctx,

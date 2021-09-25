@@ -59,6 +59,10 @@ pub enum UserQuery {
     FavoriteArticle { article_id: i64 },
     #[chitin(leaf, response = "()")]
     UnfavoriteArticle { article_id: i64 },
+    #[chitin(leaf, response = "i64")]
+    TrackingArticle { article_id: i64 },
+    #[chitin(leaf, response = "()")]
+    UntrackingArticle { article_id: i64 },
     #[chitin(leaf, response = "()")]
     CreateUserRelation {
         target_user: i64,
