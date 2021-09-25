@@ -447,6 +447,25 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			});
 	};
 
+	const saveDraft = (): void => {
+		API_FETCHER.articleQuery.saveDraft(
+			editor_panel_data.draft_id ?? null,
+			editor_panel_data.board.id,
+			editor_panel_data.category ?? null,
+			editor_panel_data.title,
+			JSON.stringify(editor_panel_data.content))
+			.then(data => unwrap(data))
+			.then(id => {
+				setEditorPanelData({
+					draft_id: id,
+					...editor_panel_data,
+				});
+			})
+			.catch(err => {
+				toastErr(err);
+			});
+	};
+
 	return <div className={style.editorBody}>
 		<div className={style.form}>
 			<div className={style.location}>
@@ -518,11 +537,10 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				})()
 			}
 		</div>
-		{/* TODO: 讓 buttonBar 停在編輯器最下方 */}
 		<div className={style.buttonBar}>
 			<div className={style.leftSet}>
 				<button className={style.publish} onClick={handleSubmit(onSubmit)}>發佈</button>
-				<button className={style.save}>存稿</button>
+				<button className={style.save} onClick={saveDraft}>存稿</button>
 			</div>
 			<div className={style.rightSet}>
 				<button className={style.delete}>🗑️</button>

@@ -5,6 +5,7 @@ import { Board } from '../../ts/api/api_trait';
 
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
+	draft_id?: number,
 	board: Board,
 	category?: string,
 	title: string,

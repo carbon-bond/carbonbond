@@ -5,5 +5,7 @@ CREATE TABLE drafts (
   board_id bigint REFERENCES boards (id) NOT NULL,
   category_id bigint REFERENCES categories (id),
   title text NOT NULL,
-  create_time timestamptz NOT NULL DEFAULT NOW()
+  content text NOT NULL,
+  create_time timestamptz NOT NULL DEFAULT NOW(),
+  edit_time timestamptz NOT NULL DEFAULT NOW()
 );
