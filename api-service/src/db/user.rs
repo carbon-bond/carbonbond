@@ -201,7 +201,6 @@ pub async fn send_reset_password_email(email: String) -> Fallible<()> {
 
     // 2. 生成 token
     let token = crate::util::generate_token();
-    // TODO: 為統一命名，把資料庫表格中的 code 改成 token
     sqlx::query!(
         "INSERT INTO reset_password (user_id, token) VALUES
         ((SELECT id FROM users WHERE email = $1), $2)",

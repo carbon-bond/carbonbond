@@ -135,6 +135,27 @@ mod model {
         pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Draft {
+        pub id: i64,
+        pub author_id: i64,
+        pub board_id: i64,
+        pub board_name: String,
+        pub category_id: Option<i64>,
+        pub category_name: Option<String>,
+        pub title: String,
+        pub content: String,
+        pub create_time: DateTime<chrono::Utc>,
+        pub edit_time: DateTime<chrono::Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct NewDraft {
+        pub id: i64,
+        pub board_id: i64,
+        pub category_id: Option<i64>,
+        pub title: String,
+        pub content: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BoardOverview {
         pub id: i64,
         pub board_name: String,

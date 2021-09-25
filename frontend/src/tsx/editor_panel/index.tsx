@@ -447,8 +447,27 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			});
 	};
 
+	const saveDraft = (): void => {
+		API_FETCHER.articleQuery.saveDraft(
+			editor_panel_data.draft_id ?? null,
+			editor_panel_data.board.id,
+			editor_panel_data.category ?? null,
+			editor_panel_data.title,
+			JSON.stringify(editor_panel_data.content))
+			.then(data => unwrap(data))
+			.then(id => {
+				setEditorPanelData({
+					draft_id: id,
+					...editor_panel_data,
+				});
+			})
+			.catch(err => {
+				toastErr(err);
+			});
+	};
+
 	return <div className={style.editorBody}>
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<div className={style.form}>
 			<div className={style.location}>
 				<select required
 					className={style.board}
@@ -517,8 +536,16 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					return <div className={style.fields}>{input_fields}</div>;
 				})()
 			}
-			<button className={style.submit} type="submit">發佈文章</button>
-		</form>
+		</div>
+		<div className={style.buttonBar}>
+			<div className={style.leftSet}>
+				<button className={style.publish} onClick={handleSubmit(onSubmit)}>發佈</button>
+				<button className={style.save} onClick={saveDraft}>存稿</button>
+			</div>
+			<div className={style.rightSet}>
+				<button className={style.delete}>🗑️</button>
+			</div>
+		</div>
 	</div>;
 }
 

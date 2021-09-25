@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { UserState } from './global_state/user';
-import { STORAGE_NAME } from '../ts/constants';
-import { BoardOverview } from '../ts/api/api_trait';
+import { API_FETCHER, unwrap_or } from '../../ts/api/api';
+import { UserState } from '../global_state/user';
+import { STORAGE_NAME } from '../../ts/constants';
+import { BoardOverview } from '../../ts/api/api_trait';
 
-import style from '../css/browsebar.module.css';
-import { SubscribedBoardsState } from './global_state/subscribed_boards';
+import style from '../../css/left_panel/browse_bar.module.css';
+import { SubscribedBoardsState } from '../global_state/subscribed_boards';
 
 async function fetchHotBoards(): Promise<BoardOverview[]> {
 	let boards = unwrap_or(await API_FETCHER.boardQuery.queryHotBoards(), []);

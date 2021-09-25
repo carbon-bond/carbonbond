@@ -1,0 +1,9 @@
+.draftBar {
+    display: flex;
+    flex-direction: column;
+    & .draft {
+        cursor: pointer;
+        height: 56px;
+        border: 1px #DDDDDD solid;
+	}
+}

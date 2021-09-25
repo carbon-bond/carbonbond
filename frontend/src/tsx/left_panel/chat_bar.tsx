@@ -1,8 +1,8 @@
 import * as React from 'react';
-import style from '../css/chatbar.module.css';
-import { AllChatState, ChatData, DirectChatData, GroupChatData } from './global_state/chat';
-import { BottomPanelState } from './global_state/bottom_panel';
-import { roughDate } from '../ts/date';
+import style from '../../css/left_panel/chat_bar.module.css';
+import { AllChatState, ChatData, DirectChatData, GroupChatData } from '../global_state/chat';
+import { BottomPanelState } from '../global_state/bottom_panel';
+import { roughDate } from '../../ts/date';
 
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();

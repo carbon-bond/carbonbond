@@ -25,6 +25,8 @@ export type SignupInvitation = {     email: string; user_name: string | null; cr
 export type Favorite = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
 export type Article = { meta: ArticleMeta; content: string };
+export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string};
+export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind {     Follow = "Follow", Hate = "Hate", OpenlyFollow = "OpenlyFollow",     OpenlyHate = "OpenlyHate", None = "None" };
 export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
@@ -206,6 +208,12 @@ export class ArticleQuery {
     }
     async createArticle(board_id: number, category_name: string, title: string, content: string): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content } } }));
+    }
+    async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content } } }));
+    }
+    async queryDraft(): Promise<Result<Array<Draft>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryDraft": {  } } }));
     }
     async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));

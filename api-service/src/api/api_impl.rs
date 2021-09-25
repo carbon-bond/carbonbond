@@ -117,6 +117,34 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let article = db::article::get_by_id(id).await?;
         complete_article(article, context).await
     }
+    async fn save_draft(
+        &self,
+        context: &mut crate::Ctx,
+        draft_id: Option<i64>,
+        board_id: i64,
+        category_name: Option<String>,
+        title: String,
+        content: String,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let author_id = context.get_id_strict().await?;
+        match draft_id {
+            Some(id) => {
+                db::draft::update_draft(id, board_id, category_name, title, content, author_id)
+                    .await
+            }
+            None => {
+                db::draft::create_draft(board_id, category_name, title, content, author_id).await
+            }
+        }
+    }
+    async fn query_draft(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error> {
+        let author_id = context.get_id_strict().await?;
+        db::draft::get_all(author_id).await
+        // unimplemented!();
+    }
     async fn query_bonder(
         &self,
         context: &mut crate::Ctx,
