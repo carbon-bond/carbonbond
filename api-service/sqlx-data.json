@@ -69,6 +69,80 @@
       ]
     }
   },
+  "075058ac344ca71aaa3edc77c46ae2ed5d55f811e5d4db4e71744bbbff60647a": {
+    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category_id as \"category_id?\",\n        categories.category_name as \"category_name?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        WHERE drafts.author_id = $1\n        ORDER BY create_time DESC\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "board_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "category_id?",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "category_name?",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "content",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 9,
+          "name": "edit_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "08a2f4be6bf7e693d0b1150fa2fea6dc6d023999da8c25b975f92d45738d03e1": {
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            WHERE parties.board_id = $1",
     "describe": {
@@ -138,29 +212,6 @@
       "parameters": {
         "Left": [
           "Int8",
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
-  "09ec6a0323a439b4e4985eb2d7bd59a867ae4fd2525468c00a367cbe27708f81": {
-    "query": "\n        INSERT INTO drafts (author_id, board_id, title, category_id)\n        VALUES ($1, $2, $3, $4) RETURNING id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Text",
           "Int8"
         ]
       },
@@ -288,44 +339,6 @@
       ]
     }
   },
-  "111e33d07c7dbb0090f15d2cd2c0f88cde75ce20cf86525e867618a370f1bf1b": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        WHERE drafts.author_id = $1\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "115e3162f3fac9f2f805df118d1ed1a4b4b53abccdbea928b27833c4d3027f3c": {
     "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_string_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2\n                    ) AND a.id = ANY($3)\n                    ",
     "describe": {
@@ -383,42 +396,6 @@
       ]
     }
   },
-  "1b51eca2057918b3c1803b11566c474ca3f3aa4c944696b01536152ab07f2267": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true
-      ]
-    }
-  },
   "1fad9a11be067106f152f6af9b5bf889fa86987b9901a3b5d0f5d2c427f2e905": {
     "query": "INSERT INTO users (user_name, password_hashed, salt, email) VALUES ($1, $2, $3, $4) RETURNING id",
     "describe": {
@@ -440,6 +417,18 @@
       "nullable": [
         false
       ]
+    }
+  },
+  "20e7e3f105395e2725fc802ecf2e1a0b443e5107f6a78d1e0d6cf3bc157086c8": {
+    "query": "\n            DELETE FROM drafts\n            WHERE id = $1\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": []
     }
   },
   "2365bf792a052456dbe52893734afe9cc9a9a9692c03247a06313dd8c5be42b9": {
@@ -516,54 +505,6 @@
       },
       "nullable": [
         null
-      ]
-    }
-  },
-  "2743c52b86f3dc07005120c4c3dd063e9f32aa284cc37aa664ba1211f8d772fe": {
-    "query": "SELECT * FROM drafts",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        true,
-        false,
-        false
       ]
     }
   },
@@ -814,78 +755,6 @@
       "nullable": [
         false,
         false
-      ]
-    }
-  },
-  "343e453c9e52e5ca828f8be56f45e60338905ef8d4bb3dfb52894b761508aabe": {
-    "query": "\n        SELECT drafts.*, boards.board_name, categories.category_name\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 8,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 9,
-          "name": "category_name",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
       ]
     }
   },
@@ -1432,78 +1301,6 @@
       ]
     }
   },
-  "55cda4ef5270424bb6c199e116bdf4c6b3a8028a85d2fb412fff269b5dd12a2a": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        drafts.category_id as \"category_id?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time,\n        boards.board_name,\n        categories.category_name as \"category_name?\"\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id?",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 8,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 9,
-          "name": "category_name?",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
-    }
-  },
   "572ae4c8e843e40f3d8d46539190a654f2e52e3ec6276a522129a56e7e123091": {
     "query": "SELECT salt, password_hashed from users WHERE user_name = $1",
     "describe": {
@@ -1805,80 +1602,6 @@
       ]
     }
   },
-  "716f6b94561f2482489dca944d51727ff9b753652cb2bf05bb1aef9a8e702494": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category_id as \"category_id?\",\n        categories.category_name as \"category_name?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n         LEFT JOIN categories ON drafts.category_id = categories.id\n        WHERE drafts.author_id = $1\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "category_id?",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "category_name?",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 9,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "75099c5616413a879114f5dd287941313aecebc8926b09b30cdd10533f1e3049": {
     "query": "\n        SELECT article_id, name, value FROM article_int_fields\n        WHERE article_id = $1;\n        ",
     "describe": {
@@ -1935,80 +1658,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "83d5857f06260964305668e995951787be9fbbf362b9e3f0288a07699627da2e": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category_id,\n        categories.category_name,\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        WHERE drafts.author_id = $1\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "category_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 9,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "859975baf1436ec51c67f4e1b444a7e864d7a6cfdb107709e4068a6160d484d5": {
@@ -2476,66 +2125,6 @@
       ]
     }
   },
-  "b288be12d47647a485df64a2ce03b04cf5465f1f163053f05059498db8f79441": {
-    "query": "\n        SELECT drafts.* FROM drafts\n        join categories on drafts.category_id = categories.id\n        join boards on drafts.board_id = boards.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
-    }
-  },
   "b3671d1898574f4f9b13308de1ea841a99231296ad29dd973b5d1eee048a1e11": {
     "query": "SELECT article_id FROM favorite_articles\n        WHERE user_id = $1 AND article_id = ANY($2)",
     "describe": {
@@ -2573,66 +2162,6 @@
         ]
       },
       "nullable": [
-        true
-      ]
-    }
-  },
-  "bbb706e9fbee33c4feefbfaa62306598d5dd7228a0aed173b0e746393d23a6a2": {
-    "query": "SELECT drafts.* FROM drafts\n        join categories on drafts.category_id = categories.id\n        join boards on drafts.board_id = boards.id",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
         true
       ]
     }
@@ -3319,84 +2848,6 @@
       ]
     }
   },
-  "f4212184030885d91a9225a44233c2d431e4921bb88a7f90771494f0fcfd84d9": {
-    "query": "\n        SELECT drafts.*, drafts.category_id as \"category_id?\", boards.board_name, categories.category_name as \"category_name?\"\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "category_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 8,
-          "name": "category_id?",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 9,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 10,
-          "name": "category_name?",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
-    }
-  },
   "f51b3c983436737b65808402a0bc1df03ae999123255d473facae890c202046b": {
     "query": "DELETE FROM favorite_articles WHERE user_id = $1 AND article_id = $2",
     "describe": {
@@ -3408,78 +2859,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "f6b23a26b76f867c36cd48db2250991dcdce7dd1ca467c5ab9186ecc3aa8099e": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category_id as \"category_id?\",\n        categories.category_name as \"category_name?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "category_id?",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "category_name?",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 9,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ]
     }
   },
   "fb6ae592fb1d4ef692a2517a358c88fb6980e7056df75574458b203c85999f51": {

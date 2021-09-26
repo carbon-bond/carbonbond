@@ -9,6 +9,16 @@ import style from '../../css/left_panel/draft_bar.module.css';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { toastErr } from '../utils';
 
+function DraftTitle(props: {title: string}): JSX.Element {
+	return <div className={style.title}>
+		{
+			props.title === '' ?
+				<span className={style.noTitle}>*無標題*</span> :
+				<>{props.title}</>
+		}
+	</div>;
+}
+
 function DraftCard(props: {draft: Draft}): JSX.Element {
 	const { setEditorPanelData, expandEditorPanel } = EditorPanelState.useContainer();
 	const [ is_hover, setHover ] = React.useState<Boolean>(false);
@@ -34,9 +44,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 				.catch(err => console.error(err));
 		}}>
 		<div className={style.info}>
-			<div className={style.title}>
-				{props.draft.title}
-			</div>
+			<DraftTitle title={props.draft.title} />
 			<div className={style.meta}>
 				{props.draft.board_name} • {roughDate(new Date(props.draft.create_time))}
 			</div>

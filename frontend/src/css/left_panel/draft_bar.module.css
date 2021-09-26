@@ -1,3 +1,6 @@
+.noTitle {
+    color: var(--light-font-color);
+}
 .draftBar {
     display: flex;
     flex-direction: column;
@@ -7,7 +10,7 @@
     & .draft {
         cursor: pointer;
         height: 38px;
-        border: 1px #DDDDDD solid;
+        border: 1px var(--light-gray) solid;
         display: flex;
         flex-direction: row;
         & .info {
