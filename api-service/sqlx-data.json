@@ -1811,80 +1811,6 @@
       ]
     }
   },
-  "8ca33ba38e272e7c501753f7f4b5d1d0745d23984486d62e824d2d982cf04103": {
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category_id as \"category_id?\",\n        categories.category_name as \"category_name?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        LEFT JOIN categories ON drafts.category_id = categories.id\n        WHERE drafts.author_id = $1\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "board_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "category_id?",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "category_name?",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 9,
-          "name": "edit_time",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "93c639136fb231f8b7f6797ba96d8cb94180e3324302e6ec7a06c7a4f9a7047a": {
     "query": "UPDATE reset_password SET is_used = TRUE\n        FROM users\n        WHERE reset_password.user_id = (SELECT user_id from reset_password where token = $1)",
     "describe": {
@@ -2577,6 +2503,18 @@
         "Left": [
           "Text",
           "Varchar"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "da896ce6f3293cce1597ea7ad7c9931a1eed579a156cccec2cb117317a26cdc5": {
+    "query": "\n        DELETE FROM drafts\n        WHERE id = $1\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8"
         ]
       },
       "nullable": []

@@ -135,6 +135,7 @@ pub enum ArticleQuery {
         category_name: String,
         title: String,
         content: String,
+        draft_id: Option<i64>,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {

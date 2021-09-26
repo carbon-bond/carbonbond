@@ -411,6 +411,7 @@ pub async fn create(
     category_name: &str,
     title: &str,
     content: String,
+    draft_id: Option<i64>,
 ) -> Fallible<i64> {
     let content: Value = serde_json::from_str(&content).map_err(|err| {
         ErrorCode::ParsingJson
@@ -435,6 +436,18 @@ pub async fn create(
     .await?
     .id;
     log::debug!("成功創建文章元資料");
+
+    if let Some(draft_id) = draft_id {
+        sqlx::query!(
+            "
+        DELETE FROM drafts
+        WHERE id = $1
+        ",
+            draft_id
+        )
+        .execute(&mut conn)
+        .await?;
+    }
 
     article_content::create(
         &mut conn,

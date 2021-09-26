@@ -435,6 +435,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					category.name,
 					editor_panel_data.title,
 					JSON.stringify(content),
+					editor_panel_data.draft_id ?? null
 				);
 			})
 			.then(data => unwrap(data))
@@ -443,7 +444,10 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				minimizeEditorPanel();
 				props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 				setEditorPanelData(null);
+				return API_FETCHER.articleQuery.queryDraft();
 			})
+			.then(res => unwrap(res))
+			.then(drafts => setDraftData(drafts))
 			.catch(err => {
 				toastErr(err);
 			});

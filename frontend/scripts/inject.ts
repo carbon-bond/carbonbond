@@ -208,7 +208,8 @@ async function injectArticle(
 			board_id,
 			category.name,
 			article.title,
-			JSON.stringify(article.content)
+			JSON.stringify(article.content),
+			null
 		)
 	);
 	return id;

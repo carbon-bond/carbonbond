@@ -113,7 +113,14 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
 async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     macro_rules! post {
         ($category:expr, $title:expr, $content:expr) => {
-            db::article::create(user_id, board_id, $category, $title, $content.to_owned())
+            db::article::create(
+                user_id,
+                board_id,
+                $category,
+                $title,
+                $content.to_owned(),
+                None,
+            )
         };
     }
     let big_id = post!("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
