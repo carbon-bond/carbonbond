@@ -131,9 +131,6 @@
         & .rightSet {
             display: flex;
             flex-direction: row;
-            & .delete {
-
-            }
         }
     }
 }

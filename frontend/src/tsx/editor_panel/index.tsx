@@ -549,9 +549,6 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				<button className={style.publish} onClick={handleSubmit(onSubmit)}>發佈</button>
 				<button className={style.save} onClick={saveDraft}>存稿</button>
 			</div>
-			<div className={style.rightSet}>
-				<button className={style.delete}>🗑️</button>
-			</div>
 		</div>
 	</div>;
 }

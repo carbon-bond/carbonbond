@@ -1,23 +1,40 @@
 .draftBar {
     display: flex;
     flex-direction: column;
+    & .barName {
+        background: var(--sub-theme-color);
+    }
     & .draft {
         cursor: pointer;
         height: 38px;
         border: 1px #DDDDDD solid;
         display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        & .title {
-            overflow: hidden;
+        flex-direction: row;
+        & .info {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
             display: block;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: var(--font-color);
+            overflow: hidden;
+            & .title {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: var(--font-color);
+            }
+            & .meta {
+                font-size: 12px;
+                color: var(--light-font-color);
+            }
         }
-        & .meta {
-            font-size: 12px;
-            color: var(--light-font-color);
+        & .buttons {
+            margin-right: 5px;
+            flex-shrink: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
         }
 	}
     & .draft:hover {

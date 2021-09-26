@@ -10,9 +10,12 @@ import { EditorPanelState } from '../global_state/editor_panel';
 
 function DraftCard(props: {draft: Draft}): JSX.Element {
 	const { setEditorPanelData, expandEditorPanel } = EditorPanelState.useContainer();
+	const [ is_hover, setHover ] = React.useState<Boolean>(false);
 
 	return <div
 		className={style.draft}
+		onMouseEnter={() => setHover(true)}
+		onMouseLeave={() => setHover(false)}
 		onClick={() => {
 			API_FETCHER.boardQuery.queryBoardById(props.draft.board_id)
 				.then(data => unwrap(data))
@@ -28,12 +31,21 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 				})
 				.catch(err => console.error(err));
 		}}>
-		<div className={style.title}>
-			{props.draft.title}
+		<div className={style.info}>
+			<div className={style.title}>
+				{props.draft.title}
+			</div>
+			<div className={style.meta}>
+				{props.draft.board_name} • {roughDate(new Date(props.draft.create_time))}
+			</div>
 		</div>
-		<div className={style.meta}>
-			{props.draft.board_name} • {roughDate(new Date(props.draft.create_time))}
-		</div>
+		{
+			is_hover ?
+				<div className={style.buttons}>
+					<button className={style.delete}>🗑️</button>
+				</div> :
+				<></>
+		}
 	</div>;
 }
 
@@ -46,6 +58,7 @@ export function DraftBar(): JSX.Element {
 		});
 	}, [setDraftData]);
 	return <div className={style.draftBar}>
+		<div className={style.barName}>草稿匣</div>
 		{
 			draft_data.map(draft => <div key={draft.title}><DraftCard draft={draft} /></div>)
 		}
