@@ -2,10 +2,11 @@ import * as React from 'react';
 import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect, useMemo } = React;
+import { DraftState } from '../global_state/draft';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
-import { API_FETCHER, unwrap } from '../../ts/api/api';
+import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
 import { BoardName, BoardType } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -357,6 +358,7 @@ const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element
 
 function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
@@ -433,6 +435,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					category.name,
 					editor_panel_data.title,
 					JSON.stringify(content),
+					editor_panel_data.draft_id ?? null
 				);
 			})
 			.then(data => unwrap(data))
@@ -441,7 +444,10 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				minimizeEditorPanel();
 				props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 				setEditorPanelData(null);
+				return API_FETCHER.articleQuery.queryDraft();
 			})
+			.then(res => unwrap(res))
+			.then(drafts => setDraftData(drafts))
 			.catch(err => {
 				toastErr(err);
 			});
@@ -460,6 +466,13 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					draft_id: id,
 					...editor_panel_data,
 				});
+			})
+			.then(() => {
+				return API_FETCHER.articleQuery.queryDraft();
+			})
+			.then(drafts => {
+				setDraftData(unwrap_or(drafts, []));
+				toast('儲存草稿成功');
 			})
 			.catch(err => {
 				toastErr(err);
@@ -541,9 +554,6 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			<div className={style.leftSet}>
 				<button className={style.publish} onClick={handleSubmit(onSubmit)}>發佈</button>
 				<button className={style.save} onClick={saveDraft}>存稿</button>
-			</div>
-			<div className={style.rightSet}>
-				<button className={style.delete}>🗑️</button>
 			</div>
 		</div>
 	</div>;

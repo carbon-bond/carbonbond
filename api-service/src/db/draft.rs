@@ -68,7 +68,7 @@ pub async fn update_draft(
         content,
         draft_id,
     )
-    .fetch_one(pool)
+    .execute(pool)
     .await?;
     return Ok(draft_id);
 }
@@ -91,10 +91,26 @@ pub async fn get_all(author_id: i64) -> Fallible<Vec<Draft>> {
         JOIN boards ON drafts.board_id = boards.id
         LEFT JOIN categories ON drafts.category_id = categories.id
         WHERE drafts.author_id = $1
+        ORDER BY create_time DESC
         "#,
         author_id
     )
     .fetch_all(pool)
     .await?;
     Ok(drafts)
+}
+
+pub async fn delete(draft_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query_as!(
+        Draft,
+        "
+            DELETE FROM drafts
+            WHERE id = $1
+        ",
+        draft_id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }

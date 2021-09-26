@@ -206,14 +206,17 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
     }
-    async createArticle(board_id: number, category_name: string, title: string, content: string): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content } } }));
+    async createArticle(board_id: number, category_name: string, title: string, content: string, draft_id: Option<number>): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, draft_id } } }));
     }
     async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content } } }));
     }
     async queryDraft(): Promise<Result<Array<Draft>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryDraft": {  } } }));
+    }
+    async deleteDraft(draft_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "DeleteDraft": { draft_id } } }));
     }
     async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));
