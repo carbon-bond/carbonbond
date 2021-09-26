@@ -3,7 +3,24 @@
     flex-direction: column;
     & .draft {
         cursor: pointer;
-        height: 56px;
+        height: 38px;
         border: 1px #DDDDDD solid;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        & .title {
+            overflow: hidden;
+            display: block;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--font-color);
+        }
+        & .meta {
+            font-size: 12px;
+            color: var(--light-font-color);
+        }
 	}
+    & .draft:hover {
+        background-color: var(--third-theme-color);
+    }
 }

@@ -91,6 +91,7 @@ pub async fn get_all(author_id: i64) -> Fallible<Vec<Draft>> {
         JOIN boards ON drafts.board_id = boards.id
         LEFT JOIN categories ON drafts.category_id = categories.id
         WHERE drafts.author_id = $1
+        ORDER BY create_time DESC
         "#,
         author_id
     )

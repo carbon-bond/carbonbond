@@ -1,9 +1,9 @@
 import * as React from 'react';
 
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-// import { UserState } from '../global_state/user';
 import { DraftState } from '../global_state/draft';
 import { Draft } from '../../ts/api/api_trait';
+import { roughDate } from '../../ts/date';
 
 import style from '../../css/left_panel/draft_bar.module.css';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -28,7 +28,12 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 				})
 				.catch(err => console.error(err));
 		}}>
-		{props.draft.title}
+		<div className={style.title}>
+			{props.draft.title}
+		</div>
+		<div className={style.meta}>
+			{props.draft.board_name} • {roughDate(new Date(props.draft.create_time))}
+		</div>
 	</div>;
 }
 
