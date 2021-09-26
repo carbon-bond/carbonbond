@@ -468,9 +468,11 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				});
 			})
 			.then(() => {
-				API_FETCHER.articleQuery.queryDraft().then(drafts => {
-					setDraftData(unwrap_or(drafts, []));
-				});
+				return API_FETCHER.articleQuery.queryDraft();
+			})
+			.then(drafts => {
+				setDraftData(unwrap_or(drafts, []));
+				toast('儲存草稿成功');
 			})
 			.catch(err => {
 				toastErr(err);
