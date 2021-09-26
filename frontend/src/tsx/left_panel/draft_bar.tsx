@@ -34,7 +34,6 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 
 
 export function DraftBar(): JSX.Element {
-	// const { user_state } = UserState.useContainer();
 	const { setDraftData, draft_data } = DraftState.useContainer();
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryDraft().then(drafts => {

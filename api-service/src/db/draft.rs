@@ -68,7 +68,7 @@ pub async fn update_draft(
         content,
         draft_id,
     )
-    .fetch_one(pool)
+    .execute(pool)
     .await?;
     return Ok(draft_id);
 }

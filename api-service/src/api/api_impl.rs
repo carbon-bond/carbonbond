@@ -143,7 +143,6 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error> {
         let author_id = context.get_id_strict().await?;
         db::draft::get_all(author_id).await
-        // unimplemented!();
     }
     async fn query_bonder(
         &self,
