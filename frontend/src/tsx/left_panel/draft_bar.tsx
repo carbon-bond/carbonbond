@@ -7,10 +7,12 @@ import { roughDate } from '../../ts/date';
 
 import style from '../../css/left_panel/draft_bar.module.css';
 import { EditorPanelState } from '../global_state/editor_panel';
+import { toastErr } from '../utils';
 
 function DraftCard(props: {draft: Draft}): JSX.Element {
 	const { setEditorPanelData, expandEditorPanel } = EditorPanelState.useContainer();
 	const [ is_hover, setHover ] = React.useState<Boolean>(false);
+	const { setDraftData } = DraftState.useContainer();
 
 	return <div
 		className={style.draft}
@@ -42,7 +44,21 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 		{
 			is_hover ?
 				<div className={style.buttons}>
-					<button className={style.delete}>🗑️</button>
+					<button
+						className={style.delete}
+						onClick={(evt) => {
+							evt.stopPropagation();
+							API_FETCHER.articleQuery.deleteDraft(props.draft.id)
+							.then(() => {
+								// TODO: 考慮不重新獲取所有草稿
+								return API_FETCHER.articleQuery.queryDraft();
+							})
+							.then(res => unwrap(res))
+							.then(drafts => setDraftData(drafts))
+							.catch(err => toastErr(err));
+						}}>
+						🗑️
+					</button>
 				</div> :
 				<></>
 		}

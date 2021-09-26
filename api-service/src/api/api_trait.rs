@@ -207,6 +207,7 @@ pub trait ArticleQueryRouter {
     async fn create_article(&self, context: &mut crate::Ctx, board_id: i64, category_name: String, title: String, content: String) -> Result<i64, crate::custom_error::Error>;
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error>;
+    async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::SearchField>) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
     async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
     async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<super::model::Graph, crate::custom_error::Error>;
@@ -249,6 +250,11 @@ pub trait ArticleQueryRouter {
             }
              ArticleQuery::QueryDraft {  } => {
                  let resp = self.query_draft(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::DeleteDraft { draft_id } => {
+                 let resp = self.delete_draft(context, draft_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

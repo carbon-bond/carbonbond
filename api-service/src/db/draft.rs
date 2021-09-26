@@ -99,3 +99,18 @@ pub async fn get_all(author_id: i64) -> Fallible<Vec<Draft>> {
     .await?;
     Ok(drafts)
 }
+
+pub async fn delete(draft_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query_as!(
+        Draft,
+        "
+            DELETE FROM drafts
+            WHERE id = $1
+        ",
+        draft_id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}

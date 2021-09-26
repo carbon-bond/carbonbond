@@ -215,6 +215,9 @@ export class ArticleQuery {
     async queryDraft(): Promise<Result<Array<Draft>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryDraft": {  } } }));
     }
+    async deleteDraft(draft_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "DeleteDraft": { draft_id } } }));
+    }
     async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));
     }

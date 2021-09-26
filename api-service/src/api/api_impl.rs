@@ -144,6 +144,13 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let author_id = context.get_id_strict().await?;
         db::draft::get_all(author_id).await
     }
+    async fn delete_draft(
+        &self,
+        context: &mut crate::Ctx,
+        draft_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        db::draft::delete(draft_id).await
+    }
     async fn query_bonder(
         &self,
         context: &mut crate::Ctx,

@@ -146,6 +146,8 @@ pub enum ArticleQuery {
     },
     #[chitin(leaf, response = "Vec<super::model::Draft>")]
     QueryDraft {},
+    #[chitin(leaf, response = "()")]
+    DeleteDraft { draft_id: i64 },
     #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
     SearchArticle {
         author_name: Option<String>,
