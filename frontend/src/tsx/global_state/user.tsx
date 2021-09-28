@@ -21,7 +21,7 @@ interface LoginData {
 	energy: number
 }
 
-function useUserState(): { user_state: UserStateType, setLogin: Function, setLogout: Function, getLoginState: Function } {
+function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData) => void, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
 
 	async function getLoginState(): Promise<void> {

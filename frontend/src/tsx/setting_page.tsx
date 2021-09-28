@@ -10,6 +10,7 @@ export function SettingPage(): JSX.Element {
 	async function reset_password_request(): Promise<void> {
 		try {
 			if (user_state.login) {
+				console.log(`email: ${user_state.email}`);
 				unwrap(await API_FETCHER.userQuery.sendResetPasswordEmail(user_state.email));
 				toast(`已寄出重置碼到 ${user_state.email} ，請至信箱查收`);
 			}

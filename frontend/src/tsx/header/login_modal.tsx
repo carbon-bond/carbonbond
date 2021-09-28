@@ -29,6 +29,8 @@ function LoginStatus(
 			if (user) {
 				setLogin({
 					user_name: user.user_name,
+					id: user.id,
+					email: user.email,
 					energy: user.energy,
 				});
 				toast('登入成功');
