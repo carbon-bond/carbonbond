@@ -231,6 +231,9 @@ export class ArticleQuery {
     async searchPopArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchPopArticle": { count } } }));
     }
+    async searchSubscribeArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "SearchSubscribeArticle": { count } } }));
+    }
     async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set, family_filter } } }));
     }

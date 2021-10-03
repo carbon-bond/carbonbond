@@ -108,10 +108,10 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
 			<div className={style.articleBtnItem} onClick={() => onTrackingArticleClick()}>
-				{tracking ? '🔍 取消追蹤' : '🔍 追蹤'}
+				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
 			</div>
 			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
-				{favorite ? '🌟 取消收藏' : '⚝ 收藏'}
+				{favorite ? '🌟 取消收藏' : <span><span className={style.articleBtnItemTracking}>🌟</span> 收藏</span>}
 			</div>
 			<div className={style.articleBtnItem}>
 				📎 分享

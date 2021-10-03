@@ -67,7 +67,9 @@ export function BrowseBar(): JSX.Element {
 				onClick={() => onTitleClick(0)}
 			>
 				<div className={style.special}>
-					<div>📰 我的訂閱</div>
+					<Link to={'/app/subscribe_article'}>
+						<div>📰 我的訂閱</div>
+					</Link>
 					<Link to={'/app/pop_article'}>
 						<div>🔥 全站熱門</div>
 					</Link>

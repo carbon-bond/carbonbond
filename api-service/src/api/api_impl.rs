@@ -95,6 +95,58 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         }
         complete_article(articles, context).await
     }
+    async fn search_subscribe_article(
+        &self,
+        context: &mut crate::Ctx,
+        count: usize,
+    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        let mut articles: Vec<model::ArticleMeta> = Vec::new();
+
+        // TODO: inclding tracking articles
+
+        let followers: Vec<model::UserMini> = db::user_relation::query_follower(user_id).await?;
+        let haters: Vec<model::UserMini> = db::user_relation::query_hater(user_id).await?;
+
+        for follower in followers.iter() {
+            let metas = self
+                .search_article(
+                    context,
+                    Some(follower.user_name.clone()),
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    HashMap::new(),
+                )
+                .await?;
+            for meta in metas.iter() {
+                articles.push(meta.clone());
+            }
+        }
+        for hater in haters.iter() {
+            let metas = self
+                .search_article(
+                    context,
+                    Some(hater.user_name.clone()),
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    HashMap::new(),
+                )
+                .await?;
+            for meta in metas.iter() {
+                articles.push(meta.clone());
+            }
+        }
+
+        // TODO: only return articles with size == count
+
+        complete_article(articles, context).await
+    }
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,
