@@ -103,56 +103,13 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
         let mut articles: Vec<model::ArticleMeta> = Vec::new();
-        let mut seen_ids = HashSet::new();
-
-        let followers: Vec<model::UserMini> = db::user_relation::query_follower(user_id).await?;
-        let haters: Vec<model::UserMini> = db::user_relation::query_hater(user_id).await?;
-
-        for follower in followers.iter() {
-            seen_ids.insert(follower.id);
-            let metas = self
-                .search_article(
-                    context,
-                    Some(follower.user_name.clone()),
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    HashMap::new(),
-                )
-                .await?;
-            for meta in metas.iter() {
-                articles.push(meta.clone());
-            }
-        }
-        for hater in haters.iter() {
-            seen_ids.insert(hater.id);
-            let metas = self
-                .search_article(
-                    context,
-                    Some(hater.user_name.clone()),
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    HashMap::new(),
-                )
-                .await?;
-            for meta in metas.iter() {
-                articles.push(meta.clone());
-            }
-        }
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id).await?;
         for tracking_article in tracking_articles.iter() {
             let meta = self
                 .query_article_meta(context, tracking_article.clone())
                 .await?;
-            if !seen_ids.contains(&meta.author_id) {
-                articles.push(meta.clone());
-            }
+            articles.push(meta.clone());
         }
 
         // TODO: only return articles with size == count
