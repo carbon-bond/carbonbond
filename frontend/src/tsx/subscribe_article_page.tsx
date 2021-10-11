@@ -40,5 +40,5 @@ function Articles(props: {articles: ArticleMeta[]}): JSX.Element {
 }
 
 async function fetchSubscribeArticles(): Promise<ArticleMeta[]> {
-	return unwrap_or(await API_FETCHER.articleQuery.searchSubscribeArticle(10), []);
+	return unwrap_or(await API_FETCHER.articleQuery.getSubscribeArticle(10), []);
 }

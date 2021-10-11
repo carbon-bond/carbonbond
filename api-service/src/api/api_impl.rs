@@ -7,7 +7,6 @@ use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 async fn complete_article<A: HasArticleStats>(mut articles: A, ctx: &mut Ctx) -> Fallible<A> {
     articles.assign_stats_in_place().await?;
@@ -96,21 +95,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         }
         complete_article(articles, context).await
     }
-    async fn search_subscribe_article(
+    async fn get_subscribe_article(
         &self,
         context: &mut crate::Ctx,
         count: usize,
     ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
-        let mut articles: Vec<model::ArticleMeta> = Vec::new();
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id).await?;
-        for tracking_article in tracking_articles.iter() {
-            let meta = self
-                .query_article_meta(context, tracking_article.clone())
-                .await?;
-            articles.push(meta.clone());
-        }
+        let articles = db::article::get_meta_by_ids(tracking_articles).await?;
 
         // TODO: only return articles with size == count
 

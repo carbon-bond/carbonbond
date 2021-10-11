@@ -166,7 +166,7 @@ pub enum ArticleQuery {
     #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
     SearchPopArticle { count: usize },
     #[chitin(leaf, response = "Vec<super::model::ArticleMeta>")]
-    SearchSubscribeArticle { count: usize },
+    GetSubscribeArticle { count: usize },
     #[chitin(leaf, response = "super::model::Graph")]
     QueryGraph {
         article_id: i64,
