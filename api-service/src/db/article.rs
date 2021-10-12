@@ -58,12 +58,12 @@ macro_rules! to_meta {
             category_families: $data.category_families,
             title: $data.title,
             author: if $data.anonymous {
+                None
+            } else {
                 Some(crate::api::model::Author {
                     name: $data.author_name,
                     id: $data.author_id,
                 })
-            } else {
-                None
             },
             create_time: $data.create_time,
             digest: crate::api::model::ArticleDigest {
