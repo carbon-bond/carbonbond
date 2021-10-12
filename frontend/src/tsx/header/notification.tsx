@@ -96,7 +96,6 @@ function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
 		{
 			props.time ? <>
 				<div className={style.notificationSpace} />
-				<img src="/src/img/icon.png" />
 				<div style={{ flex: 1 }} />
 				<p className={style.time}>{relativeDate(props.time)}</p>
 				<div className={style.notificationSpace} />
@@ -132,6 +131,17 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 		</div>
 	</div>;
 }
+
+function replier_name(name: string | null): JSX.Element {
+	if (name == null) {
+		return <>匿名用戶</>;
+	} else {
+		return <Link to={`/app/user/${name}`}>
+			{name}
+		</Link>;
+	}
+}
+
 export function NotificationBlock(props: { notification: Notification }): JSX.Element {
 	let n = props.notification;
 	function NotiConcreteRow<T>(props: { children: T }): JSX.Element {
@@ -141,13 +151,13 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 	}
 
 	function ReplyNoti(props: { txt: string }): JSX.Element {
-		return <NotiConcreteRow>{n.user2_name!}{props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiConcreteRow>;
+		return <NotiConcreteRow>{replier_name(n.user2_name)} {props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiConcreteRow>;
 	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <NotiConcreteRow>{n.user2_name!}追蹤了你</NotiConcreteRow>;
+			return <NotiConcreteRow>{replier_name(n.user2_name)} 追蹤了你</NotiConcreteRow>;
 		case NotificationKind.Hate:
-			return <NotiConcreteRow>{n.user2_name!}仇視了你</NotiConcreteRow>;
+			return <NotiConcreteRow>{replier_name(n.user2_name)} 仇視了你</NotiConcreteRow>;
 		case NotificationKind.ArticleBadReplied:
 			return <ReplyNoti txt="戰" />;
 		case NotificationKind.ArticleGoodReplied:
