@@ -87,6 +87,12 @@ mod model {
     }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Author {
+        pub id: i64,
+        pub name: String,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,
@@ -96,8 +102,7 @@ mod model {
         pub category_name: String,
         pub category_source: String,
         pub title: String,
-        pub author_id: i64,
-        pub author_name: String,
+        pub author: Option<Author>,
         pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,

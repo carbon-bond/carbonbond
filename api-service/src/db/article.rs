@@ -57,8 +57,14 @@ macro_rules! to_meta {
             category_source: $data.category_source,
             category_families: $data.category_families,
             title: $data.title,
-            author_id: $data.author_id,
-            author_name: $data.author_name,
+            author: if $data.anonymous {
+                Some(crate::api::model::Author {
+                    name: $data.author_name,
+                    id: $data.author_id,
+                })
+            } else {
+                None
+            },
             create_time: $data.create_time,
             digest: crate::api::model::ArticleDigest {
                 content: $data.digest,
@@ -232,6 +238,20 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     let category = get_force_category(meta.board_id, &meta.category_name).await?;
     let content = article_content::get_by_article_id(meta.id, &category).await?;
     Ok(Article { meta, content })
+}
+
+pub async fn get_author_by_id(id: i64) -> Fallible<i64> {
+    let pool = get_pool();
+    let author_id = sqlx::query!(
+        "
+        SELECT author_id FROM articles WHERE id = $1
+        ",
+        id,
+    )
+    .fetch_one(pool)
+    .await?
+    .author_id;
+    Ok(author_id)
 }
 
 pub async fn get_by_board_name(

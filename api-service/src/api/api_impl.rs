@@ -210,8 +210,17 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             draft_id,
         )
         .await?;
-        service::notification::handle_article(author_id, board_id, id, &category_name, content)
-            .await?;
+        // TODO: 處理匿名
+        let anonymous = false;
+        service::notification::handle_article(
+            author_id,
+            board_id,
+            id,
+            &category_name,
+            content,
+            anonymous,
+        )
+        .await?;
         Ok(id)
     }
     async fn query_graph(

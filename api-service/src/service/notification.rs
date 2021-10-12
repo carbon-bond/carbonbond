@@ -41,14 +41,15 @@ async fn handle_bond(
     board_id: i64,
     reply_id: i64,
     bond: BondInstance,
+    anonymous: bool,
 ) -> Fallible {
-    let target = db::article::get_meta_by_id(bond.target_article).await?;
-    if target.author_id == replier_id {
+    let target_author = db::article::get_author_by_id(bond.target_article).await?;
+    if target_author == replier_id {
         log::debug!(
             "同作者 {} 的文章 {} -> {} 不發通知",
             replier_id,
             reply_id,
-            target.id
+            target_author
         );
         return Ok(());
     }
@@ -60,11 +61,11 @@ async fn handle_bond(
         NotificationKind::ArticleReplied
     };
     create(
-        target.author_id,
+        target_author,
         kind,
-        Some(replier_id),
+        if anonymous { None } else { Some(replier_id) },
         Some(board_id),
-        Some(target.id),
+        Some(target_author),
         Some(reply_id),
     )
     .await?;
@@ -76,6 +77,7 @@ pub async fn handle_article(
     reply_id: i64,
     category_name: &str,
     content: String,
+    anonymous: bool,
 ) -> Fallible {
     let mut content: Map<String, Value> = serde_json::from_str(&content).map_err(|err| {
         ErrorCode::ParsingJson
@@ -97,7 +99,7 @@ pub async fn handle_article(
             match entry {
                 std::collections::hash_map::Entry::Vacant(e) => {
                     e.insert(());
-                    handle_bond(replier_id, board_id, reply_id, bond).await?;
+                    handle_bond(replier_id, board_id, reply_id, bond, anonymous).await?;
                 }
                 _ => (),
             }

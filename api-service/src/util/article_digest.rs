@@ -1,6 +1,5 @@
 use crate::{api::model::ArticleDigest, custom_error::Fallible};
 use force::{
-    instance_defs::Bond as BondInstance,
     BasicDataType::{self, *},
     Category,
 };
