@@ -35,6 +35,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 					setEditorPanelData({
 						draft_id: props.draft.id,
 						board: board,
+						anonymous: props.draft.anonymous,
 						title: props.draft.title,
 						category: props.draft.category_name ?? '',
 						content: JSON.parse(props.draft.content)

@@ -174,6 +174,7 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 				{
 					board: props.board,
 					category: '',
+					anonymous: false,
 					title: '',
 					content: {},
 				} :

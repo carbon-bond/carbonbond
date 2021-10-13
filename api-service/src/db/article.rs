@@ -432,6 +432,7 @@ pub async fn create(
     title: &str,
     content: String,
     draft_id: Option<i64>,
+    anonymous: bool,
 ) -> Fallible<i64> {
     let content: Value = serde_json::from_str(&content).map_err(|err| {
         ErrorCode::ParsingJson
@@ -444,13 +445,14 @@ pub async fn create(
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
-        INSERT INTO articles (author_id, board_id, title, category_id)
-        VALUES ($1, $2, $3, $4) RETURNING id
+        INSERT INTO articles (author_id, board_id, title, category_id, anonymous)
+        VALUES ($1, $2, $3, $4, $5) RETURNING id
         ",
         author_id,
         board_id,
         title,
         category.id,
+        anonymous,
     )
     .fetch_one(&mut conn)
     .await?

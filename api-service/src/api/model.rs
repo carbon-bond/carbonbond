@@ -151,6 +151,7 @@ mod model {
         pub content: String,
         pub create_time: DateTime<chrono::Utc>,
         pub edit_time: DateTime<chrono::Utc>,
+        pub anonymous: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct NewDraft {

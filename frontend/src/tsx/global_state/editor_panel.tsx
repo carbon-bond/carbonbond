@@ -9,6 +9,7 @@ export type EditorPanelData = {
 	board: Board,
 	category?: string,
 	title: string,
+	anonymous: boolean,
 	// eslint-disable-next-line
 	content: { [index: string]: any },
 };

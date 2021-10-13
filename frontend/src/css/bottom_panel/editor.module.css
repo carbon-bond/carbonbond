@@ -90,7 +90,7 @@
 }
 
 .editorBody {
-    & label {
+    & .fields label {
         padding: 5px 10px 0px 10px;
         background-color: var(--deep-gray);
         color: var(--reverse-font-color);
@@ -145,6 +145,9 @@
     }
     & .category {
         flex: 1;
+    }
+    & .anonymous {
+        margin: 7px 4px;
     }
 }
 .articleTitle {

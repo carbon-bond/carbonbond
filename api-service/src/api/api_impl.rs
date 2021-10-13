@@ -125,15 +125,32 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_name: Option<String>,
         title: String,
         content: String,
+        anonymous: bool,
     ) -> Result<i64, crate::custom_error::Error> {
         let author_id = context.get_id_strict().await?;
         match draft_id {
             Some(id) => {
-                db::draft::update_draft(id, board_id, category_name, title, content, author_id)
-                    .await
+                db::draft::update_draft(
+                    id,
+                    board_id,
+                    category_name,
+                    title,
+                    content,
+                    author_id,
+                    anonymous,
+                )
+                .await
             }
             None => {
-                db::draft::create_draft(board_id, category_name, title, content, author_id).await
+                db::draft::create_draft(
+                    board_id,
+                    category_name,
+                    title,
+                    content,
+                    author_id,
+                    anonymous,
+                )
+                .await
             }
         }
     }
@@ -192,6 +209,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         title: String,
         content: String,
         draft_id: Option<i64>,
+        anonymous: bool,
     ) -> Result<i64, crate::custom_error::Error> {
         log::trace!(
             "發表文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
@@ -208,10 +226,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             &title,
             content.clone(),
             draft_id,
+            anonymous,
         )
         .await?;
-        // TODO: 處理匿名
-        let anonymous = false;
         service::notification::handle_article(
             author_id,
             board_id,

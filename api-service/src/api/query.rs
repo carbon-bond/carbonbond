@@ -136,6 +136,7 @@ pub enum ArticleQuery {
         title: String,
         content: String,
         draft_id: Option<i64>,
+        anonymous: bool,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {
@@ -144,6 +145,7 @@ pub enum ArticleQuery {
         category_name: Option<String>,
         title: String,
         content: String,
+        anonymous: bool,
     },
     #[chitin(leaf, response = "Vec<super::model::Draft>")]
     QueryDraft {},

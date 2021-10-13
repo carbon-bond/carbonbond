@@ -204,8 +204,8 @@ pub trait ArticleQueryRouter {
     async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::ArticleMeta, crate::custom_error::Error>;
     async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error>;
     async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>;
-    async fn create_article(&self, context: &mut crate::Ctx, board_id: i64, category_name: String, title: String, content: String, draft_id: Option<i64>) -> Result<i64, crate::custom_error::Error>;
-    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String) -> Result<i64, crate::custom_error::Error>;
+    async fn create_article(&self, context: &mut crate::Ctx, board_id: i64, category_name: String, title: String, content: String, draft_id: Option<i64>, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
+    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::SearchField>) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
@@ -238,13 +238,13 @@ pub trait ArticleQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::CreateArticle { board_id, category_name, title, content, draft_id } => {
-                 let resp = self.create_article(context, board_id, category_name, title, content, draft_id).await;
+             ArticleQuery::CreateArticle { board_id, category_name, title, content, draft_id, anonymous } => {
+                 let resp = self.create_article(context, board_id, category_name, title, content, draft_id, anonymous).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content } => {
-                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content).await;
+             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content, anonymous } => {
+                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content, anonymous).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

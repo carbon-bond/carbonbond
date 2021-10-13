@@ -209,7 +209,8 @@ async function injectArticle(
 			category.name,
 			article.title,
 			JSON.stringify(article.content),
-			null
+			null,
+			false
 		)
 	);
 	return id;

@@ -26,7 +26,7 @@ export type SignupInvitation = {     email: string; user_name: string | null; cr
 export type Favorite = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
 export type Article = { meta: ArticleMeta; content: string };
-export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string};
+export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string; anonymous: boolean };
 export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind {     Follow = "Follow", Hate = "Hate", OpenlyFollow = "OpenlyFollow",     OpenlyHate = "OpenlyHate", None = "None" };
@@ -207,11 +207,11 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
     }
-    async createArticle(board_id: number, category_name: string, title: string, content: string, draft_id: Option<number>): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, draft_id } } }));
+    async createArticle(board_id: number, category_name: string, title: string, content: string, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, draft_id, anonymous } } }));
     }
-    async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content } } }));
+    async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string, anonymous: boolean): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content, anonymous } } }));
     }
     async queryDraft(): Promise<Result<Array<Draft>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryDraft": {  } } }));
