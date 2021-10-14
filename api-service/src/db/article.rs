@@ -230,12 +230,18 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
 
 pub async fn get_meta_by_ids(ids: Vec<i64>) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
-    let metas = metas!("*", "WHERE id = ANY($3)", true, EMPTY_SET, &ids[..])
-        .fetch_all(pool)
-        .await?
-        .into_iter()
-        .map(|d| to_meta!(d))
-        .collect();
+    let metas = metas!(
+        "*",
+        "WHERE id = ANY($3) ORDER BY create_time DESC",
+        true,
+        EMPTY_SET,
+        &ids[..]
+    )
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|d| to_meta!(d))
+    .collect();
     Ok(metas)
 }
 

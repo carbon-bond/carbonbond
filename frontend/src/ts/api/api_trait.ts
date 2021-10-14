@@ -23,7 +23,6 @@ export type ArticleMeta = {     id: number; energy: number; board_id: number; bo
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type Favorite = { meta: ArticleMeta; create_time: string};
-export type Tracking = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
 export type Article = { meta: ArticleMeta; content: string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string};

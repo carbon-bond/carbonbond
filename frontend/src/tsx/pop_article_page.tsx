@@ -11,9 +11,7 @@ export function PopArticlePage(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
 
 	React.useEffect(() => {
-		Promise.all([
-			fetchPopArticles(),
-		]).then(([more_articles]) => {
+		fetchPopArticles().then(more_articles => {
 			more_articles.forEach(article_id => {
 				console.log('PopArticlePage get ' + article_id);
 			});

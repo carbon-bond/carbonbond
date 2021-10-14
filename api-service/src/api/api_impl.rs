@@ -102,10 +102,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
 
-        let tracking_articles = db::tracking::query_tracking_articles(user_id).await?;
+        let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
         let articles = db::article::get_meta_by_ids(tracking_articles).await?;
-
-        // TODO: only return articles with size == count
 
         complete_article(articles, context).await
     }
