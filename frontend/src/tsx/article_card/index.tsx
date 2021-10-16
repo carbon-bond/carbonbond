@@ -46,6 +46,7 @@ enum ModalType {
 
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
+	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
 	const [opening_modal, setOpeningModal] = React.useState(ModalType.None);
 
 	async function onFavoriteArticleClick(): Promise<void> {
@@ -62,6 +63,26 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 			try {
 				unwrap(await API_FETCHER.userQuery.favoriteArticle(props.article.id));
 				setFavorite(true);
+			} catch (err) {
+				toastErr(err);
+			}
+		}
+	}
+
+	async function onTrackingArticleClick(): Promise<void> {
+		if (tracking) {
+			console.log('按下取消追蹤');
+			try {
+				unwrap(await API_FETCHER.userQuery.untrackingArticle(props.article.id));
+				setTracking(false);
+			} catch (err) {
+				toastErr(err);
+			}
+		} else {
+			console.log('按下追蹤');
+			try {
+				unwrap(await API_FETCHER.userQuery.trackingArticle(props.article.id));
+				setTracking(true);
 			} catch (err) {
 				toastErr(err);
 			}
@@ -86,8 +107,11 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
 				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
+			<div className={style.articleBtnItem} onClick={() => onTrackingArticleClick()}>
+				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
+			</div>
 			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
-				{favorite ? '🌟 取消收藏' : '⚝ 收藏'}
+				{favorite ? '🌟 取消收藏' : <span><span className={style.articleBtnItemTracking}>🌟</span> 收藏</span>}
 			</div>
 			<div className={style.articleBtnItem}>
 				📎 分享

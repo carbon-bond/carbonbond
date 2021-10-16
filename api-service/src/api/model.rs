@@ -79,6 +79,7 @@ mod model {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticlePersonalMeta {
         pub is_favorite: bool,
+        pub is_tracking: bool,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleDigest {

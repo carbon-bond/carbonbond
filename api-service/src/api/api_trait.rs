@@ -22,6 +22,8 @@ pub trait UserQueryRouter {
     async fn unsubscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn favorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
     async fn unfavorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn tracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
+    async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::UserRelationKind) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::UserRelationKind, crate::custom_error::Error>;
@@ -119,6 +121,16 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
+             UserQuery::TrackingArticle { article_id } => {
+                 let resp = self.tracking_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::UntrackingArticle { article_id } => {
+                 let resp = self.untracking_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
              UserQuery::CreateUserRelation { target_user, kind } => {
                  let resp = self.create_user_relation(context, target_user, kind).await;
                  let s = serde_json::to_string(&resp)?;
@@ -210,6 +222,7 @@ pub trait ArticleQueryRouter {
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::SearchField>) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
     async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
+    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
     async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<super::model::Graph, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ArticleQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
@@ -265,6 +278,11 @@ pub trait ArticleQueryRouter {
             }
              ArticleQuery::SearchPopArticle { count } => {
                  let resp = self.search_pop_article(context, count).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::GetSubscribeArticle { count } => {
+                 let resp = self.get_subscribe_article(context, count).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

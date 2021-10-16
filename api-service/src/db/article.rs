@@ -218,6 +218,7 @@ pub async fn search_article(
     };
     Ok(metas)
 }
+
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = metas!("*", "WHERE id = $3", true, EMPTY_SET, id)
@@ -225,6 +226,23 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
         .await?
         .ok_or(ErrorCode::NotFound(DataType::Article, id.to_string()).to_err())?;
     Ok(to_meta!(meta))
+}
+
+pub async fn get_meta_by_ids(ids: Vec<i64>) -> Fallible<Vec<ArticleMeta>> {
+    let pool = get_pool();
+    let metas = metas!(
+        "*",
+        "WHERE id = ANY($3) ORDER BY create_time DESC",
+        true,
+        EMPTY_SET,
+        &ids[..]
+    )
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|d| to_meta!(d))
+    .collect();
+    Ok(metas)
 }
 
 pub async fn get_by_id(id: i64) -> Fallible<Article> {

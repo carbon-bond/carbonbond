@@ -17,7 +17,7 @@ export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; board_type: string; title: string; detail:     string; force: string; ruling_party_id: number };
-export type ArticlePersonalMeta = { is_favorite: boolean };
+export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category_id: number; category_name: string; category_source: string;     title: string; author_id: number; author_name: string; digest:     ArticleDigest; category_families: string []; create_time: string; stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
@@ -138,6 +138,12 @@ export class UserQuery {
     async unfavoriteArticle(article_id: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UnfavoriteArticle": { article_id } } }));
     }
+    async trackingArticle(article_id: number): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "TrackingArticle": { article_id } } }));
+    }
+    async untrackingArticle(article_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UntrackingArticle": { article_id } } }));
+    }
     async createUserRelation(target_user: number, kind: UserRelationKind): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind } } }));
     }
@@ -223,6 +229,9 @@ export class ArticleQuery {
     }
     async searchPopArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchPopArticle": { count } } }));
+    }
+    async getSubscribeArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "GetSubscribeArticle": { count } } }));
     }
     async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set, family_filter } } }));

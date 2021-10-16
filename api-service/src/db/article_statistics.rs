@@ -45,7 +45,7 @@ pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
 pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallible {
     let pool = get_pool();
     let ids: Vec<_> = metas.iter().map(|a| a.id).collect();
-    let personals = sqlx::query!(
+    let personal_favorites = sqlx::query!(
         "SELECT article_id FROM favorite_articles
         WHERE user_id = $1 AND article_id = ANY($2)",
         user_id,
@@ -53,10 +53,23 @@ pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallibl
     )
     .fetch_all(pool)
     .await?;
+    let personal_trackings = sqlx::query!(
+        "SELECT article_id FROM tracking_articles
+        WHERE user_id = $1 AND article_id = ANY($2)",
+        user_id,
+        &ids,
+    )
+    .fetch_all(pool)
+    .await?;
     let mut map: HashMap<_, _> = metas.into_iter().map(|meta| (meta.id, meta)).collect();
-    for p in personals.into_iter() {
+    for p in personal_favorites.into_iter() {
         if let Some(a) = map.get_mut(&p.article_id) {
-            a.personal_meta = ArticlePersonalMeta { is_favorite: true };
+            a.personal_meta.is_favorite = true;
+        }
+    }
+    for p in personal_trackings.into_iter() {
+        if let Some(a) = map.get_mut(&p.article_id) {
+            a.personal_meta.is_tracking = true;
         }
     }
     Ok(())
