@@ -22,6 +22,7 @@ import style from '../../css/bottom_panel/editor.module.css';
 import { SimpleArticleCardById } from '../article_card';
 import { toastErr } from '../utils';
 import { new_content, new_bond } from '../../ts/force_util';
+import { UserState } from '../global_state/user';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -360,6 +361,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
+	const { user_state } = UserState.useContainer();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
 		id: board.id,
@@ -374,7 +376,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const force = useMemo( () => Force.parse(board.force), [board]);
 	const validator = useMemo(() => new Validator(board.id), [board]);
 
-	if (editor_panel_data == null) { return <></>; }
+	if (editor_panel_data == null || !user_state.login) { return <></>; }
 
 	// @ts-ignore
 	const onSubmit = (): void => {
@@ -435,7 +437,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					category.name,
 					editor_panel_data.title,
 					JSON.stringify(content),
-					editor_panel_data.draft_id ?? null
+					editor_panel_data.draft_id ?? null,
+					editor_panel_data.anonymous
 				);
 			})
 			.then(data => unwrap(data))
@@ -459,7 +462,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			editor_panel_data.board.id,
 			editor_panel_data.category ?? null,
 			editor_panel_data.title,
-			JSON.stringify(editor_panel_data.content))
+			JSON.stringify(editor_panel_data.content),
+			editor_panel_data.anonymous)
 			.then(data => unwrap(data))
 			.then(id => {
 				setEditorPanelData({
@@ -518,6 +522,12 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 							<option value={name} key={name}>{name}</option>)
 					}
 				</select>
+				<label className={style.anonymous}>
+					<input type="checkbox"
+						checked={editor_panel_data.anonymous}
+						onChange={(evt) => setEditorPanelData({ ...editor_panel_data, anonymous: evt.target.checked })} />
+					匿名
+				</label>
 			</div>
 			<input
 				className={style.articleTitle}

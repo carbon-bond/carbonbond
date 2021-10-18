@@ -11,6 +11,9 @@
         margin-right: 6px;
         text-decoration: underline;
     }
+    & .anonymous {
+        text-decoration: none;
+    }
     & .articleBoard {
         position: relative;
         z-index: 10;
@@ -177,6 +180,9 @@
         color: var(--light-font-color);
         & .authorId {
             text-decoration: underline;
+        }
+        & .anonymous {
+            text-decoration: none;
         }
     }
 }

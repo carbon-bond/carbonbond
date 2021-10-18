@@ -57,8 +57,14 @@ macro_rules! to_meta {
             category_source: $data.category_source,
             category_families: $data.category_families,
             title: $data.title,
-            author_id: $data.author_id,
-            author_name: $data.author_name,
+            author: if $data.anonymous {
+                None
+            } else {
+                Some(crate::api::model::Author {
+                    name: $data.author_name,
+                    id: $data.author_id,
+                })
+            },
             create_time: $data.create_time,
             digest: crate::api::model::ArticleDigest {
                 content: $data.digest,
@@ -252,6 +258,20 @@ pub async fn get_by_id(id: i64) -> Fallible<Article> {
     Ok(Article { meta, content })
 }
 
+pub async fn get_author_by_id(id: i64) -> Fallible<i64> {
+    let pool = get_pool();
+    let author_id = sqlx::query!(
+        "
+        SELECT author_id FROM articles WHERE id = $1
+        ",
+        id,
+    )
+    .fetch_one(pool)
+    .await?
+    .author_id;
+    Ok(author_id)
+}
+
 pub async fn get_by_board_name(
     board_name: &str,
     max_id: Option<i64>,
@@ -430,6 +450,7 @@ pub async fn create(
     title: &str,
     content: String,
     draft_id: Option<i64>,
+    anonymous: bool,
 ) -> Fallible<i64> {
     let content: Value = serde_json::from_str(&content).map_err(|err| {
         ErrorCode::ParsingJson
@@ -442,13 +463,14 @@ pub async fn create(
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
-        INSERT INTO articles (author_id, board_id, title, category_id)
-        VALUES ($1, $2, $3, $4) RETURNING id
+        INSERT INTO articles (author_id, board_id, title, category_id, anonymous)
+        VALUES ($1, $2, $3, $4, $5) RETURNING id
         ",
         author_id,
         board_id,
         title,
         category.id,
+        anonymous,
     )
     .fetch_one(&mut conn)
     .await?

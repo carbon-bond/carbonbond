@@ -12,12 +12,16 @@ import { ReplyModal, SatelliteModal } from './modal';
 
 const MAX_BRIEF_LINE = 4;
 
-export function ArticleHeader(props: { user_name: string, board_name: string, date: Date }): JSX.Element {
+export function ArticleHeader(props: { user_name: string | undefined, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	return <div className={style.articleHeader}>
-		<Link to={`/app/user/${props.user_name}`}>
-			<div className={style.authorId}>{props.user_name}</div>
-		</Link>
+		{
+			props.user_name ?
+				<Link to={`/app/user/${props.user_name}`}>
+					<div className={style.authorId}>{props.user_name}</div>
+				</Link> :
+				<div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>
+		}
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
 			<div className={style.articleBoard}>{props.board_name}</div>
@@ -138,15 +142,8 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
-	let user_name = '';
-	let category_name = '';
-	try {
-		user_name = props.article.author_name;
-		category_name = props.article.category_name;
-	} catch {
-		user_name = '未知';
-		category_name = '未知';
-	}
+	const user_name = props.article.author?.name;
+	const category_name = props.article.category_name;
 
 	return (
 		<div className={style.articleContainer}>
@@ -194,7 +191,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				id={meta.id}
 				category_name={meta.category_name} />
 			<ArticleHeader
-				user_name={meta.author_name}
+				user_name={meta.author?.name}
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
@@ -236,9 +233,13 @@ function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	return <div className={style.satelliteCard}>
 		<BondCard bond={props.bond} />
 		<div className={style.satelliteHeader}>
-			<Link to={`/app/user/${props.meta.author_name}`}>
-				<div className={style.authorId}>{props.meta.author_name}</div>
-			</Link>
+			{
+				props.meta.author ?
+					<Link to={`/app/user/${props.meta.author.name}`}>
+						<div className={style.authorId}>{props.meta.author.name}</div>
+					</Link> :
+					<div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>
+			}
 			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
 		</div>
 		<div>
