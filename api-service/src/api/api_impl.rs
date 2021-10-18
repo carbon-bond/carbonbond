@@ -95,6 +95,18 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         }
         complete_article(articles, context).await
     }
+    async fn get_subscribe_article(
+        &self,
+        context: &mut crate::Ctx,
+        count: usize,
+    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+
+        let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
+        let articles = db::article::get_meta_by_ids(tracking_articles).await?;
+
+        complete_article(articles, context).await
+    }
     async fn query_article_list(
         &self,
         context: &mut crate::Ctx,
@@ -540,6 +552,23 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::favorite::unfavorite(id, article_id).await
+    }
+    async fn tracking_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        let tracking_id = db::tracking::tracking(id, article_id).await?;
+        Ok(tracking_id)
+    }
+    async fn untracking_article(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::tracking::untracking(id, article_id).await
     }
     async fn create_user_relation(
         &self,

@@ -87,6 +87,11 @@
     background-color: var(--hover-background-color);
 }
 
+.articleBtnItemTracking {
+    color: transparent;
+    text-shadow: 0 0 0 gray;
+}
+
 .num {
     margin-right: 2px;
 }

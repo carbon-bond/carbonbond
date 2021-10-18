@@ -11,6 +11,10 @@
         & div:hover {
             background-color: var(--hover-background-color);
         }
+        & .specialBlock {
+            display: inline-block;
+            color: var(--font-color);
+        }
     }
 }
 .title {
