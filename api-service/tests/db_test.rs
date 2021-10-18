@@ -120,6 +120,7 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
                 $title,
                 $content.to_owned(),
                 None,
+                false,
             )
         };
     }
