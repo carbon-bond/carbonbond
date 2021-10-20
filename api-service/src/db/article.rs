@@ -140,6 +140,7 @@ pub async fn metas_to_articles(
 }
 
 pub async fn search_article(
+    viewer_id: Option<i64>,
     author_name: Option<String>,
     board_name: Option<String>,
     category: Option<i64>,
@@ -154,11 +155,11 @@ pub async fn search_article(
         "",
         "
         WHERE ($3 OR board_name = $4)
-        AND ($5 OR author_name = $6)
-        AND ($7 OR category_id = $8)
-        AND ($9 OR create_time < $10)
-        AND ($11 OR create_time > $12)
-        AND ($13 OR title ~ $14)
+        AND ($5 OR (author_name = $6 AND (anonymous = false OR author_id = $7)))
+        AND ($8 OR category_id = $9)
+        AND ($10 OR create_time < $11)
+        AND ($12 OR create_time > $13)
+        AND ($14 OR title ~ $15)
         ORDER BY create_time DESC
         ",
         true,
@@ -167,6 +168,7 @@ pub async fn search_article(
         board_name,
         author_name.is_none(),
         author_name.unwrap_or_default(),
+        viewer_id,
         category.is_none(),
         category.unwrap_or_default(),
         end_time.is_none(),

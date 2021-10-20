@@ -66,7 +66,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         title: Option<String>,
         content: HashMap<String, super::model::SearchField>,
     ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+        let viewer_id = context.get_id().await;
         let meta = db::article::search_article(
+            viewer_id,
             author_name,
             board_name,
             category,
