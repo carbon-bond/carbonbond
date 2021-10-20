@@ -93,6 +93,52 @@ mod model {
         pub name: String,
     }
 
+    macro_rules! make_meta {
+        ($name: ident $(, $element: ident, $ty: ty)*) => {
+            #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+            pub struct $name {
+                pub id: i64,
+                pub energy: i32,
+                pub board_id: i64,
+                pub board_name: String,
+                pub category_id: i64,
+                pub category_name: String,
+                pub category_source: String,
+                pub title: String,
+                pub author_id: i64,
+                pub author_name: String,
+                pub digest_content: String,
+                pub digest_truncated: bool,
+                pub category_families: Vec<String>,
+                pub create_time: DateTime<chrono::Utc>,
+                pub anonymous: bool,
+                $(pub $element: $ty),*
+            }
+        }
+    }
+
+    make_meta!(PrimitiveArticleMeta);
+    make_meta!(
+        FavoriteArticleMeta,
+        favorite_create_time,
+        DateTime<chrono::Utc>
+    );
+    make_meta!(
+        BondArticleMeta,
+        from,
+        i64,
+        to,
+        i64,
+        bond_energy,
+        i16,
+        bond_name,
+        String,
+        bond_id,
+        i64,
+        bond_tag,
+        Option<String>
+    );
+
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,

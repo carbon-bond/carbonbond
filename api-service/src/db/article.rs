@@ -1,5 +1,8 @@
 use super::{article_content, get_pool, DBObject};
-use crate::api::model::{Article, ArticleMeta, Edge, FamilyFilter, SearchField};
+use crate::api::model::{
+    Article, ArticleMeta, BondArticleMeta, Edge, FamilyFilter, Favorite, FavoriteArticleMeta,
+    SearchField,
+};
 use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
 use chrono::{DateTime, Utc};
@@ -15,10 +18,10 @@ use std::sync::RwLock;
 
 // XXX: 密切關注 sqlx user defined macro
 macro_rules! metas {
-    ($select:literal, $remain:literal, $is_black_list:expr, $family_filter:expr, $($arg:expr),*) => {
-        sqlx::query!(
-            "
-            WITH metas AS (SELECT
+    ($structure:path, $select:literal, $remain:literal, $is_black_list:expr, $family_filter:expr, $($arg:expr),*) => {
+        sqlx::query_as!(
+            $structure,
+            "WITH metas AS (SELECT
                 articles.*,
                 users.user_name AS author_name,
                 boards.board_name,
@@ -30,13 +33,26 @@ macro_rules! metas {
                 INNER JOIN users ON articles.author_id = users.id
                 INNER JOIN boards ON articles.board_id = boards.id
                 INNER JOIN categories ON articles.category_id = categories.id
-            WHERE ($1
-                AND NOT categories.families && $2)
-                OR (NOT $1
-                AND categories.families && $2))
+            WHERE ($1 AND NOT categories.families && $2)
+                OR (NOT $1 AND categories.families && $2)
+                )
             SELECT "
                 + $select
-                + " FROM metas "
+                + " metas.id,
+                metas.energy,
+                board_id,
+                board_name,
+                category_id,
+                category_name,
+                category_source,
+                title,
+                author_id,
+                author_name,
+                digest AS digest_content,
+                digest_truncated,
+                category_families,
+                metas.create_time,
+                anonymous FROM metas "
                 + $remain,
             $is_black_list,
             $family_filter,
@@ -46,7 +62,7 @@ macro_rules! metas {
 }
 
 macro_rules! to_meta {
-    ($data:ident) => {
+    ($data: expr) => {
         ArticleMeta {
             id: $data.id,
             energy: $data.energy,
@@ -67,37 +83,33 @@ macro_rules! to_meta {
             },
             create_time: $data.create_time,
             digest: crate::api::model::ArticleDigest {
-                content: $data.digest,
+                content: $data.digest_content,
                 truncated: $data.digest_truncated,
             },
-
             stat: Default::default(),
             personal_meta: Default::default(),
         }
     };
 }
-macro_rules! to_favorite {
-    ($data:ident) => {
-        Favorite {
-            create_time: $data.favorite_create_time,
-            meta: to_meta!($data),
-        }
-    };
+
+pub fn to_favorite(data: FavoriteArticleMeta) -> Favorite {
+    Favorite {
+        create_time: data.favorite_create_time,
+        meta: to_meta!(data),
+    }
 }
-macro_rules! to_bond_and_meta {
-    ($data:ident) => {
-        (
-            Edge {
-                from: $data.from,
-                to: $data.to,
-                energy: $data.bond_energy,
-                name: $data.name,
-                tag: $data.tag,
-                id: $data.bond_id,
-            },
-            to_meta!($data),
-        )
-    };
+fn to_bond_and_meta(data: BondArticleMeta) -> (Edge, ArticleMeta) {
+    (
+        Edge {
+            from: data.from,
+            to: data.to,
+            energy: data.bond_energy,
+            name: data.bond_name,
+            tag: data.bond_tag,
+            id: data.bond_id,
+        },
+        to_meta!(data),
+    )
 }
 
 const EMPTY_SET: &[String] = &[];
@@ -138,7 +150,8 @@ pub async fn search_article(
 ) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas: Vec<ArticleMeta> = metas!(
-        "*",
+        crate::api::model::PrimitiveArticleMeta,
+        "",
         "
         WHERE ($3 OR board_name = $4)
         AND ($5 OR author_name = $6)
@@ -227,17 +240,25 @@ pub async fn search_article(
 
 pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     let pool = get_pool();
-    let meta = metas!("*", "WHERE id = $3", true, EMPTY_SET, id)
-        .fetch_optional(pool)
-        .await?
-        .ok_or(ErrorCode::NotFound(DataType::Article, id.to_string()).to_err())?;
+    let meta = metas!(
+        crate::api::model::PrimitiveArticleMeta,
+        "",
+        "WHERE id = $3",
+        true,
+        EMPTY_SET,
+        id
+    )
+    .fetch_optional(pool)
+    .await?
+    .ok_or(ErrorCode::NotFound(DataType::Article, id.to_string()).to_err())?;
     Ok(to_meta!(meta))
 }
 
 pub async fn get_meta_by_ids(ids: Vec<i64>) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = metas!(
-        "*",
+        crate::api::model::PrimitiveArticleMeta,
+        "",
         "WHERE id = ANY($3) ORDER BY create_time DESC",
         true,
         EMPTY_SET,
@@ -281,7 +302,8 @@ pub async fn get_by_board_name(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let metas = metas!(
-        "*",
+        crate::api::model::PrimitiveArticleMeta,
+        "",
         "
         WHERE board_name = $3 AND ($5 OR id < $6)
         ORDER BY create_time DESC
@@ -308,9 +330,10 @@ pub async fn get_bondee_meta(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let data = metas!(
+        crate::api::model::BondArticleMeta,
         "
-        DISTINCT metas.*, abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name, abf.id as bond_id, abf.tag
+        DISTINCT abf.article_id as from, abf.value as to,
+        abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 
         ",
         "
         INNER JOIN article_bond_fields abf on metas.id = abf.value
@@ -326,7 +349,7 @@ pub async fn get_bondee_meta(
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(|d| to_bond_and_meta!(d)))
+    Ok(data.into_iter().map(|d| to_bond_and_meta(d)))
 }
 
 // 指向 `article_id` 的文章
@@ -338,9 +361,10 @@ pub async fn get_bonder_meta(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let data = metas!(
+        crate::api::model::BondArticleMeta,
         "
-        DISTINCT metas.*, abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name, abf.id as bond_id, abf.tag
+        DISTINCT abf.article_id as from, abf.value as to,
+        abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 
         ",
         "
         INNER JOIN article_bond_fields abf ON metas.id = abf.article_id
@@ -356,7 +380,7 @@ pub async fn get_bonder_meta(
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(|d| to_bond_and_meta!(d)))
+    Ok(data.into_iter().map(|d| to_bond_and_meta(d)))
 }
 
 pub async fn get_bonder(
