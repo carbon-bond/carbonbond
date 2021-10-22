@@ -15,6 +15,7 @@ fn should_show(_families: &[String], _filter: &FamilyFilter) -> bool {
 }
 
 pub async fn query_graph(
+    viewer_id: Option<i64>,
     count: usize,
     article_id: i64,
     category_set: Option<&[String]>,
@@ -29,7 +30,7 @@ pub async fn query_graph(
     let mut articles_to_expand = vec![article_id];
     let mut nodes = HashMap::new();
     let mut edges = HashMap::new();
-    let meta = db::article::get_meta_by_id(article_id).await?;
+    let meta = db::article::get_meta_by_id(article_id, viewer_id).await?;
 
     if category_set.map_or(false, |c| !c.contains(&meta.category_name)) {
         return Ok(Default::default());
@@ -44,8 +45,8 @@ pub async fn query_graph(
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
             let (bondee, bonder) = tokio::join!(
-                db::article::get_bondee_meta(id, category_set, family_filer),
-                db::article::get_bonder_meta(id, category_set, family_filer)
+                db::article::get_bondee_meta(viewer_id, id, category_set, family_filer),
+                db::article::get_bonder_meta(viewer_id, id, category_set, family_filer)
             );
             let (bondee, bonder) = (bondee?, bonder?);
             macro_rules! insert {

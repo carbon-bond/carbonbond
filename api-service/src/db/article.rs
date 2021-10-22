@@ -62,7 +62,7 @@ macro_rules! metas {
 }
 
 macro_rules! to_meta {
-    ($data: expr) => {
+    ($data: expr, $viewer_id: expr) => {
         ArticleMeta {
             id: $data.id,
             energy: $data.energy,
@@ -73,13 +73,15 @@ macro_rules! to_meta {
             category_source: $data.category_source,
             category_families: $data.category_families,
             title: $data.title,
-            author: if $data.anonymous {
-                None
+            author: if $data.anonymous && $viewer_id == Some($data.author_id) {
+                crate::api::model::Author::MyAnonymous
+            } else if $data.anonymous {
+                crate::api::model::Author::Anonymous
             } else {
-                Some(crate::api::model::Author {
+                crate::api::model::Author::NamedAuthor {
                     name: $data.author_name,
                     id: $data.author_id,
-                })
+                }
             },
             create_time: $data.create_time,
             digest: crate::api::model::ArticleDigest {
@@ -92,13 +94,13 @@ macro_rules! to_meta {
     };
 }
 
-pub fn to_favorite(data: FavoriteArticleMeta) -> Favorite {
+pub fn to_favorite(data: FavoriteArticleMeta, viewer_id: Option<i64>) -> Favorite {
     Favorite {
         create_time: data.favorite_create_time,
-        meta: to_meta!(data),
+        meta: to_meta!(data, viewer_id),
     }
 }
-fn to_bond_and_meta(data: BondArticleMeta) -> (Edge, ArticleMeta) {
+fn to_bond_and_meta(data: BondArticleMeta, viewer_id: Option<i64>) -> (Edge, ArticleMeta) {
     (
         Edge {
             from: data.from,
@@ -108,7 +110,7 @@ fn to_bond_and_meta(data: BondArticleMeta) -> (Edge, ArticleMeta) {
             tag: data.bond_tag,
             id: data.bond_id,
         },
-        to_meta!(data),
+        to_meta!(data, viewer_id),
     )
 }
 
@@ -181,7 +183,7 @@ pub async fn search_article(
     .fetch_all(pool)
     .await?
     .into_iter()
-    .map(|d| to_meta!(d))
+    .map(|d| to_meta!(d, viewer_id))
     .collect();
     // // XXX: 用不定長 sql 優化之
     let mut ids: Vec<_> = metas.iter().map(|m| m.id).collect();
@@ -240,7 +242,7 @@ pub async fn search_article(
     Ok(metas)
 }
 
-pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
+pub async fn get_meta_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = metas!(
         crate::api::model::PrimitiveArticleMeta,
@@ -253,10 +255,10 @@ pub async fn get_meta_by_id(id: i64) -> Fallible<ArticleMeta> {
     .fetch_optional(pool)
     .await?
     .ok_or(ErrorCode::NotFound(DataType::Article, id.to_string()).to_err())?;
-    Ok(to_meta!(meta))
+    Ok(to_meta!(meta, viewer_id))
 }
 
-pub async fn get_meta_by_ids(ids: Vec<i64>) -> Fallible<Vec<ArticleMeta>> {
+pub async fn get_meta_by_ids(ids: Vec<i64>, viewer_id: Option<i64>) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = metas!(
         crate::api::model::PrimitiveArticleMeta,
@@ -269,13 +271,13 @@ pub async fn get_meta_by_ids(ids: Vec<i64>) -> Fallible<Vec<ArticleMeta>> {
     .fetch_all(pool)
     .await?
     .into_iter()
-    .map(|d| to_meta!(d))
+    .map(|d| to_meta!(d, viewer_id))
     .collect();
     Ok(metas)
 }
 
-pub async fn get_by_id(id: i64) -> Fallible<Article> {
-    let meta = get_meta_by_id(id).await?;
+pub async fn get_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article> {
+    let meta = get_meta_by_id(id, viewer_id).await?;
     let category = get_force_category(meta.board_id, &meta.category_name).await?;
     let content = article_content::get_by_article_id(meta.id, &category).await?;
     Ok(Article { meta, content })
@@ -296,6 +298,7 @@ pub async fn get_author_by_id(id: i64) -> Fallible<i64> {
 }
 
 pub async fn get_by_board_name(
+    viewer_id: Option<i64>,
     board_name: &str,
     max_id: Option<i64>,
     limit: usize,
@@ -320,11 +323,12 @@ pub async fn get_by_board_name(
     )
     .fetch_all(pool)
     .await?;
-    Ok(metas.into_iter().map(|d| to_meta!(d)))
+    Ok(metas.into_iter().map(move |d| to_meta!(d, viewer_id)))
 }
 
 // `article_id` 指向的文章
 pub async fn get_bondee_meta(
+    viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
     family_filter: &FamilyFilter,
@@ -351,11 +355,14 @@ pub async fn get_bondee_meta(
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(|d| to_bond_and_meta(d)))
+    Ok(data
+        .into_iter()
+        .map(move |d| to_bond_and_meta(d, viewer_id)))
 }
 
 // 指向 `article_id` 的文章
 pub async fn get_bonder_meta(
+    viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
     family_filter: &FamilyFilter,
@@ -382,15 +389,18 @@ pub async fn get_bonder_meta(
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(|d| to_bond_and_meta(d)))
+    Ok(data
+        .into_iter()
+        .map(move |d| to_bond_and_meta(d, viewer_id)))
 }
 
 pub async fn get_bonder(
+    viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
     family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
-    let iter = get_bonder_meta(article_id, category_set, family_filter).await?;
+    let iter = get_bonder_meta(viewer_id, article_id, category_set, family_filter).await?;
     let mut bonds = Vec::<Edge>::with_capacity(iter.len());
     let metas: Vec<_> = iter
         .map(|(bond, meta)| {

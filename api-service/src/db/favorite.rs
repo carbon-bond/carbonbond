@@ -20,7 +20,7 @@ pub async fn get_by_user_id(id: i64) -> Fallible<impl ExactSizeIterator<Item = F
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(|d| to_favorite(d)))
+    Ok(data.into_iter().map(move |d| to_favorite(d, Some(id))))
 }
 
 pub async fn favorite(user_id: i64, article_id: i64) -> Fallible<i64> {

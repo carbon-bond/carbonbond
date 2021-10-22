@@ -87,12 +87,6 @@ mod model {
         pub truncated: bool,
     }
 
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Author {
-        pub id: i64,
-        pub name: String,
-    }
-
     macro_rules! make_meta {
         ($name: ident $(, $element: ident, $ty: ty)*) => {
             #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -140,6 +134,13 @@ mod model {
     );
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum Author {
+        NamedAuthor { id: i64, name: String },
+        MyAnonymous, // 匿名文章的作者就是我
+        Anonymous,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,
@@ -149,7 +150,7 @@ mod model {
         pub category_name: String,
         pub category_source: String,
         pub title: String,
-        pub author: Option<Author>,
+        pub author: Author,
         pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,

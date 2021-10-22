@@ -87,9 +87,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
         let mut articles: Vec<model::ArticleMeta> = Vec::new();
         let hot_article_ids = service::hot_articles::get_hot_articles().await?;
+        let viewer_id = context.get_id().await;
+        // TODO: N + 1 問題
         for hot_article_id in hot_article_ids.iter() {
             let res: i64 = (*hot_article_id).clone();
-            let article = db::article::get_meta_by_id(res).await?;
+            let article = db::article::get_meta_by_id(res, viewer_id).await?;
             articles.push(article);
             if articles.len() >= count {
                 break;
@@ -105,7 +107,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let user_id = context.get_id_strict().await?;
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
-        let articles = db::article::get_meta_by_ids(tracking_articles).await?;
+        let articles = db::article::get_meta_by_ids(tracking_articles, Some(user_id)).await?;
 
         complete_article(articles, context).await
     }
@@ -118,17 +120,21 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         board_name: Option<String>,
         family_filter: super::model::FamilyFilter,
     ) -> Fallible<Vec<model::ArticleMeta>> {
+        let viewer_id = context.get_id().await;
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
-            Some(name) => db::article::get_by_board_name(&name, max_id, count, &family_filter)
-                .await?
-                .collect(),
+            Some(name) => {
+                db::article::get_by_board_name(viewer_id, &name, max_id, count, &family_filter)
+                    .await?
+                    .collect()
+            }
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         };
         complete_article(articles, context).await
     }
     async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Article> {
-        let article = db::article::get_by_id(id).await?;
+        let viewer_id = context.get_id().await;
+        let article = db::article::get_by_id(id, viewer_id).await?;
         complete_article(article, context).await
     }
     async fn save_draft(
@@ -180,6 +186,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         draft_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
+        // TODO: 僅有草稿擁有者纔可以刪除草稿
         db::draft::delete(draft_id).await
     }
     async fn query_bonder(
@@ -189,9 +196,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
-        let bonders: Vec<_> = db::article::get_bonder(id, opt_slice(&category_set), &family_filter)
-            .await?
-            .collect();
+        let viewer_id = context.get_id().await;
+        let bonders: Vec<_> =
+            db::article::get_bonder(viewer_id, id, opt_slice(&category_set), &family_filter)
+                .await?
+                .collect();
         complete_article(bonders, context).await
     }
     async fn query_bonder_meta(
@@ -202,8 +211,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         family_filter: super::model::FamilyFilter,
     ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
     {
+        let viewer_id = context.get_id().await;
         let bonders: Vec<_> =
-            db::article::get_bonder_meta(id, opt_slice(&category_set), &family_filter)
+            db::article::get_bonder_meta(viewer_id, id, opt_slice(&category_set), &family_filter)
                 .await?
                 .collect();
         complete_article(bonders, context).await
@@ -213,7 +223,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
     ) -> Result<super::model::ArticleMeta, crate::custom_error::Error> {
-        complete_article(db::article::get_meta_by_id(id).await?, context).await
+        let viewer_id = context.get_id().await;
+        complete_article(db::article::get_meta_by_id(id, viewer_id).await?, context).await
     }
     async fn create_article(
         &self,
@@ -261,7 +272,9 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_set: Option<Vec<String>>,
         family_filter: super::model::FamilyFilter,
     ) -> Result<super::model::Graph, crate::custom_error::Error> {
+        let viewer_id = context.get_id().await;
         let graph = service::graph_view::query_graph(
+            viewer_id,
             10,
             article_id,
             opt_slice(&category_set),
