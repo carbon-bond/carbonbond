@@ -138,7 +138,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 
 	return <div className={style.articlePage}>
 		<ArticleHeader
-			user_name={article.meta.author?.name}
+			author={article.meta.author}
 			board_name={article.meta.board_name}
 			date={new Date(article.meta.create_time)} />
 		<ArticleLine
