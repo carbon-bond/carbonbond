@@ -305,6 +305,12 @@ mod model {
         None,
     }
 
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Config {
+        pub min_password_length: usize,
+        pub max_password_length: usize,
+    }
+
     #[chitin_model_use]
     use force::instance_defs::Bond;
 }

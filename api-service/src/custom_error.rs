@@ -67,6 +67,8 @@ mod inner {
         DuplicateRegister,
         #[display(fmt = "目前不開放自行註冊，請找朋友邀請")]
         NotAllowSelfSignup,
+        #[display(fmt = "密碼長度不符限制")]
+        PasswordLength,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
         #[display(fmt = "力語言驗證： {:?}", "_0")]

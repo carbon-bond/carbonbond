@@ -45,6 +45,7 @@ export type FamilyFilter =
  | { WhiteList: string [] } 
  | { BlackList: string [] } 
  | "None";
+export type Config = { min_password_length: number; max_password_length: number };
 export type Bond = { energy: number; target_article: number; tag: string | null };
 export enum DataType {     Category = "Category", IntField = "IntField", StringField = "StringField",     BondField = "BondField", Board = "Board", Article = "Article", Party =     "Party", User = "User", Email = "Email", Notification = "Notification",     SignupToken = "SignupToken", ResetPasswordToken = "ResetPasswordToken" };
 export type BondError = 
@@ -61,6 +62,7 @@ export type ErrorCode =
  | "DuplicateInvitation" 
  | "DuplicateRegister" 
  | "NotAllowSelfSignup" 
+ | "PasswordLength" 
  | "ParsingJson" 
  | { ForceValidate: ForceValidateError<BondError>} 
  | "UnImplemented" 
@@ -76,6 +78,7 @@ export class RootQuery {
     articleQuery: ArticleQuery
     boardQuery: BoardQuery
     notificationQuery: NotificationQuery
+    configQuery: ConfigQuery
     constructor(fetcher: Fetcher){
         this.fetchResult = fetcher
         this.userQuery = new UserQuery(fetcher)
@@ -83,6 +86,7 @@ export class RootQuery {
         this.articleQuery = new ArticleQuery(fetcher)
         this.boardQuery = new BoardQuery(fetcher)
         this.notificationQuery = new NotificationQuery(fetcher)
+        this.configQuery = new ConfigQuery(fetcher)
     }
 }
 
@@ -283,6 +287,16 @@ export class NotificationQuery {
     }
     async readNotifications(ids: Array<number>): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "Notification": { "ReadNotifications": { ids } } }));
+    }
+}
+
+export class ConfigQuery {
+    fetchResult: Fetcher;
+    constructor(fetcher: Fetcher){
+        this.fetchResult = fetcher
+    }
+    async queryConfig(): Promise<Result<Config, Error>> {
+        return JSON.parse(await this.fetchResult({ "Config": { "QueryConfig": {  } } }));
     }
 }
 

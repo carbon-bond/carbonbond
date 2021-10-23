@@ -369,17 +369,32 @@ pub trait NotificationQueryRouter {
     }
 }
 #[async_trait]
+pub trait ConfigQueryRouter {
+    async fn query_config(&self, context: &mut crate::Ctx, ) -> Result<super::model::Config, crate::custom_error::Error>;
+    async fn handle(&self, context: &mut crate::Ctx, query: ConfigQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
+        match query {
+             ConfigQuery::QueryConfig {  } => {
+                 let resp = self.query_config(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+        }
+    }
+}
+#[async_trait]
 pub trait RootQueryRouter {
     type UserQueryRouter: UserQueryRouter + Sync;
     type PartyQueryRouter: PartyQueryRouter + Sync;
     type ArticleQueryRouter: ArticleQueryRouter + Sync;
     type BoardQueryRouter: BoardQueryRouter + Sync;
     type NotificationQueryRouter: NotificationQueryRouter + Sync;
+    type ConfigQueryRouter: ConfigQueryRouter + Sync;
    fn user_router(&self) -> &Self::UserQueryRouter;
    fn party_router(&self) -> &Self::PartyQueryRouter;
    fn article_router(&self) -> &Self::ArticleQueryRouter;
    fn board_router(&self) -> &Self::BoardQueryRouter;
    fn notification_router(&self) -> &Self::NotificationQueryRouter;
+   fn config_router(&self) -> &Self::ConfigQueryRouter;
     async fn handle(&self, context: &mut crate::Ctx, query: RootQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              RootQuery::User(query) => {
@@ -396,6 +411,9 @@ pub trait RootQueryRouter {
             }
              RootQuery::Notification(query) => {
                  self.notification_router().handle(context, query).await
+            }
+             RootQuery::Config(query) => {
+                 self.config_router().handle(context, query).await
             }
         }
     }

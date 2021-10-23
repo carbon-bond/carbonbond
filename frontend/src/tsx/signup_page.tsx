@@ -1,28 +1,35 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
 import { RouteComponentProps } from 'react-router';
-import { toastErr, useInputValue } from './utils';
+import { toastErr } from './utils';
 import style from '../css/signup_page.module.css';
 import { API_FETCHER } from '../ts/api/api';
 import type { Error } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
+import { ConfigState } from './global_state/config';
+import { useForm } from 'react-hook-form';
+import { InvalidMessage } from './components/invalid_message';
 
 type Props = RouteComponentProps<{ token: string }>;
 
 export function SignupPage(props: Props): JSX.Element {
-	let name = useInputValue('').input_props;
-	let password = useInputValue('').input_props;
-	let repeated_password = useInputValue('').input_props;
 	let [email, setEmail] = React.useState<null | string>(null);
 	let [err, setErr] = React.useState<Error | null>(null);
 	let token = props.match.params.token;
 	let { getLoginState } = UserState.useContainer();
+	let { server_config } = ConfigState.useContainer();
+	const {
+		register,
+		handleSubmit,
+		watch,
+		errors
+	} = useForm({mode: 'onBlur'});
 
-	async function signup_request(name: string, password: string, repeated_password: string): Promise<void> {
+	const password = React.useRef({});
+	password.current = watch('password', '');
+
+	async function signup_request(name: string, password: string): Promise<void> {
 		try {
-			if (repeated_password != password) {
-				throw '兩次密碼輸入不同';
-			}
 			await API_FETCHER.userQuery.signup(name, password, token);
 			props.history.push('/app/');
 			getLoginState();
@@ -46,16 +53,50 @@ export function SignupPage(props: Props): JSX.Element {
 		});
 	}, [token]);
 
+	const onSubmit = (data: {name: string, password: string}): void => {
+		signup_request(data.name, data.password);
+	};
+
+	const min_length = server_config.min_password_length;
+	const max_length = server_config.max_password_length;
+	const length_limit = {
+		required: {
+			value: true,
+			message: '必填'
+		},
+		minLength: {
+			value: min_length,
+			message: `密碼長度至少 ${min_length}`
+		},
+		maxLength: {
+			value: max_length,
+			message: `密碼長度不可超過 ${max_length}`
+		},
+	};
+
 	if (email) {
 		return <div className={style.signupPage}>
 			<div className={style.signupForm}>
 				<div className={style.counter}>你的email是：　{email}　</div>
-				<input className={style.username} type="text" placeholder="使用者名稱" {...name} autoFocus />
-				<input className={style.password} type="password" placeholder="密碼" {...password} />
-				<input className={style.password} type="password" placeholder="確認密碼" {...repeated_password} />
-				<button onClick={() => signup_request(name.value, password.value, repeated_password.value)}>
-					註冊帳號
-				</button>
+				<form onSubmit={handleSubmit(onSubmit)}>
+					<input className={style.username} type="text" placeholder="使用者名稱" name="name" ref={register({ required: {value: true, message: '必填'} })} autoFocus />
+					{errors.name && <InvalidMessage msg={errors.name.message} />}
+					<input className={style.password} type="password" placeholder="密碼" name = "password" ref={register({
+						...length_limit,
+					})} />
+					{errors.password && <InvalidMessage msg={errors.password.message} />}
+					<input className={style.password} type="password" placeholder="確認密碼" name="repeat_password" ref={register({
+						...length_limit,
+						validate: value =>
+							value === password.current || '兩次密碼輸入不同'
+					})}  />
+					{errors.repeat_password && <InvalidMessage msg={errors.repeat_password.message} />}
+					<div>
+						<button>
+							註冊帳號
+						</button>
+					</div>
+				</form>
 			</div>
 		</div>;
 	} else if (err) {
