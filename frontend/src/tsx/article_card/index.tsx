@@ -3,7 +3,7 @@ import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
 import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Edge } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Author, Edge } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { parse_category } from '../../../../force/typescript';
@@ -12,16 +12,22 @@ import { ReplyModal, SatelliteModal } from './modal';
 
 const MAX_BRIEF_LINE = 4;
 
-export function ArticleHeader(props: { user_name: string | undefined, board_name: string, date: Date }): JSX.Element {
+function ShowAuthor(props: {author: Author}): JSX.Element {
+	if (props.author == 'Anonymous') {
+		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>;
+	} else if (props.author == 'MyAnonymous') {
+		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</div>;
+	} else {
+		return <Link to={`/app/user/${props.author.NamedAuthor.name}`}>
+			<div className={style.authorId}>{props.author.NamedAuthor.name}</div>
+		</Link>;
+	}
+}
+
+export function ArticleHeader(props: { author: Author, board_name: string, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	return <div className={style.articleHeader}>
-		{
-			props.user_name ?
-				<Link to={`/app/user/${props.user_name}`}>
-					<div className={style.authorId}>{props.user_name}</div>
-				</Link> :
-				<div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>
-		}
+		<ShowAuthor author={props.author} />
 		發佈於
 		<Link to={`/app/b/${props.board_name}`}>
 			<div className={style.articleBoard}>{props.board_name}</div>
@@ -142,12 +148,12 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
-	const user_name = props.article.author?.name;
+	const author = props.article.author;
 	const category_name = props.article.category_name;
 
 	return (
 		<div className={style.articleContainer}>
-			<ArticleHeader user_name={user_name} board_name={props.article.board_name} date={date} />
+			<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
 			<div className={style.articleBody}>
 				<div className={style.leftPart}>
 					<ArticleLine
@@ -191,7 +197,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				id={meta.id}
 				category_name={meta.category_name} />
 			<ArticleHeader
-				user_name={meta.author?.name}
+				author={meta.author}
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
@@ -233,13 +239,7 @@ function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 	return <div className={style.satelliteCard}>
 		<BondCard bond={props.bond} />
 		<div className={style.satelliteHeader}>
-			{
-				props.meta.author ?
-					<Link to={`/app/user/${props.meta.author.name}`}>
-						<div className={style.authorId}>{props.meta.author.name}</div>
-					</Link> :
-					<div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>
-			}
+			<ShowAuthor author={props.meta.author} />
 			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
 		</div>
 		<div>

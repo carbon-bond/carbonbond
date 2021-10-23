@@ -244,7 +244,7 @@ impl ValidatorTrait for Validator {
     type OtherError = BondError;
     async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<(), Self::OtherError> {
         //XXX: 鍵能
-        let meta = match super::article::get_meta_by_id(data.target_article).await {
+        let meta = match super::article::get_meta_by_id(data.target_article, None).await {
             Err(e) => {
                 if let Error::LogicError { code, .. } = &e {
                     if let ErrorCode::NotFound(..) = code {
