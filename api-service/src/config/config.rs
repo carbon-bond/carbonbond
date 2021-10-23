@@ -47,6 +47,9 @@ pub struct RawServerConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawAccountConfig {
     pub allow_self_signup: bool,
+    pub allow_invitation_signup: bool,
+    pub min_password_length: usize,
+    pub max_password_length: usize,
     pub email_whitelist: Vec<String>,
 }
 
@@ -95,6 +98,9 @@ pub struct ServerConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountConfig {
     pub allow_self_signup: bool,
+    pub allow_invitation_signup: bool,
+    pub min_password_length: usize,
+    pub max_password_length: usize,
     pub email_whitelist: Vec<String>,
 }
 
@@ -118,6 +124,10 @@ impl From<RawAccountConfig> for Fallible<AccountConfig> {
     fn from(orig: RawAccountConfig) -> Fallible<AccountConfig> {
         Ok(AccountConfig {
             allow_self_signup: orig.allow_self_signup,
+            allow_invitation_signup: orig.allow_invitation_signup,
+            min_password_length: orig.min_password_length,
+            max_password_length: orig.max_password_length,
+            // 目前無作用
             email_whitelist: orig.email_whitelist,
         })
     }

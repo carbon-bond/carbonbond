@@ -1,5 +1,6 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::{SignupInvitation, SignupInvitationCredit, User};
+use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_invitation_email, send_signup_email};
 
@@ -240,7 +241,18 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         Err(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).into())
     }
 }
+
+pub fn check_password_length(password: &str) -> Fallible<()> {
+    let config = get_config();
+    if password.len() > config.account.max_password_length
+        || password.len() < config.account.min_password_length
+    {
+        return Err(ErrorCode::PasswordLength.into());
+    }
+    Ok(())
+}
 pub async fn signup(name: &str, password: &str, email: &str) -> Fallible<i64> {
+    check_password_length(password)?;
     let (salt, hash) = crate::util::generate_password_hash(password)?;
     log::trace!("生成使用者 {}:{} 的鹽及雜湊", name, email);
 
@@ -273,6 +285,7 @@ pub async fn get_user_name_by_reset_password_token(token: &str) -> Fallible<Opti
 
 pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()> {
     log::trace!("使用者重置密碼");
+    check_password_length(password)?;
     let pool = get_pool();
     // 更新密碼
     let (salt, hash) = crate::util::generate_password_hash(password)?;

@@ -23,6 +23,7 @@ pub struct RootQueryRouter {
     user_router: UserQueryRouter,
     party_router: PartyQueryRouter,
     notification_router: NotificationQueryRouter,
+    config_router: ConfigQueryRouter,
 }
 #[async_trait]
 impl api_trait::RootQueryRouter for RootQueryRouter {
@@ -31,6 +32,7 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     type UserQueryRouter = UserQueryRouter;
     type PartyQueryRouter = PartyQueryRouter;
     type NotificationQueryRouter = NotificationQueryRouter;
+    type ConfigQueryRouter = ConfigQueryRouter;
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
     }
@@ -45,6 +47,9 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
     }
     fn notification_router(&self) -> &Self::NotificationQueryRouter {
         &self.notification_router
+    }
+    fn config_router(&self) -> &Self::ConfigQueryRouter {
+        &self.config_router
     }
 }
 
@@ -680,5 +685,21 @@ impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
         db::notification::read(&ids, user_id).await
+    }
+}
+
+#[derive(Default)]
+pub struct ConfigQueryRouter {}
+#[async_trait]
+impl api_trait::ConfigQueryRouter for ConfigQueryRouter {
+    async fn query_config(
+        &self,
+        _context: &mut crate::Ctx,
+    ) -> Result<super::model::Config, crate::custom_error::Error> {
+        let config = crate::config::get_config();
+        Ok(super::model::Config {
+            min_password_length: config.account.min_password_length,
+            max_password_length: config.account.max_password_length,
+        })
     }
 }

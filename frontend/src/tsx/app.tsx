@@ -127,21 +127,23 @@ function App(): JSX.Element {
 
 	return (
 		<div className="app">
-			<UserState.Provider>
-				<DraftState.Provider>
-					<SubscribedBoardsState.Provider>
-						<BottomPanelState.Provider>
-							<AllChatState.Provider>
-								<EditorPanelState.Provider>
-									<BoardCacheState.Provider>
-										<Content />
-									</BoardCacheState.Provider>
-								</EditorPanelState.Provider>
-							</AllChatState.Provider>
-						</BottomPanelState.Provider>
-					</SubscribedBoardsState.Provider>
-				</DraftState.Provider>
-			</UserState.Provider>
+			<ConfigState.Provider>
+				<UserState.Provider>
+					<DraftState.Provider>
+						<SubscribedBoardsState.Provider>
+							<BottomPanelState.Provider>
+								<AllChatState.Provider>
+									<EditorPanelState.Provider>
+										<BoardCacheState.Provider>
+											<Content />
+										</BoardCacheState.Provider>
+									</EditorPanelState.Provider>
+								</AllChatState.Provider>
+							</BottomPanelState.Provider>
+						</SubscribedBoardsState.Provider>
+					</DraftState.Provider>
+				</UserState.Provider>
+			</ConfigState.Provider>
 		</div>
 	);
 }
@@ -151,6 +153,7 @@ declare global {
 }
 
 import { ChatSocket } from '../ts/chat_socket';
+import { ConfigState } from './global_state/config';
 window.chat_socket = new ChatSocket();
 
 ReactDOM.render(<App />, document.getElementById('root'));

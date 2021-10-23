@@ -15,6 +15,8 @@ pub enum RootQuery {
     Board(BoardQuery),
     #[chitin(router)]
     Notification(NotificationQuery),
+    #[chitin(router)]
+    Config(ConfigQuery),
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum UserQuery {
@@ -203,4 +205,10 @@ pub enum NotificationQuery {
     QueryNotificationByUser { all: bool },
     #[chitin(leaf, response = "()")]
     ReadNotifications { ids: Vec<i64> },
+}
+
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
+pub enum ConfigQuery {
+    #[chitin(leaf, response = "super::model::Config")]
+    QueryConfig { },
 }
