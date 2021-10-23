@@ -23,7 +23,10 @@ max_conn = 10
 host = "redis://redis/"
 
 [account]
-allow_self_signup = false
+allow_self_signup = true
+allow_invitation_signup = true
+min_password_length = 6
+max_password_length = 100
 email_whitelist = [
     '@ntu\.edu\.tw$',
     '@(oz|m\d{2,3})\.nthu\.edu\.tw$',
