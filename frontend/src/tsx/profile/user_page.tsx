@@ -158,7 +158,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const [relation, setRelation] = React.useState<UserRelationKind>(UserRelationKind.None);
+	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
+	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -169,10 +170,12 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		props.setProfileUser(new_state);
 	}
 
-	async function createUserRelation(kind: UserRelationKind): Promise<{}> {
+	async function createUserRelation(kind: UserRelationKind, is_public: boolean): Promise<{}> {
 		if (props.profile_user) {
 			try {
-				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind);
+				console.log('is_public');
+				console.log(is_public);
+				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind, is_public);
 			} catch (err) {
 				toastErr(err);
 			}
@@ -191,32 +194,17 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		return {};
 	}
 
-	function onChangeRelation(kind: UserRelationKind): void {
-		switch (kind) {
-			case UserRelationKind.Follow:
-				break;
-			case UserRelationKind.OpenlyFollow:
-				if (relation == UserRelationKind.OpenlyFollow) {
-					deleteUserRelation();
-					setRelation(UserRelationKind.None);
-				} else {
-					createUserRelation(UserRelationKind.OpenlyFollow);
-					setRelation(UserRelationKind.OpenlyFollow);
-				}
-				break;
-			case UserRelationKind.Hate:
-				break;
-			case UserRelationKind.OpenlyHate:
-				if (relation == UserRelationKind.OpenlyHate) {
-					deleteUserRelation();
-					setRelation(UserRelationKind.None);
-				} else {
-					createUserRelation(UserRelationKind.OpenlyHate);
-					setRelation(UserRelationKind.OpenlyHate);
-				}
-				break;
-			default:
-				break;
+	function onChangeRelation(kind: UserRelationKind, is_public: boolean): void {
+		// if same as the old relation, we just remove it
+		// otherwise, change it to new relation
+		if (relation_type === kind && relation_public === is_public) {
+			deleteUserRelation();
+			setRelationType(UserRelationKind.None);
+			setRelationPublic(false);
+		} else {
+			createUserRelation(kind, is_public);
+			setRelationType(kind);
+			setRelationPublic(is_public);
 		}
 	}
 
@@ -225,7 +213,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			if (props.profile_user) {
 				try {
 					await API_FETCHER.userQuery.queryUserRelation(props.profile_user.id).then((res) => {
-						setRelation(unwrap(res));
+						setRelationType(unwrap(res).kind);
+						setRelationPublic(unwrap(res).is_public);
 					});
 				} catch (err) {
 					toastErr(err);
@@ -265,11 +254,17 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
 						<div className={style.relation}>
-							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyFollow)}>
-								{relation == UserRelationKind.Follow || relation == UserRelationKind.OpenlyFollow ? '取消追蹤' : '追蹤'}
+							<button onClick={() => onChangeRelation(UserRelationKind.Follow, true)}>
+								{relation_type == UserRelationKind.Follow && relation_public ? '取消公開追蹤' : '公開追蹤'}
 							</button>
-							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyHate)}>
-								{relation == UserRelationKind.Hate || relation == UserRelationKind.OpenlyHate ? '取消仇視' : '仇視'}
+							<button onClick={() => onChangeRelation(UserRelationKind.Follow, false)}>
+								{relation_type == UserRelationKind.Follow && !relation_public ? '取消私下追蹤' : '私下追蹤'}
+							</button>
+							<button onClick={() => onChangeRelation(UserRelationKind.Hate, true)}>
+								{relation_type == UserRelationKind.Hate && relation_public ? '取消公開仇視' : '公開仇視'}
+							</button>
+							<button onClick={() => onChangeRelation(UserRelationKind.Hate, false)}>
+								{relation_type == UserRelationKind.Hate && !relation_public ? '取消私下仇視' : '私下仇視'}
 							</button>
 						</div> :
 						<></>

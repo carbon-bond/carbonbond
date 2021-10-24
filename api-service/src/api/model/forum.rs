@@ -224,10 +224,6 @@ mod model {
         Follow,
         #[strum(serialize = "hate")]
         Hate,
-        #[strum(serialize = "openly_follow")]
-        OpenlyFollow,
-        #[strum(serialize = "openly_hate")]
-        OpenlyHate,
         #[strum(serialize = "none")]
         None,
     }
@@ -236,6 +232,7 @@ mod model {
         pub from_user: i64,
         pub to_user: i64,
         pub kind: UserRelationKind,
+        pub is_public: bool,
     }
     #[derive(
         Serialize,

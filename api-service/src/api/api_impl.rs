@@ -611,11 +611,13 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         target_user: i64,
         kind: model::forum::UserRelationKind,
+        is_public: bool,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
         db::user_relation::create_relation(&model::forum::UserRelation {
             from_user,
             kind,
+            is_public,
             to_user: target_user,
         })
         .await?;
@@ -624,14 +626,16 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let noti = |kind| {
             service::notification::create(target_user, kind, Some(from_user), None, None, None)
         };
-        match kind {
-            model::forum::UserRelationKind::OpenlyFollow => {
-                noti(NotificationKind::Follow).await?;
+        if is_public {
+            match kind {
+                model::forum::UserRelationKind::OpenlyFollow => {
+                    noti(NotificationKind::Follow).await?;
+                }
+                model::forum::UserRelationKind::OpenlyHate => {
+                    noti(NotificationKind::Hate).await?;
+                }
+                _ => (),
             }
-            model::forum::UserRelationKind::OpenlyHate => {
-                noti(NotificationKind::Hate).await?;
-            }
-            _ => (),
         }
         Ok(())
     }

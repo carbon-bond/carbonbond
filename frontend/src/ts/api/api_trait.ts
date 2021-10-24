@@ -32,8 +32,8 @@ export type Article = { meta: ArticleMeta; content: string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string; anonymous: boolean };
 export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
-export enum UserRelationKind {     Follow = "Follow", Hate = "Hate", OpenlyFollow = "OpenlyFollow",     OpenlyHate = "OpenlyHate", None = "None" };
-export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
+export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
+export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
 export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied" };
 export type Notification = {     id: number; kind: NotificationKind; user_id: number; read: boolean; quality: boolean | null; create_time: string; board_name:     string | null; board_id: number | null; user2_name: string | null;     user2_id: number | null; article1_title: string | null; article2_title: string | null; article1_id: number | null; article2_id: number |     null };
 export type SearchField = 
@@ -162,13 +162,13 @@ export class UserQuery {
     async untrackingArticle(article_id: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UntrackingArticle": { article_id } } }));
     }
-    async createUserRelation(target_user: number, kind: UserRelationKind): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind } } }));
+    async createUserRelation(target_user: number, kind: UserRelationKind, is_public: boolean): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind, is_public } } }));
     }
     async deleteUserRelation(target_user: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "DeleteUserRelation": { target_user } } }));
     }
-    async queryUserRelation(target_user: number): Promise<Result<UserRelationKind, Error>> {
+    async queryUserRelation(target_user: number): Promise<Result<UserRelation, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryUserRelation": { target_user } } }));
     }
     async queryFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {

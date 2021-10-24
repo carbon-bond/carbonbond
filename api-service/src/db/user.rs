@@ -32,8 +32,7 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND (kind = 'hate'
-                    OR kind = 'openly_hate')) AS "hated_count!",
+                    AND kind = 'hate') AS "hated_count!",
                 (
                 SELECT
                     COUNT(*)
@@ -41,8 +40,7 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND (kind = 'follow'
-                    OR kind = 'openly_follow')) AS "followed_count!",
+                    AND kind = 'follow') AS "followed_count!",
                 (
                 SELECT
                     COUNT(*)
@@ -50,8 +48,7 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND (kind = 'hate'
-                    OR kind = 'openly_hate')) AS "hating_count!",
+                    AND kind = 'hate') AS "hating_count!",
                 (
                 SELECT
                     COUNT(*)
@@ -59,8 +56,7 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND (kind = 'follow'
-                    OR kind = 'openly_follow')) AS "following_count!"
+                    AND kind = 'follow') AS "following_count!"
             FROM users) SELECT * FROM metas "# + $remain,
             $($arg),*
         )
