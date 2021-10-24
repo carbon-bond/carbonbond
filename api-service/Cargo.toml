@@ -6,6 +6,7 @@ edition = "2018"
 default-run = "server"
 
 [dependencies]
+http = "0.2.5"
 async-trait = "0.1.38"
 chitin = { git = "https://github.com/carbon-bond/chitin", rev = "912b65b" }
 chrono = { version = "0.4.15", features = ["serde"] }
