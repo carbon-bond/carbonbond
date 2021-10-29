@@ -1,4 +1,4 @@
-use crate::api::model::{FamilyFilter, Graph};
+use crate::api::model::forum::{FamilyFilter, Graph};
 use crate::custom_error::Fallible;
 use crate::db;
 use std::collections::HashMap;

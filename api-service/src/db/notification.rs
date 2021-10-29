@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::api::model::{Notification, NotificationKind};
+use crate::api::model::forum::{Notification, NotificationKind};
 use crate::custom_error::{DataType, Fallible};
 use std::str::FromStr;
 

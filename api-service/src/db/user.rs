@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::{SignupInvitation, SignupInvitationCredit, User};
+use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_invitation_email, send_signup_email};

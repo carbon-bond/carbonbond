@@ -1,5 +1,5 @@
 use super::get_pool;
-use crate::api::model::Favorite;
+use crate::api::model::forum::Favorite;
 use crate::custom_error::Fallible;
 use crate::db::article::to_favorite;
 
@@ -8,7 +8,7 @@ const EMPTY_SET: &[String] = &[];
 pub async fn get_by_user_id(id: i64) -> Fallible<impl ExactSizeIterator<Item = Favorite>> {
     let pool = get_pool();
     let data = metas!(
-        crate::api::model::FavoriteArticleMeta,
+        crate::api::model::forum::FavoriteArticleMeta,
         "favorite_articles.create_time AS favorite_create_time, ",
         "
         INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id

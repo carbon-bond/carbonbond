@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::{Board, BoardName, BoardOverview, NewBoard};
+use crate::api::model::forum::{Board, BoardName, BoardOverview, NewBoard};
 use crate::custom_error::{DataType, Error, Fallible};
 use force::parser::parse;
 

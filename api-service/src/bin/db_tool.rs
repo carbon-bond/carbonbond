@@ -1,5 +1,5 @@
 use carbonbond::{
-    api::model::User,
+    api::model::forum::User,
     config::{get_config, init as init_config},
     custom_error::{Error, ErrorCode, Fallible},
     db,

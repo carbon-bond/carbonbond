@@ -69,8 +69,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         end_time: Option<DateTime<Utc>>,
         category: Option<i64>,
         title: Option<String>,
-        content: HashMap<String, super::model::SearchField>,
-    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+        content: HashMap<String, super::model::forum::SearchField>,
+    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
         let viewer_id = context.get_id().await;
         let meta = db::article::search_article(
             viewer_id,
@@ -89,8 +89,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         context: &mut crate::Ctx,
         count: usize,
-    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
-        let mut articles: Vec<model::ArticleMeta> = Vec::new();
+    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
+        let mut articles: Vec<model::forum::ArticleMeta> = Vec::new();
         let hot_article_ids = service::hot_articles::get_hot_articles().await?;
         let viewer_id = context.get_id().await;
         // TODO: N + 1 問題
@@ -108,7 +108,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         context: &mut crate::Ctx,
         count: usize,
-    ) -> Result<Vec<model::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
@@ -123,8 +123,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         max_id: Option<i64>,
         _author_name: Option<String>,
         board_name: Option<String>,
-        family_filter: super::model::FamilyFilter,
-    ) -> Fallible<Vec<model::ArticleMeta>> {
+        family_filter: super::model::forum::FamilyFilter,
+    ) -> Fallible<Vec<model::forum::ArticleMeta>> {
         let viewer_id = context.get_id().await;
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
@@ -137,7 +137,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         };
         complete_article(articles, context).await
     }
-    async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Article> {
+    async fn query_article(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Fallible<model::forum::Article> {
         let viewer_id = context.get_id().await;
         let article = db::article::get_by_id(id, viewer_id).await?;
         complete_article(article, context).await
@@ -182,7 +186,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn query_draft(
         &self,
         context: &mut crate::Ctx,
-    ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error> {
         let author_id = context.get_id_strict().await?;
         db::draft::get_all(author_id).await
     }
@@ -199,8 +203,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::FamilyFilter,
-    ) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error> {
+        family_filter: super::model::forum::FamilyFilter,
+    ) -> Result<
+        Vec<(super::model::forum::Edge, super::model::forum::Article)>,
+        crate::custom_error::Error,
+    > {
         let viewer_id = context.get_id().await;
         let bonders: Vec<_> =
             db::article::get_bonder(viewer_id, id, opt_slice(&category_set), &family_filter)
@@ -213,9 +220,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::FamilyFilter,
-    ) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>
-    {
+        family_filter: super::model::forum::FamilyFilter,
+    ) -> Result<
+        Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>,
+        crate::custom_error::Error,
+    > {
         let viewer_id = context.get_id().await;
         let bonders: Vec<_> =
             db::article::get_bonder_meta(viewer_id, id, opt_slice(&category_set), &family_filter)
@@ -227,7 +236,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         &self,
         context: &mut crate::Ctx,
         id: i64,
-    ) -> Result<super::model::ArticleMeta, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error> {
         let viewer_id = context.get_id().await;
         complete_article(db::article::get_meta_by_id(id, viewer_id).await?, context).await
     }
@@ -275,8 +284,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::FamilyFilter,
-    ) -> Result<super::model::Graph, crate::custom_error::Error> {
+        family_filter: super::model::forum::FamilyFilter,
+    ) -> Result<super::model::forum::Graph, crate::custom_error::Error> {
         let viewer_id = context.get_id().await;
         let graph = service::graph_view::query_graph(
             viewer_id,
@@ -298,7 +307,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         party_name: String,
-    ) -> Fallible<model::Party> {
+    ) -> Fallible<model::forum::Party> {
         db::party::get_by_name(&party_name).await
     }
     async fn create_party(
@@ -316,7 +325,7 @@ impl api_trait::PartyQueryRouter for PartyQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         board_id: i64,
-    ) -> Fallible<Vec<model::Party>> {
+    ) -> Fallible<Vec<model::forum::Party>> {
         db::party::get_by_board_id(board_id).await
     }
 }
@@ -329,13 +338,13 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         _count: usize,
-    ) -> Fallible<Vec<model::Board>> {
+    ) -> Fallible<Vec<model::forum::Board>> {
         db::board::get_all().await?.assign_props().await
     }
     async fn query_board_name_list(
         &self,
         _context: &mut crate::Ctx,
-    ) -> Fallible<Vec<model::BoardName>> {
+    ) -> Fallible<Vec<model::forum::BoardName>> {
         db::board::get_all_board_names().await
     }
     async fn query_board(
@@ -343,14 +352,18 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         context: &mut crate::Ctx,
         name: String,
         style: String,
-    ) -> Fallible<model::Board> {
+    ) -> Fallible<model::forum::Board> {
         let board = db::board::get_by_name(&name, &style).await?;
         if let Some(user_id) = context.get_id().await {
             service::hot_boards::set_board_pop(user_id, board.id).await?;
         }
         board.assign_props().await
     }
-    async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Fallible<model::Board> {
+    async fn query_board_by_id(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Fallible<model::forum::Board> {
         let board = db::board::get_by_id(id).await?;
         if let Some(user_id) = context.get_id().await {
             service::hot_boards::set_board_pop(user_id, board.id).await?;
@@ -360,7 +373,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn create_board(
         &self,
         _context: &mut crate::Ctx,
-        new_board: model::NewBoard,
+        new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
         Ok(db::board::create(&new_board).await?)
     }
@@ -374,7 +387,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     async fn query_hot_boards(
         &self,
         _context: &mut crate::Ctx,
-    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error> {
         let board_ids = service::hot_boards::get_hot_boards().await?;
         db::board::get_overview(&board_ids)
             .await?
@@ -425,7 +438,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         user_name: String,
         password: String,
         token: String,
-    ) -> Result<super::model::User, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::User, crate::custom_error::Error> {
         db::user::signup_by_token(&user_name, &password, &token).await?;
         self.login(context, password, user_name.clone())
             .await?
@@ -463,21 +476,24 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         db::user::reset_password_by_token(&password, &token).await
     }
 
-    async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::User>> {
+    async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::forum::User>> {
         if let Some(id) = context.get_id().await {
             Ok(Some(db::user::get_by_id(id).await?))
         } else {
             Ok(None)
         }
     }
-    async fn query_my_party_list(&self, context: &mut crate::Ctx) -> Fallible<Vec<model::Party>> {
+    async fn query_my_party_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Fallible<Vec<model::forum::Party>> {
         let id = context.get_id_strict().await?;
         db::party::get_by_member_id(id).await
     }
     async fn query_my_favorite_article_list(
         &self,
         context: &mut crate::Ctx,
-    ) -> Fallible<Vec<model::Favorite>> {
+    ) -> Fallible<Vec<model::forum::Favorite>> {
         let id = context.get_id_strict().await?;
         let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
         complete_article(articles, context).await
@@ -486,27 +502,27 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         user: i64,
-    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_follower(user).await
     }
     async fn query_hater_list(
         &self,
         _context: &mut crate::Ctx,
         user: i64,
-    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hater(user).await
     }
     async fn query_signup_invitation_list(
         &self,
         context: &mut crate::Ctx,
-    ) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::SignupInvitation>, crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::user::get_signup_invitations(id).await
     }
     async fn query_signup_invitation_credit_list(
         &self,
         context: &mut crate::Ctx,
-    ) -> Result<Vec<super::model::SignupInvitationCredit>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::SignupInvitationCredit>, crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::user::get_signup_invitation_credit(id).await
     }
@@ -514,7 +530,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         _context: &mut crate::Ctx,
         name: String,
-    ) -> Result<super::model::User, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::User, crate::custom_error::Error> {
         db::user::get_by_name(&name).await
     }
     async fn login(
@@ -522,7 +538,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         user_name: String,
         password: String,
-    ) -> Fallible<Option<model::User>> {
+    ) -> Fallible<Option<model::forum::User>> {
         let user = db::user::login(&user_name, &password).await?;
         context.remember_id(user.id).await?;
         Ok(Some(user))
@@ -533,7 +549,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_subcribed_boards(
         &self,
         context: &mut crate::Ctx,
-    ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::subscribed_boards::get_subscribed_boards(id)
             .await?
@@ -594,25 +610,25 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         target_user: i64,
-        kind: model::UserRelationKind,
+        kind: model::forum::UserRelationKind,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
-        db::user_relation::create_relation(&model::UserRelation {
+        db::user_relation::create_relation(&model::forum::UserRelation {
             from_user,
             kind,
             to_user: target_user,
         })
         .await?;
 
-        use model::NotificationKind;
+        use model::forum::NotificationKind;
         let noti = |kind| {
             service::notification::create(target_user, kind, Some(from_user), None, None, None)
         };
         match kind {
-            model::UserRelationKind::OpenlyFollow => {
+            model::forum::UserRelationKind::OpenlyFollow => {
                 noti(NotificationKind::Follow).await?;
             }
-            model::UserRelationKind::OpenlyHate => {
+            model::forum::UserRelationKind::OpenlyHate => {
                 noti(NotificationKind::Hate).await?;
             }
             _ => (),
@@ -631,7 +647,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         target_user: i64,
-    ) -> Result<super::model::UserRelationKind, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::UserRelationKind, crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
         let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)
@@ -673,7 +689,7 @@ impl api_trait::NotificationQueryRouter for NotificationQueryRouter {
         &self,
         context: &mut crate::Ctx,
         all: bool,
-    ) -> Result<Vec<super::model::Notification>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::Notification>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
         let notificartions = db::notification::get_by_user(user_id, all).await?;
         Ok(notificartions)
@@ -695,9 +711,9 @@ impl api_trait::ConfigQueryRouter for ConfigQueryRouter {
     async fn query_config(
         &self,
         _context: &mut crate::Ctx,
-    ) -> Result<super::model::Config, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::Config, crate::custom_error::Error> {
         let config = crate::config::get_config();
-        Ok(super::model::Config {
+        Ok(super::model::forum::Config {
             min_password_length: config.account.min_password_length,
             max_password_length: config.account.max_password_length,
         })

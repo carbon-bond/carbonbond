@@ -1,4 +1,4 @@
-use crate::api::model::NotificationKind;
+use crate::api::model::forum::NotificationKind;
 use crate::custom_error::{ErrorCode, Fallible};
 use crate::db;
 use force::instance_defs::Bond as BondInstance;

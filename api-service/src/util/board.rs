@@ -1,4 +1,4 @@
-use crate::api::model::{Board, BoardOverview};
+use crate::api::model::forum::{Board, BoardOverview};
 use crate::custom_error::Fallible;
 use crate::redis;
 use async_trait::async_trait;
