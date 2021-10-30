@@ -58,7 +58,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
 小留言 @ [衛星] {
     鍵結[大文章] 本體
 }";
-    let board_id = db::board::create(&model::NewBoard {
+    let board_id = db::board::create(&model::forum::NewBoard {
         board_name: "測試板".to_string(),
         board_type: "general".to_string(),
         title: "整合測試測起來！".to_string(),
@@ -68,7 +68,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
     })
     .await?;
 
-    db::board::create(&model::NewBoard {
+    db::board::create(&model::forum::NewBoard {
         board_name: "測試板2".to_string(),
         board_type: "general".to_string(),
         title: "整合測試測起來！".to_string(),
@@ -82,7 +82,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
     Ok(board_id)
 }
 async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
-    use model::NotificationKind;
+    use model::forum::NotificationKind;
     let id = db::notification::create(
         user_id,
         NotificationKind::Follow,
@@ -178,9 +178,14 @@ async fn article_test(user_id: i64, board_id: i64) -> Fallible {
         _ => panic!(),
     }
 
-    let articles =
-        db::article::get_by_board_name(None, "測試板", None, 999, &model::FamilyFilter::None)
-            .await?;
+    let articles = db::article::get_by_board_name(
+        None,
+        "測試板",
+        None,
+        999,
+        &model::forum::FamilyFilter::None,
+    )
+    .await?;
     assert_eq!(articles.len(), 2, "文章不是兩篇！？");
     Ok(())
 }
