@@ -43,6 +43,12 @@ mod model {
     pub struct InitInfo {
         pub channels: Vec<Channel>,
     }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct MessageSending {
+        pub channel_id: i64,
+        pub content: String,
+    }
 }
 
 pub use model::*;

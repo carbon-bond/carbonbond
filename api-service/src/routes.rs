@@ -125,6 +125,17 @@ impl Users {
         let tx_set = users.entry(id).or_insert(HashSet::new());
         tx_set.insert(Sender(tx_id, Some(tx)));
     }
+    async fn send_to<S>(&self, id: i64, content: S)
+    where
+        S: Into<String> + Copy,
+    {
+        let users = self.0.write().await;
+        if let Some(tx_set) = users.get(&id) {
+            for tx in tx_set {
+                tx.1.as_ref().unwrap().send(Message::text(content));
+            }
+        }
+    }
     async fn remove_tx(&self, id: i64, tx_id: usize) {
         let mut users = self.0.write().await;
         if let Entry::Occupied(mut tx_set) = users.entry(id) {
@@ -153,6 +164,15 @@ async fn handle_chat(
     let u = ws.on_upgrade(move |websocket| user_connected(id, websocket, users));
 
     Ok(Box::new(u))
+}
+
+use crate::chat;
+use model::chat::MessageSending;
+async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
+    let msg_sending: MessageSending = serde_json::from_str(msg)?;
+    let receiver_id = chat::message::send_message(&msg_sending, id).await?;
+    users.send_to(receiver_id, msg).await;
+    Ok(())
 }
 
 async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
@@ -190,6 +210,30 @@ async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
         }
     });
     users.add_tx(id, tx_id, tx).await;
+
+    while let Some(result) = user_ws_rx.next().await {
+        let msg = match result {
+            Ok(msg) => msg,
+            Err(e) => {
+                eprintln!("websocket error(uid={}): {}", id, e);
+                break;
+            }
+        };
+        match msg.to_str() {
+            Ok(msg) => {
+                println!("{}: {}", id, msg);
+                if let Err(err) = handle_message(msg, id, &users).await {
+                    log::warn!("用戶 {} 的 websocket 連線發生錯誤： {}", id, err);
+                    break;
+                }
+            }
+            Err(_) => {
+                println!("{}: 無法解析爲字串", id);
+                break;
+            }
+        }
+    }
+
     users.remove_tx(id, tx_id).await;
 }
 

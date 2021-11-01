@@ -17,6 +17,8 @@ mod inner {
 
     #[derive(Serialize, Display, Debug, PartialEq, Eq, TypeScriptify)]
     pub enum DataType {
+        #[display(fmt = "私訊頻道")]
+        DirectChannel,
         #[display(fmt = "分類")]
         Category,
         #[display(fmt = "整數欄位")]

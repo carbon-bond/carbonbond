@@ -56,7 +56,8 @@ export type Channel =
  | { WithAnonymousAuthor: WithAnonymousAuthor } 
  | { IAmAnonymousAuthor: IAmAnonymousAuthor };
 export type InitInfo = { channels: Channel [] };
-export enum DataType {     Category = "Category", IntField = "IntField", StringField = "StringField",     BondField = "BondField", Board = "Board", Article = "Article", Party =     "Party", User = "User", Email = "Email", Notification = "Notification",     SignupToken = "SignupToken", ResetPasswordToken = "ResetPasswordToken" };
+export type MessageSending = { channel_id: number; content: string };
+export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
 export type BondError = 
  | { Custom: Error } 
  | "TargetNotFound" 
