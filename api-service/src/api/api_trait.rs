@@ -29,6 +29,8 @@ pub trait UserQueryRouter {
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::forum::UserRelation, crate::custom_error::Error>;
     async fn query_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
     async fn query_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_following_list(&self, context: &mut crate::Ctx, user: i64, is_public: bool) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_hating_list(&self, context: &mut crate::Ctx, user: i64, is_public: bool) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
     async fn query_signup_invitation_credit_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitationCredit>, crate::custom_error::Error>;
     async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitation>, crate::custom_error::Error>;
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
@@ -153,6 +155,16 @@ pub trait UserQueryRouter {
             }
              UserQuery::QueryHaterList { user } => {
                  let resp = self.query_hater_list(context, user).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryFollowingList { user, is_public } => {
+                 let resp = self.query_following_list(context, user, is_public).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryHatingList { user, is_public } => {
+                 let resp = self.query_hating_list(context, user, is_public).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

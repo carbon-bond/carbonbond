@@ -41,8 +41,16 @@
             justify-content: space-between;
             font-size: 16px;
             & .energy { }
-            & .trace { }
-            & .hate { }
+            & .trace {
+                & div {
+                    cursor: pointer;
+                }
+            }
+            & .hate {
+                & div {
+                    cursor: pointer;
+                }
+            }
         }
     }
     & .operation {
@@ -185,7 +193,16 @@
 }
 
 .userListContainer {
-    padding: 10px 20px 0px;
+    width: 480px;
+    height: 280px;
+    overflow-y: auto;
+    padding: 10px 0px;
+    & .emptyContainer {
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }
 
 .friendshipWrapper {

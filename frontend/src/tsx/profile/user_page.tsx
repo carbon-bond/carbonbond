@@ -13,7 +13,7 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import favorite_wrapper_style from '../../css/favorite_wrapper.module.css';
-const {favoriteTitle, favoriteWrapper} = favorite_wrapper_style;
+const { favoriteTitle, favoriteWrapper } = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 
@@ -156,10 +156,114 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	</div>;
 }
 
+function RelationModal(props: { user: User, kind: string, visible: boolean, setVisible: Function }): JSX.Element {
+	const [users, setUsers] = React.useState<UserMini[]>([]);
+	const fetchUsers = (props.kind == 'follow' ? fetchFollowers : fetchHaters);
+
+	React.useEffect(() => {
+		fetchUsers(props.user.id).then((users) => {
+			try {
+				setUsers(users);
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [props.user, fetchUsers]);
+
+	function getBody(): JSX.Element {
+		return <div className={style.userListContainer}>
+			{users.length == 0 ? (
+				<div className={style.emptyContainer}>
+					<div>{props.kind == 'follow' ? '沒有公開追隨者' : '沒有公開仇視者'}</div>
+				</div>
+			) : (
+				users.map((user, idx) => (
+					<div className={style.friendshipWrapper} key={`friendship-${idx}`}>
+						<UserCard user={user} />
+					</div>
+				))
+			)}
+		</div>;
+	}
+
+	let buttons: ModalButton[] = [];
+
+	return <ModalWindow
+		title={props.kind == 'follow' ? '💖追隨者' : '⚔️仇視者'}
+		body={getBody()}
+		buttons={buttons}
+		visible={props.visible}
+		setVisible={props.setVisible}
+	/>;
+}
+
+function RelationModalMyself(props: { user: User, kind: string, visible: boolean, setVisible: Function }): JSX.Element {
+	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
+	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
+	const fetchUsers = (props.kind == 'follow' ? fetchFollowings : fetchHatings);
+
+	React.useEffect(() => {
+		Promise.all([
+			fetchUsers(props.user.id, true),
+			fetchUsers(props.user.id, false),
+		]).then(([public_results, private_results]) => {
+			try {
+				setPublicUsers(public_results);
+				setPrivateUsers(private_results);
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [props.user, fetchUsers]);
+
+	function getBody(): JSX.Element {
+		return <div className={style.userListContainer}>
+			<div>公開的：</div>
+			{public_users.length == 0 ? (
+				<div className={style.emptyContainer}>
+					<div>{props.kind == 'follow' ? '沒有公開追隨的人' : '沒有公開仇視的人'}</div>
+				</div>
+			) : (
+				public_users.map((user, idx) => (
+					<div className={style.friendshipWrapper} key={`friendship-${idx}`}>
+						<UserCard user={user} />
+					</div>
+				))
+			)}
+			<div>私下的：</div>
+			{private_users.length == 0 ? (
+				<div className={style.emptyContainer}>
+					<div>{props.kind == 'follow' ? '沒有偷偷追隨的人' : '沒有偷偷仇視的人'}</div>
+				</div>
+			) : (
+				private_users.map((user, idx) => (
+					<div className={style.friendshipWrapper} key={`friendship-${idx}`}>
+						<UserCard user={user} />
+					</div>
+				))
+			)}
+		</div>;
+	}
+
+	let buttons: ModalButton[] = [];
+
+	return <ModalWindow
+		title={props.kind == 'follow' ? '💖我追隨的人' : '⚔️我仇視的人'}
+		body={getBody()}
+		buttons={buttons}
+		visible={props.visible}
+		setVisible={props.setVisible}
+	/>;
+}
+
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
+	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
+	const [visible_hater, setVisibleHater] = React.useState<boolean>(false);
+	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
+	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -225,6 +329,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		if (props.profile_user && user_state.login) {
 			queryUserRelation();
 		}
+		setVisibleFollower(false);
+		setVisibleHater(false);
+		setVisibleFollowing(false);
+		setVisibleHating(false);
 	}, [props.profile_user, user_state.login]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
@@ -239,12 +347,14 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.data}>
 				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
 				<div className={style.trace}>
-					<p>被 {props.profile_user.followed_count} 人追蹤</p>
-					<p>追蹤 {props.profile_user.following_count} 人</p>
+					<div onClick={() => setVisibleFollower(true)}>被 {props.profile_user.followed_count} 人追蹤</div>
+					{is_me && <div onClick={() => setVisibleFollowing(true)}>追蹤 {props.profile_user.following_count} 人</div>}
+					{!is_me && <p>追蹤 {props.profile_user.following_count} 人</p>}
 				</div>
 				<div className={style.hate}>
-					<p>被 {props.profile_user.hated_count} 人仇視</p>
-					<p>仇視 {props.profile_user.hating_count} 人</p>
+					<div onClick={() => setVisibleHater(true)}>被 {props.profile_user.hated_count} 人仇視</div>
+					{is_me && <div onClick={() => setVisibleHating(true)}>仇視 {props.profile_user.hating_count} 人</div>}
+					{!is_me && <p>仇視 {props.profile_user.hating_count} 人</p>}
 				</div>
 			</div>
 		</div>
@@ -273,6 +383,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 				<a>私訊</a>
 			</div>
 		</div>
+		<RelationModal user={props.profile_user} kind="follow" visible={visible_follower} setVisible={setVisibleFollower} />
+		<RelationModal user={props.profile_user} kind="hate" visible={visible_hater} setVisible={setVisibleHater} />
+		{is_me && <RelationModalMyself user={props.profile_user} kind="follow" visible={visible_following} setVisible={setVisibleFollowing} />}
+		{is_me && <RelationModalMyself user={props.profile_user} kind="hate" visible={visible_hating} setVisible={setVisibleHating} />}
 	</div>;
 }
 
@@ -322,13 +436,11 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
 			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
-			<div className={style.navigateTab + (selectTab == 3 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
 		</div>
 		<div className={style.switchContent}>
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Satellites />}
 			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
-			{selectTab == 3 && <Friendships user={props.profile_user} />}
 		</div>
 	</div>;
 }
@@ -383,41 +495,6 @@ function Satellites(): JSX.Element {
 	return <div>衛星文章</div>;
 }
 
-function Friendships(props: { user: User }): JSX.Element {
-	const [followers, setFollowers] = React.useState<UserMini[]>([]);
-	const [haters, setHaters] = React.useState<UserMini[]>([]);
-
-	React.useEffect(() => {
-		Promise.all([
-			fetchFollowers(props.user.id),
-			fetchHaters(props.user.id),
-		]).then(([more_followers, more_haters]) => {
-			try {
-				setFollowers(more_followers);
-				setHaters(more_haters);
-			} catch (err) {
-				toastErr(err);
-			}
-		});
-	}, [props.user]);
-
-	return <div className={style.userListContainer}>
-		<div className={style.userListHeader}>💖追隨者</div>
-		{followers.map((user, idx) => (
-			<div className={style.friendshipWrapper} key={`friendship-follow-${idx}`}>
-				<UserCard user={user} />
-			</div>
-		))}
-		<div className={style.userListHeader}>⚔️仇視者</div>
-		{haters.map((user, idx) => (
-			<div className={style.friendshipWrapper} key={`friendship-hate-${idx}`}>
-				<UserCard user={user} />
-			</div>
-		))}
-	</div>;
-}
-
-
 async function fetchArticles(
 	author_name: string,
 ): Promise<ArticleMeta[]> {
@@ -430,6 +507,14 @@ async function fetchFavorites(): Promise<Favorite[]> {
 
 async function fetchFollowers(user_id: number): Promise<UserMini[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryFollowerList(user_id), []);
+}
+
+async function fetchFollowings(user_id: number, is_public: boolean): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryFollowingList(user_id, is_public), []);
+}
+
+async function fetchHatings(user_id: number, is_public: boolean): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryHatingList(user_id, is_public), []);
 }
 
 async function fetchHaters(user_id: number): Promise<UserMini[]> {

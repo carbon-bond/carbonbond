@@ -512,6 +512,22 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hater(user).await
     }
+    async fn query_following_list(
+        &self,
+        _context: &mut crate::Ctx,
+        user: i64,
+        is_public: bool,
+    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_following(user, is_public).await
+    }
+    async fn query_hating_list(
+        &self,
+        _context: &mut crate::Ctx,
+        user: i64,
+        is_public: bool,
+    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_hating(user, is_public).await
+    }
     async fn query_signup_invitation_list(
         &self,
         context: &mut crate::Ctx,

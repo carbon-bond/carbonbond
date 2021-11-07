@@ -177,6 +177,12 @@ export class UserQuery {
     async queryHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryHaterList": { user } } }));
     }
+    async queryFollowingList(user: number, is_public: boolean): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryFollowingList": { user, is_public } } }));
+    }
+    async queryHatingList(user: number, is_public: boolean): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryHatingList": { user, is_public } } }));
+    }
     async querySignupInvitationCreditList(): Promise<Result<Array<SignupInvitationCredit>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationCreditList": {  } } }));
     }

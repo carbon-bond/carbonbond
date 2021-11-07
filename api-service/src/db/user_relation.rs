@@ -94,3 +94,35 @@ pub async fn query_hater(to_user: i64) -> Fallible<Vec<UserMini>> {
     .await?;
     Ok(followers)
 }
+
+pub async fn query_following(from_user: i64, is_public: bool) -> Fallible<Vec<UserMini>> {
+    let pool = get_pool();
+    let followings: Vec<UserMini> = sqlx::query_as!(
+        UserMini,
+        r#"
+		SELECT users.id, users.user_name, users.sentence, users.energy FROM users
+		INNER JOIN user_relations ON users.id = user_relations.to_user
+		WHERE user_relations.from_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = $2;"#,
+        from_user,
+        is_public
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(followings)
+}
+
+pub async fn query_hating(from_user: i64, is_public: bool) -> Fallible<Vec<UserMini>> {
+    let pool = get_pool();
+    let hatings: Vec<UserMini> = sqlx::query_as!(
+        UserMini,
+        r#"
+		SELECT users.id, users.user_name, users.sentence, users.energy FROM users
+		INNER JOIN user_relations ON users.id = user_relations.to_user
+		WHERE user_relations.from_user = $1 AND user_relations.kind = 'hate' AND user_relations.is_public = $2;"#,
+        from_user,
+        is_public
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(hatings)
+}

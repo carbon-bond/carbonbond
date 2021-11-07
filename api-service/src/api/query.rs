@@ -79,6 +79,10 @@ pub enum UserQuery {
     QueryFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
     QueryHaterList { user: i64 },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryFollowingList { user: i64, is_public: bool },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryHatingList { user: i64, is_public: bool },
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitationCredit>")]
     QuerySignupInvitationCreditList {},
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitation>")]
