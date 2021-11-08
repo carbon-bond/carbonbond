@@ -1,5 +1,5 @@
 use super::{article_content, get_pool, DBObject};
-use crate::api::model::{
+use crate::api::model::forum::{
     Article, ArticleMeta, BondArticleMeta, Edge, FamilyFilter, Favorite, FavoriteArticleMeta,
     SearchField,
 };
@@ -74,17 +74,17 @@ macro_rules! to_meta {
             category_families: $data.category_families,
             title: $data.title,
             author: if $data.anonymous && $viewer_id == Some($data.author_id) {
-                crate::api::model::Author::MyAnonymous
+                crate::api::model::forum::Author::MyAnonymous
             } else if $data.anonymous {
-                crate::api::model::Author::Anonymous
+                crate::api::model::forum::Author::Anonymous
             } else {
-                crate::api::model::Author::NamedAuthor {
+                crate::api::model::forum::Author::NamedAuthor {
                     name: $data.author_name,
                     id: $data.author_id,
                 }
             },
             create_time: $data.create_time,
-            digest: crate::api::model::ArticleDigest {
+            digest: crate::api::model::forum::ArticleDigest {
                 content: $data.digest_content,
                 truncated: $data.digest_truncated,
             },
@@ -153,7 +153,7 @@ pub async fn search_article(
 ) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas: Vec<ArticleMeta> = metas!(
-        crate::api::model::PrimitiveArticleMeta,
+        crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "
         WHERE ($3 OR board_name = $4)
@@ -245,7 +245,7 @@ pub async fn search_article(
 pub async fn get_meta_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<ArticleMeta> {
     let pool = get_pool();
     let meta = metas!(
-        crate::api::model::PrimitiveArticleMeta,
+        crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "WHERE id = $3",
         true,
@@ -261,7 +261,7 @@ pub async fn get_meta_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article
 pub async fn get_meta_by_ids(ids: Vec<i64>, viewer_id: Option<i64>) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = metas!(
-        crate::api::model::PrimitiveArticleMeta,
+        crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "WHERE id = ANY($3) ORDER BY create_time DESC",
         true,
@@ -307,7 +307,7 @@ pub async fn get_by_board_name(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let metas = metas!(
-        crate::api::model::PrimitiveArticleMeta,
+        crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "
         WHERE board_name = $3 AND ($5 OR id < $6)
@@ -336,7 +336,7 @@ pub async fn get_bondee_meta(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let data = metas!(
-        crate::api::model::BondArticleMeta,
+        crate::api::model::forum::BondArticleMeta,
         "
         DISTINCT abf.article_id as from, abf.value as to,
         abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 
@@ -370,7 +370,7 @@ pub async fn get_bonder_meta(
     let pool = get_pool();
     let family_filter = filter_tuple(family_filter);
     let data = metas!(
-        crate::api::model::BondArticleMeta,
+        crate::api::model::forum::BondArticleMeta,
         "
         DISTINCT abf.article_id as from, abf.value as to,
         abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 

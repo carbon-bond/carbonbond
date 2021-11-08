@@ -5,32 +5,32 @@ use async_trait::async_trait;
 use serde_json::error::Error;
 #[async_trait]
 pub trait UserQueryRouter {
-    async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::User>, crate::custom_error::Error>;
-    async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Party>, crate::custom_error::Error>;
-    async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Favorite>, crate::custom_error::Error>;
+    async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
+    async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Party>, crate::custom_error::Error>;
+    async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Favorite>, crate::custom_error::Error>;
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
-    async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::User, crate::custom_error::Error>;
+    async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
     async fn query_user_name_by_reset_password_token(&self, context: &mut crate::Ctx, token: String) -> Result<Option<String>, crate::custom_error::Error>;
     async fn reset_password_by_token(&self, context: &mut crate::Ctx, password: String, token: String) -> Result<(), crate::custom_error::Error>;
-    async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::User>, crate::custom_error::Error>;
+    async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn logout(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
-    async fn query_user(&self, context: &mut crate::Ctx, name: String) -> Result<super::model::User, crate::custom_error::Error>;
-    async fn query_subcribed_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error>;
+    async fn query_user(&self, context: &mut crate::Ctx, name: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
+    async fn query_subcribed_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
     async fn subscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn unsubscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn favorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
     async fn unfavorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn tracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
     async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::UserRelationKind) -> Result<(), crate::custom_error::Error>;
+    async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
-    async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::UserRelationKind, crate::custom_error::Error>;
-    async fn query_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error>;
-    async fn query_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error>;
-    async fn query_signup_invitation_credit_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::SignupInvitationCredit>, crate::custom_error::Error>;
-    async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::SignupInvitation>, crate::custom_error::Error>;
+    async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::forum::UserRelationKind, crate::custom_error::Error>;
+    async fn query_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_signup_invitation_credit_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitationCredit>, crate::custom_error::Error>;
+    async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitation>, crate::custom_error::Error>;
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
     async fn update_sentence(&self, context: &mut crate::Ctx, sentence: String) -> Result<(), crate::custom_error::Error>;
     async fn update_information(&self, context: &mut crate::Ctx, introduction: String, gender: String, job: String, city: String) -> Result<(), crate::custom_error::Error>;
@@ -186,9 +186,9 @@ pub trait UserQueryRouter {
 }
 #[async_trait]
 pub trait PartyQueryRouter {
-    async fn query_party(&self, context: &mut crate::Ctx, party_name: String) -> Result<super::model::Party, crate::custom_error::Error>;
+    async fn query_party(&self, context: &mut crate::Ctx, party_name: String) -> Result<super::model::forum::Party, crate::custom_error::Error>;
     async fn create_party(&self, context: &mut crate::Ctx, party_name: String, board_name: Option<String>) -> Result<i64, crate::custom_error::Error>;
-    async fn query_board_party_list(&self, context: &mut crate::Ctx, board_id: i64) -> Result<Vec<super::model::Party>, crate::custom_error::Error>;
+    async fn query_board_party_list(&self, context: &mut crate::Ctx, board_id: i64) -> Result<Vec<super::model::forum::Party>, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: PartyQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              PartyQuery::QueryParty { party_name } => {
@@ -211,19 +211,19 @@ pub trait PartyQueryRouter {
 }
 #[async_trait]
 pub trait ArticleQueryRouter {
-    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>, family_filter: super::model::FamilyFilter) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
-    async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::Article, crate::custom_error::Error>;
-    async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::ArticleMeta, crate::custom_error::Error>;
-    async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<Vec<(super::model::Edge, super::model::Article)>, crate::custom_error::Error>;
-    async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<Vec<(super::model::Edge, super::model::ArticleMeta)>, crate::custom_error::Error>;
+    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Article, crate::custom_error::Error>;
+    async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error>;
+    async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
+    async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>, crate::custom_error::Error>;
     async fn create_article(&self, context: &mut crate::Ctx, board_id: i64, category_name: String, title: String, content: String, draft_id: Option<i64>, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
-    async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::Draft>, crate::custom_error::Error>;
+    async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::SearchField>) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
-    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
-    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::ArticleMeta>, crate::custom_error::Error>;
-    async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::FamilyFilter) -> Result<super::model::Graph, crate::custom_error::Error>;
+    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<super::model::forum::Graph, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ArticleQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              ArticleQuery::QueryArticleList { count, max_id, author_name, board_name, family_filter } => {
@@ -296,13 +296,13 @@ pub trait ArticleQueryRouter {
 }
 #[async_trait]
 pub trait BoardQueryRouter {
-    async fn query_board_list(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::Board>, crate::custom_error::Error>;
-    async fn query_board_name_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::BoardName>, crate::custom_error::Error>;
-    async fn query_board(&self, context: &mut crate::Ctx, name: String, style: String) -> Result<super::model::Board, crate::custom_error::Error>;
-    async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::Board, crate::custom_error::Error>;
+    async fn query_board_list(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::Board>, crate::custom_error::Error>;
+    async fn query_board_name_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardName>, crate::custom_error::Error>;
+    async fn query_board(&self, context: &mut crate::Ctx, name: String, style: String) -> Result<super::model::forum::Board, crate::custom_error::Error>;
+    async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Board, crate::custom_error::Error>;
     async fn query_subscribed_user_count(&self, context: &mut crate::Ctx, id: i64) -> Result<usize, crate::custom_error::Error>;
-    async fn create_board(&self, context: &mut crate::Ctx, new_board: super::model::NewBoard) -> Result<i64, crate::custom_error::Error>;
-    async fn query_hot_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::BoardOverview>, crate::custom_error::Error>;
+    async fn create_board(&self, context: &mut crate::Ctx, new_board: super::model::forum::NewBoard) -> Result<i64, crate::custom_error::Error>;
+    async fn query_hot_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
     async fn query_category_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<String, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: BoardQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
@@ -351,7 +351,7 @@ pub trait BoardQueryRouter {
 }
 #[async_trait]
 pub trait NotificationQueryRouter {
-    async fn query_notification_by_user(&self, context: &mut crate::Ctx, all: bool) -> Result<Vec<super::model::Notification>, crate::custom_error::Error>;
+    async fn query_notification_by_user(&self, context: &mut crate::Ctx, all: bool) -> Result<Vec<super::model::forum::Notification>, crate::custom_error::Error>;
     async fn read_notifications(&self, context: &mut crate::Ctx, ids: Vec<i64>) -> Result<(), crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: NotificationQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
@@ -370,7 +370,7 @@ pub trait NotificationQueryRouter {
 }
 #[async_trait]
 pub trait ConfigQueryRouter {
-    async fn query_config(&self, context: &mut crate::Ctx, ) -> Result<super::model::Config, crate::custom_error::Error>;
+    async fn query_config(&self, context: &mut crate::Ctx, ) -> Result<super::model::forum::Config, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ConfigQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              ConfigQuery::QueryConfig {  } => {

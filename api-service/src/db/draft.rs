@@ -1,5 +1,5 @@
 use super::get_pool;
-use crate::api::model::Draft;
+use crate::api::model::forum::Draft;
 use crate::custom_error::Fallible;
 use crate::db::article::get_newest_category;
 

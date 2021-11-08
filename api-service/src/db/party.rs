@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::Party;
+use crate::api::model::forum::Party;
 use crate::custom_error::{DataType, Fallible};
 use sqlx::PgConnection;
 

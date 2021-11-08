@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::api::model::BoardOverview;
+use crate::api::model::forum::BoardOverview;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 
 impl DBObject for BoardOverview {

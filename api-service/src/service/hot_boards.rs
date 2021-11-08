@@ -15,7 +15,7 @@ pub async fn start() -> Fallible {
 }
 
 async fn compute_hot_boards() -> Fallible {
-    log::info!("開始計算熱門看板");
+    // log::info!("開始計算熱門看板");
     let boards = board_pop::get_all_board_pop()
         .await
         .context("取看板人氣失敗")?;
@@ -26,7 +26,7 @@ async fn compute_hot_boards() -> Fallible {
         .take(MAX_HOT_BOARDS)
         .map(|(id, _)| id)
         .collect();
-    log::debug!("熱門看板結果：{:?}", boards);
+    // log::debug!("熱門看板結果：{:?}", boards);
     hot_boards::set_hot_boards(&boards)
         .await
         .context("設定熱門看板失敗")?;

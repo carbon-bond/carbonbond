@@ -7,6 +7,8 @@ pub mod custom_error;
 #[cfg(not(feature = "prepare"))]
 pub mod api;
 #[cfg(not(feature = "prepare"))]
+pub mod chat;
+#[cfg(not(feature = "prepare"))]
 pub mod db;
 #[cfg(not(feature = "prepare"))]
 pub mod email;

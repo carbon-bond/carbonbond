@@ -1,5 +1,5 @@
 use super::get_pool;
-use crate::api::model::{UserMini, UserRelation, UserRelationKind};
+use crate::api::model::forum::{UserMini, UserRelation, UserRelationKind};
 use crate::custom_error::Fallible;
 use std::str::FromStr;
 use std::string::ToString;

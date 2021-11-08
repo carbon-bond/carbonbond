@@ -2,11 +2,10 @@ use crate::{
     api::api_impl,
     api::api_trait::RootQueryRouter,
     api::query,
+    chat,
     custom_error::{Contextable, ErrorCode, Fallible},
-    db, Ctx,
+    db, Context, Ctx,
 };
-use futures::stream::StreamExt;
-use futures::FutureExt;
 use hyper::{body::Bytes, HeaderMap};
 use hyper::{Body, Response, StatusCode};
 use std::convert::Infallible;
@@ -79,20 +78,39 @@ async fn handle_api(body: Bytes, headers: HeaderMap) -> Result<impl warp::Reply,
     Ok(to_response(_handle_api(body, headers).await))
 }
 
+async fn handle_chat(
+    headers: HeaderMap,
+    ws: warp::ws::Ws,
+    users: chat::control::Users,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    let mut context = Ctx {
+        headers: headers,
+        resp: Response::new(String::new()),
+    };
+    let id = match context.get_id().await {
+        Some(id) => id,
+        None => {
+            log::info!("拒絕未登入用戶連接聊天室");
+            return Ok(Box::new(http::status::StatusCode::UNAUTHORIZED));
+        }
+    };
+    log::info!("用戶 {} 連接聊天室", id);
+    let u = ws.on_upgrade(move |websocket| chat::control::user_connected(id, websocket, users));
+
+    Ok(Box::new(u))
+}
+
 pub fn get_routes(
 ) -> Fallible<impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone> {
     // 設定前端
     let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
-    let chat = warp::path!("chat").and(warp::ws()).map(|ws: warp::ws::Ws| {
-        ws.on_upgrade(|websocket| {
-            let (tx, rx) = websocket.split();
-            rx.forward(tx).map(|result| {
-                if let Err(e) = result {
-                    eprintln!("websocket error: {:?}", e);
-                }
-            })
-        })
-    });
+    let users = chat::control::Users::default();
+    let users = warp::any().map(move || users.clone());
+    let chat = warp::path!("chat")
+        .and(warp::header::headers_cloned())
+        .and(warp::ws())
+        .and(users)
+        .and_then(handle_chat);
     let api = warp::path!("api")
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())

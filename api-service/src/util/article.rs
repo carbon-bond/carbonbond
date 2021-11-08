@@ -1,4 +1,4 @@
-use crate::api::model::{Article, ArticleMeta, Favorite, Graph};
+use crate::api::model::forum::{Article, ArticleMeta, Favorite, Graph};
 use crate::custom_error::Fallible;
 use crate::db::article_statistics;
 use async_trait::async_trait;

@@ -1,4 +1,4 @@
-use crate::{api::model::ArticleDigest, custom_error::Fallible};
+use crate::{api::model::forum::ArticleDigest, custom_error::Fallible};
 use force::{
     BasicDataType::{self, *},
     Category,
