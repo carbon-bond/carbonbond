@@ -103,13 +103,16 @@ class AllChat extends Record({
 	}
 }
 
-function useAllChatState(): {
+export type AllChatState = {
 	all_chat: AllChat
+	addDirectChat: Function,
 	addMessage: Function
 	addChannelMessage: Function
 	updateLastRead: Function
 	updateLastReadChannel: Function
-	} {
+};
+
+function useAllChatState(): AllChatState {
 
 	let [all_chat, setAllChat] = useState<AllChat>(new AllChat({
 		// TODO: 刪掉假數據
@@ -148,13 +151,16 @@ function useAllChatState(): {
 		direct: Map({ })
 	}));
 
-
 	React.useEffect(() => {
 		const _onmessage = (event: MessageEvent): void => {
 			// 改用 chitin
 			console.log(event);
 		};
 	}, [all_chat]);
+
+	function addDirectChat(name: string, chat: DirectChatData): void {
+		setAllChat(all_chat.addChat(name, chat));
+	}
 
 	function addMessage(name: string, message: Message): void {
 		setAllChat(all_chat.addMessage(name, message));
@@ -175,6 +181,7 @@ function useAllChatState(): {
 
 	return {
 		all_chat,
+		addDirectChat,
 		addMessage,
 		addChannelMessage,
 		updateLastRead,

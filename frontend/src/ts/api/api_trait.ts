@@ -57,6 +57,11 @@ export type Channel =
  | { IAmAnonymousAuthor: IAmAnonymousAuthor };
 export type InitInfo = { channels: Channel [] };
 export type MessageSending = { channel_id: number; content: string };
+export type ChatAPI = 
+ | { InitInfo: InitInfo } 
+ | { MessageSending: MessageSending };
+export type RevChatAPI = 
+ | { MessageSending: MessageSending };
 export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
 export type BondError = 
  | { Custom: Error } 

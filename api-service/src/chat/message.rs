@@ -2,6 +2,22 @@ use crate::api::model::chat;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::db::get_pool;
 
+// pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
+//     let pool = get_pool();
+//     let direct_channels = sqlx::query_as!(
+//         chat::Direct,
+//         "
+// 		SELECT chat.direct_chats.id as channel_id, users.user_name as name
+//         FROM chat.direct_chats
+//         JOIN users
+//         ON chat.direct_chats.user_id_2 = users.id
+//         LEFT JOIN chat.direct_messages
+//         WHERE user_id_1 = $1
+// 		",
+//         id
+//     )
+
+// }
 pub async fn get_receiver(msg: &chat::MessageSending, id: i64) -> Fallible<i64> {
     let pool = get_pool();
     struct Users {

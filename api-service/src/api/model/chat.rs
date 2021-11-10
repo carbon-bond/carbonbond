@@ -49,6 +49,15 @@ mod model {
         pub channel_id: i64,
         pub content: String,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum ChatAPI {
+        InitInfo(InitInfo),
+        MessageSending(MessageSending),
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum RevChatAPI {
+        MessageSending(MessageSending),
+    }
 }
 
 pub use model::*;

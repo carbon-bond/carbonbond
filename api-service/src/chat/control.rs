@@ -73,17 +73,17 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     let mut rx = UnboundedReceiverStream::new(rx);
     let tx_id = NEXT_CHANNEL_ID.fetch_add(1, Ordering::Relaxed);
 
-    use model::chat::{Channel, Direct, InitInfo};
-    let init_info = InitInfo {
+    use model::chat::{Channel, ChatAPI, Direct, InitInfo};
+    let init_info = ChatAPI::InitInfo(InitInfo {
         channels: vec![Channel::Direct(Direct {
             last_msg: model::chat::Message {
                 text: "安安你好".to_string(),
                 time: Utc::now(),
             },
             name: "馬克貝斯".to_string(),
-            channel_id: 0,
+            channel_id: 1,
         })],
-    };
+    });
 
     tokio::task::spawn(async move {
         user_ws_tx

@@ -127,7 +127,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 	useOnClickOutside(ref, () => setExtendEmoji(false));
 
 	function onSelect(emoji: EmojiMart.EmojiData): void {
-		if (inputElement && inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
+		if (inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
 			inputElement.current.focus();
 			const value = props.input_props.value;
 			const start = inputElement.current.selectionStart;
@@ -155,7 +155,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 	}
 
 	function onClick(): void {
-		if (inputElement && inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
+		if (inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
 			inputElement.current.focus();
 		}
 		setExtendEmoji(!extendEmoji);
@@ -196,7 +196,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
 	const chat = all_chat.direct.find(c => c.name == props.room.name);
-	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
+	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`);}
 	React.useEffect(() => {
 		if (extended && chat!.isUnread()) {
 			updateLastRead(props.room.name, new Date());
@@ -208,6 +208,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
+				window.chat_socket.send_message(chat!.id, input_props.value);
 				addMessage(props.room.name, new Message({
 					sender_name: '金剛', // TODO: 換成 me
 					content: input_props.value,
