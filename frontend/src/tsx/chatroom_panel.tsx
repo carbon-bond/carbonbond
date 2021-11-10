@@ -21,6 +21,7 @@ import {
 import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css';
 import * as EmojiMart from 'emoji-mart';
+import { UserState } from './global_state/user';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -195,6 +196,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
+	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`);}
 	React.useEffect(() => {
@@ -203,14 +205,19 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		}
 	}, [extended, chat, updateLastRead, props.room.name]);
 
+	if (user_state.login == false) {
+		return <></>;
+	}
+
 	if (extended) {
 
+		const sender_name = user_state.user_name;
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
 				window.chat_socket.send_message(chat!.id, input_props.value);
 				addMessage(props.room.name, new Message({
-					sender_name: '金剛', // TODO: 換成 me
+					sender_name,
 					content: input_props.value,
 					time: now,
 				}));
@@ -251,6 +258,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
+	const { user_state } = UserState.useContainer();
 
 	const chat = all_chat.group.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
@@ -263,14 +271,19 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		}
 	}, [extended, channel, updateLastReadChannel, props.room.name, props.room.channel]);
 
+	if (user_state.login == false) {
+		return <></>;
+	}
+
 	if (extended) {
 
+		const sender_name = user_state.user_name;
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
 				console.log(props.room.channel);
 				addChannelMessage(props.room.name, props.room.channel, new Message({
-					sender_name: '金剛', // TODO: 換成 me
+					sender_name,
 					content: input_props.value,
 					time: now,
 				}));
