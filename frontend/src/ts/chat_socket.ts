@@ -32,7 +32,7 @@ export class ChatSocket {
 							this.all_chat!.addDirectChat(chat.name, new DirectChatData({
 								history: List<Message>([
 									new Message({
-										sender_name: chat.name,
+										sender_name: chat.last_msg.sender_name,
 										content: chat.last_msg.text,
 										time: new Date(chat.last_msg.time),
 									})

@@ -47,7 +47,7 @@ export type FamilyFilter =
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
 export type Bond = { energy: number; target_article: number; tag: string | null };
-export type Message = { text: string; time: string};
+export type Message = { sender_name: string; text: string; time: string};
 export type Direct = { channel_id: number; name: string; last_msg: Message };
 export type WithAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
 export type IAmAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };

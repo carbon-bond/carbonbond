@@ -5,11 +5,11 @@ mod model {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
-    use strum::EnumString;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Message {
+        pub sender_name: String,
         pub text: String,
         pub time: DateTime<Utc>,
     }

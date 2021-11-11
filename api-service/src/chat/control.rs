@@ -1,5 +1,5 @@
-use crate::api::model;
 use crate::custom_error::Fallible;
+use crate::{api::model, chat::message};
 use chrono::Utc;
 use futures::{stream::StreamExt, SinkExt, TryFutureExt};
 use std::{
@@ -73,17 +73,16 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     let mut rx = UnboundedReceiverStream::new(rx);
     let tx_id = NEXT_CHANNEL_ID.fetch_add(1, Ordering::Relaxed);
 
-    use model::chat::{Channel, ChatAPI, Direct, InitInfo};
-    let init_info = ChatAPI::InitInfo(InitInfo {
-        channels: vec![Channel::Direct(Direct {
-            last_msg: model::chat::Message {
-                text: "安安你好".to_string(),
-                time: Utc::now(),
-            },
-            name: "馬克貝斯".to_string(),
-            channel_id: 1,
-        })],
-    });
+    use model::chat::ChatAPI;
+    let init_info = message::get_init_info(id).await;
+
+    let init_info = match init_info {
+        Ok(init_info) => ChatAPI::InitInfo(init_info),
+        Err(err) => {
+            log::info!("{} 無法取得聊天室初始化訊息：{}", id, err);
+            return;
+        }
+    };
 
     tokio::task::spawn(async move {
         user_ws_tx

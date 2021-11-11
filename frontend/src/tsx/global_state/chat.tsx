@@ -151,13 +151,6 @@ function useAllChatState(): AllChatState {
 		direct: Map({ })
 	}));
 
-	React.useEffect(() => {
-		const _onmessage = (event: MessageEvent): void => {
-			// 改用 chitin
-			console.log(event);
-		};
-	}, [all_chat]);
-
 	function addDirectChat(name: string, chat: DirectChatData): void {
 		setAllChat(all_chat.addChat(name, chat));
 	}
