@@ -32,7 +32,8 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND kind = 'hate') AS "hated_count!",
+                    AND kind = 'hate'
+                    AND is_public = true) AS "hated_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -40,7 +41,26 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND kind = 'follow') AS "followed_count!",
+                    AND kind = 'hate'
+                    AND is_public = false) AS "hated_count_private!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = true) AS "followed_count_public!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = false) AS "followed_count_private!",
                 (
                 SELECT
                     COUNT(*)
@@ -48,7 +68,8 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND kind = 'hate') AS "hating_count!",
+                    AND kind = 'hate'
+                    AND is_public = true) AS "hating_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -56,7 +77,26 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND kind = 'follow') AS "following_count!"
+                    AND kind = 'hate'
+                    AND is_public = false) AS "hating_count_private!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = true) AS "following_count_public!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = false) AS "following_count_private!"
             FROM users) SELECT * FROM metas "# + $remain,
             $($arg),*
         )
