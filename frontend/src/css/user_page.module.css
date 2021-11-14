@@ -43,12 +43,26 @@
             & .energy { }
             & .trace {
                 & div {
+                    background-color: var(--third-theme-color);
+                    border-radius: 3px;
+                    margin: 0px 0px 2px;
+                    padding: 0px 2px;
                     cursor: pointer;
+                }
+                & div:hover {
+                    box-shadow: inset 0 0 2px var(--theme-color);
                 }
             }
             & .hate {
                 & div {
+                    background-color: var(--third-theme-color);
+                    border-radius: 3px;
+                    margin: 0px 0px 2px;
+                    padding: 0px 2px;
                     cursor: pointer;
+                }
+                & div:hover {
+                    box-shadow: inset 0 0 2px var(--theme-color);
                 }
             }
         }
