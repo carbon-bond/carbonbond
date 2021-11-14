@@ -517,7 +517,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         _context: &mut crate::Ctx,
         user: i64,
         is_public: bool,
-    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_following(user, is_public).await
     }
     async fn query_hating_list(
@@ -525,7 +525,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         _context: &mut crate::Ctx,
         user: i64,
         is_public: bool,
-    ) -> Result<Vec<super::model::UserMini>, crate::custom_error::Error> {
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hating(user, is_public).await
     }
     async fn query_signup_invitation_list(
@@ -644,10 +644,10 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         };
         if is_public {
             match kind {
-                model::forum::UserRelationKind::OpenlyFollow => {
+                model::forum::UserRelationKind::Follow => {
                     noti(NotificationKind::Follow).await?;
                 }
-                model::forum::UserRelationKind::OpenlyHate => {
+                model::forum::UserRelationKind::Hate => {
                     noti(NotificationKind::Hate).await?;
                 }
                 _ => (),
@@ -667,7 +667,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         target_user: i64,
-    ) -> Result<super::model::forum::UserRelationKind, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::UserRelation, crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
         let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)
