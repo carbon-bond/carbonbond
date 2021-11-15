@@ -216,11 +216,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
 				window.chat_socket.send_message(chat!.id, input_props.value);
-				addMessage(props.room.name, new Message({
-					sender_name,
-					content: input_props.value,
-					time: now,
-				}));
+				addMessage(props.room.name, new Message(sender_name, input_props.value, now));
 				setValue('');
 			}
 		}
@@ -282,11 +278,11 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
 				console.log(props.room.channel);
-				addChannelMessage(props.room.name, props.room.channel, new Message({
+				addChannelMessage(props.room.name, props.room.channel, new Message(
 					sender_name,
-					content: input_props.value,
-					time: now,
-				}));
+					input_props.value,
+					now
+				));
 				setValue('');
 			}
 		}

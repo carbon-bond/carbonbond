@@ -15,6 +15,7 @@ pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
         text: String,
     }
     // TODO: 多重 JOIN 可能導致效能問題
+    // 參考 https://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
     let channels = sqlx::query_as!(
         TmpChannel,
         "

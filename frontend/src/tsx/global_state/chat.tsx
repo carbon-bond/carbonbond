@@ -2,14 +2,17 @@ import { createContainer } from 'unstated-next';
 import * as React from 'react';
 const { useState } = React;
 import { Record, List, Map } from 'immutable';
+import { immerable } from 'immer';
 
-export class Message extends Record({ sender_name: '', content: '', time: new Date(0) }) {
-	static fromProtobuf(message: IMessage): Message {
-		return new Message({
-			sender_name: message.sender_name!,
-			content: message.content!,
-			time: new Date(message.time!)
-		});
+export class Message {
+	[immerable] = true;
+	sender_name: string;
+	content: string;
+	time: Date;
+	constructor(sender_name: string, content: string, time: Date) {
+		this.sender_name = sender_name;
+		this.content = content;
+		this.time = time;
 	}
 }
 
@@ -123,25 +126,25 @@ function useAllChatState(): AllChatState {
 					'VOLTS 四天王': new ChannelData({
 						name: 'VOLTS 四天王',
 						history: List([
-							new Message({ sender_name: '冬木士度', content: '那時我認為他是個怪人', time: new Date(2019, 6, 14) }),
-							new Message({ sender_name: '風鳥院花月', content: '我也是', time: new Date(2019, 6, 15) })
+							new Message('冬木士度', '那時我認為他是個怪人', new Date(2019, 6, 14)),
+							new Message('風鳥院花月', '我也是', new Date(2019, 6, 15))
 						]),
 						read_time: new Date(2019, 7, 13)
 					}),
 					'主頻道': new ChannelData({
 						name: '主頻道',
 						history: List([
-							new Message({ sender_name: '美堂蠻', content: '午餐要吃什麼？', time: new Date(2019, 1, 14) }),
-							new Message({ sender_name: '馬克貝斯', content: '沒意見', time: new Date(2019, 1, 15) }),
-							new Message({ sender_name: '天子峰', content: '都可', time: new Date(2019, 1, 16) })
+							new Message('美堂蠻', '午餐要吃什麼？', new Date(2019, 1, 14)),
+							new Message('馬克貝斯', '沒意見', new Date(2019, 1, 15)),
+							new Message('天子峰', '都可', new Date(2019, 1, 16))
 						]),
 						read_time: new Date(2018, 7, 13)
 					}),
 					'閃靈二人組': new ChannelData({
 						name: '閃靈二人組',
 						history: List([
-							new Message({ sender_name: '天野銀次', content: '肚子好餓', time: new Date(2018, 11, 4) }),
-							new Message({ sender_name: '美堂蠻', content: '呿！', time: new Date(2019, 3, 27) })
+							new Message('天野銀次', '肚子好餓', new Date(2018, 11, 4)),
+							new Message('美堂蠻', '呿！', new Date(2019, 3, 27))
 						]),
 						read_time: new Date(2018, 6, 13)
 					})
