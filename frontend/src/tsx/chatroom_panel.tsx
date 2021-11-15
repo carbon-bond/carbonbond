@@ -231,7 +231,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				</div>
 			</div>
 			<div ref={scroll_bottom_ref} className={style.messages}>
-				<MessageBlocks messages={chat!.history.toJS()}/>
+				<MessageBlocks messages={chat!.history}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
@@ -258,7 +258,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 
 	const chat = all_chat.group.find(c => c.name == props.room.name);
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
-	const channel = chat!.channels.find(c => c.name == props.room.channel);
+	const channel = chat!.channels.get(props.room.channel);
 	if (channel == undefined) { console.error(`找不到頻道 ${props.room.channel}`); }
 
 	React.useEffect(() => {
@@ -277,7 +277,6 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				console.log(props.room.channel);
 				addChannelMessage(props.room.name, props.room.channel, new Message(
 					sender_name,
 					input_props.value,
@@ -290,14 +289,14 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function ChannelList(): JSX.Element {
 			return <div className={style.channelList}>
 				{
-					chat!.channels.valueSeq().map(c => {
+					[...chat!.channels.values()].map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `${channel} ${is_current ? style.selected : ''}`;
 						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
 							<span className={style.channelSymbol}># </span>
 							{c.name}
 						</div>;
-					}).toJS()
+					})
 				}
 			</div>;
 		}
@@ -321,7 +320,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				</div>
 				<div>
 					<div ref={scroll_bottom_ref} className={style.messages}>
-						<MessageBlocks messages={channel!.history.toJS()} />
+						<MessageBlocks messages={channel!.history} />
 					</div>
 					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>

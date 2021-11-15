@@ -1,8 +1,8 @@
 import { createContainer } from 'unstated-next';
 import * as React from 'react';
 const { useState } = React;
-import { Record, List, Map } from 'immutable';
-import { immerable } from 'immer';
+import {Map as IMap, Record} from 'immutable';
+import produce, { immerable } from 'immer';
 
 export class Message {
 	[immerable] = true;
@@ -16,14 +16,20 @@ export class Message {
 	}
 }
 
-export class DirectChatData extends Record({
-	history: List<Message>(),
-	name: '',
-	id: 0,
-	read_time: new Date(0)
-}) implements ChatData {
+export class DirectChatData implements ChatData {
+	[immerable] = true;
+	history: Message[];
+	name: string;
+	id: number;
+	read_time: Date;
+	constructor(name: string, id: number, history: Message[], read_time: Date) {
+		this.name = name;
+		this.id = id;
+		this.history = history;
+		this.read_time = read_time;
+	}
 	isUnread(): boolean {
-		const last_msg = this.history.last(undefined);
+		const last_msg = this.history[this.history.length - 1];
 		if (last_msg == undefined) {
 			return false;
 		} else {
@@ -31,15 +37,13 @@ export class DirectChatData extends Record({
 		}
 	}
 	newestMessage(): Message | undefined {
-		const last_msg = this.history.last(undefined);
-		return last_msg;
+		return this.history[this.history.length - 1];
 	}
 	addMessage(message: Message): DirectChatData {
-		let res = this.update('history', (history) => {
-			return history.push(message);
+		return produce(this, (draft) => {
+			draft.history.push(message);
+			draft.read_time = message.time;
 		});
-		res = res.set('read_time', message.time);
-		return res;
 	}
 }
 
@@ -47,28 +51,34 @@ export class DirectChatData extends Record({
 // 但之後 ChannelData 會有自己的特殊屬性，如公開／私有
 class ChannelData extends DirectChatData {};
 
-export class GroupChatData extends Record({
-	name: '',
-	id: 0,
-	is_upgraded: false,
-	channels: Map<string, ChannelData>(),
-	read_time: new Date(0)
-}) {
+export class GroupChatData {
+	[immerable]: true;
+	name: string;
+	id: number;
+	is_upgraded: boolean;
+	channels: Map<string, ChannelData>;
+	read_time: Date;
+	constructor(name: string, id: number, is_upgraded: boolean, channels: Map<string, ChannelData>, read_time: Date) {
+		this.name = name;
+		this.id = id;
+		this.is_upgraded = is_upgraded;
+		this.channels = channels;
+		this.read_time = read_time;
+	}
 	isUnread(): boolean {
-		return !this.unreadChannels().isEmpty();
+		return this.unreadChannels().length > 0;
 	}
-	unreadChannels(): List<ChannelData> {
-		return this.channels.valueSeq().toList().filter(channel => channel.isUnread());
+	unreadChannels(): ChannelData[] {
+		return [...this.channels.values()].filter(channel => channel.isUnread());
 	}
-	// TODO: 改名為 newestMessage
 	newestMessage(): Message | undefined {
 		if (this.is_upgraded) {
 			return undefined;
 		} else {
-			return this.channels
-				.map(channel => channel.history.last(undefined))
+			return [...this.channels.values()]
+				.map(channel => channel.history[channel.history.length - 1])
 				.filter(x => x != undefined)
-				.sort((c1, c2) => Number(c1!.time) - Number(c2!.time)).first();
+				.sort((c1, c2) => Number(c1.time) - Number(c2.time))[0];
 		}
 	}
 }
@@ -86,8 +96,8 @@ export interface ChatData {
 };
 
 class AllChat extends Record({
-	group: Map<string, GroupChatData>(),
-	direct: Map<string, DirectChatData>(),
+	group: IMap<string, GroupChatData>(),
+	direct: IMap<string, DirectChatData>(),
 }) {
 	addChat(name: string, chat: DirectChatData): AllChat {
 		return this.setIn(['direct', name], chat);
@@ -119,39 +129,45 @@ function useAllChatState(): AllChatState {
 
 	let [all_chat, setAllChat] = useState<AllChat>(new AllChat({
 		// TODO: 刪掉假數據
-		group: Map({
-			'無限城': new GroupChatData({
-				name: '無限城',
-				channels: Map({
-					'VOLTS 四天王': new ChannelData({
-						name: 'VOLTS 四天王',
-						history: List([
+		group: IMap({
+			'無限城': new GroupChatData(
+				'無限城',
+				200001,
+				false,
+				new Map(Object.entries({
+					'VOLTS 四天王': new ChannelData(
+						'VOLTS 四天王',
+						100001,
+						[
 							new Message('冬木士度', '那時我認為他是個怪人', new Date(2019, 6, 14)),
 							new Message('風鳥院花月', '我也是', new Date(2019, 6, 15))
-						]),
-						read_time: new Date(2019, 7, 13)
-					}),
-					'主頻道': new ChannelData({
-						name: '主頻道',
-						history: List([
+						],
+						new Date(2019, 7, 13)
+					),
+					'主頻道': new ChannelData(
+						'主頻道',
+						100002,
+						[
 							new Message('美堂蠻', '午餐要吃什麼？', new Date(2019, 1, 14)),
 							new Message('馬克貝斯', '沒意見', new Date(2019, 1, 15)),
 							new Message('天子峰', '都可', new Date(2019, 1, 16))
-						]),
-						read_time: new Date(2018, 7, 13)
-					}),
-					'閃靈二人組': new ChannelData({
-						name: '閃靈二人組',
-						history: List([
+						],
+						new Date(2018, 7, 13)
+					),
+					'閃靈二人組': new ChannelData(
+						'閃靈二人組',
+						100003,
+						[
 							new Message('天野銀次', '肚子好餓', new Date(2018, 11, 4)),
 							new Message('美堂蠻', '呿！', new Date(2019, 3, 27))
-						]),
-						read_time: new Date(2018, 6, 13)
-					})
-				})
-			})
+						],
+						new Date(2018, 6, 13)
+					)
+				})),
+				new Date()
+			)
 		}),
-		direct: Map({ })
+		direct: IMap({ })
 	}));
 
 	function addDirectChat(name: string, chat: DirectChatData): void {

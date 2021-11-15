@@ -1,4 +1,3 @@
-import { List } from 'immutable';
 import { AllChatState, DirectChatData, Message } from '../tsx/global_state/chat';
 import { toastErr } from '../tsx/utils';
 import { ChatAPI, InitInfo, MessageSending } from './api/api_trait';
@@ -30,17 +29,19 @@ export class ChatSocket {
 							const chat = channel.Direct;
 							console.log(chat);
 							this.mapping.set(chat.channel_id, chat.name);
-							this.all_chat!.addDirectChat(chat.name, new DirectChatData({
-								history: List<Message>([
+							this.all_chat!.addDirectChat(chat.name, new DirectChatData(
+								chat.name,
+								chat.channel_id,
+								[
 									new Message(
 										chat.last_msg.sender_name,
 										chat.last_msg.text,
 										new Date(chat.last_msg.time),
 									)
-								]),
-								name: chat.name,
-								id: chat.channel_id,
-							}));
+								],
+								// TODO: 使用伺服器傳回的日期
+								new Date()
+							));
 						}
 					}
 				} else {
@@ -52,7 +53,7 @@ export class ChatSocket {
 						toastErr(`找不到聊天室：${message_sending.channel_id}`);
 					} else {
 						// TODO: 使用伺服器傳回的日期
-						this.all_chat!.addMessage(sender, new Message(message_sending.content, sender, new Date()));
+						this.all_chat!.addMessage(sender, new Message(sender, message_sending.content, new Date()));
 					}
 				}
 			};
