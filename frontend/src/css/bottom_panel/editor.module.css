@@ -114,7 +114,7 @@
         flex-direction: row;
         justify-content: space-between;
         border: 1px var(--light-gray) solid;
-        button {
+        & button {
             margin: 4px;
             cursor: pointer;
         }

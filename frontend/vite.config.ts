@@ -14,7 +14,6 @@ export default defineConfig({
 			output: {
 				manualChunks: {
 					react_family: ['react', 'react-dom', 'react-router', 'react-router-dom'],
-					immer: ['immer', 'immutable'],
 					emoji: ['emoji-mart']
 				},
 			},

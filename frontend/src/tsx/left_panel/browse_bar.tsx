@@ -98,7 +98,7 @@ export function BrowseBar(): JSX.Element {
 							onClick={() => onTitleClick(2)}
 						>
 							{
-								subscribed_boards.valueSeq().map((board, i) => <BoardBlock key={i} board={board} />)
+								Object.entries(subscribed_boards).map(([i, board]) => <BoardBlock key={i} board={board} />)
 							}
 						</ShrinkableBlock>;
 					}
