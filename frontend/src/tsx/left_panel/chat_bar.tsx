@@ -43,14 +43,13 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	}
 
 	function onClick(): void {
-		console.log('click');
 		if (props.chat instanceof DirectChatData) {
 			addRoom(props.chat.name);
 		} else if (props.chat instanceof GroupChatData) {
 			if (props.chat.unreadChannels().length == 0) {
-				addRoomWithChannel(props.chat.name, (props.chat.channels.entries().next().value as GroupChatData).name);
+				addRoomWithChannel(props.chat.name, Object.values(props.chat.channels)[0].name);
 			} else {
-				addRoomWithChannel(props.chat.name, (props.chat.unreadChannels().entries().next().value as GroupChatData).name);
+				addRoomWithChannel(props.chat.name, Object.values(props.chat.unreadChannels())[0].name);
 			}
 		}
 	}
@@ -80,8 +79,8 @@ const date_cmp = (x: ChatData, y: ChatData): number => {
 
 function ChatBar(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
-	let chat_array: ChatData[] = Array.from(all_chat.direct.values());
-	chat_array = chat_array.concat(Array.from(all_chat.group.values()));
+	let chat_array: ChatData[] = Array.from(Object.values(all_chat.direct));
+	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
 	return <div className={style.chatbar}>
 		<input type="text" placeholder="🔍 尋找對話" />
 		{

@@ -1,7 +1,6 @@
 import { createContainer } from 'unstated-next';
 import * as React from 'react';
 const { useState } = React;
-import {Map as IMap, Record} from 'immutable';
 import produce, { immerable } from 'immer';
 
 export class Message {
@@ -49,16 +48,18 @@ export class DirectChatData implements ChatData {
 
 // NOTE: 目前的 DirectChatData 與 ChannelData 完全相同
 // 但之後 ChannelData 會有自己的特殊屬性，如公開／私有
-class ChannelData extends DirectChatData {};
+class ChannelData extends DirectChatData {
+	[immerable] = true;
+};
 
 export class GroupChatData {
-	[immerable]: true;
+	[immerable] = true;
 	name: string;
 	id: number;
 	is_upgraded: boolean;
-	channels: Map<string, ChannelData>;
+	channels: { [key: string]: ChannelData };
 	read_time: Date;
-	constructor(name: string, id: number, is_upgraded: boolean, channels: Map<string, ChannelData>, read_time: Date) {
+	constructor(name: string, id: number, is_upgraded: boolean, channels: { [key: string]: ChannelData }, read_time: Date) {
 		this.name = name;
 		this.id = id;
 		this.is_upgraded = is_upgraded;
@@ -69,13 +70,13 @@ export class GroupChatData {
 		return this.unreadChannels().length > 0;
 	}
 	unreadChannels(): ChannelData[] {
-		return [...this.channels.values()].filter(channel => channel.isUnread());
+		return Object.values(this.channels).filter(channel => channel.isUnread());
 	}
 	newestMessage(): Message | undefined {
 		if (this.is_upgraded) {
 			return undefined;
 		} else {
-			return [...this.channels.values()]
+			return Object.values(this.channels)
 				.map(channel => channel.history[channel.history.length - 1])
 				.filter(x => x != undefined)
 				.sort((c1, c2) => Number(c1.time) - Number(c2.time))[0];
@@ -95,24 +96,44 @@ export interface ChatData {
 	isUnread(): boolean
 };
 
-class AllChat extends Record({
-	group: IMap<string, GroupChatData>(),
-	direct: IMap<string, DirectChatData>(),
-}) {
+class AllChat {
+	[immerable] = true;
+	group: { [key: string]: GroupChatData };
+	direct: { [key: string]: DirectChatData };
+	constructor(group: { [key: string]: GroupChatData }, direct: { [key: string]: DirectChatData }) {
+		this.group = group;
+		this.direct = direct;
+	}
 	addChat(name: string, chat: DirectChatData): AllChat {
-		return this.setIn(['direct', name], chat);
+		return produce(this, (draft) => {
+			draft.direct[name] = chat;
+		});
 	}
 	addMessage(name: string, message: Message): AllChat {
-		return this.updateIn(['direct', name], direct => direct.addMessage(message));
+		return produce(this, draft => {
+			draft.direct[name].addMessage(message);
+		});
 	}
 	addChannelMessage(name: string, channel: string, message: Message): AllChat {
-		return this.updateIn(['group', name, 'channels', channel], c => c.addMessage(message));
+		return produce(this, draft => {
+			draft.group[name].channels[channel]?.addMessage(message);
+		});
 	}
 	updateReadTime(name: string, time: Date): AllChat {
-		return this.updateIn(['direct', name], direct => direct.set('read_time', time));
+		return produce(this, draft => {
+			let chat = draft.direct[name];
+			if (chat) {
+				chat.read_time = time;
+			}
+		});
 	}
 	updateChannelReadTime(name: string, channel: string, time: Date): AllChat {
-		return this.updateIn(['group', name, 'channels', channel], direct => direct.set('read_time', time));
+		return produce(this, draft => {
+			let chat = draft.group[name].channels[channel];
+			if (chat) {
+				chat.read_time = time;
+			}
+		});
 	}
 }
 
@@ -127,14 +148,14 @@ export type AllChatState = {
 
 function useAllChatState(): AllChatState {
 
-	let [all_chat, setAllChat] = useState<AllChat>(new AllChat({
+	let [all_chat, setAllChat] = useState<AllChat>(new AllChat(
 		// TODO: 刪掉假數據
-		group: IMap({
+		{
 			'無限城': new GroupChatData(
 				'無限城',
 				200001,
 				false,
-				new Map(Object.entries({
+				{
 					'VOLTS 四天王': new ChannelData(
 						'VOLTS 四天王',
 						100001,
@@ -163,12 +184,12 @@ function useAllChatState(): AllChatState {
 						],
 						new Date(2018, 6, 13)
 					)
-				})),
+				},
 				new Date()
 			)
-		}),
-		direct: IMap({ })
-	}));
+		},
+		{},
+	));
 
 	function addDirectChat(name: string, chat: DirectChatData): void {
 		setAllChat(all_chat.addChat(name, chat));

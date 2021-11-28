@@ -1,6 +1,6 @@
+import produce from 'immer';
 import * as React from 'react';
 const { useState } = React;
-import { List } from 'immutable';
 import { createContainer } from 'unstated-next';
 
 export type SimpleRoomData = {
@@ -28,36 +28,46 @@ function useBottomPanelState(): {
 	changeChannel: Function,
 	deleteRoom: Function,
 	} {
-	let [chatrooms, setChatrooms] = useState<List<RoomData>>(List());
+	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
 
 	function addRoom(name: string): void {
 		// TODO: 調整聊天室添加順序
 		let room = chatrooms.find(room => room.name == name);
-		if (room != undefined) {
-			// 若聊天室已經存在，將其排列到第一位
-			let new_chatrooms = chatrooms.filter(room => room.name != name);
-			setChatrooms(new_chatrooms.unshift(room));
-		} else {
-			setChatrooms(chatrooms.unshift({name}));
-		}
+		let new_chatrooms = produce(chatrooms, draft => {
+			draft = draft.filter(room => room.name != name);
+			if (room) {
+				// 若聊天室已經存在，將其排列到第一位
+				draft.unshift(room);
+			} else {
+				draft.unshift({name});
+			}
+			return draft;
+		});
+		setChatrooms(new_chatrooms);
 	}
 
 	function addRoomWithChannel(name: string, channel: string): void {
 		// TODO: 調整聊天室添加順序
 		let room = chatrooms.find(room => room.name == name);
-		if (room != undefined) {
-			// 若聊天室已經存在，將其排列到第一位
-			let new_chatrooms = chatrooms.filter(room => room.name != name);
-			setChatrooms(new_chatrooms.unshift({ name, channel }));
-		} else {
-			setChatrooms(chatrooms.unshift({ name, channel }));
-		}
+		let new_chatrooms = produce(chatrooms, draft => {
+			draft = draft.filter(room => room.name != name);
+			if (room) {
+				// 若聊天室已經存在，將其排列到第一位
+				draft.unshift(room);
+			} else {
+				draft.unshift({name, channel});
+			}
+			return draft;
+		});
+		setChatrooms(new_chatrooms);
 	}
 
 	function changeChannel(name: string, channel: string): void {
 		let index = chatrooms.findIndex(room => room.name == name);
 		if (index != -1) {
-			setChatrooms(chatrooms.update(index, () => { return {name, channel}; }));
+			setChatrooms(produce(chatrooms, draft => {
+				draft[index] = {name, channel};
+			}));
 		} else {
 			console.error(`聊天室 ${name} 不存在，無法切換頻道`);
 		}
@@ -67,7 +77,7 @@ function useBottomPanelState(): {
 		setChatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms: chatrooms.toJS(), addRoom, addRoomWithChannel, changeChannel, deleteRoom };
+	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
 export const BottomPanelState = createContainer(useBottomPanelState);

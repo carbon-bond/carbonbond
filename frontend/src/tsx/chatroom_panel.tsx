@@ -197,7 +197,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
 	const { user_state } = UserState.useContainer();
-	const chat = all_chat.direct.find(c => c.name == props.room.name);
+	const chat = all_chat.direct[props.room.name];
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`);}
 	React.useEffect(() => {
 		if (extended && chat!.isUnread()) {
@@ -256,9 +256,9 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const scroll_bottom_ref = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 
-	const chat = all_chat.group.find(c => c.name == props.room.name);
+	const chat = all_chat.group[props.room.name];
 	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
-	const channel = chat!.channels.get(props.room.channel);
+	const channel = chat!.channels[props.room.channel];
 	if (channel == undefined) { console.error(`找不到頻道 ${props.room.channel}`); }
 
 	React.useEffect(() => {
@@ -289,7 +289,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function ChannelList(): JSX.Element {
 			return <div className={style.channelList}>
 				{
-					[...chat!.channels.values()].map(c => {
+					Object.values(chat!.channels).map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `${channel} ${is_current ? style.selected : ''}`;
 						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
