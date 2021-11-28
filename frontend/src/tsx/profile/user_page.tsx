@@ -2,6 +2,7 @@ import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
+import Select, { InputActionMeta } from 'react-select';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
@@ -162,11 +163,11 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
-		if (props.is_myself) {
-			const fetchUsers = (props.kind == 'follow' ? fetchFollowings : fetchHatings);
+		if (props.kind == 'following' || props.kind == 'hating') {
+			let fetchUsers = props.kind == 'following' ? fetchFollowings : fetchHatings;
 			Promise.all([
-				fetchUsers(props.user.id, true),
-				fetchUsers(props.user.id, false),
+				fetchUsers(props.user.id, true, props.is_myself),
+				fetchUsers(props.user.id, false, props.is_myself),
 			]).then(([public_results, private_results]) => {
 				try {
 					setPublicUsers(public_results);
@@ -176,7 +177,7 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 				}
 			});
 		} else {
-			const fetchUsers = (props.kind == 'follow' ? fetchFollowers : fetchHaters);
+			let fetchUsers = props.kind == 'follower' ? fetchFollowers : fetchHaters;
 			fetchUsers(props.user.id).then((users) => {
 				try {
 					setPublicUsers(users);
@@ -189,37 +190,38 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 
 	let public_count = 0;
 	let private_count = 0;
-	if (props.is_myself) {
-		if (props.kind == 'follow') {
-			public_count = props.user.following_count_public;
-			private_count = props.user.following_count_private;
-		} else {
-			public_count = props.user.hating_count_public;
-			private_count = props.user.hating_count_private;
-		}
-	} else {
-		if (props.kind == 'follow') {
+	switch (props.kind) {
+		case 'follower':
 			public_count = props.user.followed_count_public;
 			private_count = props.user.followed_count_private;
-		} else {
+			break;
+		case 'hater':
 			public_count = props.user.hated_count_public;
 			private_count = props.user.hated_count_private;
-		}
+			break;
+		case 'following':
+			public_count = props.user.following_count_public;
+			private_count = props.user.following_count_private;
+			break;
+		default:
+			public_count = props.user.hating_count_public;
+			private_count = props.user.hating_count_private;
+			break;
 	}
 
 	function getBody(): JSX.Element {
 		return <div className={style.userListContainer}>
 			<div className={style.navigateBar}>
 				<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')}
-					onClick={() => { setSelectTab(0); }}>{props.kind == 'follow' ? `追蹤 (${public_count})` : `仇視 (${public_count})`}</div>
+					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `追蹤 (${public_count})` : `仇視 (${public_count})`}</div>
 				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
-					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{props.kind == 'follow' ? `偷偷追蹤 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
+					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷追蹤 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
 			</div>
 			<div className={style.switchContent}>
 				{selectTab == 0 && <div>
 					{public_users.length == 0 ? (
 						<div className={style.emptyContainer}>
-							<div>{props.kind == 'follow' ? '沒有公開追蹤的人' : '沒有公開仇視的人'}</div>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開追蹤的人' : '沒有公開仇視的人'}</div>
 						</div>
 					) : (
 						public_users.map((user, idx) => (
@@ -232,7 +234,7 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 				{selectTab == 1 && <div>
 					{private_users.length == 0 ? (
 						<div className={style.emptyContainer}>
-							<div>{props.kind == 'follow' ? '沒有偷偷追蹤的人' : '沒有偷偷仇視的人'}</div>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷追蹤的人' : '沒有偷偷仇視的人'}</div>
 						</div>
 					) : (
 						private_users.map((user, idx) => (
@@ -247,10 +249,24 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 	}
 
 	let buttons: ModalButton[] = [];
-	let kind_text: String = props.kind == 'follow' ? '追蹤' : '仇視';
+	let kind_text: string;
+	switch (props.kind) {
+		case 'follower':
+			kind_text = `追蹤 ${props.user.user_name} 的人`;
+			break;
+		case 'hater':
+			kind_text = `仇視 ${props.user.user_name} 的人`;
+			break;
+		case 'following':
+			kind_text = `${props.user.user_name} 追蹤的人`;
+			break;
+		default:
+			kind_text = `${props.user.user_name} 仇視的人`;
+			break;
+	}
 
 	return <ModalWindow
-		title={props.is_myself ? `我${kind_text}的人` : `${kind_text}我的人`}
+		title={kind_text}
 		body={getBody()}
 		buttons={buttons}
 		visible={props.visible}
@@ -383,10 +399,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 				<a>私訊</a>
 			</div>
 		</div>
-		<RelationModal user={props.profile_user} kind="follow" is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} />
-		<RelationModal user={props.profile_user} kind="hate" is_myself={false} visible={visible_hater} setVisible={setVisibleHater} />
-		{is_me && <RelationModal user={props.profile_user} kind="follow" is_myself={true} visible={visible_following} setVisible={setVisibleFollowing} />}
-		{is_me && <RelationModal user={props.profile_user} kind="hate" is_myself={true} visible={visible_hating} setVisible={setVisibleHating} />}
+		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} />
+		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} />
+		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} />
+		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} />
 	</div>;
 }
 
@@ -509,16 +525,22 @@ async function fetchFollowers(user_id: number): Promise<UserMini[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryFollowerList(user_id), []);
 }
 
-async function fetchFollowings(user_id: number, is_public: boolean): Promise<UserMini[]> {
+async function fetchHaters(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryHaterList(user_id), []);
+}
+
+async function fetchFollowings(user_id: number, is_public: boolean, is_myself: boolean): Promise<UserMini[]> {
+	if (!is_public && !is_myself) {
+		return [];
+	}
 	return unwrap_or(await API_FETCHER.userQuery.queryFollowingList(user_id, is_public), []);
 }
 
-async function fetchHatings(user_id: number, is_public: boolean): Promise<UserMini[]> {
+async function fetchHatings(user_id: number, is_public: boolean, is_myself: boolean): Promise<UserMini[]> {
+	if (!is_public && !is_myself) {
+		return [];
+	}
 	return unwrap_or(await API_FETCHER.userQuery.queryHatingList(user_id, is_public), []);
-}
-
-async function fetchHaters(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.userQuery.queryHaterList(user_id), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;

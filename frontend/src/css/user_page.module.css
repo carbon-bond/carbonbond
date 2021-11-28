@@ -73,6 +73,7 @@
         margin: 30px 20px;
         font-size: 20px;
         justify-content: space-between;
+        width: 180px;
         & .links {
             display: flex;
             flex-direction: column;
