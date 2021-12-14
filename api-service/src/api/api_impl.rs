@@ -408,6 +408,36 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
 pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
+    async fn record_signup_apply(
+        &self,
+        context: &mut crate::Ctx,
+        email: String,
+        birth_year: i32,
+        gender: String,
+        license_id: String,
+        is_invite: bool,
+    ) -> Result<(), crate::custom_error::Error> {
+        let inviter_id = if is_invite {
+            Some(context.get_id_strict().await?)
+        } else {
+            None
+        };
+        db::user::create_signup_token(&email, birth_year, &gender, &license_id, inviter_id).await
+    }
+    async fn query_search_result_from_lawyerbc(
+        &self,
+        _context: &mut crate::Ctx,
+        search_text: String,
+    ) -> Result<Vec<model::forum::LawyerbcResultMini>, crate::custom_error::Error> {
+        db::user::query_search_result_from_lawyerbc(search_text).await
+    }
+    async fn query_detail_result_from_lawyerbc(
+        &self,
+        _context: &mut crate::Ctx,
+        search_text: String,
+    ) -> Result<model::forum::LawyerbcResult, crate::custom_error::Error> {
+        db::user::query_detail_result_from_lawyerbc(search_text).await
+    }
     async fn send_signup_email(
         &self,
         context: &mut crate::Ctx,
@@ -423,7 +453,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         } else {
             None
         };
-        db::user::create_signup_token(&email, inviter_id).await
+        // TODO how to get birth_year, gender, license_id if sending intivation is allowed?
+        db::user::create_signup_token(&email, 0, "", "", inviter_id).await
     }
     async fn send_reset_password_email(
         &self,

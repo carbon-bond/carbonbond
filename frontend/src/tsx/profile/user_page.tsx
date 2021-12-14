@@ -2,7 +2,6 @@ import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
-import Select, { InputActionMeta } from 'react-select';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
@@ -365,8 +364,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.data}>
 				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
 				<div className={style.trace}>
-					<div onClick={() => setVisibleFollower(true)}>💖️ 被 {props.profile_user.followed_count_public + props.profile_user.followed_count_private} 人追蹤</div>
-					<div onClick={() => setVisibleFollowing(true)}>💖 追蹤 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
+					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.followed_count_public + props.profile_user.followed_count_private} 人追蹤</div>
+					<div onClick={() => setVisibleFollowing(true)}>❤️ 追蹤 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
 				</div>
 				<div className={style.hate}>
 					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hated_count_public + props.profile_user.hated_count_private} 人仇視</div>

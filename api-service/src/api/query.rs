@@ -27,6 +27,18 @@ pub enum UserQuery {
     #[chitin(leaf, response = "Vec<super::model::forum::Favorite>")]
     QueryMyFavoriteArticleList {},
 
+    #[chitin(leaf, response = "Vec<super::model::forum::LawyerbcResultMini>")]
+    QuerySearchResultFromLawyerbc { search_text: String },
+    #[chitin(leaf, response = "super::model::forum::LawyerbcResult")]
+    QueryDetailResultFromLawyerbc { license_id: String },
+    #[chitin(leaf, response = "()")]
+    RecordSignupApply {
+        email: String,
+        birth_year: i32,
+        gender: String,
+        license_id: String,
+        is_invite: bool,
+    },
     #[chitin(leaf, response = "()")]
     SendSignupEmail { email: String, is_invite: bool },
     #[chitin(leaf, response = "()")]

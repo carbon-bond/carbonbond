@@ -699,20 +699,6 @@
       ]
     }
   },
-  "2b091fd60397645003da711e6a7efe070c7133f24b5eb08256f9227f41986c1f": {
-    "query": "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "2d680e691d71f2259578f9894d5b22d3ff786030a1ab286a201734ab19548fca": {
     "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards WHERE id = $1",
     "describe": {
@@ -2221,6 +2207,23 @@
       "nullable": [
         false
       ]
+    }
+  },
+  "870acec27692e6a724b9c061fe2323f9f2486ec964e451f05e442296cf8c099d": {
+    "query": "INSERT INTO signup_tokens (email, birth_year, gender, license_id, token, inviter_id) VALUES ($1, $2, $3, $4, $5, $6)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": []
     }
   },
   "8a59a818a4eb0f3054b690adb1ded87d4b850aeedc80e34534621c7f828e7e97": {

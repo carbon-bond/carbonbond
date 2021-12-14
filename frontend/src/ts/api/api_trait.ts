@@ -12,6 +12,8 @@ export type Result<T, E> = {
 export type Fetcher = (query: Object) => Promise<string>;
 export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hated_count_public: number; hated_count_private:     number; followed_count_public: number; followed_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
+export type LawyerbcResultMini = { name: string; gender: string; id_number: string; license_id: string };
+export type LawyerbcResult = {     name: string; gender: string; id_number: string; license_id: string; birth_year: number; email: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
@@ -113,6 +115,15 @@ export class UserQuery {
     }
     async queryMyFavoriteArticleList(): Promise<Result<Array<Favorite>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyFavoriteArticleList": {  } } }));
+    }
+    async querySearchResultFromLawyerbc(search_text: string): Promise<Result<Array<LawyerbcResultMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QuerySearchResultFromLawyerbc": { search_text } } }));
+    }
+    async queryDetailResultFromLawyerbc(license_id: string): Promise<Result<LawyerbcResult, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryDetailResultFromLawyerbc": { license_id } } }));
+    }
+    async recordSignupApply(email: string, birth_year: number, gender: string, license_id: string, is_invite: boolean): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "RecordSignupApply": { email, birth_year, gender, license_id, is_invite } } }));
     }
     async sendSignupEmail(email: string, is_invite: boolean): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email, is_invite } } }));

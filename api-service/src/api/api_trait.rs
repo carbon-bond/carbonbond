@@ -8,6 +8,9 @@ pub trait UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Party>, crate::custom_error::Error>;
     async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Favorite>, crate::custom_error::Error>;
+    async fn query_search_result_from_lawyerbc(&self, context: &mut crate::Ctx, search_text: String) -> Result<Vec<super::model::forum::LawyerbcResultMini>, crate::custom_error::Error>;
+    async fn query_detail_result_from_lawyerbc(&self, context: &mut crate::Ctx, license_id: String) -> Result<super::model::forum::LawyerbcResult, crate::custom_error::Error>;
+    async fn record_signup_apply(&self, context: &mut crate::Ctx, email: String, birth_year: i32, gender: String, license_id: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
     async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
@@ -50,6 +53,21 @@ pub trait UserQueryRouter {
             }
              UserQuery::QueryMyFavoriteArticleList {  } => {
                  let resp = self.query_my_favorite_article_list(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QuerySearchResultFromLawyerbc { search_text } => {
+                 let resp = self.query_search_result_from_lawyerbc(context, search_text).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryDetailResultFromLawyerbc { license_id } => {
+                 let resp = self.query_detail_result_from_lawyerbc(context, license_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::RecordSignupApply { email, birth_year, gender, license_id, is_invite } => {
+                 let resp = self.record_signup_apply(context, email, birth_year, gender, license_id, is_invite).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

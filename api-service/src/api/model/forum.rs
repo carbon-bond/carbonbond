@@ -36,6 +36,22 @@ mod model {
         pub sentence: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct LawyerbcResultMini {
+        pub name: String,
+        pub gender: String,
+        pub id_number: String,
+        pub license_id: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct LawyerbcResult {
+        pub name: String,
+        pub gender: String,
+        pub id_number: String,
+        pub license_id: String,
+        pub birth_year: i64,
+        pub email: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {
         pub id: i64,
         pub party_name: String,
