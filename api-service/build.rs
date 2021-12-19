@@ -16,8 +16,11 @@ use std::io::prelude::*;
 
 fn main() -> std::io::Result<()> {
     println!("cargo:rerun-if-changed=config");
-    println!("cargo:rerun-if-changed=src/api/model.rs");
+    println!("cargo:rerun-if-changed=src/api/model/mod.rs");
+    println!("cargo:rerun-if-changed=src/api/model/chat.rs");
+    println!("cargo:rerun-if-changed=src/api/model/forum.rs");
     println!("cargo:rerun-if-changed=src/api/query.rs");
+
     env_logger::init();
 
     #[cfg(debug_assertions)]
