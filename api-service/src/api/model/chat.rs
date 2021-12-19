@@ -1,7 +1,7 @@
 use chitin::*;
 
 #[chitin_model]
-mod model {
+pub mod model {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
@@ -59,5 +59,3 @@ mod model {
         MessageSending(MessageSending),
     }
 }
-
-pub use model::*;

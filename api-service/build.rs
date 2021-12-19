@@ -72,7 +72,7 @@ fn gen_api_files() -> std::io::Result<()> {
     )?;
     client_file.write_all(client_option.prelude().as_bytes())?;
     client_file.write_all(model::forum::gen_typescript().as_bytes())?;
-    client_file.write_all(model::chat::gen_typescript().as_bytes())?;
+    client_file.write_all(model::chat::model::gen_typescript().as_bytes())?;
     client_file.write_all(custom_error::gen_typescript().as_bytes())?;
     chitin_entry.root_codegen(&client_option, &mut client_file)?;
     Ok(())

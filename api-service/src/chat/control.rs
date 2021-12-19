@@ -1,6 +1,5 @@
 use crate::custom_error::Fallible;
 use crate::{api::model, chat::message};
-use chrono::Utc;
 use futures::{stream::StreamExt, SinkExt, TryFutureExt};
 use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
@@ -73,7 +72,7 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     let mut rx = UnboundedReceiverStream::new(rx);
     let tx_id = NEXT_CHANNEL_ID.fetch_add(1, Ordering::Relaxed);
 
-    use model::chat::ChatAPI;
+    use model::chat::model::ChatAPI;
     let init_info = message::get_init_info(id).await;
 
     let init_info = match init_info {
@@ -128,7 +127,7 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     users.remove_tx(id, tx_id).await;
 }
 
-use model::chat::MessageSending;
+use model::chat::model::MessageSending;
 async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
     let msg_sending: MessageSending = serde_json::from_str(msg)?;
     let receiver_id = super::message::send_message(&msg_sending, id).await?;

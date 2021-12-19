@@ -1,4 +1,4 @@
-use crate::api::model::chat;
+use crate::api::model::chat::model as chat;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::db::get_pool;
 use chrono::{DateTime, Utc};
