@@ -1,9 +1,9 @@
-use crate::api::model::chat::model as chat;
+use crate::api::model::chat::chat_model_root::{server_trigger, MessageSending};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::db::get_pool;
 use chrono::{DateTime, Utc};
 
-pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
+pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let pool = get_pool();
     struct TmpChannel {
         channel_id: i64,
@@ -34,7 +34,7 @@ pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
 		",
         id
     ).fetch_all(pool).await?;
-    let channels: Vec<chat::Channel> = channels
+    let channels: Vec<server_trigger::Channel> = channels
         .into_iter()
         .map(|tmp| {
             let name = if tmp.user_id_1 == id {
@@ -47,10 +47,10 @@ pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
             } else {
                 tmp.name_2.clone()
             };
-            chat::Channel::Direct(chat::Direct {
+            server_trigger::Channel::Direct(server_trigger::Direct {
                 channel_id: tmp.channel_id,
                 name,
-                last_msg: chat::Message {
+                last_msg: server_trigger::Message {
                     sender_name,
                     text: tmp.text,
                     time: tmp.time,
@@ -58,9 +58,9 @@ pub async fn get_init_info(id: i64) -> Fallible<chat::InitInfo> {
             })
         })
         .collect();
-    Ok(chat::InitInfo { channels })
+    Ok(server_trigger::InitInfo { channels })
 }
-pub async fn get_receiver(msg: &chat::MessageSending, id: i64) -> Fallible<i64> {
+pub async fn get_receiver(msg: &MessageSending, id: i64) -> Fallible<i64> {
     let pool = get_pool();
     struct Users {
         user_id_1: i64,
@@ -89,7 +89,7 @@ pub async fn get_receiver(msg: &chat::MessageSending, id: i64) -> Fallible<i64> 
 }
 
 // 回傳接收者的用戶 id
-pub async fn send_message(msg: &chat::MessageSending, id: i64) -> Fallible<i64> {
+pub async fn send_message(msg: &MessageSending, id: i64) -> Fallible<i64> {
     let receiver = get_receiver(msg, id).await?;
     let pool = get_pool();
     sqlx::query!(

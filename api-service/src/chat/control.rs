@@ -72,11 +72,11 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     let mut rx = UnboundedReceiverStream::new(rx);
     let tx_id = NEXT_CHANNEL_ID.fetch_add(1, Ordering::Relaxed);
 
-    use model::chat::model::ChatAPI;
+    use model::chat::chat_model_root::server_trigger;
     let init_info = message::get_init_info(id).await;
 
     let init_info = match init_info {
-        Ok(init_info) => ChatAPI::InitInfo(init_info),
+        Ok(init_info) => server_trigger::API::InitInfo(init_info),
         Err(err) => {
             log::info!("{} 無法取得聊天室初始化訊息：{}", id, err);
             return;
@@ -127,7 +127,7 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     users.remove_tx(id, tx_id).await;
 }
 
-use model::chat::model::MessageSending;
+use model::chat::chat_model_root::MessageSending;
 async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
     let msg_sending: MessageSending = serde_json::from_str(msg)?;
     let receiver_id = super::message::send_message(&msg_sending, id).await?;

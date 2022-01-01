@@ -1,6 +1,6 @@
 import { AllChatState, DirectChatData, Message } from '../tsx/global_state/chat';
 import { toastErr } from '../tsx/utils';
-import { ChatAPI, InitInfo, MessageSending } from './api/api_trait';
+import { server_trigger, MessageSending } from './api/api_trait';
 
 export class ChatSocket {
 	socket: WebSocket | null;
@@ -23,7 +23,7 @@ export class ChatSocket {
 				console.log(`from server: ${event.data}`);
 				if (api.InitInfo) {
 					console.log('init info');
-					let init_info: InitInfo = api.InitInfo;
+					let init_info: server_trigger.InitInfo = api.InitInfo;
 					for (const channel of init_info.channels) {
 						if ('Direct' in channel) {
 							const chat = channel.Direct;

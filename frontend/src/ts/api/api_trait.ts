@@ -47,6 +47,16 @@ export type FamilyFilter =
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
 export type Bond = { energy: number; target_article: number; tag: string | null };
+export type MessageSending = { channel_id: number; content: string };
+export namespace client_trigger {
+export type API = 
+ | { MessageSending: MessageSending };
+}
+export namespace server_trigger {
+export type API = 
+ | { InitInfo: InitInfo } 
+ | { MessageSending: MessageSending };
+export type InitInfo = { channels: Channel [] };
 export type Message = { sender_name: string; text: string; time: string};
 export type Direct = { channel_id: number; name: string; last_msg: Message };
 export type WithAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
@@ -55,13 +65,7 @@ export type Channel =
  | { Direct: Direct } 
  | { WithAnonymousAuthor: WithAnonymousAuthor } 
  | { IAmAnonymousAuthor: IAmAnonymousAuthor };
-export type InitInfo = { channels: Channel [] };
-export type MessageSending = { channel_id: number; content: string };
-export type ChatAPI = 
- | { InitInfo: InitInfo } 
- | { MessageSending: MessageSending };
-export type RevChatAPI = 
- | { MessageSending: MessageSending };
+}
 export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
 export type BondError = 
  | { Custom: Error } 
