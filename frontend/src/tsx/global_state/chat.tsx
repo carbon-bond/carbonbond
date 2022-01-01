@@ -111,12 +111,12 @@ class AllChat {
 	}
 	addMessage(name: string, message: Message): AllChat {
 		return produce(this, draft => {
-			draft.direct[name].addMessage(message);
+			draft.direct[name] = draft.direct[name].addMessage(message);
 		});
 	}
 	addChannelMessage(name: string, channel: string, message: Message): AllChat {
 		return produce(this, draft => {
-			draft.group[name].channels[channel]?.addMessage(message);
+			draft.group[name].channels[channel] = draft.group[name].channels[channel]?.addMessage(message);
 		});
 	}
 	updateReadTime(name: string, time: Date): AllChat {
