@@ -21,11 +21,13 @@ export class DirectChatData implements ChatData {
 	name: string;
 	id: number;
 	read_time: Date;
-	constructor(name: string, id: number, history: Message[], read_time: Date) {
+	exist: boolean;
+	constructor(name: string, id: number, history: Message[], read_time: Date, exist: boolean) {
 		this.name = name;
 		this.id = id;
 		this.history = history;
 		this.read_time = read_time;
+		this.exist = exist;
 	}
 	isUnread(): boolean {
 		const last_msg = this.history[this.history.length - 1];
@@ -54,12 +56,14 @@ class ChannelData extends DirectChatData {
 
 export class GroupChatData {
 	[immerable] = true;
+	exist: boolean;
 	name: string;
 	id: number;
 	is_upgraded: boolean;
 	channels: { [key: string]: ChannelData };
 	read_time: Date;
 	constructor(name: string, id: number, is_upgraded: boolean, channels: { [key: string]: ChannelData }, read_time: Date) {
+		this.exist = true;
 		this.name = name;
 		this.id = id;
 		this.is_upgraded = is_upgraded;
@@ -91,6 +95,7 @@ export interface IMessage {
 };
 
 export interface ChatData {
+	exist: boolean;
 	name: string;
 	newestMessage(): IMessage | undefined
 	isUnread(): boolean
@@ -163,7 +168,8 @@ function useAllChatState(): AllChatState {
 							new Message('冬木士度', '那時我認為他是個怪人', new Date(2019, 6, 14)),
 							new Message('風鳥院花月', '我也是', new Date(2019, 6, 15))
 						],
-						new Date(2019, 7, 13)
+						new Date(2019, 7, 13),
+						true,
 					),
 					'主頻道': new ChannelData(
 						'主頻道',
@@ -173,7 +179,8 @@ function useAllChatState(): AllChatState {
 							new Message('馬克貝斯', '沒意見', new Date(2019, 1, 15)),
 							new Message('天子峰', '都可', new Date(2019, 1, 16))
 						],
-						new Date(2018, 7, 13)
+						new Date(2018, 7, 13),
+						true,
 					),
 					'閃靈二人組': new ChannelData(
 						'閃靈二人組',
@@ -182,7 +189,8 @@ function useAllChatState(): AllChatState {
 							new Message('天野銀次', '肚子好餓', new Date(2018, 11, 4)),
 							new Message('美堂蠻', '呿！', new Date(2019, 3, 27))
 						],
-						new Date(2018, 6, 13)
+						new Date(2018, 6, 13),
+						true
 					)
 				},
 				new Date()

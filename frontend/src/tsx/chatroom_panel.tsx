@@ -198,9 +198,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const scroll_bottom_ref = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.name];
-	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`);}
 	React.useEffect(() => {
-		if (extended && chat!.isUnread()) {
+		if (extended && chat?.isUnread()) {
 			updateLastRead(props.room.name, new Date());
 		}
 	}, [extended, chat, updateLastRead, props.room.name]);
@@ -209,15 +208,25 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		return <></>;
 	}
 
-	if (extended) {
+	if (chat == undefined) {
+		console.log('找不到聊天室');
+		return <></>;
+	}
 
+	if (extended) {
 		const sender_name = user_state.user_name;
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				window.chat_socket.send_message(chat!.id, input_props.value);
-				addMessage(props.room.name, new Message(sender_name, input_props.value, now));
-				setValue('');
+				if (chat.exist) {
+					window.chat_socket.send_message(chat!.id, input_props.value);
+					addMessage(props.room.name, new Message(sender_name, input_props.value, now));
+					setValue('');
+				}
+				else {
+					// TODO: 建立頻道
+					console.log('假頻道');
+				}
 			}
 		}
 

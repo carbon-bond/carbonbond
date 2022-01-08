@@ -81,6 +81,7 @@ function ChatBar(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	let chat_array: ChatData[] = Array.from(Object.values(all_chat.direct));
 	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
+	chat_array = chat_array.filter(chat => chat.exist === true);
 	return <div className={style.chatbar}>
 		<input type="text" placeholder="🔍 尋找對話" />
 		{

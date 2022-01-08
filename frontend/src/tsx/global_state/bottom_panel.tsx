@@ -5,7 +5,7 @@ import { createContainer } from 'unstated-next';
 
 export type SimpleRoomData = {
 	// XXX: 之後要改為 id ，因為可能會撞名
-	name: string
+	name: string,
 };
 
 export type ChannelRoomData = {

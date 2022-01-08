@@ -9,6 +9,8 @@ import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../t
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
+import { AllChatState, DirectChatData } from '../global_state/chat';
+import { BottomPanelState } from '../global_state/bottom_panel';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -157,7 +159,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 }
 
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
-	const { user_state } = UserState.useContainer();
+	const { addRoom } = BottomPanelState.useContainer();
+	const { addDirectChat } = AllChatState.useContainer();
 	const [relation, setRelation] = React.useState<UserRelationKind>(UserRelationKind.None);
 
 	function setSentence(sentence: string): void {
@@ -220,6 +223,13 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		}
 	}
 
+	function onStartChat(): void {
+		console.log('開始聊天');
+		const user_name = props.profile_user.user_name;
+		addDirectChat(user_name, new DirectChatData(user_name, 0, [], new Date(), false));
+		addRoom(user_name);
+	}
+
 	React.useEffect(() => {
 		async function queryUserRelation(): Promise<{}> {
 			if (props.profile_user) {
@@ -233,10 +243,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			}
 			return {};
 		}
-		if (props.profile_user && user_state.login) {
+		if (props.profile_user && props.user_state.login) {
 			queryUserRelation();
 		}
-	}, [props.profile_user, user_state.login]);
+	}, [props.profile_user, props.user_state.login]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
@@ -275,7 +285,11 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 						<></>
 				}
 				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
-				<a>私訊</a>
+				{
+					is_me ?
+						<></> :
+						<a onClick={onStartChat}>私訊</a>
+				}
 			</div>
 		</div>
 	</div>;

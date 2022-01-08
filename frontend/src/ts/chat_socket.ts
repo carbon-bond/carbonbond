@@ -40,7 +40,8 @@ export class ChatSocket {
 									)
 								],
 								// TODO: 使用伺服器傳回的日期
-								new Date()
+								new Date(),
+								true
 							));
 						}
 					}
@@ -50,6 +51,7 @@ export class ChatSocket {
 					console.log(`${JSON.stringify(message_sending)}`);
 					let sender = this.mapping.get(message_sending.channel_id);
 					if (sender == undefined) {
+						// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
 						toastErr(`找不到聊天室：${message_sending.channel_id}`);
 					} else {
 						// TODO: 使用伺服器傳回的日期
