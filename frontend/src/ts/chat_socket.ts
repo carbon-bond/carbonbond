@@ -32,6 +32,7 @@ export class ChatSocket {
 							this.all_chat!.addDirectChat(chat.name, new DirectChatData(
 								chat.name,
 								chat.channel_id,
+								chat.opposite_id,
 								[
 									new Message(
 										chat.last_msg.sender_name,

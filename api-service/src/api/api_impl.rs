@@ -1,4 +1,5 @@
 use super::{api_trait, model};
+use crate::chat;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::service;
@@ -18,6 +19,7 @@ async fn complete_article<A: HasArticleStats>(mut articles: A, ctx: &mut Ctx) ->
 
 #[derive(Default)]
 pub struct RootQueryRouter {
+    chat_router: ChatQueryRouter,
     article_router: ArticleQueryRouter,
     board_router: BoardQueryRouter,
     user_router: UserQueryRouter,
@@ -27,12 +29,16 @@ pub struct RootQueryRouter {
 }
 #[async_trait]
 impl api_trait::RootQueryRouter for RootQueryRouter {
+    type ChatQueryRouter = ChatQueryRouter;
     type ArticleQueryRouter = ArticleQueryRouter;
     type BoardQueryRouter = BoardQueryRouter;
     type UserQueryRouter = UserQueryRouter;
     type PartyQueryRouter = PartyQueryRouter;
     type NotificationQueryRouter = NotificationQueryRouter;
     type ConfigQueryRouter = ConfigQueryRouter;
+    fn chat_router(&self) -> &Self::ChatQueryRouter {
+        &self.chat_router
+    }
     fn article_router(&self) -> &Self::ArticleQueryRouter {
         &self.article_router
     }
@@ -55,6 +61,20 @@ impl api_trait::RootQueryRouter for RootQueryRouter {
 
 fn opt_slice<T>(opt: &Option<Vec<T>>) -> Option<&[T]> {
     opt.as_ref().map(|v| v.as_ref())
+}
+#[derive(Default)]
+pub struct ChatQueryRouter {}
+#[async_trait]
+impl api_trait::ChatQueryRouter for ChatQueryRouter {
+    async fn create_chat_if_not_exist(
+        &self,
+        context: &mut crate::Ctx,
+        opposite_id: i64,
+        msg: String,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        chat::channel::create_if_not_exist(user_id, opposite_id, msg).await
+    }
 }
 #[derive(Default)]
 pub struct ArticleQueryRouter {}

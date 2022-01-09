@@ -224,9 +224,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	}
 
 	function onStartChat(): void {
-		console.log('開始聊天');
 		const user_name = props.profile_user.user_name;
-		addDirectChat(user_name, new DirectChatData(user_name, 0, [], new Date(), false));
+		addDirectChat(user_name, new DirectChatData(user_name, 0, props.profile_user.id, [], new Date(), false));
 		addRoom(user_name);
 	}
 

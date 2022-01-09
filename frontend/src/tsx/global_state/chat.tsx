@@ -20,11 +20,13 @@ export class DirectChatData implements ChatData {
 	history: Message[];
 	name: string;
 	id: number;
+	opposite_id: number;
 	read_time: Date;
 	exist: boolean;
-	constructor(name: string, id: number, history: Message[], read_time: Date, exist: boolean) {
+	constructor(name: string, id: number, opposite_id: number, history: Message[], read_time: Date, exist: boolean) {
 		this.name = name;
 		this.id = id;
+		this.opposite_id = opposite_id;
 		this.history = history;
 		this.read_time = read_time;
 		this.exist = exist;
@@ -109,6 +111,12 @@ class AllChat {
 		this.group = group;
 		this.direct = direct;
 	}
+	toRealDirectChat(name: string, chat_id: number): AllChat {
+		return produce(this, (draft) => {
+			draft.direct[name].exist = true;
+			draft.direct[name].id = chat_id;
+		});
+	}
 	addChat(name: string, chat: DirectChatData): AllChat {
 		return produce(this, (draft) => {
 			draft.direct[name] = chat;
@@ -143,7 +151,8 @@ class AllChat {
 }
 
 export type AllChatState = {
-	all_chat: AllChat
+	all_chat: AllChat,
+	setAllChat: (all_chat: AllChat) => void,
 	addDirectChat: Function,
 	addMessage: Function
 	addChannelMessage: Function
@@ -164,6 +173,7 @@ function useAllChatState(): AllChatState {
 					'VOLTS 四天王': new ChannelData(
 						'VOLTS 四天王',
 						100001,
+						-1,
 						[
 							new Message('冬木士度', '那時我認為他是個怪人', new Date(2019, 6, 14)),
 							new Message('風鳥院花月', '我也是', new Date(2019, 6, 15))
@@ -174,6 +184,7 @@ function useAllChatState(): AllChatState {
 					'主頻道': new ChannelData(
 						'主頻道',
 						100002,
+						-1,
 						[
 							new Message('美堂蠻', '午餐要吃什麼？', new Date(2019, 1, 14)),
 							new Message('馬克貝斯', '沒意見', new Date(2019, 1, 15)),
@@ -185,6 +196,7 @@ function useAllChatState(): AllChatState {
 					'閃靈二人組': new ChannelData(
 						'閃靈二人組',
 						100003,
+						-1,
 						[
 							new Message('天野銀次', '肚子好餓', new Date(2018, 11, 4)),
 							new Message('美堂蠻', '呿！', new Date(2019, 3, 27))
@@ -222,6 +234,7 @@ function useAllChatState(): AllChatState {
 
 	return {
 		all_chat,
+		setAllChat,
 		addDirectChat,
 		addMessage,
 		addChannelMessage,

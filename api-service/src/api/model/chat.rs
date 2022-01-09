@@ -46,6 +46,7 @@ pub mod chat_model_root {
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct Direct {
             pub channel_id: i64,
+            pub opposite_id: i64,
             pub name: String,
             pub last_msg: Message,
         }

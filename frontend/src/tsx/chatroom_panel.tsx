@@ -4,7 +4,7 @@ const {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} = bottom_pane
 import style from '../css/bottom_panel/chat_room.module.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
-import { useScrollBottom, useInputValue } from './utils';
+import { useScrollBottom, useInputValue, toastErr } from './utils';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	AllChatState,
@@ -22,6 +22,8 @@ import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css';
 import * as EmojiMart from 'emoji-mart';
 import { UserState } from './global_state/user';
+import { API_FETCHER, unwrap } from '../ts/api/api';
+import produce from 'immer';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -192,7 +194,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
-	const { all_chat, addMessage, updateLastRead } = AllChatState.useContainer();
+	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
 	const scroll_bottom_ref = useScrollBottom();
@@ -224,8 +226,20 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					setValue('');
 				}
 				else {
-					// TODO: 建立頻道
-					console.log('假頻道');
+					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
+						return unwrap(res);
+					}).then(chat_id => {
+						// XXX: 異步設置 state 會在舊狀態的基礎上設置新狀態
+						// 或許用 useRef 可以取得最新的狀態
+						setAllChat(produce(all_chat, (draft) => {
+							let ret = draft.addMessage(props.room.name,  new Message(sender_name, input_props.value, now));
+							ret = ret.toRealDirectChat(props.room.name, chat_id);
+							return ret;
+						}));
+						// addMessage(props.room.name, new Message(sender_name, input_props.value, now));
+						// toRealDirectChat(props.room.name, chat_id);
+					}).catch(err => toastErr(err));
+					setValue('');
 				}
 			}
 		}

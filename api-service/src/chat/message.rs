@@ -2,6 +2,7 @@ use crate::api::model::chat::chat_model_root::{server_trigger, MessageSending};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::db::get_pool;
 use chrono::{DateTime, Utc};
+use sqlx::PgConnection;
 
 pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let pool = get_pool();
@@ -10,6 +11,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         name_1: String,
         name_2: String,
         user_id_1: i64,
+        user_id_2: i64,
         sender_id: i64,
         time: DateTime<Utc>,
         text: String,
@@ -19,7 +21,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let channels = sqlx::query_as!(
         TmpChannel,
         "
-		SELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, m1.create_time as time, m1.content as text, m1.sender_id as sender_id
+		SELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, user_id_2, m1.create_time as time, m1.content as text, m1.sender_id as sender_id
         FROM chat.direct_chats
         JOIN users u1
         ON chat.direct_chats.user_id_1 = u1.id
@@ -37,10 +39,10 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let channels: Vec<server_trigger::Channel> = channels
         .into_iter()
         .map(|tmp| {
-            let name = if tmp.user_id_1 == id {
-                tmp.name_2.clone()
+            let (name, opposite_id) = if tmp.user_id_1 == id {
+                (tmp.name_2.clone(), tmp.user_id_2)
             } else {
-                tmp.name_1.clone()
+                (tmp.name_1.clone(), tmp.user_id_1)
             };
             let sender_name = if tmp.user_id_1 == tmp.sender_id {
                 tmp.name_1.clone()
@@ -50,6 +52,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             server_trigger::Channel::Direct(server_trigger::Direct {
                 channel_id: tmp.channel_id,
                 name,
+                opposite_id,
                 last_msg: server_trigger::Message {
                     sender_name,
                     text: tmp.text,
@@ -87,38 +90,33 @@ pub async fn get_receiver(msg: &MessageSending, id: i64) -> Fallible<i64> {
         Err(ErrorCode::PermissionDenied.context("您不屬於此私訊頻道"))
     }
 }
-
-// 回傳接收者的用戶 id
-pub async fn send_message(msg: &MessageSending, id: i64) -> Fallible<i64> {
-    let receiver = get_receiver(msg, id).await?;
-    let pool = get_pool();
-    sqlx::query!(
+// 回傳訊息的 id
+pub async fn _send_message(
+    conn: &mut PgConnection,
+    channel_id: i64,
+    sneder_id: i64,
+    msg: &String,
+) -> Fallible<i64> {
+    let id = sqlx::query!(
         "
 		INSERT INTO chat.direct_messages (direct_chat_id, sender_id, content)
 		VALUES ($1, $2, $3)
 		RETURNING id
 		",
-        msg.channel_id,
-        id,
-        msg.content,
+        channel_id,
+        sneder_id,
+        msg,
     )
-    .fetch_one(pool)
-    .await?;
-    Ok(receiver)
-}
-pub async fn creat_direct_chat(user_id_1: i64, user_id_2: i64) -> Fallible<i64> {
-    let pool = get_pool();
-    let chat_id = sqlx::query!(
-        "
-		INSERT INTO chat.direct_chats (user_id_1, user_id_2)
-		VALUES ($1, $2)
-		RETURNING id
-		",
-        user_id_1,
-        user_id_2,
-    )
-    .fetch_one(pool)
+    .fetch_one(conn)
     .await?
     .id;
-    Ok(chat_id)
+    Ok(id)
+}
+
+// 回傳接收者的用戶 id
+pub async fn send_message(msg: &MessageSending, my_id: i64) -> Fallible<i64> {
+    let mut pool = get_pool().acquire().await?;
+    let receiver = get_receiver(msg, my_id).await?;
+    _send_message(&mut pool, msg.channel_id, my_id, &msg.content).await?;
+    Ok(receiver)
 }
