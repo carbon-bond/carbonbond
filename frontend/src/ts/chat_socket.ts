@@ -19,6 +19,8 @@ export class ChatSocket {
 			this.socket = new WebSocket(url);
 			this.socket.onopen = () => { };
 			this.socket.onmessage = (event) => {
+				// XXX: 使用 server_trigger.API
+				// eslint-disable-next-line
 				const api: any = JSON.parse(event.data);
 				console.log(`from server: ${event.data}`);
 				if (api.InitInfo) {
