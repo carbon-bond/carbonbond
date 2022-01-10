@@ -968,6 +968,27 @@
       ]
     }
   },
+  "3b5c02518cd4b2ffafdf2159c5c4e4118f3db6e5551579dbc9afdb8012c2d58b": {
+    "query": "\n\t\tINSERT INTO chat.direct_chats (user_id_1, user_id_2)\n\t\tVALUES ($1, $2)\n\t\tRETURNING id\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
   "3c8e27dadb8139140e3893d954e8fbbfd3bb1cd2d3eb075da73dff186ad31fb3": {
     "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards",
     "describe": {
@@ -2864,6 +2885,27 @@
       "nullable": []
     }
   },
+  "ea99f300c01113ea32e5034897b12f2f14e1b43cb9b556f0c189e79f69d6dc29": {
+    "query": "\n\t\tSELECT id FROM chat.direct_chats\n        WHERE user_id_1 = $1 AND user_id_2 = $2\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
   "eb5f911aaef8ad34c7bf53a5d787be36a9d44792af8dc9a9280f71781572714c": {
     "query": "\n\t\tSELECT user_id_1, user_id_2 FROM chat.direct_chats\n        WHERE id = $1\n\t\t",
     "describe": {
@@ -3147,6 +3189,68 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "f80f1f5671d7c726d4099e6833a8e385a994e53986dae7ab42bf9b32df1b651e": {
+    "query": "\n\t\tSELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, user_id_2, m1.create_time as time, m1.content as text, m1.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m1\n        ON chat.direct_chats.id = m1.direct_chat_id\n        LEFT OUTER JOIN chat.direct_messages m2\n        ON (chat.direct_chats.id = m2.direct_chat_id\n            AND (m1.id < m2.id))\n        WHERE (user_id_1 = $1 OR user_id_2 = $1) AND m2.id IS NULL\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "channel_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name_1",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "name_2",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_id_1",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_id_2",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "text",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
     }
   },
   "fb6ae592fb1d4ef692a2517a358c88fb6980e7056df75574458b203c85999f51": {
