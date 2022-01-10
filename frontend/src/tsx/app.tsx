@@ -96,6 +96,7 @@ function App(): JSX.Element {
 	function Content(): JSX.Element {
 		const { user_state } = UserState.useContainer();
 		const { load, unload } = SubscribedBoardsState.useContainer();
+		const all_chat_state = AllChatState.useContainer();
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
@@ -112,6 +113,9 @@ function App(): JSX.Element {
 				}
 			})();
 		}, [load, unload, user_state.login]);
+		React.useEffect(() => {
+			window.chat_socket.set_all_chat(all_chat_state);
+		}, [all_chat_state]);
 
 		return <Router>
 			<Header></Header>
@@ -154,6 +158,7 @@ declare global {
 
 import { ChatSocket } from '../ts/chat_socket';
 import { ConfigState } from './global_state/config';
+
 window.chat_socket = new ChatSocket();
 
 ReactDOM.render(<App />, document.getElementById('root'));

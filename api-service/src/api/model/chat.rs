@@ -1,54 +1,72 @@
 use chitin::*;
 
 #[chitin_model]
-mod model {
+pub mod chat_model_root {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
-    use strum::EnumString;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Message {
-        pub text: String,
-        pub time: DateTime<Utc>,
-    }
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Direct {
-        pub channel_id: i64,
-        pub name: String,
-        pub last_msg: Message,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct WithAnonymousAuthor {
-        pub channel_id: i64,
-        pub article_name: String,
-        pub last_msg: Message,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct IAmAnonymousAuthor {
-        pub channel_id: i64,
-        pub article_name: String,
-        pub last_msg: Message,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub enum Channel {
-        Direct(Direct),
-        WithAnonymousAuthor(WithAnonymousAuthor),
-        IAmAnonymousAuthor(IAmAnonymousAuthor),
-    }
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct InitInfo {
-        pub channels: Vec<Channel>,
-    }
-
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct MessageSending {
         pub channel_id: i64,
         pub content: String,
     }
-}
 
-pub use model::*;
+    #[chitin_model]
+    pub mod client_trigger {
+        use super::*;
+
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub enum API {
+            MessageSending(MessageSending),
+        }
+    }
+
+    #[chitin_model]
+    pub mod server_trigger {
+        use super::*;
+
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub enum API {
+            InitInfo(InitInfo),
+            MessageSending(MessageSending),
+        }
+
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub struct InitInfo {
+            pub channels: Vec<Channel>,
+        }
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub struct Message {
+            pub sender_name: String,
+            pub text: String,
+            pub time: DateTime<Utc>,
+        }
+
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub struct Direct {
+            pub channel_id: i64,
+            pub opposite_id: i64,
+            pub name: String,
+            pub last_msg: Message,
+        }
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub struct WithAnonymousAuthor {
+            pub channel_id: i64,
+            pub article_name: String,
+            pub last_msg: Message,
+        }
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub struct IAmAnonymousAuthor {
+            pub channel_id: i64,
+            pub article_name: String,
+            pub last_msg: Message,
+        }
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub enum Channel {
+            Direct(Direct),
+            WithAnonymousAuthor(WithAnonymousAuthor),
+            IAmAnonymousAuthor(IAmAnonymousAuthor),
+        }
+    }
+}

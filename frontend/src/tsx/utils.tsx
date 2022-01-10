@@ -15,7 +15,7 @@ export function toastErr(err: unknown): void {
 type ToggleSubscribe = () => Promise<void>;
 export function useSubscribeBoard(board: Board): { has_subscribed: boolean, toggleSubscribe: ToggleSubscribe } {
 	let { subscribed_boards, subscribe, unsubscribe } = SubscribedBoardsState.useContainer();
-	let has_subscribed = subscribed_boards.has(board.id);
+	let has_subscribed = subscribed_boards[board.id] != undefined;
 
 	async function onUnsubscribeBoardClick(): Promise<void> {
 		console.log('按下取消訂閱看板');
