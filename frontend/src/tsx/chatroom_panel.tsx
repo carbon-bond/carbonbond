@@ -24,6 +24,7 @@ import * as EmojiMart from 'emoji-mart';
 import { UserState } from './global_state/user';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import produce from 'immer';
+import { Link } from 'react-router-dom';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -94,7 +95,7 @@ const MessageBlocks = React.memo((props: {messages: IMessage[]}): JSX.Element =>
 		// XXX: key 要改成能表示時間順序的 id
 		agg_messages.map(message => <div key={Number(message.date)} className={style.messageBlock}>
 			<div className={style.meta}>
-				<span className={style.who}>{message.who}</span>
+				<span className={style.who}><Link to={`/app/user/${message.who}`}>{message.who}</Link></span>
 				<span className={style.date}>{relativeDate(message.date)}</span>
 			</div>
 			{
@@ -242,7 +243,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
-				<div className={leftSet}>{props.room.name}</div>
+				<div className={leftSet}><Link to={`/app/user/${props.room.name}`}>{props.room.name}</Link></div>
 				<div className={middleSet} onClick={() => setExtended(false)}></div>
 				<div className={rightSet}>
 					<div className={button}>⚙</div>
