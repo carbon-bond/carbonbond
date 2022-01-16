@@ -118,8 +118,8 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
                 }
             }
             Err(_) => {
-                println!("{}: 無法解析爲字串", id);
-                break;
+                // ping, pong
+                continue;
             }
         }
     }

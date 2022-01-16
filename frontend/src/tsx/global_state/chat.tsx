@@ -152,7 +152,7 @@ class AllChat {
 
 export type AllChatState = {
 	all_chat: AllChat,
-	setAllChat: (all_chat: AllChat) => void,
+	setAllChat: React.Dispatch<React.SetStateAction<AllChat>>,
 	addDirectChat: Function,
 	addMessage: Function
 	addChannelMessage: Function

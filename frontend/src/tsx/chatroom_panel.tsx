@@ -229,15 +229,11 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
 						return unwrap(res);
 					}).then(chat_id => {
-						// XXX: 異步設置 state 會在舊狀態的基礎上設置新狀態
-						// 或許用 useRef 可以取得最新的狀態
-						setAllChat(produce(all_chat, (draft) => {
+						setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
 							let ret = draft.addMessage(props.room.name,  new Message(sender_name, input_props.value, now));
 							ret = ret.toRealDirectChat(props.room.name, chat_id);
 							return ret;
 						}));
-						// addMessage(props.room.name, new Message(sender_name, input_props.value, now));
-						// toRealDirectChat(props.room.name, chat_id);
 					}).catch(err => toastErr(err));
 					setValue('');
 				}
