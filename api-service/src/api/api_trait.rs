@@ -6,10 +6,16 @@ use serde_json::error::Error;
 #[async_trait]
 pub trait ChatQueryRouter {
     async fn create_chat_if_not_exist(&self, context: &mut crate::Ctx, opposite_id: i64, msg: String) -> Result<i64, crate::custom_error::Error>;
+    async fn query_direct_chat_history(&self, context: &mut crate::Ctx, chat_id: i64, last_msg_id: i64, number: i64) -> Result<Vec<super::model::chat::chat_model_root::server_trigger::Message>, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ChatQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              ChatQuery::CreateChatIfNotExist { opposite_id, msg } => {
                  let resp = self.create_chat_if_not_exist(context, opposite_id, msg).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ChatQuery::QueryDirectChatHistory { chat_id, last_msg_id, number } => {
+                 let resp = self.query_direct_chat_history(context, chat_id, last_msg_id, number).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -75,6 +75,19 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
         let user_id = context.get_id_strict().await?;
         chat::channel::create_if_not_exist(user_id, opposite_id, msg).await
     }
+    async fn query_direct_chat_history(
+        &self,
+        context: &mut crate::Ctx,
+        chat_id: i64,
+        last_msg_id: i64,
+        number: i64,
+    ) -> Result<
+        Vec<super::model::chat::chat_model_root::server_trigger::Message>,
+        crate::custom_error::Error,
+    > {
+        let user_id = context.get_id_strict().await?;
+        chat::message::get_direct_chat_history(user_id, chat_id, last_msg_id, number).await
+    }
 }
 #[derive(Default)]
 pub struct ArticleQueryRouter {}
