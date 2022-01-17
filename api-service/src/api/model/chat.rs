@@ -36,9 +36,17 @@ pub mod chat_model_root {
         pub struct InitInfo {
             pub channels: Vec<Channel>,
         }
+
+        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+        pub enum Sender {
+            Myself,
+            Opposite,
+        }
+
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct Message {
-            pub sender_name: String,
+            pub id: i64,
+            pub sender: Sender,
             pub text: String,
             pub time: DateTime<Utc>,
         }

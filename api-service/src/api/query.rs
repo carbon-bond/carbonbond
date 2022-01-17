@@ -25,6 +25,15 @@ pub enum RootQuery {
 pub enum ChatQuery {
     #[chitin(leaf, response = "i64")]
     CreateChatIfNotExist { opposite_id: i64, msg: String },
+    #[chitin(
+        leaf,
+        response = "Vec<super::model::chat::chat_model_root::server_trigger::Message>"
+    )]
+    QueryDirectChatHistory {
+        chat_id: i64,
+        last_msg_id: i64,
+        number: i64,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum UserQuery {

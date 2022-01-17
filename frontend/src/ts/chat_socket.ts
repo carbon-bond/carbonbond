@@ -37,7 +37,8 @@ export class ChatSocket {
 								chat.opposite_id,
 								[
 									new Message(
-										chat.last_msg.sender_name,
+										chat.last_msg.id,
+										chat.last_msg.sender,
 										chat.last_msg.text,
 										new Date(chat.last_msg.time),
 									)
@@ -57,8 +58,8 @@ export class ChatSocket {
 						// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
 						toastErr(`找不到聊天室：${message_sending.channel_id}`);
 					} else {
-						// TODO: 使用伺服器傳回的日期
-						this.all_chat!.addMessage(sender, new Message(sender, message_sending.content, new Date()));
+						// TODO: 使用伺服器傳回的日期、訊息 id
+						this.all_chat!.addMessage(sender, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
 					}
 				}
 			};

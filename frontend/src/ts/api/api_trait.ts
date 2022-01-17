@@ -57,7 +57,8 @@ export type API =
  | { InitInfo: InitInfo } 
  | { MessageSending: MessageSending };
 export type InitInfo = { channels: Channel [] };
-export type Message = { sender_name: string; text: string; time: string};
+export enum Sender { Myself = "Myself", Opposite = "Opposite" };
+export type Message = { id: number; sender: Sender; text: string; time: string};
 export type Direct = {     channel_id: number; opposite_id: number; name: string; last_msg:     Message };
 export type WithAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
 export type IAmAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
@@ -118,6 +119,9 @@ export class ChatQuery {
     }
     async createChatIfNotExist(opposite_id: number, msg: string): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Chat": { "CreateChatIfNotExist": { opposite_id, msg } } }));
+    }
+    async queryDirectChatHistory(chat_id: number, last_msg_id: number, number: number): Promise<Result<Array<server_trigger.Message>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Chat": { "QueryDirectChatHistory": { chat_id, last_msg_id, number } } }));
     }
 }
 

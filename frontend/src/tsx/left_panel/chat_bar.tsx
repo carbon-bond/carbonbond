@@ -3,16 +3,25 @@ import style from '../../css/left_panel/chat_bar.module.css';
 import { AllChatState, ChatData, DirectChatData, GroupChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { roughDate } from '../../ts/date';
+import { server_trigger } from '../../ts/api/api_trait';
+import { UserState } from '../global_state/user';
+import { toastErr } from '../utils';
 
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();
+	const { user_state } = UserState.useContainer();
 	const message = props.chat.newestMessage()!;
 	const is_unread = props.chat.isUnread();
 
-	function UnreadInfo(): JSX.Element {
+	if (user_state.login == false) {
+		toastErr('邏輯錯誤，未登入但聊天室有資料');
+		return <div>需登入</div>;
+	}
+
+	let UnreadInfo: JSX.Element = (() => {
 		if (props.chat instanceof DirectChatData) {
 			return <div className={style.lastMessage}>
-				<span>{message.sender_name}</span>
+				<span>{message.sender == server_trigger.Sender.Myself ? user_state.user_name : props.chat.name}</span>
 				：
 				<span>{message.content}</span>
 			</div>;
@@ -31,7 +40,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			console.error(`未知的 ChatData 介面：${typeof props.chat}`);
 			return <></>;
 		}
-	}
+	})();
 
 	function LastDate(): JSX.Element {
 		const date = roughDate(message.time);
@@ -62,7 +71,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			<LastDate />
 		</div>
 		<div className={style.downSet}>
-			<UnreadInfo />
+			{UnreadInfo}
 		</div>
 	</div>;
 }
