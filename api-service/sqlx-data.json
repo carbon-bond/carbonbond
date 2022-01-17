@@ -535,6 +535,74 @@
       ]
     }
   },
+  "254d45cdc165d041928b156f2a37b8439d6ffba64a60efc388ba33eed43b9ab9": {
+    "query": "\n\t\tSELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, user_id_2, m1.create_time as time, m1.id as msg_id, m1.content as text, m1.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m1\n        ON chat.direct_chats.id = m1.direct_chat_id\n        LEFT OUTER JOIN chat.direct_messages m2\n        ON (chat.direct_chats.id = m2.direct_chat_id\n            AND (m1.id < m2.id))\n        WHERE (user_id_1 = $1 OR user_id_2 = $1) AND m2.id IS NULL\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "channel_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name_1",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "name_2",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_id_1",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_id_2",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "msg_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 7,
+          "name": "text",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
     "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    ",
     "describe": {
@@ -899,6 +967,67 @@
       },
       "nullable": [
         false,
+        false
+      ]
+    }
+  },
+  "38359373effab3e1b73111ca9b9943f96629af17efb7f82f25ca4905b0474f43": {
+    "query": "\n        SELECT id, content, create_time, sender_id from chat.direct_messages\n        WHERE id < $1 AND direct_chat_id = $2\n        limit $3\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "content",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 3,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "3b5c02518cd4b2ffafdf2159c5c4e4118f3db6e5551579dbc9afdb8012c2d58b": {
+    "query": "\n\t\tINSERT INTO chat.direct_chats (user_id_1, user_id_2)\n\t\tVALUES ($1, $2)\n\t\tRETURNING id\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
         false
       ]
     }
@@ -3090,6 +3219,27 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "ea99f300c01113ea32e5034897b12f2f14e1b43cb9b556f0c189e79f69d6dc29": {
+    "query": "\n\t\tSELECT id FROM chat.direct_chats\n        WHERE user_id_1 = $1 AND user_id_2 = $2\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false
+      ]
     }
   },
   "eb5f911aaef8ad34c7bf53a5d787be36a9d44792af8dc9a9280f71781572714c": {

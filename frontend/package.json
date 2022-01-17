@@ -19,8 +19,7 @@
 		"d3": "^6.2.0",
 		"date-fns": "^2.0.0-beta.2",
 		"emoji-mart": "^2.11.1",
-		"immer": "^7.0.9",
-		"immutable": "^4.0.0-rc.12",
+		"immer": "^9.0.7",
 		"long": "^4.0.0",
 		"normalize.css": "^8.0.1",
 		"query-string": "^6.13.5",
@@ -34,6 +33,7 @@
 		"react-toastify": "^5.3.1",
 		"types": "^0.1.1",
 		"unstated-next": "^1.1.0",
+		"use-immer": "^0.6.0",
 		"use-onclickoutside": "^0.3.1"
 	},
 	"devDependencies": {

@@ -9,6 +9,8 @@ import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../t
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
+import { AllChatState, DirectChatData } from '../global_state/chat';
+import { BottomPanelState } from '../global_state/bottom_panel';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -274,13 +276,14 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 }
 
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
-	const { user_state } = UserState.useContainer();
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
 	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
 	const [visible_hater, setVisibleHater] = React.useState<boolean>(false);
 	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
 	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
+	const { addRoom } = BottomPanelState.useContainer();
+	const { addDirectChat } = AllChatState.useContainer();
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -329,6 +332,12 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		}
 	}
 
+	function onStartChat(): void {
+		const user_name = props.profile_user.user_name;
+		addDirectChat(user_name, new DirectChatData(user_name, 0, props.profile_user.id, [], new Date(), false));
+		addRoom(user_name);
+	}
+
 	React.useEffect(() => {
 		async function queryUserRelation(): Promise<{}> {
 			if (props.profile_user) {
@@ -343,14 +352,14 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			}
 			return {};
 		}
-		if (props.profile_user && user_state.login) {
+		if (props.profile_user && props.user_state.login) {
 			queryUserRelation();
 		}
 		setVisibleFollower(false);
 		setVisibleHater(false);
 		setVisibleFollowing(false);
 		setVisibleHating(false);
-	}, [props.profile_user, user_state.login]);
+	}, [props.profile_user, props.user_state.login]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
@@ -395,7 +404,11 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 						<></>
 				}
 				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
-				<a>私訊</a>
+				{
+					is_me ?
+						<></> :
+						<a onClick={onStartChat}>私訊</a>
+				}
 			</div>
 		</div>
 		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} />

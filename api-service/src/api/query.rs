@@ -6,6 +6,8 @@ use std::collections::HashMap;
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum RootQuery {
     #[chitin(router)]
+    Chat(ChatQuery),
+    #[chitin(router)]
     User(UserQuery),
     #[chitin(router)]
     Party(PartyQuery),
@@ -17,6 +19,21 @@ pub enum RootQuery {
     Notification(NotificationQuery),
     #[chitin(router)]
     Config(ConfigQuery),
+}
+// TODO: 考慮移至 websocket ，將聊天室切割成一個服務
+#[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
+pub enum ChatQuery {
+    #[chitin(leaf, response = "i64")]
+    CreateChatIfNotExist { opposite_id: i64, msg: String },
+    #[chitin(
+        leaf,
+        response = "Vec<super::model::chat::chat_model_root::server_trigger::Message>"
+    )]
+    QueryDirectChatHistory {
+        chat_id: i64,
+        last_msg_id: i64,
+        number: i64,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum UserQuery {

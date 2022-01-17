@@ -3,16 +3,25 @@ import style from '../../css/left_panel/chat_bar.module.css';
 import { AllChatState, ChatData, DirectChatData, GroupChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { roughDate } from '../../ts/date';
+import { server_trigger } from '../../ts/api/api_trait';
+import { UserState } from '../global_state/user';
+import { toastErr } from '../utils';
 
 function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();
+	const { user_state } = UserState.useContainer();
 	const message = props.chat.newestMessage()!;
 	const is_unread = props.chat.isUnread();
 
-	function UnreadInfo(): JSX.Element {
+	if (user_state.login == false) {
+		toastErr('邏輯錯誤，未登入但聊天室有資料');
+		return <div>需登入</div>;
+	}
+
+	let UnreadInfo: JSX.Element = (() => {
 		if (props.chat instanceof DirectChatData) {
 			return <div className={style.lastMessage}>
-				<span>{message.sender_name}</span>
+				<span>{message.sender == server_trigger.Sender.Myself ? user_state.user_name : props.chat.name}</span>
 				：
 				<span>{message.content}</span>
 			</div>;
@@ -20,7 +29,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			let channels = props.chat.unreadChannels();
 			return <div className={style.unreadChannels}>
 				{
-					channels.size == 0 ?
+					channels.length == 0 ?
 						<span className={style.allRead}>所有頻道訊息皆已讀取</span> :
 						channels.map(c => {
 							return <span key={c.name} className={style.channel}>#{c.name}</span>;
@@ -31,7 +40,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			console.error(`未知的 ChatData 介面：${typeof props.chat}`);
 			return <></>;
 		}
-	}
+	})();
 
 	function LastDate(): JSX.Element {
 		const date = roughDate(message.time);
@@ -43,14 +52,13 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 	}
 
 	function onClick(): void {
-		console.log('click');
 		if (props.chat instanceof DirectChatData) {
 			addRoom(props.chat.name);
 		} else if (props.chat instanceof GroupChatData) {
-			if (props.chat.unreadChannels().isEmpty()) {
-				addRoomWithChannel(props.chat.name, (props.chat.channels.first() as GroupChatData).name);
+			if (props.chat.unreadChannels().length == 0) {
+				addRoomWithChannel(props.chat.name, Object.values(props.chat.channels)[0].name);
 			} else {
-				addRoomWithChannel(props.chat.name, (props.chat.unreadChannels().first() as GroupChatData).name);
+				addRoomWithChannel(props.chat.name, Object.values(props.chat.unreadChannels())[0].name);
 			}
 		}
 	}
@@ -63,7 +71,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 			<LastDate />
 		</div>
 		<div className={style.downSet}>
-			<UnreadInfo />
+			{UnreadInfo}
 		</div>
 	</div>;
 }
@@ -80,8 +88,9 @@ const date_cmp = (x: ChatData, y: ChatData): number => {
 
 function ChatBar(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
-	let chat_array: ChatData[] = Array.from(all_chat.direct.values());
-	chat_array = chat_array.concat(Array.from(all_chat.group.values()));
+	let chat_array: ChatData[] = Array.from(Object.values(all_chat.direct));
+	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
+	chat_array = chat_array.filter(chat => chat.exist === true);
 	return <div className={style.chatbar}>
 		<input type="text" placeholder="🔍 尋找對話" />
 		{
