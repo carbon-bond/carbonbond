@@ -141,18 +141,18 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 	let ref_all = React.useRef(null);
 	useOnClickOutside(ref_all, () => props.setSignuping(false));
 
-	// async function send_email(email: string, birth_year: number, gender: string, license_id: string): Promise<void> {
-	// 	try {
-	// 		if (!isEmail(email)) {
-	// 			throw '信箱格式異常';
-	// 		}
-	// 		unwrap(await API_FETCHER.userQuery.recordSignupApply(email, birth_year, gender, license_id, false));
-	// 		toast('申請成功');
-	// 	} catch (err) {
-	// 		toastErr(err);
-	// 	}
-	// 	return;
-	// }
+	async function send_email(email: string, birth_year: number, gender: string, license_id: string): Promise<void> {
+		try {
+			if (!isEmail(email)) {
+				throw '信箱格式異常';
+			}
+			unwrap(await API_FETCHER.userQuery.recordSignupApply(email, birth_year, gender, license_id, false));
+			toast('申請成功');
+		} catch (err) {
+			toastErr(err);
+		}
+		return;
+	}
 
 	async function getSearchResult(text: string): Promise<LawyerbcResultMini[]> {
 		let result = unwrap_or(await API_FETCHER.userQuery.querySearchResultFromLawyerbc(text), []);
@@ -176,7 +176,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		},
 		{ text: '送出申請', handler: () => {
 			if (lawyer_detail_result) {
-				// send_email(lawyer_detail_result.email, lawyer_detail_result.birth_year, lawyer_detail_result.gender, lawyer_detail_result.license_id);
+				send_email(lawyer_detail_result.email, lawyer_detail_result.birth_year, lawyer_detail_result.gender, lawyer_detail_result.license_id);
 				props.setSignuping(false);
 			} else {
 				setMessageText('請選擇一個搜尋結果');

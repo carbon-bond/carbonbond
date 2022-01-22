@@ -46,6 +46,7 @@ pub struct RawServerConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawAccountConfig {
+    pub fake_email: Option<String>,
     pub allow_self_signup: bool,
     pub allow_invitation_signup: bool,
     pub min_password_length: usize,
@@ -97,6 +98,7 @@ pub struct ServerConfig {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountConfig {
+    pub fake_email: Option<String>,
     pub allow_self_signup: bool,
     pub allow_invitation_signup: bool,
     pub min_password_length: usize,
@@ -123,6 +125,7 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
 impl From<RawAccountConfig> for Fallible<AccountConfig> {
     fn from(orig: RawAccountConfig) -> Fallible<AccountConfig> {
         Ok(AccountConfig {
+            fake_email: orig.fake_email,
             allow_self_signup: orig.allow_self_signup,
             allow_invitation_signup: orig.allow_invitation_signup,
             min_password_length: orig.min_password_length,

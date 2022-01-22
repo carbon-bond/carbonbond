@@ -8,9 +8,14 @@ async fn send_html_email(
     subject: &str,
     html_content: &str,
 ) -> Fallible<String> {
-    let mailgun_api_key = get_config().server.mailgun_api_key.as_str();
-    let mail_from = get_config().server.mail_from.as_str();
-    let mail_domain = get_config().server.mail_domain.as_str();
+    let config = get_config();
+    let email_address = match &config.account.fake_email {
+        Some(fake_email) => fake_email.as_str(),
+        None => email_address,
+    };
+    let mailgun_api_key = config.server.mailgun_api_key.as_str();
+    let mail_from = config.server.mail_from.as_str();
+    let mail_domain = config.server.mail_domain.as_str();
     let mut form = HashMap::new();
     form.insert("from", mail_from);
     form.insert("to", email_address);
