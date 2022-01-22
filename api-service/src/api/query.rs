@@ -44,6 +44,7 @@ pub enum UserQuery {
     #[chitin(leaf, response = "Vec<super::model::forum::Favorite>")]
     QueryMyFavoriteArticleList {},
 
+    // 法務部律師查詢系統 https://lawyerbc.moj.gov.tw/
     #[chitin(leaf, response = "Vec<super::model::forum::LawyerbcResultMini>")]
     QuerySearchResultFromLawyerbc { search_text: String },
     #[chitin(leaf, response = "super::model::forum::LawyerbcResult")]
