@@ -65,6 +65,9 @@ function App(): JSX.Element {
 				<Route exact path="/app" render={() => (
 					<BoardList></BoardList>
 				)} />
+				<Route exact path="/app/board_list" render={() => (
+					<BoardList></BoardList>
+				)} />
 				<Route exact path="/app/search" render={props => (
 					<SearchPage {...props} />
 				)} />

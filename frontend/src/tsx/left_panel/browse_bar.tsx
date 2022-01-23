@@ -77,7 +77,11 @@ export function BrowseBar(): JSX.Element {
 							<span className={style.specialBlock}>🔥 全站熱門</span>
 						</div>
 					</Link>
-					<div>🛹 所有看板</div>
+					<Link to={'/app/board_list'}>
+						<div>
+							<span className={style.specialBlock}>🛹 所有看板</span>
+						</div>
+					</Link>
 				</div>
 			</ShrinkableBlock>
 			<ShrinkableBlock
