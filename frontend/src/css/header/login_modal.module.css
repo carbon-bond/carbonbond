@@ -13,6 +13,10 @@
     & .searchBar {
         width: 100%;
         margin: 2px 0px;
+        display: flex;
+        & input {
+            flex: 1;
+        }
     }
     & .searchResult {
         margin: 6px 0px;

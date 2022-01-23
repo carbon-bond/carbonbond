@@ -166,14 +166,16 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		setLawyerDetailResult(result);
 	}
 
+	async function handleSearch(): Promise<void> {
+		if (user_input.length > 0) {
+			let result = await getSearchResult(user_input);
+			setLawyerSearchResult(result);
+		} else {
+			toast.warn('至少填入一個字才能搜尋');
+		}
+	}
+
 	const buttons: ModalButton[] = [
-		{
-			text: '查詢',
-			handler: async () => {
-				let result = await getSearchResult(user_input);
-				setLawyerSearchResult(result);
-			}
-		},
 		{ text: '送出申請', handler: () => {
 			if (lawyer_detail_result) {
 				send_email(lawyer_detail_result.email, lawyer_detail_result.birth_year, lawyer_detail_result.gender, lawyer_detail_result.license_id);
@@ -191,10 +193,26 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		}}
 	];
 
+	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+		if (e.key == 'Enter') {
+			handleSearch();
+		}
+	}
+
 	function getBody(): JSX.Element {
 		return <div className={style.signupModal}>
-			<div className={style.description}>輸入關鍵字後按下查詢搜尋，本站將使用法務部律師查詢系統確認您的個人資料，並寄送確認信件至您在查詢系統上登記的信箱。</div>
-			<input className={style.searchBar} type="text" onChange={(e) => setUserInput(e.target.value)} placeholder="😎 姓名/身分證字號/律師證號" autoFocus value={user_input} />
+			<div className={style.description}>
+				輸入關鍵字後按下查詢搜尋，本站將使用法務部律師查詢系統確認您的個人資料，並寄送確認信件至您在查詢系統上登記的信箱。
+			</div>
+			<div className={style.searchBar} >
+				<input
+					type="text" onChange={(e) => setUserInput(e.target.value)}
+					placeholder="😎 姓名/身分證字號/律師證號"
+					autoFocus
+					onKeyDown={onKeyDown}
+					value={user_input} />
+				<button onClick={handleSearch}>查詢</button>
+			</div>
 			<div className={style.searchResult}>
 				{lawyer_search_result.map((result, i) => (
 					<div key={result.license_id} className={style.searchResultUnit}>
