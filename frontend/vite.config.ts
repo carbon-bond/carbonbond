@@ -20,6 +20,7 @@ export default defineConfig({
 		},
 	},
 	server: {
+		host: '0.0.0.0',
 		proxy: {
 			'/api': 'http://localhost:8080',
 			'/avatar': 'http://localhost:8080',

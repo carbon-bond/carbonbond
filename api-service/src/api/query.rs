@@ -44,6 +44,19 @@ pub enum UserQuery {
     #[chitin(leaf, response = "Vec<super::model::forum::Favorite>")]
     QueryMyFavoriteArticleList {},
 
+    // 法務部律師查詢系統 https://lawyerbc.moj.gov.tw/
+    #[chitin(leaf, response = "Vec<super::model::forum::LawyerbcResultMini>")]
+    QuerySearchResultFromLawyerbc { search_text: String },
+    #[chitin(leaf, response = "super::model::forum::LawyerbcResult")]
+    QueryDetailResultFromLawyerbc { license_id: String },
+    #[chitin(leaf, response = "()")]
+    RecordSignupApply {
+        email: String,
+        birth_year: i32,
+        gender: String,
+        license_id: String,
+        is_invite: bool,
+    },
     #[chitin(leaf, response = "()")]
     SendSignupEmail { email: String, is_invite: bool },
     #[chitin(leaf, response = "()")]
@@ -86,19 +99,35 @@ pub enum UserQuery {
     CreateUserRelation {
         target_user: i64,
         kind: super::model::forum::UserRelationKind,
+        is_public: bool,
     },
+
+    // 人際關係
     #[chitin(leaf, response = "()")]
     DeleteUserRelation { target_user: i64 },
-    #[chitin(leaf, response = "super::model::forum::UserRelationKind")]
+    #[chitin(leaf, response = "super::model::forum::UserRelation")]
     QueryUserRelation { target_user: i64 },
+
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryFollowerList { user: i64 },
+    QueryPublicFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryHaterList { user: i64 },
+    QueryPublicHaterList { user: i64 },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryPublicFollowingList { user: i64 },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryPublicHatingList { user: i64 },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryMyPrivateFollowingList {},
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryMyPrivateHatingList {},
+
+    // 註冊邀請
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitationCredit>")]
     QuerySignupInvitationCreditList {},
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitation>")]
     QuerySignupInvitationList {},
+
+    // 個人資料
     #[chitin(leaf, response = "()")]
     UpdateAvatar { image: String },
     #[chitin(leaf, response = "()")]

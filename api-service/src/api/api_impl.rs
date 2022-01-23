@@ -441,6 +441,36 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
 pub struct UserQueryRouter {}
 #[async_trait]
 impl api_trait::UserQueryRouter for UserQueryRouter {
+    async fn record_signup_apply(
+        &self,
+        context: &mut crate::Ctx,
+        email: String,
+        birth_year: i32,
+        gender: String,
+        license_id: String,
+        is_invite: bool,
+    ) -> Result<(), crate::custom_error::Error> {
+        let inviter_id = if is_invite {
+            Some(context.get_id_strict().await?)
+        } else {
+            None
+        };
+        db::user::create_signup_token(&email, birth_year, &gender, &license_id, inviter_id).await
+    }
+    async fn query_search_result_from_lawyerbc(
+        &self,
+        _context: &mut crate::Ctx,
+        search_text: String,
+    ) -> Result<Vec<model::forum::LawyerbcResultMini>, crate::custom_error::Error> {
+        db::user::query_search_result_from_lawyerbc(search_text).await
+    }
+    async fn query_detail_result_from_lawyerbc(
+        &self,
+        _context: &mut crate::Ctx,
+        search_text: String,
+    ) -> Result<model::forum::LawyerbcResult, crate::custom_error::Error> {
+        db::user::query_detail_result_from_lawyerbc(search_text).await
+    }
     async fn send_signup_email(
         &self,
         context: &mut crate::Ctx,
@@ -456,7 +486,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         } else {
             None
         };
-        db::user::create_signup_token(&email, inviter_id).await
+        // TODO how to get birth_year, gender, license_id if sending intivation is allowed?
+        db::user::create_signup_token(&email, 0, "", "", inviter_id).await
     }
     async fn send_reset_password_email(
         &self,
@@ -531,19 +562,47 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
         complete_article(articles, context).await
     }
-    async fn query_follower_list(
+    async fn query_public_follower_list(
         &self,
         _context: &mut crate::Ctx,
         user: i64,
     ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_follower(user).await
     }
-    async fn query_hater_list(
+    async fn query_public_hater_list(
         &self,
         _context: &mut crate::Ctx,
         user: i64,
     ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
         db::user_relation::query_hater(user).await
+    }
+    async fn query_public_following_list(
+        &self,
+        _context: &mut crate::Ctx,
+        user: i64,
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_following(user, true).await
+    }
+    async fn query_public_hating_list(
+        &self,
+        _context: &mut crate::Ctx,
+        user: i64,
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
+        db::user_relation::query_hating(user, true).await
+    }
+    async fn query_my_private_following_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user_relation::query_following(id, false).await
+    }
+    async fn query_my_private_hating_list(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user_relation::query_hating(id, false).await
     }
     async fn query_signup_invitation_list(
         &self,
@@ -644,11 +703,13 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         context: &mut crate::Ctx,
         target_user: i64,
         kind: model::forum::UserRelationKind,
+        is_public: bool,
     ) -> Result<(), crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
         db::user_relation::create_relation(&model::forum::UserRelation {
             from_user,
             kind,
+            is_public,
             to_user: target_user,
         })
         .await?;
@@ -657,14 +718,16 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let noti = |kind| {
             service::notification::create(target_user, kind, Some(from_user), None, None, None)
         };
-        match kind {
-            model::forum::UserRelationKind::OpenlyFollow => {
-                noti(NotificationKind::Follow).await?;
+        if is_public {
+            match kind {
+                model::forum::UserRelationKind::Follow => {
+                    noti(NotificationKind::Follow).await?;
+                }
+                model::forum::UserRelationKind::Hate => {
+                    noti(NotificationKind::Hate).await?;
+                }
+                _ => (),
             }
-            model::forum::UserRelationKind::OpenlyHate => {
-                noti(NotificationKind::Hate).await?;
-            }
-            _ => (),
         }
         Ok(())
     }
@@ -680,7 +743,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         target_user: i64,
-    ) -> Result<super::model::forum::UserRelationKind, crate::custom_error::Error> {
+    ) -> Result<super::model::forum::UserRelation, crate::custom_error::Error> {
         let from_user = context.get_id_strict().await?;
         let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)

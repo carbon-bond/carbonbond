@@ -25,6 +25,10 @@ max_conn = 10
 host = "redis://127.0.0.1/"
 
 [account]
+# 信件將一律寄送至 fake_email
+# 開發可將 fake_email 設爲自己的常用信箱，以避免誤寄
+# 上線時應移除此設置
+fake_email = "fake@email"
 allow_self_signup = true
 allow_invitation_signup = true
 min_password_length = 6

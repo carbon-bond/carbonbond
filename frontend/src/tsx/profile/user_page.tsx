@@ -15,7 +15,7 @@ import { BottomPanelState } from '../global_state/bottom_panel';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import favorite_wrapper_style from '../../css/favorite_wrapper.module.css';
-const {favoriteTitle, favoriteWrapper} = favorite_wrapper_style;
+const { favoriteTitle, favoriteWrapper } = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 
@@ -158,10 +158,139 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	</div>;
 }
 
+type RelationKind = 'following' | 'hating' | 'follower' | 'hater';
+
+function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean, visible: boolean, setVisible: Function }): JSX.Element {
+	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
+	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
+	const [selectTab, setSelectTab] = React.useState<number>(0);
+
+	React.useEffect(() => {
+		if (props.kind == 'following' || props.kind == 'hating') {
+			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
+			fetchUsers(props.user.id)
+			.then((public_results) => {
+				setPublicUsers(public_results);
+			}).catch(err => {
+				toastErr(err);
+			});
+
+			// 僅在自己的個人頁請求偷偷追蹤、仇視的人
+			if (props.is_myself) {
+				let fetchUsers = props.kind == 'following' ? fetchMyPrivateFollowings : fetchMyPrivateHatings;
+				fetchUsers().then(private_results => {
+					setPrivateUsers(private_results);
+				}).catch(err => {
+					toastErr(err);
+				});
+			}
+		} else {
+			let fetchUsers = props.kind == 'follower' ? fetchPublicFollowers : fetchPublicHaters;
+			fetchUsers(props.user.id).then((users) => {
+				try {
+					setPublicUsers(users);
+				} catch (err) {
+					toastErr(err);
+				}
+			});
+		}
+	}, [props.user, props.kind, props.is_myself]);
+
+	let public_count = 0;
+	let private_count = 0;
+	switch (props.kind) {
+		case 'follower':
+			public_count = props.user.follower_count_public;
+			private_count = props.user.follower_count_private;
+			break;
+		case 'hater':
+			public_count = props.user.hater_count_public;
+			private_count = props.user.hater_count_private;
+			break;
+		case 'following':
+			public_count = props.user.following_count_public;
+			private_count = props.user.following_count_private;
+			break;
+		default:
+			public_count = props.user.hating_count_public;
+			private_count = props.user.hating_count_private;
+			break;
+	}
+
+	function getBody(): JSX.Element {
+		return <div className={style.userListContainer}>
+			<div className={style.navigateBar}>
+				<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')}
+					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `追蹤 (${public_count})` : `仇視 (${public_count})`}</div>
+				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
+					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷追蹤 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
+			</div>
+			<div className={style.switchContent}>
+				{selectTab == 0 && <div>
+					{public_users.length == 0 ? (
+						<div className={style.emptyContainer}>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開追蹤的人' : '沒有公開仇視的人'}</div>
+						</div>
+					) : (
+						public_users.map(user => (
+							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
+								<UserCard user={user} />
+							</div>
+						))
+					)}
+				</div>}
+				{selectTab == 1 && <div>
+					{private_users.length == 0 ? (
+						<div className={style.emptyContainer}>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷追蹤的人' : '沒有偷偷仇視的人'}</div>
+						</div>
+					) : (
+						private_users.map(user => (
+							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
+								<UserCard user={user} />
+							</div>
+						))
+					)}
+				</div>}
+			</div>
+		</div>;
+	}
+
+	let buttons: ModalButton[] = [];
+	let kind_text: string;
+	switch (props.kind) {
+		case 'follower':
+			kind_text = `追蹤 ${props.user.user_name} 的人`;
+			break;
+		case 'hater':
+			kind_text = `仇視 ${props.user.user_name} 的人`;
+			break;
+		case 'following':
+			kind_text = `${props.user.user_name} 追蹤的人`;
+			break;
+		default:
+			kind_text = `${props.user.user_name} 仇視的人`;
+			break;
+	}
+
+	return <ModalWindow
+		title={kind_text}
+		body={getBody()}
+		buttons={buttons}
+		visible={props.visible}
+		setVisible={props.setVisible}
+	/>;
+}
+
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
+	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
+	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
+	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
+	const [visible_hater, setVisibleHater] = React.useState<boolean>(false);
+	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
+	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
 	const { addRoom } = BottomPanelState.useContainer();
 	const { addDirectChat } = AllChatState.useContainer();
-	const [relation, setRelation] = React.useState<UserRelationKind>(UserRelationKind.None);
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -172,10 +301,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		props.setProfileUser(new_state);
 	}
 
-	async function createUserRelation(kind: UserRelationKind): Promise<{}> {
+	async function createUserRelation(kind: UserRelationKind, is_public: boolean): Promise<{}> {
 		if (props.profile_user) {
 			try {
-				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind);
+				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind, is_public);
 			} catch (err) {
 				toastErr(err);
 			}
@@ -194,32 +323,17 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		return {};
 	}
 
-	function onChangeRelation(kind: UserRelationKind): void {
-		switch (kind) {
-			case UserRelationKind.Follow:
-				break;
-			case UserRelationKind.OpenlyFollow:
-				if (relation == UserRelationKind.OpenlyFollow) {
-					deleteUserRelation();
-					setRelation(UserRelationKind.None);
-				} else {
-					createUserRelation(UserRelationKind.OpenlyFollow);
-					setRelation(UserRelationKind.OpenlyFollow);
-				}
-				break;
-			case UserRelationKind.Hate:
-				break;
-			case UserRelationKind.OpenlyHate:
-				if (relation == UserRelationKind.OpenlyHate) {
-					deleteUserRelation();
-					setRelation(UserRelationKind.None);
-				} else {
-					createUserRelation(UserRelationKind.OpenlyHate);
-					setRelation(UserRelationKind.OpenlyHate);
-				}
-				break;
-			default:
-				break;
+	function onChangeRelation(kind: UserRelationKind, is_public: boolean): void {
+		// if same as the old relation, we just remove it
+		// otherwise, change it to new relation
+		if (relation_type === kind && relation_public === is_public) {
+			deleteUserRelation();
+			setRelationType(UserRelationKind.None);
+			setRelationPublic(false);
+		} else {
+			createUserRelation(kind, is_public);
+			setRelationType(kind);
+			setRelationPublic(is_public);
 		}
 	}
 
@@ -234,7 +348,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			if (props.profile_user) {
 				try {
 					await API_FETCHER.userQuery.queryUserRelation(props.profile_user.id).then((res) => {
-						setRelation(unwrap(res));
+						setRelationType(unwrap(res).kind);
+						setRelationPublic(unwrap(res).is_public);
 					});
 				} catch (err) {
 					toastErr(err);
@@ -245,6 +360,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		if (props.profile_user && props.user_state.login) {
 			queryUserRelation();
 		}
+		setVisibleFollower(false);
+		setVisibleHater(false);
+		setVisibleFollowing(false);
+		setVisibleHating(false);
 	}, [props.profile_user, props.user_state.login]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
@@ -259,12 +378,12 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.data}>
 				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
 				<div className={style.trace}>
-					<p>被 {props.profile_user.followed_count} 人追蹤</p>
-					<p>追蹤 {props.profile_user.following_count} 人</p>
+					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.follower_count_public + props.profile_user.follower_count_private} 人追蹤</div>
+					<div onClick={() => setVisibleFollowing(true)}>❤️ 追蹤 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
 				</div>
 				<div className={style.hate}>
-					<p>被 {props.profile_user.hated_count} 人仇視</p>
-					<p>仇視 {props.profile_user.hating_count} 人</p>
+					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hater_count_public + props.profile_user.hater_count_private} 人仇視</div>
+					<div onClick={() => setVisibleHating(true)}>⚔ 仇視 {props.profile_user.hating_count_public + props.profile_user.hating_count_private} 人</div>
 				</div>
 			</div>
 		</div>
@@ -274,11 +393,17 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
 						<div className={style.relation}>
-							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyFollow)}>
-								{relation == UserRelationKind.Follow || relation == UserRelationKind.OpenlyFollow ? '取消追蹤' : '追蹤'}
+							<button onClick={() => onChangeRelation(UserRelationKind.Follow, true)}>
+								{relation_type == UserRelationKind.Follow && relation_public ? '取消公開追蹤' : '公開追蹤'}
 							</button>
-							<button onClick={() => onChangeRelation(UserRelationKind.OpenlyHate)}>
-								{relation == UserRelationKind.Hate || relation == UserRelationKind.OpenlyHate ? '取消仇視' : '仇視'}
+							<button onClick={() => onChangeRelation(UserRelationKind.Follow, false)}>
+								{relation_type == UserRelationKind.Follow && !relation_public ? '取消偷偷追蹤' : '偷偷追蹤'}
+							</button>
+							<button onClick={() => onChangeRelation(UserRelationKind.Hate, true)}>
+								{relation_type == UserRelationKind.Hate && relation_public ? '取消公開仇視' : '公開仇視'}
+							</button>
+							<button onClick={() => onChangeRelation(UserRelationKind.Hate, false)}>
+								{relation_type == UserRelationKind.Hate && !relation_public ? '取消偷偷仇視' : '偷偷仇視'}
 							</button>
 						</div> :
 						<></>
@@ -291,6 +416,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 				}
 			</div>
 		</div>
+		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} />
+		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} />
+		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} />
+		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} />
 	</div>;
 }
 
@@ -340,13 +469,11 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
 			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
-			<div className={style.navigateTab + (selectTab == 3 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(3); }}>人際關係</div>
 		</div>
 		<div className={style.switchContent}>
 			{selectTab == 0 && <Articles articles={articles} />}
 			{selectTab == 1 && <Satellites />}
 			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
-			{selectTab == 3 && <Friendships user={props.profile_user} />}
 		</div>
 	</div>;
 }
@@ -401,41 +528,6 @@ function Satellites(): JSX.Element {
 	return <div>衛星文章</div>;
 }
 
-function Friendships(props: { user: User }): JSX.Element {
-	const [followers, setFollowers] = React.useState<UserMini[]>([]);
-	const [haters, setHaters] = React.useState<UserMini[]>([]);
-
-	React.useEffect(() => {
-		Promise.all([
-			fetchFollowers(props.user.id),
-			fetchHaters(props.user.id),
-		]).then(([more_followers, more_haters]) => {
-			try {
-				setFollowers(more_followers);
-				setHaters(more_haters);
-			} catch (err) {
-				toastErr(err);
-			}
-		});
-	}, [props.user]);
-
-	return <div className={style.userListContainer}>
-		<div className={style.userListHeader}>💖追隨者</div>
-		{followers.map((user, idx) => (
-			<div className={style.friendshipWrapper} key={`friendship-follow-${idx}`}>
-				<UserCard user={user} />
-			</div>
-		))}
-		<div className={style.userListHeader}>⚔️仇視者</div>
-		{haters.map((user, idx) => (
-			<div className={style.friendshipWrapper} key={`friendship-hate-${idx}`}>
-				<UserCard user={user} />
-			</div>
-		))}
-	</div>;
-}
-
-
 async function fetchArticles(
 	author_name: string,
 ): Promise<ArticleMeta[]> {
@@ -446,12 +538,28 @@ async function fetchFavorites(): Promise<Favorite[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryMyFavoriteArticleList(), []);
 }
 
-async function fetchFollowers(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.userQuery.queryFollowerList(user_id), []);
+async function fetchPublicFollowers(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicFollowerList(user_id), []);
 }
 
-async function fetchHaters(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.userQuery.queryHaterList(user_id), []);
+async function fetchPublicHaters(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicHaterList(user_id), []);
+}
+
+async function fetchPublicFollowings(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicFollowingList(user_id), []);
+}
+
+async function fetchPublicHatings(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicHatingList(user_id), []);
+}
+
+async function fetchMyPrivateFollowings(): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryMyPrivateFollowingList(), []);
+}
+
+async function fetchMyPrivateHatings(): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryMyPrivateHatingList(), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;

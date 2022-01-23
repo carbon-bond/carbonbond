@@ -1,8 +1,14 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
+use crate::api::model::forum::{
+    LawyerbcResult, LawyerbcResultMini, SignupInvitation, SignupInvitationCredit, User,
+};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::email::{self, send_invitation_email, send_signup_email};
+use crate::email::{self, send_signup_email};
+use reqwest;
+use serde_json::Value;
+use std::collections::HashMap;
+use urlencoding::encode;
 
 impl DBObject for User {
     const TYPE: DataType = DataType::User;
@@ -32,8 +38,8 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND (kind = 'hate'
-                    OR kind = 'openly_hate')) AS "hated_count!",
+                    AND kind = 'hate'
+                    AND is_public = true) AS "hater_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -41,8 +47,26 @@ macro_rules! users {
                     user_relations
                 WHERE
                     to_user = users.id
-                    AND (kind = 'follow'
-                    OR kind = 'openly_follow')) AS "followed_count!",
+                    AND kind = 'hate'
+                    AND is_public = false) AS "hater_count_private!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = true) AS "follower_count_public!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    to_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = false) AS "follower_count_private!",
                 (
                 SELECT
                     COUNT(*)
@@ -50,8 +74,8 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND (kind = 'hate'
-                    OR kind = 'openly_hate')) AS "hating_count!",
+                    AND kind = 'hate'
+                    AND is_public = true) AS "hating_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -59,8 +83,26 @@ macro_rules! users {
                     user_relations
                 WHERE
                     from_user = users.id
-                    AND (kind = 'follow'
-                    OR kind = 'openly_follow')) AS "following_count!"
+                    AND kind = 'hate'
+                    AND is_public = false) AS "hating_count_private!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = true) AS "following_count_public!",
+                (
+                SELECT
+                    COUNT(*)
+                FROM
+                    user_relations
+                WHERE
+                    from_user = users.id
+                    AND kind = 'follow'
+                    AND is_public = false) AS "following_count_private!"
             FROM users) SELECT * FROM metas "# + $remain,
             $($arg),*
         )
@@ -119,9 +161,72 @@ pub async fn get_signup_invitation_credit(user_id: i64) -> Fallible<Vec<SignupIn
     .await?;
     Ok(credits)
 }
-pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallible<()> {
+pub async fn query_search_result_from_lawyerbc(
+    search_text: String,
+) -> Fallible<Vec<LawyerbcResultMini>> {
+    let mut map = HashMap::new();
+    map.insert("keyword", search_text);
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://lawyerbc.moj.gov.tw/api/cert/search")
+        .json(&map)
+        .send()
+        .await?;
+
+    let mut lawyers: Vec<LawyerbcResultMini> = Vec::new();
+    if response.status().is_success() {
+        let response_text = response.text().await?;
+        let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap();
+        log::debug!("parsed = {}", parsed);
+        for i in 0..(parsed["data"]["lawyers"].as_array().unwrap().len()) {
+            let lawyer = &parsed["data"]["lawyers"][i];
+            log::debug!("lawyer {}", lawyer["name"]);
+            let lawyer_bc_result_mini = LawyerbcResultMini {
+                name: lawyer["name"].as_str().unwrap().to_string(),
+                id_number: lawyer["id_no"].as_str().unwrap().to_string(),
+                license_id: lawyer["now_lic_no"].as_str().unwrap().to_string(),
+                gender: lawyer["sex"].as_str().unwrap().to_string(),
+            };
+            lawyers.push(lawyer_bc_result_mini);
+        }
+    }
+    Ok(lawyers)
+}
+pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {
+    let response = reqwest::get(format!(
+        "{}{}",
+        "https://lawyerbc.moj.gov.tw/api/cert/info/",
+        encode(&license_id).into_owned()
+    ))
+    .await?
+    .text()
+    .await?;
+
+    let parsed: Value = serde_json::from_str(response.as_str()).unwrap();
+    let lawyer = LawyerbcResult {
+        name: parsed["data"][0]["name"].as_str().unwrap().to_string(),
+        id_number: parsed["data"][0]["id_no"].as_str().unwrap().to_string(),
+        license_id: parsed["data"][0]["now_lic_no"]
+            .as_str()
+            .unwrap()
+            .to_string(),
+        gender: parsed["data"][0]["sex"].as_str().unwrap().to_string(),
+        birth_year: parsed["data"][0]["birthsday"].as_i64().unwrap_or(0), // 民國
+        email: parsed["data"][0]["email"].as_str().unwrap().to_string(),
+    };
+    Ok(lawyer)
+}
+pub async fn create_signup_token(
+    email: &str,
+    birth_year: i32,
+    gender: &str,
+    license_id: &str,
+    inviter_id: Option<i64>,
+) -> Fallible<()> {
     let mut conn = get_pool().begin().await?;
 
+    log::trace!("1. 若是邀請註冊，檢查發出邀請者的邀請額度是否足夠");
     // 1. 若是邀請註冊，檢查發出邀請者的邀請額度是否足夠
     if let Some(inviter_id) = inviter_id {
         struct Ret {
@@ -151,6 +256,7 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
         }
     }
 
+    log::trace!("2. 檢查 email 是否被用過");
     // 2. 檢查 email 是否被用過
     let arr = sqlx::query!("SELECT 1 as t from users where email = $1 LIMIT 1", email)
         .fetch_all(&mut conn)
@@ -168,11 +274,15 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
         return Err(ErrorCode::DuplicateInvitation.into());
     }
 
+    log::trace!("3. 生成 token");
     // 3. 生成 token
     let token = crate::util::generate_token();
     sqlx::query!(
-        "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)",
+        "INSERT INTO signup_tokens (email, birth_year, gender, license_id, token, inviter_id) VALUES ($1, $2, $3, $4, $5, $6)",
         email,
+        birth_year,
+        gender,
+        license_id,
         token,
         inviter_id
     )
@@ -180,16 +290,12 @@ pub async fn create_signup_token(email: &str, inviter_id: Option<i64>) -> Fallib
     .await?;
 
     // 4. 寄信
-    if let Some(id) = inviter_id {
-        let inviter_name = get_by_id(id).await?.user_name;
-        send_invitation_email(&token, &email, inviter_name).await?;
-    } else {
-        send_signup_email(&token, &email).await?;
-    }
+    send_signup_email(&token, &email).await?;
 
     conn.commit().await?;
     Ok(())
 }
+
 pub async fn send_reset_password_email(email: String) -> Fallible<()> {
     let mut conn = get_pool().begin().await?;
     // 1. 檢查是否有此信箱

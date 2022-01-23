@@ -23,20 +23,6 @@
       ]
     }
   },
-  "046804e8a1ed93ea44d70600d2045ce8e071d28649973c3d79a48a95543e3f2b": {
-    "query": "INSERT INTO user_relations (from_user, to_user, kind) VALUES ($1, $2, $3::text::user_relation_kind)\n        on CONFLICT(from_user, to_user) DO UPDATE set kind=$3::text::user_relation_kind",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "0606599be911fb20d416fd98e56aabe786139dcbf7007cd4dde8371d4d7501b6": {
     "query": "\n        WITH replies AS (\n            SELECT abf.value AS id, abf.article_id, (categories.families && '{衛星}') AS is_satellite\n        FROM article_bond_fields abf\n            INNER JOIN articles ON articles.id = abf.article_id\n            INNER JOIN categories ON categories.id = articles.category_id\n        WHERE abf.value = ANY($1))\n        SELECT id, COUNT(DISTINCT article_id) as \"count!\", is_satellite as \"is_satellite!\" FROM replies\n        GROUP BY id, is_satellite\n        ",
     "describe": {
@@ -256,6 +242,61 @@
       "nullable": [
         false
       ]
+    }
+  },
+  "1a4e98bf936a2d308516cc28ac8d0b9d407e536451eb3e23ee7b72590864b99e": {
+    "query": "SELECT kind, is_public FROM user_relations WHERE from_user = $1 AND to_user = $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "kind",
+          "type_info": {
+            "Custom": {
+              "name": "user_relation_kind",
+              "kind": {
+                "Enum": [
+                  "follow",
+                  "openly_follow",
+                  "hate",
+                  "openly_hate",
+                  "none"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "ordinal": 1,
+          "name": "is_public",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
+  "1dfba4063eb59e7d88aaae611dbd10d38801324822753e8ce0dfaa57e8e20e93": {
+    "query": "INSERT INTO user_relations (from_user, to_user, kind, is_public) VALUES ($1, $2, $3::text::user_relation_kind, $4)\n        on CONFLICT(from_user, to_user) DO UPDATE set kind=$3::text::user_relation_kind, is_public=$4",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text",
+          "Bool"
+        ]
+      },
+      "nullable": []
     }
   },
   "1fad9a11be067106f152f6af9b5bf889fa86987b9901a3b5d0f5d2c427f2e905": {
@@ -726,20 +767,6 @@
       ]
     }
   },
-  "2b091fd60397645003da711e6a7efe070c7133f24b5eb08256f9227f41986c1f": {
-    "query": "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "2d680e691d71f2259578f9894d5b22d3ff786030a1ab286a201734ab19548fca": {
     "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards WHERE id = $1",
     "describe": {
@@ -941,98 +968,6 @@
       "nullable": [
         false,
         false
-      ]
-    }
-  },
-  "34573abd012f87de113533854e4a22c26070c054d7ce984b27b4c432783c4bcf": {
-    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "email",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "energy",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "introduction",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "gender",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "job",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "city",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 9,
-          "name": "hated_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 10,
-          "name": "followed_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 11,
-          "name": "hating_count!",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 12,
-          "name": "following_count!",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        null,
-        null,
-        null,
-        null
       ]
     }
   },
@@ -1405,36 +1340,40 @@
       "nullable": []
     }
   },
-  "4d5eef471182d3b57b29e3205dd8167c3c40b11add26eb92267a1cf8708995e5": {
-    "query": "SELECT kind FROM user_relations WHERE from_user = $1 AND to_user = $2",
+  "500479668dc0ee82365cfddf9196fed393a662bad3a48e702ab3597351276885": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'hate' AND user_relations.is_public = true;",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
-          "name": "kind",
-          "type_info": {
-            "Custom": {
-              "name": "user_relation_kind",
-              "kind": {
-                "Enum": [
-                  "follow",
-                  "openly_follow",
-                  "hate",
-                  "openly_hate",
-                  "none"
-                ]
-              }
-            }
-          }
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
         }
       ],
       "parameters": {
         "Left": [
-          "Int8",
           "Int8"
         ]
       },
       "nullable": [
+        false,
+        false,
+        false,
         false
       ]
     }
@@ -1493,6 +1432,122 @@
         ]
       },
       "nullable": [
+        null
+      ]
+    }
+  },
+  "5329a4b6cb8a82925b168a66e8d83b7ee3ff51a4b537d04f4ed95535a80b2be5": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hater_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hater_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"follower_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"follower_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hating_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hating_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"following_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"following_count_private!\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "email",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "introduction",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "gender",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "job",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "city",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 9,
+          "name": "hater_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 10,
+          "name": "hater_count_private!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 11,
+          "name": "follower_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 12,
+          "name": "follower_count_private!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 13,
+          "name": "hating_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 14,
+          "name": "hating_count_private!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 15,
+          "name": "following_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 16,
+          "name": "following_count_private!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
         null
       ]
     }
@@ -1738,6 +1793,45 @@
         false,
         false,
         null
+      ]
+    }
+  },
+  "6465e582bd36f6c4c3d9aa068e1ab7dcd8174789552d729921fc00d5a385912b": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.to_user\n\t\tWHERE user_relations.from_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = $2;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Bool"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
       ]
     }
   },
@@ -2072,6 +2166,45 @@
       ]
     }
   },
+  "80dc40751e5c45f5ea9d6723d27dfb7b038f5d118ddbeb1b4415b7dcb96f54de": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.to_user\n\t\tWHERE user_relations.from_user = $1 AND user_relations.kind = 'hate' AND user_relations.is_public = $2;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Bool"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "81c83559c84592225ffa76f60b516089e7e1cc315198dba7e5ce2cbae8b0a818": {
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1 AND NOT categories.families && $2)\n                OR (NOT $1 AND categories.families && $2)\n                )\n            SELECT  metas.id,\n                metas.energy,\n                board_id,\n                board_name,\n                category_id,\n                category_name,\n                category_source,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                category_families,\n                metas.create_time,\n                anonymous FROM metas \n        WHERE board_name = $3 AND ($5 OR id < $6)\n        ORDER BY create_time DESC\n        LIMIT $4\n        ",
     "describe": {
@@ -2203,6 +2336,23 @@
       "nullable": [
         false
       ]
+    }
+  },
+  "870acec27692e6a724b9c061fe2323f9f2486ec964e451f05e442296cf8c099d": {
+    "query": "INSERT INTO signup_tokens (email, birth_year, gender, license_id, token, inviter_id) VALUES ($1, $2, $3, $4, $5, $6)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      },
+      "nullable": []
     }
   },
   "8a59a818a4eb0f3054b690adb1ded87d4b850aeedc80e34534621c7f828e7e97": {
@@ -2482,44 +2632,6 @@
         false,
         false,
         false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "a3510cc5cc8c2a096167d31294dad559c31dbf55573bd28faafa254b2cb83928": {
-    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'openly_hate';",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
         false,
         false,
         false,
@@ -3092,44 +3204,6 @@
       ]
     }
   },
-  "ed266310b4f50d977c0822f61c752af9f926c5697336c09484c6cbfe2398bd6e": {
-    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'openly_follow';",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "user_name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "sentence",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "energy",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "f1df4842f2a606e8cc26904c20883ec3a4e2288dd40af8ea2499be37f8754ab7": {
     "query": "SELECT 1 as t from users where email = $1 LIMIT 1",
     "describe": {
@@ -3299,8 +3373,8 @@
       "nullable": []
     }
   },
-  "fb6ae592fb1d4ef692a2517a358c88fb6980e7056df75574458b203c85999f51": {
-    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hated_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"followed_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'hate'\n                    OR kind = 'openly_hate')) AS \"hating_count!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND (kind = 'follow'\n                    OR kind = 'openly_follow')) AS \"following_count!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
+  "f56107cbee745899d91e3837684521e968f4d2d1efbe021201854b57403c4297": {
+    "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hater_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hater_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"follower_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"follower_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hating_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hating_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"following_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"following_count_private!\"\n            FROM users) SELECT * FROM metas WHERE metas.user_name = $1",
     "describe": {
       "columns": [
         {
@@ -3350,22 +3424,42 @@
         },
         {
           "ordinal": 9,
-          "name": "hated_count!",
+          "name": "hater_count_public!",
           "type_info": "Int8"
         },
         {
           "ordinal": 10,
-          "name": "followed_count!",
+          "name": "hater_count_private!",
           "type_info": "Int8"
         },
         {
           "ordinal": 11,
-          "name": "hating_count!",
+          "name": "follower_count_public!",
           "type_info": "Int8"
         },
         {
           "ordinal": 12,
-          "name": "following_count!",
+          "name": "follower_count_private!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 13,
+          "name": "hating_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 14,
+          "name": "hating_count_private!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 15,
+          "name": "following_count_public!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 16,
+          "name": "following_count_private!",
           "type_info": "Int8"
         }
       ],
@@ -3387,7 +3481,49 @@
         null,
         null,
         null,
+        null,
+        null,
+        null,
+        null,
         null
+      ]
+    }
+  },
+  "f69e3b858839ade2f094f0b884093fc3c565efd6412a700bdcdbe4fc831872d9": {
+    "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = true;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "sentence",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "energy",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
       ]
     }
   },

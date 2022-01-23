@@ -15,10 +15,14 @@ mod model {
         pub energy: i64,
         pub sentence: String,
 
-        pub hated_count: i64,
-        pub followed_count: i64,
-        pub hating_count: i64,
-        pub following_count: i64,
+        pub hater_count_public: i64,
+        pub hater_count_private: i64,
+        pub follower_count_public: i64,
+        pub follower_count_private: i64,
+        pub hating_count_public: i64,
+        pub hating_count_private: i64,
+        pub following_count_public: i64,
+        pub following_count_private: i64,
         pub introduction: String,
         pub gender: String,
         pub job: String,
@@ -30,6 +34,22 @@ mod model {
         pub user_name: String,
         pub energy: i64,
         pub sentence: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct LawyerbcResultMini {
+        pub name: String,
+        pub gender: String,
+        pub id_number: String,
+        pub license_id: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct LawyerbcResult {
+        pub name: String,
+        pub gender: String,
+        pub id_number: String,
+        pub license_id: String,
+        pub birth_year: i64,
+        pub email: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {
@@ -224,10 +244,6 @@ mod model {
         Follow,
         #[strum(serialize = "hate")]
         Hate,
-        #[strum(serialize = "openly_follow")]
-        OpenlyFollow,
-        #[strum(serialize = "openly_hate")]
-        OpenlyHate,
         #[strum(serialize = "none")]
         None,
     }
@@ -236,6 +252,7 @@ mod model {
         pub from_user: i64,
         pub to_user: i64,
         pub kind: UserRelationKind,
+        pub is_public: bool,
     }
     #[derive(
         Serialize,

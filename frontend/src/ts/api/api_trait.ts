@@ -10,8 +10,10 @@ export type Result<T, E> = {
     'Err': E
 };
 export type Fetcher = (query: Object) => Promise<string>;
-export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hated_count: number; followed_count: number;     hating_count: number; following_count: number; introduction: string;     gender: string; job: string; city: string };
+export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
+export type LawyerbcResultMini = { name: string; gender: string; id_number: string; license_id: string };
+export type LawyerbcResult = {     name: string; gender: string; id_number: string; license_id: string; birth_year: number; email: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
@@ -32,8 +34,8 @@ export type Article = { meta: ArticleMeta; content: string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string; anonymous: boolean };
 export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
-export enum UserRelationKind {     Follow = "Follow", Hate = "Hate", OpenlyFollow = "OpenlyFollow",     OpenlyHate = "OpenlyHate", None = "None" };
-export type UserRelation = { from_user: number; to_user: number; kind: UserRelationKind };
+export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
+export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
 export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied" };
 export type Notification = {     id: number; kind: NotificationKind; user_id: number; read: boolean; quality: boolean | null; create_time: string; board_name:     string | null; board_id: number | null; user2_name: string | null;     user2_id: number | null; article1_title: string | null; article2_title: string | null; article1_id: number | null; article2_id: number |     null };
 export type SearchField = 
@@ -139,6 +141,15 @@ export class UserQuery {
     async queryMyFavoriteArticleList(): Promise<Result<Array<Favorite>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyFavoriteArticleList": {  } } }));
     }
+    async querySearchResultFromLawyerbc(search_text: string): Promise<Result<Array<LawyerbcResultMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QuerySearchResultFromLawyerbc": { search_text } } }));
+    }
+    async queryDetailResultFromLawyerbc(license_id: string): Promise<Result<LawyerbcResult, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryDetailResultFromLawyerbc": { license_id } } }));
+    }
+    async recordSignupApply(email: string, birth_year: number, gender: string, license_id: string, is_invite: boolean): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "RecordSignupApply": { email, birth_year, gender, license_id, is_invite } } }));
+    }
     async sendSignupEmail(email: string, is_invite: boolean): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email, is_invite } } }));
     }
@@ -187,20 +198,32 @@ export class UserQuery {
     async untrackingArticle(article_id: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UntrackingArticle": { article_id } } }));
     }
-    async createUserRelation(target_user: number, kind: UserRelationKind): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind } } }));
+    async createUserRelation(target_user: number, kind: UserRelationKind, is_public: boolean): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind, is_public } } }));
     }
     async deleteUserRelation(target_user: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "DeleteUserRelation": { target_user } } }));
     }
-    async queryUserRelation(target_user: number): Promise<Result<UserRelationKind, Error>> {
+    async queryUserRelation(target_user: number): Promise<Result<UserRelation, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryUserRelation": { target_user } } }));
     }
-    async queryFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryFollowerList": { user } } }));
+    async queryPublicFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicFollowerList": { user } } }));
     }
-    async queryHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryHaterList": { user } } }));
+    async queryPublicHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicHaterList": { user } } }));
+    }
+    async queryPublicFollowingList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicFollowingList": { user } } }));
+    }
+    async queryPublicHatingList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicHatingList": { user } } }));
+    }
+    async queryMyPrivateFollowingList(): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryMyPrivateFollowingList": {  } } }));
+    }
+    async queryMyPrivateHatingList(): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryMyPrivateHatingList": {  } } }));
     }
     async querySignupInvitationCreditList(): Promise<Result<Array<SignupInvitationCredit>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationCreditList": {  } } }));
