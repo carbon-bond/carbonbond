@@ -158,7 +158,9 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	</div>;
 }
 
-function RelationModal(props: { user: User, kind: string, is_myself: boolean, visible: boolean, setVisible: Function }): JSX.Element {
+type RelationKind = 'following' | 'hating' | 'follower' | 'hater';
+
+function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean, visible: boolean, setVisible: Function }): JSX.Element {
 	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
 	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
 	const [selectTab, setSelectTab] = React.useState<number>(0);
@@ -395,13 +397,13 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 								{relation_type == UserRelationKind.Follow && relation_public ? '取消公開追蹤' : '公開追蹤'}
 							</button>
 							<button onClick={() => onChangeRelation(UserRelationKind.Follow, false)}>
-								{relation_type == UserRelationKind.Follow && !relation_public ? '取消私下追蹤' : '私下追蹤'}
+								{relation_type == UserRelationKind.Follow && !relation_public ? '取消偷偷追蹤' : '偷偷追蹤'}
 							</button>
 							<button onClick={() => onChangeRelation(UserRelationKind.Hate, true)}>
 								{relation_type == UserRelationKind.Hate && relation_public ? '取消公開仇視' : '公開仇視'}
 							</button>
 							<button onClick={() => onChangeRelation(UserRelationKind.Hate, false)}>
-								{relation_type == UserRelationKind.Hate && !relation_public ? '取消私下仇視' : '私下仇視'}
+								{relation_type == UserRelationKind.Hate && !relation_public ? '取消偷偷仇視' : '偷偷仇視'}
 							</button>
 						</div> :
 						<></>
