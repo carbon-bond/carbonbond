@@ -165,8 +165,8 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 
 	React.useEffect(() => {
 		if (props.kind == 'following' || props.kind == 'hating') {
-			let fetchUsers = props.kind == 'following' ? fetchFollowings : fetchHatings;
-			fetchUsers(props.user.id, true, props.is_myself)
+			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
+			fetchUsers(props.user.id)
 			.then((public_results) => {
 				setPublicUsers(public_results);
 			}).catch(err => {
@@ -175,14 +175,15 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 
 			// 僅在自己的個人頁請求偷偷追蹤、仇視的人
 			if (props.is_myself) {
-				fetchUsers(props.user.id, false, true).then(private_results => {
+				let fetchUsers = props.kind == 'following' ? fetchMyPrivateFollowings : fetchMyPrivateHatings;
+				fetchUsers().then(private_results => {
 					setPrivateUsers(private_results);
 				}).catch(err => {
 					toastErr(err);
 				});
 			}
 		} else {
-			let fetchUsers = props.kind == 'follower' ? fetchFollowers : fetchHaters;
+			let fetchUsers = props.kind == 'follower' ? fetchPublicFollowers : fetchPublicHaters;
 			fetchUsers(props.user.id).then((users) => {
 				try {
 					setPublicUsers(users);
@@ -535,26 +536,28 @@ async function fetchFavorites(): Promise<Favorite[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryMyFavoriteArticleList(), []);
 }
 
-async function fetchFollowers(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.userQuery.queryFollowerList(user_id), []);
+async function fetchPublicFollowers(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicFollowerList(user_id), []);
 }
 
-async function fetchHaters(user_id: number): Promise<UserMini[]> {
-	return unwrap_or(await API_FETCHER.userQuery.queryHaterList(user_id), []);
+async function fetchPublicHaters(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicHaterList(user_id), []);
 }
 
-async function fetchFollowings(user_id: number, is_public: boolean, is_myself: boolean): Promise<UserMini[]> {
-	if (!is_public && !is_myself) {
-		return [];
-	}
-	return unwrap_or(await API_FETCHER.userQuery.queryFollowingList(user_id, is_public), []);
+async function fetchPublicFollowings(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicFollowingList(user_id), []);
 }
 
-async function fetchHatings(user_id: number, is_public: boolean, is_myself: boolean): Promise<UserMini[]> {
-	if (!is_public && !is_myself) {
-		return [];
-	}
-	return unwrap_or(await API_FETCHER.userQuery.queryHatingList(user_id, is_public), []);
+async function fetchPublicHatings(user_id: number): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryPublicHatingList(user_id), []);
+}
+
+async function fetchMyPrivateFollowings(): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryMyPrivateFollowingList(), []);
+}
+
+async function fetchMyPrivateHatings(): Promise<UserMini[]> {
+	return unwrap_or(await API_FETCHER.userQuery.queryMyPrivateHatingList(), []);
 }
 
 type Props = RouteComponentProps<{ profile_name: string }>;

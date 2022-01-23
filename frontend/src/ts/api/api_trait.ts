@@ -207,17 +207,23 @@ export class UserQuery {
     async queryUserRelation(target_user: number): Promise<Result<UserRelation, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryUserRelation": { target_user } } }));
     }
-    async queryFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryFollowerList": { user } } }));
+    async queryPublicFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicFollowerList": { user } } }));
     }
-    async queryHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryHaterList": { user } } }));
+    async queryPublicHaterList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicHaterList": { user } } }));
     }
-    async queryFollowingList(user: number, is_public: boolean): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryFollowingList": { user, is_public } } }));
+    async queryPublicFollowingList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicFollowingList": { user } } }));
     }
-    async queryHatingList(user: number, is_public: boolean): Promise<Result<Array<UserMini>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryHatingList": { user, is_public } } }));
+    async queryPublicHatingList(user: number): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryPublicHatingList": { user } } }));
+    }
+    async queryMyPrivateFollowingList(): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryMyPrivateFollowingList": {  } } }));
+    }
+    async queryMyPrivateHatingList(): Promise<Result<Array<UserMini>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryMyPrivateHatingList": {  } } }));
     }
     async querySignupInvitationCreditList(): Promise<Result<Array<SignupInvitationCredit>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QuerySignupInvitationCreditList": {  } } }));

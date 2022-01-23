@@ -109,13 +109,17 @@ pub enum UserQuery {
     QueryUserRelation { target_user: i64 },
 
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryFollowerList { user: i64 },
+    QueryPublicFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryHaterList { user: i64 },
+    QueryPublicHaterList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryFollowingList { user: i64, is_public: bool },
+    QueryPublicFollowingList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
-    QueryHatingList { user: i64, is_public: bool },
+    QueryPublicHatingList { user: i64 },
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryMyPrivateFollowingList {},
+    #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
+    QueryMyPrivateHatingList {},
 
     // 註冊邀請
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitationCredit>")]

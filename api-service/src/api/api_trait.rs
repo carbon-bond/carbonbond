@@ -49,10 +49,12 @@ pub trait UserQueryRouter {
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind, is_public: bool) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::forum::UserRelation, crate::custom_error::Error>;
-    async fn query_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
-    async fn query_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
-    async fn query_following_list(&self, context: &mut crate::Ctx, user: i64, is_public: bool) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
-    async fn query_hating_list(&self, context: &mut crate::Ctx, user: i64, is_public: bool) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_public_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_public_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_public_following_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_public_hating_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_my_private_following_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
+    async fn query_my_private_hating_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
     async fn query_signup_invitation_credit_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitationCredit>, crate::custom_error::Error>;
     async fn query_signup_invitation_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::SignupInvitation>, crate::custom_error::Error>;
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
@@ -185,23 +187,33 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::QueryFollowerList { user } => {
-                 let resp = self.query_follower_list(context, user).await;
+             UserQuery::QueryPublicFollowerList { user } => {
+                 let resp = self.query_public_follower_list(context, user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::QueryHaterList { user } => {
-                 let resp = self.query_hater_list(context, user).await;
+             UserQuery::QueryPublicHaterList { user } => {
+                 let resp = self.query_public_hater_list(context, user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::QueryFollowingList { user, is_public } => {
-                 let resp = self.query_following_list(context, user, is_public).await;
+             UserQuery::QueryPublicFollowingList { user } => {
+                 let resp = self.query_public_following_list(context, user).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::QueryHatingList { user, is_public } => {
-                 let resp = self.query_hating_list(context, user, is_public).await;
+             UserQuery::QueryPublicHatingList { user } => {
+                 let resp = self.query_public_hating_list(context, user).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryMyPrivateFollowingList {  } => {
+                 let resp = self.query_my_private_following_list(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryMyPrivateHatingList {  } => {
+                 let resp = self.query_my_private_hating_list(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
