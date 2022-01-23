@@ -166,17 +166,21 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 	React.useEffect(() => {
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchFollowings : fetchHatings;
-			Promise.all([
-				fetchUsers(props.user.id, true, props.is_myself),
-				fetchUsers(props.user.id, false, props.is_myself),
-			]).then(([public_results, private_results]) => {
-				try {
-					setPublicUsers(public_results);
-					setPrivateUsers(private_results);
-				} catch (err) {
-					toastErr(err);
-				}
+			fetchUsers(props.user.id, true, props.is_myself)
+			.then((public_results) => {
+				setPublicUsers(public_results);
+			}).catch(err => {
+				toastErr(err);
 			});
+
+			// 僅在自己的個人頁請求偷偷追蹤、仇視的人
+			if (props.is_myself) {
+				fetchUsers(props.user.id, false, true).then(private_results => {
+					setPrivateUsers(private_results);
+				}).catch(err => {
+					toastErr(err);
+				});
+			}
 		} else {
 			let fetchUsers = props.kind == 'follower' ? fetchFollowers : fetchHaters;
 			fetchUsers(props.user.id).then((users) => {
@@ -193,12 +197,12 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 	let private_count = 0;
 	switch (props.kind) {
 		case 'follower':
-			public_count = props.user.followed_count_public;
-			private_count = props.user.followed_count_private;
+			public_count = props.user.follower_count_public;
+			private_count = props.user.follower_count_private;
 			break;
 		case 'hater':
-			public_count = props.user.hated_count_public;
-			private_count = props.user.hated_count_private;
+			public_count = props.user.hater_count_public;
+			private_count = props.user.hater_count_private;
 			break;
 		case 'following':
 			public_count = props.user.following_count_public;
@@ -225,8 +229,8 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開追蹤的人' : '沒有公開仇視的人'}</div>
 						</div>
 					) : (
-						public_users.map((user, idx) => (
-							<div className={style.friendshipWrapper} key={`friendship-${idx}`}>
+						public_users.map(user => (
+							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
 								<UserCard user={user} />
 							</div>
 						))
@@ -238,8 +242,8 @@ function RelationModal(props: { user: User, kind: string, is_myself: boolean, vi
 							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷追蹤的人' : '沒有偷偷仇視的人'}</div>
 						</div>
 					) : (
-						private_users.map((user, idx) => (
-							<div className={style.friendshipWrapper} key={`friendship-${idx}`}>
+						private_users.map(user => (
+							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
 								<UserCard user={user} />
 							</div>
 						))
@@ -297,8 +301,6 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	async function createUserRelation(kind: UserRelationKind, is_public: boolean): Promise<{}> {
 		if (props.profile_user) {
 			try {
-				console.log('is_public');
-				console.log(is_public);
 				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind, is_public);
 			} catch (err) {
 				toastErr(err);
@@ -373,11 +375,11 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.data}>
 				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
 				<div className={style.trace}>
-					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.followed_count_public + props.profile_user.followed_count_private} 人追蹤</div>
+					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.follower_count_public + props.profile_user.follower_count_private} 人追蹤</div>
 					<div onClick={() => setVisibleFollowing(true)}>❤️ 追蹤 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
 				</div>
 				<div className={style.hate}>
-					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hated_count_public + props.profile_user.hated_count_private} 人仇視</div>
+					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hater_count_public + props.profile_user.hater_count_private} 人仇視</div>
 					<div onClick={() => setVisibleHating(true)}>⚔ 仇視 {props.profile_user.hating_count_public + props.profile_user.hating_count_private} 人</div>
 				</div>
 			</div>

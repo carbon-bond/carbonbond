@@ -101,10 +101,13 @@ pub enum UserQuery {
         kind: super::model::forum::UserRelationKind,
         is_public: bool,
     },
+
+    // 人際關係
     #[chitin(leaf, response = "()")]
     DeleteUserRelation { target_user: i64 },
     #[chitin(leaf, response = "super::model::forum::UserRelation")]
     QueryUserRelation { target_user: i64 },
+
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
     QueryFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
@@ -113,10 +116,14 @@ pub enum UserQuery {
     QueryFollowingList { user: i64, is_public: bool },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
     QueryHatingList { user: i64, is_public: bool },
+
+    // 註冊邀請
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitationCredit>")]
     QuerySignupInvitationCreditList {},
     #[chitin(leaf, response = "Vec<super::model::forum::SignupInvitation>")]
     QuerySignupInvitationList {},
+
+    // 個人資料
     #[chitin(leaf, response = "()")]
     UpdateAvatar { image: String },
     #[chitin(leaf, response = "()")]

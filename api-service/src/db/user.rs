@@ -39,7 +39,7 @@ macro_rules! users {
                 WHERE
                     to_user = users.id
                     AND kind = 'hate'
-                    AND is_public = true) AS "hated_count_public!",
+                    AND is_public = true) AS "hater_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -48,7 +48,7 @@ macro_rules! users {
                 WHERE
                     to_user = users.id
                     AND kind = 'hate'
-                    AND is_public = false) AS "hated_count_private!",
+                    AND is_public = false) AS "hater_count_private!",
                 (
                 SELECT
                     COUNT(*)
@@ -57,7 +57,7 @@ macro_rules! users {
                 WHERE
                     to_user = users.id
                     AND kind = 'follow'
-                    AND is_public = true) AS "followed_count_public!",
+                    AND is_public = true) AS "follower_count_public!",
                 (
                 SELECT
                     COUNT(*)
@@ -66,7 +66,7 @@ macro_rules! users {
                 WHERE
                     to_user = users.id
                     AND kind = 'follow'
-                    AND is_public = false) AS "followed_count_private!",
+                    AND is_public = false) AS "follower_count_private!",
                 (
                 SELECT
                     COUNT(*)
