@@ -220,9 +220,9 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	}
 
 	// XXX: 改爲一個小數字
-	const LEN = 10000;
-	if (extended && !chat.exhaust_history) {
-		API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, LEN).then(res => {
+	const PAGE_SIZE = 10000;
+	if (extended && !chat.exhaust_history && chat.exist) {
+		API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 			let history = unwrap(res);
 			let old_messages = history.map(m => {
 				return new Message(m.id, m.sender, m.text, new Date(m.time));
