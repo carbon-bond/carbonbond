@@ -34,6 +34,8 @@ pub enum ChatQuery {
         last_msg_id: i64,
         number: i64,
     },
+    #[chitin(leaf, response = "()")]
+    UpdateReadTime { chat_id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum UserQuery {

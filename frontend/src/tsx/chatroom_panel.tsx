@@ -206,9 +206,31 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const chat = all_chat.direct[props.room.name];
 	React.useEffect(() => {
 		if (extended && chat?.isUnread()) {
-			updateLastRead(props.room.name, new Date());
+			let now = new Date();
+			updateLastRead(props.room.name, now);
+			API_FETCHER.chatQuery.updateReadTime(chat.id).then(res => unwrap(res)).catch(err => {
+				console.error(`更新聊天室 ${chat.name} 讀取時間失敗：`);
+				console.error(err);
+			});
 		}
 	}, [extended, chat, updateLastRead, props.room.name]);
+
+	React.useEffect(() => {
+		// XXX: 改爲一個小數字
+		const PAGE_SIZE = 10000;
+		if (extended && !chat.exhaust_history && chat.exist) {
+			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
+				let history = unwrap(res);
+				let old_messages = history.map(m => {
+					return new Message(m.id, m.sender, m.text, new Date(m.time));
+				});
+				setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
+					// TODO: 給出真實的 message ID
+					return draft.addOldMessages(props.room.name, old_messages);
+				}));
+			}).catch(err => toastErr(err));
+		}
+	}, []);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -217,21 +239,6 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	if (chat == undefined) {
 		console.log('找不到聊天室');
 		return <></>;
-	}
-
-	// XXX: 改爲一個小數字
-	const PAGE_SIZE = 10000;
-	if (extended && !chat.exhaust_history && chat.exist) {
-		API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
-			let history = unwrap(res);
-			let old_messages = history.map(m => {
-				return new Message(m.id, m.sender, m.text, new Date(m.time));
-			});
-			setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
-				// TODO: 給出真實的 message ID
-				return draft.addOldMessages(props.room.name, old_messages);
-			}));
-		}).catch(err => toastErr(err));
 	}
 
 	if (extended) {

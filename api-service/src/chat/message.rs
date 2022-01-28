@@ -178,6 +178,7 @@ pub async fn get_direct_chat_history(
         "
         SELECT id, content, create_time, sender_id from chat.direct_messages
         WHERE id < $1 AND direct_chat_id = $2
+        ORDER BY create_time
         limit $3
         ",
         last_msg_id,

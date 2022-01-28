@@ -88,6 +88,14 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
         let user_id = context.get_id_strict().await?;
         chat::message::get_direct_chat_history(user_id, chat_id, last_msg_id, number).await
     }
+    async fn update_read_time(
+        &self,
+        context: &mut crate::Ctx,
+        chat_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        chat::channel::update_direct_chat_read_time(chat_id, user_id, Utc::now()).await
+    }
 }
 #[derive(Default)]
 pub struct ArticleQueryRouter {}

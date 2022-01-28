@@ -125,6 +125,9 @@ export class ChatQuery {
     async queryDirectChatHistory(chat_id: number, last_msg_id: number, number: number): Promise<Result<Array<server_trigger.Message>, Error>> {
         return JSON.parse(await this.fetchResult({ "Chat": { "QueryDirectChatHistory": { chat_id, last_msg_id, number } } }));
     }
+    async updateReadTime(chat_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "Chat": { "UpdateReadTime": { chat_id } } }));
+    }
 }
 
 export class UserQuery {

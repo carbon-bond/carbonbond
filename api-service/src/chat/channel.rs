@@ -54,8 +54,8 @@ async fn _update_direct_chat_read_time_2(
     sqlx::query!(
         "
 		UPDATE chat.direct_chats
-        SET read_time_1 = $3
-		WHERE id = $1 AND user_id_1 = $2
+        SET read_time_2 = $3
+		WHERE id = $1 AND user_id_2 = $2
 		",
         chat_id,
         user_id,
@@ -66,7 +66,7 @@ async fn _update_direct_chat_read_time_2(
     Ok(())
 }
 
-pub async fn _update_direct_chat_read_time(
+async fn _update_direct_chat_read_time(
     conn: &mut PgConnection,
     chat_id: i64,
     user_id: i64,
@@ -75,6 +75,15 @@ pub async fn _update_direct_chat_read_time(
     _update_direct_chat_read_time_1(conn, chat_id, user_id, time).await?;
     _update_direct_chat_read_time_2(conn, chat_id, user_id, time).await?;
     Ok(())
+}
+
+pub async fn update_direct_chat_read_time(
+    chat_id: i64,
+    user_id: i64,
+    time: DateTime<Utc>,
+) -> Fallible<()> {
+    let mut conn = get_pool().acquire().await?;
+    _update_direct_chat_read_time(&mut conn, chat_id, user_id, time).await
 }
 
 pub async fn create_if_not_exist(user_id: i64, opposite_id: i64, msg: String) -> Fallible<i64> {
