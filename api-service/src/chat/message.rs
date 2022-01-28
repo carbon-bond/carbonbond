@@ -1,9 +1,7 @@
 use crate::api::model::chat::chat_model_root::server_trigger::Sender;
 use crate::api::model::chat::chat_model_root::{server_trigger, MessageSending};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::db::favorite::get_by_user_id;
 use crate::db::get_pool;
-use crate::db::user::get_by_id;
 use chrono::{DateTime, Utc};
 use sqlx::PgConnection;
 
@@ -15,6 +13,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         name_2: String,
         user_id_1: i64,
         user_id_2: i64,
+        read_time_1: DateTime<Utc>,
+        read_time_2: DateTime<Utc>,
         sender_id: i64,
         time: DateTime<Utc>,
         text: String,
@@ -25,28 +25,37 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let channels = sqlx::query_as!(
         TmpChannel,
         "
-		SELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, user_id_2, m1.create_time as time, m1.id as msg_id, m1.content as text, m1.sender_id as sender_id
+		SELECT chat.direct_chats.id as channel_id,
+            u1.user_name as name_1,
+            u2.user_name as name_2,
+            user_id_1,
+            user_id_2,
+            read_time_1,
+            read_time_2,
+            m.create_time as time,
+            m.id as msg_id,
+            m.content as text,
+            m.sender_id as sender_id
         FROM chat.direct_chats
         JOIN users u1
         ON chat.direct_chats.user_id_1 = u1.id
         JOIN users u2
         ON chat.direct_chats.user_id_2 = u2.id
-        JOIN chat.direct_messages m1
-        ON chat.direct_chats.id = m1.direct_chat_id
-        LEFT OUTER JOIN chat.direct_messages m2
-        ON (chat.direct_chats.id = m2.direct_chat_id
-            AND (m1.id < m2.id))
-        WHERE (user_id_1 = $1 OR user_id_2 = $1) AND m2.id IS NULL
+        JOIN chat.direct_messages m
+        on chat.direct_chats.last_message = m.id
+        WHERE (user_id_1 = $1 OR user_id_2 = $1)
 		",
         id
-    ).fetch_all(pool).await?;
+    )
+    .fetch_all(pool)
+    .await?;
     let channels: Vec<server_trigger::Channel> = channels
         .into_iter()
         .map(|tmp| {
-            let (name, opposite_id) = if tmp.user_id_1 == id {
-                (tmp.name_2.clone(), tmp.user_id_2)
+            let (name, opposite_id, read_time) = if tmp.user_id_1 == id {
+                (tmp.name_2.clone(), tmp.user_id_2, tmp.read_time_1)
             } else {
-                (tmp.name_1.clone(), tmp.user_id_1)
+                (tmp.name_1.clone(), tmp.user_id_1, tmp.read_time_2)
             };
             let sender = if id == tmp.sender_id {
                 Sender::Myself
@@ -57,6 +66,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
                 channel_id: tmp.channel_id,
                 name,
                 opposite_id,
+                read_time,
                 last_msg: server_trigger::Message {
                     id: tmp.msg_id,
                     sender,
@@ -95,10 +105,28 @@ pub async fn get_receiver(chat_id: i64, id: i64) -> Fallible<i64> {
         Err(ErrorCode::PermissionDenied.context("您不屬於此私訊頻道"))
     }
 }
-// 回傳訊息的 id
-pub async fn _send_message(
+pub async fn _update_last_message(
     conn: &mut PgConnection,
-    channel_id: i64,
+    chat_id: i64,
+    message_id: i64,
+) -> Fallible<()> {
+    sqlx::query!(
+        "
+        UPDATE chat.direct_chats
+        SET last_message = $1
+        WHERE id = $2
+		",
+        message_id,
+        chat_id,
+    )
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
+pub async fn _save_message(
+    conn: &mut PgConnection,
+    chat_id: i64,
     sneder_id: i64,
     msg: &String,
 ) -> Fallible<i64> {
@@ -108,7 +136,7 @@ pub async fn _send_message(
 		VALUES ($1, $2, $3)
 		RETURNING id
 		",
-        channel_id,
+        chat_id,
         sneder_id,
         msg,
     )
@@ -116,6 +144,18 @@ pub async fn _send_message(
     .await?
     .id;
     Ok(id)
+}
+
+// 回傳訊息的 id
+pub async fn _send_message(
+    conn: &mut PgConnection,
+    chat_id: i64,
+    sneder_id: i64,
+    msg: &String,
+) -> Fallible<i64> {
+    let message_id = _save_message(conn, chat_id, sneder_id, msg).await?;
+    _update_last_message(conn, chat_id, message_id).await?;
+    Ok(message_id)
 }
 
 // 回傳接收者的用戶 id

@@ -63,7 +63,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 		}
 	}
 
-	return <div className={style.chatUnit + (is_unread ? ' bold' : '')} onClick={onClick}>
+	return <div className={`${style.chatUnit} ${is_unread ? style.bold : ''}`} onClick={onClick}>
 		<div className={style.upSet}>
 			<div className={style.title}>
 				<span className={style.name}>{props.chat.name}</span>
@@ -92,9 +92,10 @@ function ChatBar(): JSX.Element {
 	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
 	chat_array = chat_array.filter(chat => chat.exist === true);
 	return <div className={style.chatbar}>
-		<input type="text" placeholder="🔍 尋找對話" />
+		{/* TODO: 尋找聊天室 */}
+		{/* <input type="text" placeholder="🔍 尋找對話" /> */}
 		{
-			chat_array.sort(date_cmp).map((r) => <ChatUnit key={r.name} chat={r} />)
+			chat_array.sort(date_cmp).map((chat) => <ChatUnit key={chat.name} chat={chat} />)
 		}
 	</div>;
 }

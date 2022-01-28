@@ -43,8 +43,7 @@ export class ChatSocket {
 										new Date(chat.last_msg.time),
 									)
 								],
-								// TODO: 使用伺服器傳回的日期
-								new Date(),
+								new Date(chat.read_time),
 								true
 							));
 						}

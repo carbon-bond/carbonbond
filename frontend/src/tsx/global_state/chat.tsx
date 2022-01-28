@@ -50,13 +50,13 @@ export class DirectChatData implements ChatData {
 	addMessage(message: Message): DirectChatData {
 		return produce(this, (draft) => {
 			draft.history.push(message);
-			draft.read_time = message.time;
 		});
 	}
 	addOldMessages(old_messages: Message[]): DirectChatData {
 		return produce(this, (draft) => {
 			if (old_messages.length > 0) {
 				draft.history = [...old_messages, ...draft.history];
+				draft.exhaust_history = true;
 			} else {
 				draft.exhaust_history = true;
 			}

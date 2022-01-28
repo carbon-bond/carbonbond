@@ -8,7 +8,7 @@ import { ChatRoomPanel } from './chatroom_panel';
 function BottomPanel(): JSX.Element {
 	const { chatrooms } = BottomPanelState.useContainer();
 	return <div className={style.bottomPanel}>
-		{chatrooms.map(room => <ChatRoomPanel key={room.name} room={room} />)}
+		{chatrooms.map(room => <div key={room.name}><ChatRoomPanel room={room} /></div>)}
 		<EditorPanel/>
 	</div>;
 }
