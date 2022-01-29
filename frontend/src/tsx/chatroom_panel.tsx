@@ -26,6 +26,7 @@ import { API_FETCHER, unwrap } from '../ts/api/api';
 import produce from 'immer';
 import { Link } from 'react-router-dom';
 import { server_trigger } from '../ts/api/api_trait';
+import { useScroll } from 'react-use';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -201,9 +202,12 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const [scrolling, setScrolling] = React.useState(false);
+	const [fetchingHistory, setFetchingHistory] = React.useState(false);
+	const [initializing, setInitializing] = React.useState(true);
 	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
 	const { input_props, setValue } = useInputValue('');
 	const [ref, scrollToBottom] = useScrollBottom();
+	const {y} = useScroll(ref);
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.name];
 	React.useEffect(() => {
@@ -222,7 +226,11 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			setScrolling(false);
 			scrollToBottom();
 		}
-	}, [scrolling, scrollToBottom]);
+		if (initializing) {
+			setInitializing(false);
+			setScrolling(true);
+		}
+	}, [scrolling, scrollToBottom, initializing]);
 
 	React.useEffect(() => {
 		if (extended && ref.current) {
@@ -231,9 +239,9 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	}, [extended, prev_scroll_top, ref]);
 
 	React.useEffect(() => {
-		// XXX: 改爲一個小數字
-		const PAGE_SIZE = 1000;
-		if (extended && !chat.exhaust_history && chat.exist) {
+		const PAGE_SIZE = 50;
+		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
+			setFetchingHistory(true);
 			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 				let history = unwrap(res);
 				let old_messages = history.map(m => {
@@ -243,9 +251,17 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					// TODO: 給出真實的 message ID
 					return draft.addOldMessages(props.room.name, old_messages);
 				}));
-			}).catch(err => toastErr(err));
+				if (initializing) {
+					setInitializing(false);
+					scrollToBottom();
+				}
+				setFetchingHistory(false);
+			}).catch(err => {
+				toastErr(err);
+				setFetchingHistory(false);
+			});
 		}
-	}, []);
+	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.name, scrollToBottom, setAllChat, y, initializing]);
 
 	if (user_state.login == false) {
 		return <></>;

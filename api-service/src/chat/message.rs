@@ -178,7 +178,7 @@ pub async fn get_direct_chat_history(
         "
         SELECT id, content, create_time, sender_id from chat.direct_messages
         WHERE id < $1 AND direct_chat_id = $2
-        ORDER BY create_time
+        ORDER BY create_time DESC
         limit $3
         ",
         last_msg_id,
@@ -189,6 +189,7 @@ pub async fn get_direct_chat_history(
     .await?;
     Ok(messages
         .into_iter()
+        .rev()
         .map(|msg| server_trigger::Message {
             text: msg.content,
             id: msg.id,

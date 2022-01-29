@@ -56,7 +56,6 @@ export class DirectChatData implements ChatData {
 		return produce(this, (draft) => {
 			if (old_messages.length > 0) {
 				draft.history = [...old_messages, ...draft.history];
-				draft.exhaust_history = true;
 			} else {
 				draft.exhaust_history = true;
 			}
