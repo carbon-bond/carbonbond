@@ -200,8 +200,10 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
+	const [scrolling, setScrolling] = React.useState(false);
+	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
 	const { input_props, setValue } = useInputValue('');
-	const scroll_bottom_ref = useScrollBottom();
+	const [ref, scrollToBottom] = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.name];
 	React.useEffect(() => {
@@ -216,8 +218,21 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	}, [extended, chat, updateLastRead, props.room.name]);
 
 	React.useEffect(() => {
+		if (scrolling) {
+			setScrolling(false);
+			scrollToBottom();
+		}
+	}, [scrolling, scrollToBottom]);
+
+	React.useEffect(() => {
+		if (extended && ref.current) {
+			ref.current.scrollTop = prev_scroll_top;
+		}
+	}, [extended, prev_scroll_top, ref]);
+
+	React.useEffect(() => {
 		// XXX: 改爲一個小數字
-		const PAGE_SIZE = 10000;
+		const PAGE_SIZE = 1000;
 		if (extended && !chat.exhaust_history && chat.exist) {
 			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 				let history = unwrap(res);
@@ -250,6 +265,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					// TODO: 計算回傳的 id
 					addMessage(props.room.name, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
 					setValue('');
+					setScrolling(true);
 				}
 				else {
 					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
@@ -263,6 +279,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 						}));
 					}).catch(err => toastErr(err));
 					setValue('');
+					setScrolling(true);
 				}
 			}
 		}
@@ -270,13 +287,18 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
 				<div className={leftSet}><Link to={`/app/user/${props.room.name}`}>{props.room.name}</Link></div>
-				<div className={middleSet} onClick={() => setExtended(false)}></div>
+				<div className={middleSet} onClick={() => {
+					if (ref.current) {
+						setPrevScrollTop(ref.current?.scrollTop);
+					}
+					setExtended(false);
+				}}></div>
 				<div className={rightSet}>
 					<div className={button}>⚙</div>
 					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div ref={scroll_bottom_ref} className={style.messages}>
+			<div ref={ref} className={style.messages}>
 				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={props.room.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
@@ -299,7 +321,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const { all_chat, addChannelMessage, updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
-	const scroll_bottom_ref = useScrollBottom();
+	const [ref, _scrollToBottom] = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 
 	const chat = all_chat.group[props.room.name];
@@ -365,7 +387,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<ChannelList />
 				</div>
 				<div>
-					<div ref={scroll_bottom_ref} className={style.messages}>
+					<div ref={ref} className={style.messages}>
 						{/* TODO: channel 運作方式與私訊不同*/}
 						<MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" />
 					</div>

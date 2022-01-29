@@ -70,15 +70,14 @@ function useInputValue(initialValue: string = '', onChange: (s: string) => void 
 	};
 }
 
-// 使被綁定的 div 能在更新時自動捲到底
-function useScrollBottom(): React.RefObject<HTMLDivElement> {
+function useScrollBottom(): [React.RefObject<HTMLDivElement>, () => void] {
 	const ref = React.useRef<HTMLDivElement>(null);
-	React.useEffect(() => {
+	function scrollToBottom(): void {
 		if (ref != null && ref.current != null) {
 			ref.current.scrollTop = ref.current.scrollHeight;
 		}
-	});
-	return ref;
+	}
+	return [ref, scrollToBottom];
 }
 
 /**
@@ -122,23 +121,8 @@ function useScrollState(): {
 	};
 }
 
-function usePrevious<T>(value: T): T | undefined {
-	// The ref object is a generic container whose current property is mutable ...
-	// ... and can hold any value, similar to an instance property on a class
-	const ref = React.useRef<T>();
-
-	// Store current value in ref
-	React.useEffect(() => {
-		ref.current = value;
-	}, [value]); // Only re-run if value changes
-
-	// Return previous value (happens before update in useEffect above)
-	return ref.current;
-}
-
 export {
 	useInputValue,
 	useScrollBottom,
 	useScrollState,
-	usePrevious
 };
