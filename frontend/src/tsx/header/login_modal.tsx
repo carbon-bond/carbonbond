@@ -214,7 +214,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 				<button onClick={handleSearch}>查詢</button>
 			</div>
 			<div className={style.searchResult}>
-				{lawyer_search_result.map((result, i) => (
+				{lawyer_search_result.length > 0 ? lawyer_search_result.map((result, i) => (
 					<div key={result.license_id} className={style.searchResultUnit}>
 						<label>
 							<input
@@ -227,7 +227,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 							<span>{result.name}, {result.license_id}</span>
 						</label>
 					</div>
-				))}
+				)) : <div>查無符合結果</div>}
 			</div>
 			{lawyer_detail_result ? <div className={style.detail} >
 				<div>姓名： {lawyer_detail_result.name}</div>

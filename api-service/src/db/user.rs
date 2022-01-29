@@ -174,27 +174,39 @@ pub async fn query_search_result_from_lawyerbc(
         .send()
         .await?;
 
+    if ! response.status().is_success() {
+        return Err(ErrorCode::SearchingFail.into());
+    }
+    let response_text = response.text().await?;
+    let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap_or(Value::Null);
+    if parsed == Value::Null || parsed["data"] == Value::Null || parsed["data"]["lawyers"] == Value::Null {
+        return Err(ErrorCode::ParsingJson.into());
+    }
+    let lawyer_array = parsed["data"]["lawyers"].as_array();
+    if lawyer_array == None {
+        return Err(ErrorCode::ParsingJson.into());
+    }
     let mut lawyers: Vec<LawyerbcResultMini> = Vec::new();
-    if response.status().is_success() {
-        let response_text = response.text().await?;
-        let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap();
-        log::debug!("parsed = {}", parsed);
-        for i in 0..(parsed["data"]["lawyers"].as_array().unwrap().len()) {
-            let lawyer = &parsed["data"]["lawyers"][i];
-            log::debug!("lawyer {}", lawyer["name"]);
-            let lawyer_bc_result_mini = LawyerbcResultMini {
-                name: lawyer["name"].as_str().unwrap().to_string(),
-                id_number: lawyer["id_no"].as_str().unwrap().to_string(),
-                license_id: lawyer["now_lic_no"].as_str().unwrap().to_string(),
-                gender: lawyer["sex"].as_str().unwrap().to_string(),
-            };
-            lawyers.push(lawyer_bc_result_mini);
+    for i in 0..(lawyer_array.unwrap().len()) {
+        let lawyer = &lawyer_array.unwrap()[i];
+        if lawyer["name"] == Value::Null || lawyer["now_lic_no"] == Value::Null {
+            continue;
         }
+        let lawyer_name = lawyer["name"].as_str();
+        let lawyer_license_id = lawyer["now_lic_no"].as_str();
+        if lawyer_name == None || lawyer_license_id == None {
+            continue;
+        }
+        let lawyer_bc_result_mini = LawyerbcResultMini {
+            name: lawyer_name.unwrap().to_string(),
+            license_id: lawyer_license_id.unwrap().to_string(),
+        };
+        lawyers.push(lawyer_bc_result_mini);
     }
     Ok(lawyers)
 }
 pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {
-    let response = reqwest::get(format!(
+    let response_text = reqwest::get(format!(
         "{}{}",
         "https://lawyerbc.moj.gov.tw/api/cert/info/",
         encode(&license_id).into_owned()
@@ -203,19 +215,26 @@ pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<L
     .text()
     .await?;
 
-    let parsed: Value = serde_json::from_str(response.as_str()).unwrap();
-    let lawyer = LawyerbcResult {
-        name: parsed["data"][0]["name"].as_str().unwrap().to_string(),
-        id_number: parsed["data"][0]["id_no"].as_str().unwrap().to_string(),
-        license_id: parsed["data"][0]["now_lic_no"]
+    let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap_or(Value::Null);
+    if parsed == Value::Null || parsed["data"] == Value::Null {
+        return Err(ErrorCode::ParsingJson.into());
+    }
+    let lawyer_array = parsed["data"].as_array();
+    if lawyer_array == None {
+        return Err(ErrorCode::ParsingJson.into());
+    }
+    let lawyer = &lawyer_array.unwrap()[0];
+    Ok(LawyerbcResult {
+        name: lawyer["name"].as_str().unwrap_or("").to_string(),
+        id_number: lawyer["id_no"].as_str().unwrap_or("").to_string(),
+        license_id: lawyer["now_lic_no"]
             .as_str()
-            .unwrap()
+            .unwrap_or("")
             .to_string(),
-        gender: parsed["data"][0]["sex"].as_str().unwrap().to_string(),
-        birth_year: parsed["data"][0]["birthsday"].as_i64().unwrap_or(0), // 民國
-        email: parsed["data"][0]["email"].as_str().unwrap().to_string(),
-    };
-    Ok(lawyer)
+        gender: lawyer["sex"].as_str().unwrap_or("").to_string(),
+        birth_year: lawyer["birthsday"].as_i64().unwrap_or(0), // 民國
+        email: lawyer["email"].as_str().unwrap_or("").to_string(),
+    })
 }
 pub async fn create_signup_token(
     email: &str,
