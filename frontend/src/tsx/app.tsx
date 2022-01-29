@@ -97,9 +97,13 @@ function App(): JSX.Element {
 		</div>;
 	}
 	function Content(): JSX.Element {
-		const { user_state } = UserState.useContainer();
+		const { user_state, getLoginState } = UserState.useContainer();
 		const { load, unload } = SubscribedBoardsState.useContainer();
 		const all_chat_state = AllChatState.useContainer();
+		React.useEffect(() => {
+			getLoginState();
+			// eslint-disable-next-line
+		}, []);
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {

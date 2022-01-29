@@ -28,29 +28,21 @@ function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData
 	const all_chat_state = AllChatState.useContainer();
 	const bottom_panel_state = BottomPanelState.useContainer();
 
-	async function getLoginState(): Promise<void> {
+	async function getLoginState(): Promise<boolean> {
 		try {
 			const user = unwrap(await API_FETCHER.userQuery.queryMe());
 			if (user) {
-				setUserState({
-					login: true,
-					user_name: user.user_name,
-					email: user.email,
-					id: user.id,
-					energy: user.energy,
-				});
+				setLogin(user);
+				return true;
 			} else {
-				setUserState({ login: false, fetching: false });
+				setLogout();
+				return false;
 			}
 		} catch (err) {
 			toastErr(err);
+			return false;
 		}
-		return;
 	}
-
-	React.useEffect(() => {
-		getLoginState();
-	}, []);
 
 	function setLogin(data: LoginData): void {
 		setUserState({
