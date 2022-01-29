@@ -22,7 +22,11 @@
 		display: none;
 	}
 }
-
+.cropper {
+	width: 400px;
+	height: 400px;
+	position: relative;
+}
 .buttonSet {
     margin-top: 10px;
     & button {
