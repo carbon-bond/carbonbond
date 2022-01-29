@@ -172,6 +172,7 @@ class AllChat {
 export type AllChatState = {
 	all_chat: AllChat,
 	setAllChat: React.Dispatch<React.SetStateAction<AllChat>>,
+	reset: () => void,
 	addDirectChat: Function,
 	addMessage: Function
 	addChannelMessage: Function
@@ -185,6 +186,10 @@ function useAllChatState(): AllChatState {
 		{},
 		{},
 	));
+
+	function reset(): void {
+		setAllChat(new AllChat({}, {}));
+	}
 
 	function addDirectChat(name: string, chat: DirectChatData): void {
 		setAllChat(all_chat.addChat(name, chat));
@@ -209,6 +214,7 @@ function useAllChatState(): AllChatState {
 
 	return {
 		all_chat,
+		reset,
 		setAllChat,
 		addDirectChat,
 		addMessage,

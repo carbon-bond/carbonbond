@@ -135,21 +135,21 @@ function App(): JSX.Element {
 	return (
 		<div className="app">
 			<ConfigState.Provider>
-				<UserState.Provider>
-					<DraftState.Provider>
-						<SubscribedBoardsState.Provider>
-							<BottomPanelState.Provider>
-								<AllChatState.Provider>
+				<AllChatState.Provider>
+					<BottomPanelState.Provider>
+						<UserState.Provider>
+							<DraftState.Provider>
+								<SubscribedBoardsState.Provider>
 									<EditorPanelState.Provider>
 										<BoardCacheState.Provider>
 											<Content />
 										</BoardCacheState.Provider>
 									</EditorPanelState.Provider>
-								</AllChatState.Provider>
-							</BottomPanelState.Provider>
-						</SubscribedBoardsState.Provider>
-					</DraftState.Provider>
-				</UserState.Provider>
+								</SubscribedBoardsState.Provider>
+							</DraftState.Provider>
+						</UserState.Provider>
+					</BottomPanelState.Provider>
+				</AllChatState.Provider>
 			</ConfigState.Provider>
 		</div>
 	);
