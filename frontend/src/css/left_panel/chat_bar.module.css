@@ -63,5 +63,6 @@
     }
     & .bold {
         font-weight: bold;
+        background-color: var(--lightest-gray);
     }
 }

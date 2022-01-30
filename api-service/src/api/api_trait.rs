@@ -7,6 +7,7 @@ use serde_json::error::Error;
 pub trait ChatQueryRouter {
     async fn create_chat_if_not_exist(&self, context: &mut crate::Ctx, opposite_id: i64, msg: String) -> Result<i64, crate::custom_error::Error>;
     async fn query_direct_chat_history(&self, context: &mut crate::Ctx, chat_id: i64, last_msg_id: i64, number: i64) -> Result<Vec<super::model::chat::chat_model_root::server_trigger::Message>, crate::custom_error::Error>;
+    async fn update_read_time(&self, context: &mut crate::Ctx, chat_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ChatQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              ChatQuery::CreateChatIfNotExist { opposite_id, msg } => {
@@ -16,6 +17,11 @@ pub trait ChatQueryRouter {
             }
              ChatQuery::QueryDirectChatHistory { chat_id, last_msg_id, number } => {
                  let resp = self.query_direct_chat_history(context, chat_id, last_msg_id, number).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ChatQuery::UpdateReadTime { chat_id } => {
+                 let resp = self.update_read_time(context, chat_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

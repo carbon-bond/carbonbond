@@ -23,13 +23,17 @@ export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
 
 function useBottomPanelState(): {
 	chatrooms: RoomData[],
-	addRoom: Function,
-	addRoomWithChannel: Function,
-	changeChannel: Function,
-	deleteRoom: Function,
+	clearRoom: () => void,
+	addRoom: (name: string) => void,
+	addRoomWithChannel: (name: string, channel: string) => void,
+	changeChannel: (name: string, channel: string) => void,
+	deleteRoom: (name: string) => void,
 	} {
 	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
 
+	function clearRoom(): void {
+		setChatrooms([]);
+	}
 	function addRoom(name: string): void {
 		// TODO: 調整聊天室添加順序
 		let room = chatrooms.find(room => room.name == name);
@@ -77,7 +81,7 @@ function useBottomPanelState(): {
 		setChatrooms(chatrooms.filter(room => room.name != name));
 	}
 
-	return { chatrooms, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
+	return { chatrooms, clearRoom, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
 }
 
 export const BottomPanelState = createContainer(useBottomPanelState);

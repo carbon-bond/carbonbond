@@ -26,6 +26,7 @@ import { API_FETCHER, unwrap } from '../ts/api/api';
 import produce from 'immer';
 import { Link } from 'react-router-dom';
 import { server_trigger } from '../ts/api/api_trait';
+import { useScroll } from 'react-use';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -200,15 +201,67 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom } = BottomPanelState.useContainer();
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
+	const [scrolling, setScrolling] = React.useState(false);
+	const [fetchingHistory, setFetchingHistory] = React.useState(false);
+	const [initializing, setInitializing] = React.useState(true);
+	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
 	const { input_props, setValue } = useInputValue('');
-	const scroll_bottom_ref = useScrollBottom();
+	const [ref, scrollToBottom] = useScrollBottom();
+	const {y} = useScroll(ref);
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.name];
 	React.useEffect(() => {
 		if (extended && chat?.isUnread()) {
-			updateLastRead(props.room.name, new Date());
+			let now = new Date();
+			updateLastRead(props.room.name, now);
+			API_FETCHER.chatQuery.updateReadTime(chat.id).then(res => unwrap(res)).catch(err => {
+				console.error(`更新聊天室 ${chat.name} 讀取時間失敗：`);
+				console.error(err);
+			});
 		}
 	}, [extended, chat, updateLastRead, props.room.name]);
+
+	React.useEffect(() => {
+		if (scrolling) {
+			setScrolling(false);
+			scrollToBottom();
+		}
+		if (initializing) {
+			setInitializing(false);
+			setScrolling(true);
+		}
+	}, [scrolling, scrollToBottom, initializing]);
+
+	React.useEffect(() => {
+		if (extended && ref.current) {
+			ref.current.scrollTop = prev_scroll_top;
+		}
+	}, [extended, prev_scroll_top, ref]);
+
+	React.useEffect(() => {
+		const PAGE_SIZE = 50;
+		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
+			setFetchingHistory(true);
+			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
+				let history = unwrap(res);
+				let old_messages = history.map(m => {
+					return new Message(m.id, m.sender, m.text, new Date(m.time));
+				});
+				setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
+					// TODO: 給出真實的 message ID
+					return draft.addOldMessages(props.room.name, old_messages);
+				}));
+				if (initializing) {
+					setInitializing(false);
+					scrollToBottom();
+				}
+				setFetchingHistory(false);
+			}).catch(err => {
+				toastErr(err);
+				setFetchingHistory(false);
+			});
+		}
+	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.name, scrollToBottom, setAllChat, y, initializing]);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -217,21 +270,6 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	if (chat == undefined) {
 		console.log('找不到聊天室');
 		return <></>;
-	}
-
-	// XXX: 改爲一個小數字
-	const PAGE_SIZE = 10000;
-	if (extended && !chat.exhaust_history && chat.exist) {
-		API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
-			let history = unwrap(res);
-			let old_messages = history.map(m => {
-				return new Message(m.id, m.sender, m.text, new Date(m.time));
-			});
-			setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
-				// TODO: 給出真實的 message ID
-				return draft.addOldMessages(props.room.name, old_messages);
-			}));
-		}).catch(err => toastErr(err));
 	}
 
 	if (extended) {
@@ -243,6 +281,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					// TODO: 計算回傳的 id
 					addMessage(props.room.name, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
 					setValue('');
+					setScrolling(true);
 				}
 				else {
 					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
@@ -256,6 +295,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 						}));
 					}).catch(err => toastErr(err));
 					setValue('');
+					setScrolling(true);
 				}
 			}
 		}
@@ -263,13 +303,18 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
 				<div className={leftSet}><Link to={`/app/user/${props.room.name}`}>{props.room.name}</Link></div>
-				<div className={middleSet} onClick={() => setExtended(false)}></div>
+				<div className={middleSet} onClick={() => {
+					if (ref.current) {
+						setPrevScrollTop(ref.current?.scrollTop);
+					}
+					setExtended(false);
+				}}></div>
 				<div className={rightSet}>
 					<div className={button}>⚙</div>
 					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
 				</div>
 			</div>
-			<div ref={scroll_bottom_ref} className={style.messages}>
+			<div ref={ref} className={style.messages}>
 				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={props.room.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
@@ -292,7 +337,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const { all_chat, addChannelMessage, updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const { input_props, setValue } = useInputValue('');
-	const scroll_bottom_ref = useScrollBottom();
+	const [ref, _scrollToBottom] = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 
 	const chat = all_chat.group[props.room.name];
@@ -358,7 +403,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					<ChannelList />
 				</div>
 				<div>
-					<div ref={scroll_bottom_ref} className={style.messages}>
+					<div ref={ref} className={style.messages}>
 						{/* TODO: channel 運作方式與私訊不同*/}
 						<MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" />
 					</div>

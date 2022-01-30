@@ -61,7 +61,7 @@ export type API =
 export type InitInfo = { channels: Channel [] };
 export enum Sender { Myself = "Myself", Opposite = "Opposite" };
 export type Message = { id: number; sender: Sender; text: string; time: string};
-export type Direct = {     channel_id: number; opposite_id: number; name: string; last_msg:     Message };
+export type Direct = {     channel_id: number; opposite_id: number; name: string; last_msg:     Message; read_time: string};
 export type WithAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
 export type IAmAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
 export type Channel = 
@@ -124,6 +124,9 @@ export class ChatQuery {
     }
     async queryDirectChatHistory(chat_id: number, last_msg_id: number, number: number): Promise<Result<Array<server_trigger.Message>, Error>> {
         return JSON.parse(await this.fetchResult({ "Chat": { "QueryDirectChatHistory": { chat_id, last_msg_id, number } } }));
+    }
+    async updateReadTime(chat_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "Chat": { "UpdateReadTime": { chat_id } } }));
     }
 }
 
