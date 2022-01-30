@@ -2,6 +2,8 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import * as React from 'react';
 import { createContainer } from 'unstated-next';
 import { toastErr } from '../utils';
+import { AllChatState } from './chat';
+import { BottomPanelState } from './bottom_panel';
 const { useState } = React;
 
 export type UserStateType = {
@@ -23,30 +25,24 @@ interface LoginData {
 
 function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData) => void, setLogout: Function, getLoginState: Function } {
 	const [user_state, setUserState] = useState<UserStateType>({ login: false, fetching: true });
+	const all_chat_state = AllChatState.useContainer();
+	const bottom_panel_state = BottomPanelState.useContainer();
 
-	async function getLoginState(): Promise<void> {
+	async function getLoginState(): Promise<boolean> {
 		try {
 			const user = unwrap(await API_FETCHER.userQuery.queryMe());
 			if (user) {
-				setUserState({
-					login: true,
-					user_name: user.user_name,
-					email: user.email,
-					id: user.id,
-					energy: user.energy,
-				});
+				setLogin(user);
+				return true;
 			} else {
-				setUserState({ login: false, fetching: false });
+				setLogout();
+				return false;
 			}
 		} catch (err) {
 			toastErr(err);
+			return false;
 		}
-		return;
 	}
-
-	React.useEffect(() => {
-		getLoginState();
-	}, []);
 
 	function setLogin(data: LoginData): void {
 		setUserState({
@@ -56,8 +52,12 @@ function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData
 			email: data.email,
 			energy: data.energy,
 		});
+		window.chat_socket.init(all_chat_state);
 	}
 	function setLogout(): void {
+		bottom_panel_state.clearRoom();
+		all_chat_state.reset();
+		window.chat_socket.close();
 		setUserState({ login: false, fetching: false });
 	}
 	return { user_state, setLogin, setLogout, getLoginState };

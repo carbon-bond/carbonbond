@@ -50,7 +50,6 @@ export class DirectChatData implements ChatData {
 	addMessage(message: Message): DirectChatData {
 		return produce(this, (draft) => {
 			draft.history.push(message);
-			draft.read_time = message.time;
 		});
 	}
 	addOldMessages(old_messages: Message[]): DirectChatData {
@@ -172,6 +171,7 @@ class AllChat {
 export type AllChatState = {
 	all_chat: AllChat,
 	setAllChat: React.Dispatch<React.SetStateAction<AllChat>>,
+	reset: () => void,
 	addDirectChat: Function,
 	addMessage: Function
 	addChannelMessage: Function
@@ -186,8 +186,16 @@ function useAllChatState(): AllChatState {
 		{},
 	));
 
+	function reset(): void {
+		setAllChat(new AllChat({}, {}));
+	}
+
 	function addDirectChat(name: string, chat: DirectChatData): void {
-		setAllChat(all_chat.addChat(name, chat));
+		// TODO: 先去資料庫裏撈聊天室
+		// 可能有太舊的對話沒有被載入到客戶端
+		if (all_chat.direct[name] == undefined) {
+			setAllChat(all_chat.addChat(name, chat));
+		}
 	}
 
 	function addMessage(name: string, message: Message): void {
@@ -209,6 +217,7 @@ function useAllChatState(): AllChatState {
 
 	return {
 		all_chat,
+		reset,
 		setAllChat,
 		addDirectChat,
 		addMessage,

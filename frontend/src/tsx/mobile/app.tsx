@@ -36,6 +36,8 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { SearchPage } from '../search_page/search_page';
 import { toastErr } from '../utils';
 import { NotificationModal } from './notification';
+import { DraftState } from '../global_state/draft';
+import { ConfigState } from '../global_state/config';
 
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
@@ -131,19 +133,23 @@ function App(): JSX.Element {
 
 	return (
 		<div className="appMobile">
-			<UserState.Provider>
-				<SubscribedBoardsState.Provider>
+			<ConfigState.Provider>
+				<AllChatState.Provider>
 					<BottomPanelState.Provider>
-						<AllChatState.Provider>
-							<EditorPanelState.Provider>
-								<BoardCacheState.Provider>
-									<Content />
-								</BoardCacheState.Provider>
-							</EditorPanelState.Provider>
-						</AllChatState.Provider>
+						<UserState.Provider>
+							<DraftState.Provider>
+								<SubscribedBoardsState.Provider>
+									<EditorPanelState.Provider>
+										<BoardCacheState.Provider>
+											<Content />
+										</BoardCacheState.Provider>
+									</EditorPanelState.Provider>
+								</SubscribedBoardsState.Provider>
+							</DraftState.Provider>
+						</UserState.Provider>
 					</BottomPanelState.Provider>
-				</SubscribedBoardsState.Provider>
-			</UserState.Provider>
+				</AllChatState.Provider>
+			</ConfigState.Provider>
 		</div>
 	);
 }

@@ -57,6 +57,7 @@ pub mod chat_model_root {
             pub opposite_id: i64,
             pub name: String,
             pub last_msg: Message,
+            pub read_time: DateTime<Utc>,
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct WithAnonymousAuthor {

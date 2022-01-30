@@ -97,9 +97,13 @@ function App(): JSX.Element {
 		</div>;
 	}
 	function Content(): JSX.Element {
-		const { user_state } = UserState.useContainer();
+		const { user_state, getLoginState } = UserState.useContainer();
 		const { load, unload } = SubscribedBoardsState.useContainer();
 		const all_chat_state = AllChatState.useContainer();
+		React.useEffect(() => {
+			getLoginState();
+			// eslint-disable-next-line
+		}, []);
 		React.useEffect(() => {
 			(async () => {
 				if (user_state.login) {
@@ -135,21 +139,21 @@ function App(): JSX.Element {
 	return (
 		<div className="app">
 			<ConfigState.Provider>
-				<UserState.Provider>
-					<DraftState.Provider>
-						<SubscribedBoardsState.Provider>
-							<BottomPanelState.Provider>
-								<AllChatState.Provider>
+				<AllChatState.Provider>
+					<BottomPanelState.Provider>
+						<UserState.Provider>
+							<DraftState.Provider>
+								<SubscribedBoardsState.Provider>
 									<EditorPanelState.Provider>
 										<BoardCacheState.Provider>
 											<Content />
 										</BoardCacheState.Provider>
 									</EditorPanelState.Provider>
-								</AllChatState.Provider>
-							</BottomPanelState.Provider>
-						</SubscribedBoardsState.Provider>
-					</DraftState.Provider>
-				</UserState.Provider>
+								</SubscribedBoardsState.Provider>
+							</DraftState.Provider>
+						</UserState.Provider>
+					</BottomPanelState.Provider>
+				</AllChatState.Provider>
 			</ConfigState.Provider>
 		</div>
 	);
