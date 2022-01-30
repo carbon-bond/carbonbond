@@ -244,6 +244,20 @@
       ]
     }
   },
+  "1999b8563aa500182a7380543f69402a0d2c80bd8b46a7d147b567260c42da36": {
+    "query": "\n\t\tUPDATE chat.direct_chats\n        SET read_time_2 = $3\n\t\tWHERE id = $1 AND user_id_2 = $2\n\t\t",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Timestamptz"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "1a4e98bf936a2d308516cc28ac8d0b9d407e536451eb3e23ee7b72590864b99e": {
     "query": "SELECT kind, is_public FROM user_relations WHERE from_user = $1 AND to_user = $2",
     "describe": {
@@ -535,8 +549,28 @@
       ]
     }
   },
-  "254d45cdc165d041928b156f2a37b8439d6ffba64a60efc388ba33eed43b9ab9": {
-    "query": "\n\t\tSELECT chat.direct_chats.id as channel_id, u1.user_name as name_1, u2.user_name as name_2, user_id_1, user_id_2, m1.create_time as time, m1.id as msg_id, m1.content as text, m1.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m1\n        ON chat.direct_chats.id = m1.direct_chat_id\n        LEFT OUTER JOIN chat.direct_messages m2\n        ON (chat.direct_chats.id = m2.direct_chat_id\n            AND (m1.id < m2.id))\n        WHERE (user_id_1 = $1 OR user_id_2 = $1) AND m2.id IS NULL\n\t\t",
+  "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
+    "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "count",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        null
+      ]
+    }
+  },
+  "27d45416e5d9a4f1fd28537f840c172cb6568e8e4b408da932f321ca841e72aa": {
+    "query": "\n\t\tSELECT chat.direct_chats.id as channel_id,\n            u1.user_name as name_1,\n            u2.user_name as name_2,\n            user_id_1,\n            user_id_2,\n            read_time_1,\n            read_time_2,\n            m.create_time as time,\n            m.id as msg_id,\n            m.content as text,\n            m.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m\n        on chat.direct_chats.last_message = m.id\n        WHERE (user_id_1 = $1 OR user_id_2 = $1)\n\t\t",
     "describe": {
       "columns": [
         {
@@ -566,21 +600,31 @@
         },
         {
           "ordinal": 5,
-          "name": "time",
+          "name": "read_time_1",
           "type_info": "Timestamptz"
         },
         {
           "ordinal": 6,
+          "name": "read_time_2",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
           "name": "msg_id",
           "type_info": "Int8"
         },
         {
-          "ordinal": 7,
+          "ordinal": 9,
           "name": "text",
           "type_info": "Text"
         },
         {
-          "ordinal": 8,
+          "ordinal": 10,
           "name": "sender_id",
           "type_info": "Int8"
         }
@@ -599,27 +643,9 @@
         false,
         false,
         false,
+        false,
+        false,
         false
-      ]
-    }
-  },
-  "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
-    "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "count",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        null
       ]
     }
   },
@@ -835,6 +861,20 @@
       ]
     }
   },
+  "2fbdaf88f6076824b4407f8ab57b26d7ccb62a53504c41eb986c509ffd368b3c": {
+    "query": "\n\t\tUPDATE chat.direct_chats\n        SET read_time_1 = $3\n\t\tWHERE id = $1 AND user_id_1 = $2\n\t\t",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Timestamptz"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "3162896644b50d6081c26c1b39cd82b7765ea47f9bf9896e4ebcc74232faa7a3": {
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                categories.category_name,\n                categories.source AS category_source,\n                categories.families AS category_families\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                INNER JOIN categories ON articles.category_id = categories.id\n            WHERE ($1 AND NOT categories.families && $2)\n                OR (NOT $1 AND categories.families && $2)\n                )\n            SELECT favorite_articles.create_time AS favorite_create_time,  metas.id,\n                metas.energy,\n                board_id,\n                board_name,\n                category_id,\n                category_name,\n                category_source,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                category_families,\n                metas.create_time,\n                anonymous FROM metas \n        INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id\n        WHERE favorite_articles.user_id = $3\n        ",
     "describe": {
@@ -966,46 +1006,6 @@
         "Left": []
       },
       "nullable": [
-        false,
-        false
-      ]
-    }
-  },
-  "38359373effab3e1b73111ca9b9943f96629af17efb7f82f25ca4905b0474f43": {
-    "query": "\n        SELECT id, content, create_time, sender_id from chat.direct_messages\n        WHERE id < $1 AND direct_chat_id = $2\n        limit $3\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 3,
-          "name": "sender_id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
         false,
         false
       ]
@@ -2564,6 +2564,19 @@
       ]
     }
   },
+  "9d46b2f9d0bbc3e250a649e743b7b02aa96ad24a494ebdb0e3452a19001b4378": {
+    "query": "\n        UPDATE chat.direct_chats\n        SET last_message = $1\n        WHERE id = $2\n\t\t",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "9e1c99a983c23a1604ccbd713936a03f6494a92e367cb015f43102cdcd09eb65": {
     "query": "\n        SELECT * FROM articles\n        WHERE author_id IN (SELECT to_user FROM user_relations WHERE from_user = $1) OR\n        id IN (SELECT article_id FROM tracking_articles WHERE user_id = $1)\n        ORDER BY create_time DESC\n        LIMIT $2\n        ",
     "describe": {
@@ -2982,6 +2995,46 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "cf394dbcbf391ac4cf5c3da1477bae1ed003685be0712654049a1164505851cf": {
+    "query": "\n        SELECT id, content, create_time, sender_id from chat.direct_messages\n        WHERE id < $1 AND direct_chat_id = $2\n        ORDER BY create_time DESC\n        limit $3\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "content",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 3,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
     }
   },
   "d16b3b129a9299630b856ce420adb43e9f8d958bb66e982c218bc7264391c253": {
