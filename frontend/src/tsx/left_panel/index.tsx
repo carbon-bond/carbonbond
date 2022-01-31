@@ -3,6 +3,8 @@ import { ChatBar } from './chat_bar';
 import { BrowseBar } from './browse_bar';
 import { DraftBar } from './draft_bar';
 import style from '../../css/sidebar.module.css';
+import { NumberOver } from '../components/number_over';
+import { AllChatState } from '../global_state/chat';
 
 enum Option {
 	Browse,
@@ -32,6 +34,9 @@ function PanelMain(props: { option: Option }): JSX.Element {
 
 function LeftPanel(): JSX.Element {
 	const [option, setOption] = React.useState(Option.Browse);
+	const { all_chat } = AllChatState.useContainer();
+	// NOTE: 暫時只計算雙人對話
+	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
 
 	function toggleOption(op: Option): (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void {
 		return () => {
@@ -48,7 +53,9 @@ function LeftPanel(): JSX.Element {
 			<div className={style.menubar}>
 				<div className={style.topSet}>
 					<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-					<div className={style.icon} onClick={toggleOption(Option.Chat)}>🗨️</div>
+					<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
+						<div onClick={toggleOption(Option.Chat)}>🗨️</div>
+					</NumberOver>
 					<div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
 					<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
 				</div>

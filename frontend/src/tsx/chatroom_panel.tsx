@@ -251,7 +251,6 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				});
 				setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
 					// TODO: 給出真實的 message ID
-					console.log(`addOldMessages ${props.room.id}`);
 					return draft.addOldMessages(props.room.id, old_messages);
 				}));
 				if (initializing) {
