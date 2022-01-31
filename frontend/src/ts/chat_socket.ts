@@ -5,11 +5,9 @@ import { server_trigger, MessageSending } from './api/api_trait';
 export class ChatSocket {
 	socket: WebSocket | null;
 	all_chat: AllChatState | null;
-	mapping: Map<number, string>;
 	constructor() {
 		this.all_chat = null;
 		this.socket = null;
-		this.mapping = new Map();
 	}
 	init(all_chat: AllChatState): void {
 		console.log('初始化 chat socket');
@@ -20,7 +18,6 @@ export class ChatSocket {
 		console.log('關閉 chat socket');
 		this.socket?.close();
 		this.socket = null;
-		this.mapping = new Map();
 		this.all_chat = null;
 	}
 	reset(): void {
@@ -39,8 +36,7 @@ export class ChatSocket {
 					if ('Direct' in channel) {
 						const chat = channel.Direct;
 						console.log(chat);
-						this.mapping.set(chat.channel_id, chat.name);
-						this.all_chat!.addDirectChat(chat.name, new DirectChatData(
+						this.all_chat!.addDirectChat(chat.channel_id, new DirectChatData(
 							chat.name,
 							chat.channel_id,
 							chat.opposite_id,
@@ -61,13 +57,14 @@ export class ChatSocket {
 				console.log('message sending');
 				let message_sending: MessageSending = api;
 				console.log(`${JSON.stringify(message_sending)}`);
-				let sender = this.mapping.get(message_sending.channel_id);
-				if (sender == undefined) {
+				if (this.all_chat == undefined) {
+					console.log('all_chat 尚未載入');
+				} else if (this.all_chat.all_chat.direct[message_sending.channel_id]) {
+					// TODO: 使用伺服器傳回的日期、訊息 id
+					this.all_chat.addMessage(message_sending.channel_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
+				} else {
 					// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
 					toastErr(`找不到聊天室：${message_sending.channel_id}`);
-				} else {
-					// TODO: 使用伺服器傳回的日期、訊息 id
-					this.all_chat!.addMessage(sender, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
 				}
 			}
 		};

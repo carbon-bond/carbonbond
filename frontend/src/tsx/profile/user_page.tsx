@@ -19,6 +19,8 @@ const { favoriteTitle, favoriteWrapper } = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 
+let fake_id_counter = -1;
+
 function EditSentence(props: { sentence: string, setSentence: Function }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue(props.sentence);
@@ -290,7 +292,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
 	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
 	const { addRoom } = BottomPanelState.useContainer();
-	const { addDirectChat } = AllChatState.useContainer();
+	const { all_chat, addDirectChat } = AllChatState.useContainer();
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -339,8 +341,14 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 
 	function onStartChat(): void {
 		const user_name = props.profile_user.user_name;
-		addDirectChat(user_name, new DirectChatData(user_name, 0, props.profile_user.id, [], new Date(), false));
-		addRoom(user_name);
+		let chat = Object.values(all_chat.direct).find(chat => chat.name == user_name);
+		if (chat != undefined) {
+			addRoom(chat.id);
+		} else {
+			addDirectChat(fake_id_counter, new DirectChatData(user_name, fake_id_counter, props.profile_user.id, [], new Date(), false));
+			addRoom(fake_id_counter);
+			fake_id_counter--;
+		}
 	}
 
 	React.useEffect(() => {

@@ -53,12 +53,12 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 
 	function onClick(): void {
 		if (props.chat instanceof DirectChatData) {
-			addRoom(props.chat.name);
+			addRoom(props.chat.id);
 		} else if (props.chat instanceof GroupChatData) {
 			if (props.chat.unreadChannels().length == 0) {
-				addRoomWithChannel(props.chat.name, Object.values(props.chat.channels)[0].name);
+				addRoomWithChannel(props.chat.id, Object.values(props.chat.channels)[0].name);
 			} else {
-				addRoomWithChannel(props.chat.name, Object.values(props.chat.unreadChannels())[0].name);
+				addRoomWithChannel(props.chat.id, Object.values(props.chat.unreadChannels())[0].name);
 			}
 		}
 	}
