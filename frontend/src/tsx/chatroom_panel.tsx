@@ -240,6 +240,18 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		}
 	}, [extended, prev_scroll_top, ref]);
 
+	// 如果聊天室本就捲動至底部，收到訊息時，捲動至底部
+	React.useEffect(() => {
+		// XXX: 47 是實驗出來的數字
+		// 一旦 CSS 有所更動就可能失效
+		// https://stackoverflow.com/questions/876115/how-can-i-determine-if-a-div-is-scrolled-to-the-bottom
+		if (chat.history[chat.history.length - 1].sender == server_trigger.Sender.Opposite
+			&& ref.current
+			&& ref.current.scrollHeight - ref.current.clientHeight - ref.current.scrollTop <= 47) {
+			setScrolling(true);
+		}
+	}, [chat.history, ref]);
+
 	React.useEffect(() => {
 		const PAGE_SIZE = 50;
 		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
