@@ -1,3 +1,4 @@
+use crate::api::model::chat::chat_model_root::client_trigger;
 use crate::custom_error::Fallible;
 use crate::{api::model, chat::message};
 use futures::{stream::StreamExt, SinkExt, TryFutureExt};
@@ -54,7 +55,6 @@ impl Users {
         if let Some(tx_set) = users.get(&id) {
             for tx in tx_set {
                 tx.1.as_ref().unwrap().send(Message::text(content)).unwrap();
-                // tx.1.as_ref().unwrap().send(Message::text(content)).unwrap();
             }
         }
     }
@@ -127,10 +127,17 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     users.remove_tx(id, tx_id).await;
 }
 
-use model::chat::chat_model_root::MessageSending;
 async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
-    let msg_sending: MessageSending = serde_json::from_str(msg)?;
-    let receiver_id = super::message::send_message(&msg_sending, id).await?;
-    users.send_to(receiver_id, msg).await;
+    let api: client_trigger::API = serde_json::from_str(msg)?;
+    match api {
+        client_trigger::API::MessageSending(message_sending) => {
+            let receiver_id = super::message::send_message(&message_sending, id).await?;
+            users.send_to(receiver_id, msg).await;
+        }
+    }
     Ok(())
+    // let msg_sending: MessageSending = serde_json::from_str(msg)?;
+    // let receiver_id = super::message::send_message(&msg_sending, id).await?;
+    // users.send_to(receiver_id, msg).await;
+    // ok(())
 }
