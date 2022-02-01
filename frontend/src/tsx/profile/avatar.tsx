@@ -107,13 +107,15 @@ function EditAvatar(props: { name: string }): JSX.Element {
 			}} >
 			{
 				preview_data ?
-					<ReactCrop
-						src={preview_data}
-						crop={crop}
-						ruleOfThirds
-						onImageLoaded={onImageLoaded}
-						onChange={onCropChange}
-					/> :
+					<div className={style.cropper}>
+						<ReactCrop
+							src={preview_data}
+							crop={crop}
+							ruleOfThirds
+							onImageLoaded={onImageLoaded}
+							onChange={onCropChange}
+						/>
+					</div> :
 					<div>出了些問題......</div>
 			}
 			<div className={style.buttonSet}>

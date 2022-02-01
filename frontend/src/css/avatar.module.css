@@ -22,7 +22,12 @@
 		display: none;
 	}
 }
-
+.cropper {
+	& img {
+		max-width: 300px;
+		max-height: 300px;
+	}
+}
 .buttonSet {
     margin-top: 10px;
     & button {
