@@ -569,86 +569,6 @@
       ]
     }
   },
-  "27d45416e5d9a4f1fd28537f840c172cb6568e8e4b408da932f321ca841e72aa": {
-    "query": "\n\t\tSELECT chat.direct_chats.id as channel_id,\n            u1.user_name as name_1,\n            u2.user_name as name_2,\n            user_id_1,\n            user_id_2,\n            read_time_1,\n            read_time_2,\n            m.create_time as time,\n            m.id as msg_id,\n            m.content as text,\n            m.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m\n        on chat.direct_chats.last_message = m.id\n        WHERE (user_id_1 = $1 OR user_id_2 = $1)\n\t\t",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "channel_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "name_1",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "name_2",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "user_id_1",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 4,
-          "name": "user_id_2",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 5,
-          "name": "read_time_1",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 6,
-          "name": "read_time_2",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 7,
-          "name": "time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 8,
-          "name": "msg_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 9,
-          "name": "text",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 10,
-          "name": "sender_id",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "296ad24a0508a61e62dd39d5ed2ed1235a88caa19dd9a333bcbeb32003e9769e": {
     "query": "\n        SELECT n.*, users.user_name as user2_name, boards.board_name, a1.title as article1_title, a2.title as article2_title\n        FROM notifications n\n        LEFT JOIN users on n.user2_id = users.id\n        LEFT JOIN boards on n.board_id = boards.id\n        LEFT JOIN articles a1 on n.article1_id = a1.id\n        LEFT JOIN articles a2 on n.article2_id = a2.id\n        WHERE user_id = $1 AND ($2 OR NOT n.read)\n        ",
     "describe": {
@@ -973,6 +893,86 @@
         false,
         false,
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "319e1d5294248f489601eef9999e511e5a989d3c652967696e6b978152e7f1b5": {
+    "query": "\n\t\tSELECT chat.direct_chats.id,\n            u1.user_name as name_1,\n            u2.user_name as name_2,\n            user_id_1,\n            user_id_2,\n            read_time_1,\n            read_time_2,\n            m.create_time as time,\n            m.id as msg_id,\n            m.content as text,\n            m.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m\n        on chat.direct_chats.last_message = m.id\n        WHERE (user_id_1 = $1 OR user_id_2 = $1)\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name_1",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "name_2",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_id_1",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_id_2",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "read_time_1",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "read_time_2",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
+          "name": "msg_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 9,
+          "name": "text",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
         false,
         false,
         false,
@@ -2664,6 +2664,86 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "a7c7e6f40b37b0b46437dda8f6573bfc0925b2cd17de1d7983f4f5a9494bdda1": {
+    "query": "\n\t\tSELECT chat.direct_chats.id,\n            u1.user_name as name_1,\n            u2.user_name as name_2,\n            user_id_1,\n            user_id_2,\n            read_time_1,\n            read_time_2,\n            m.create_time as time,\n            m.id as msg_id,\n            m.content as text,\n            m.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m\n        on chat.direct_chats.last_message = m.id\n        WHERE chat.direct_chats.id = $1\n\t\t",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name_1",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "name_2",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_id_1",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_id_2",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 5,
+          "name": "read_time_1",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "read_time_2",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 7,
+          "name": "time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 8,
+          "name": "msg_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 9,
+          "name": "text",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "sender_id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
     }
   },
   "a84766d86d329414f9ba641a7efba8c8abbb0aeacc20637c41aae44ad6be73ea": {

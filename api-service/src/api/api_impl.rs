@@ -1,4 +1,5 @@
 use super::{api_trait, model};
+use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::chat;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
@@ -73,7 +74,13 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
         msg: String,
     ) -> Result<i64, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
-        chat::channel::create_if_not_exist(user_id, opposite_id, msg).await
+        let chat_id = chat::channel::create_if_not_exist(user_id, opposite_id, msg).await?;
+        let channel = chat::channel::get_direct_chat_by_id(chat_id, opposite_id).await?;
+        context
+            .users
+            .send_api(opposite_id, server_trigger::API::NewChannel(channel))
+            .await;
+        Ok(chat_id)
     }
     async fn query_direct_chat_history(
         &self,

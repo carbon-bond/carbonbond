@@ -41,7 +41,7 @@ export class DirectChatData implements ChatData {
 		if (last_msg == undefined) {
 			return false;
 		} else {
-			return this.read_time < last_msg.time;
+			return this.read_time <= last_msg.time;
 		}
 	}
 	newestMessage(): Message | undefined {

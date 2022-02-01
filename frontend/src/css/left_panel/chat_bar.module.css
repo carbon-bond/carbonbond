@@ -61,6 +61,9 @@
             }
         }
     }
+    & .chatUnit:hover {
+        background-color: var(--lightest-gray);
+    }
     & .bold {
         font-weight: bold;
         background-color: var(--lightest-gray);

@@ -57,7 +57,8 @@ export type API =
 export namespace server_trigger {
 export type API = 
  | { InitInfo: InitInfo } 
- | { MessageSending: MessageSending };
+ | { MessageSending: MessageSending } 
+ | { NewChannel: Channel };
 export type InitInfo = { channels: Channel [] };
 export enum Sender { Myself = "Myself", Opposite = "Opposite" };
 export type Message = { id: number; sender: Sender; text: string; time: string};

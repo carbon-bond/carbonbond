@@ -1,6 +1,6 @@
-use crate::api::model::chat::chat_model_root::client_trigger;
+use crate::api::model::chat::chat_model_root::{client_trigger, server_trigger};
+use crate::chat::message;
 use crate::custom_error::Fallible;
-use crate::{api::model, chat::message};
 use futures::{stream::StreamExt, SinkExt, TryFutureExt};
 use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
@@ -58,6 +58,10 @@ impl Users {
             }
         }
     }
+    pub async fn send_api(&self, id: i64, api: server_trigger::API) {
+        self.send_to(id, &serde_json::to_string(&api).unwrap())
+            .await
+    }
     async fn remove_tx(&self, id: i64, tx_id: usize) {
         let mut users = self.0.write().await;
         if let Entry::Occupied(mut tx_set) = users.entry(id) {
@@ -72,7 +76,6 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
     let mut rx = UnboundedReceiverStream::new(rx);
     let tx_id = NEXT_CHANNEL_ID.fetch_add(1, Ordering::Relaxed);
 
-    use model::chat::chat_model_root::server_trigger;
     let init_info = message::get_init_info(id).await;
 
     let init_info = match init_info {
@@ -136,8 +139,4 @@ async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
         }
     }
     Ok(())
-    // let msg_sending: MessageSending = serde_json::from_str(msg)?;
-    // let receiver_id = super::message::send_message(&msg_sending, id).await?;
-    // users.send_to(receiver_id, msg).await;
-    // ok(())
 }

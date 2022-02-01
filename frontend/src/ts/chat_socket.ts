@@ -1,5 +1,4 @@
 import { AllChatState, DirectChatData, Message } from '../tsx/global_state/chat';
-import { toastErr } from '../tsx/utils';
 import { server_trigger, MessageSending, client_trigger } from './api/api_trait';
 
 export class ChatSocket {
@@ -23,6 +22,27 @@ export class ChatSocket {
 	set_all_chat(all_chat: AllChatState): void {
 		this.all_chat = all_chat;
 	}
+	add_chat(channel: server_trigger.Channel): void {
+		if ('Direct' in channel) {
+			const chat = channel.Direct;
+			console.log(chat);
+			this.all_chat!.addDirectChat(chat.channel_id, new DirectChatData(
+				chat.name,
+				chat.channel_id,
+				chat.opposite_id,
+				[
+					new Message(
+						chat.last_msg.id,
+						chat.last_msg.sender,
+						chat.last_msg.text,
+						new Date(chat.last_msg.time),
+					)
+				],
+				new Date(chat.read_time),
+				true
+			));
+		}
+	}
 	reset(): void {
 		const url = `ws://${window.location.hostname}:${window.location.port}/chat`;
 		this.socket = new WebSocket(url);
@@ -38,25 +58,7 @@ export class ChatSocket {
 
 				const init_info: server_trigger.InitInfo = api.InitInfo;
 				for (const channel of init_info.channels) {
-					if ('Direct' in channel) {
-						const chat = channel.Direct;
-						console.log(chat);
-						this.all_chat!.addDirectChat(chat.channel_id, new DirectChatData(
-							chat.name,
-							chat.channel_id,
-							chat.opposite_id,
-							[
-								new Message(
-									chat.last_msg.id,
-									chat.last_msg.sender,
-									chat.last_msg.text,
-									new Date(chat.last_msg.time),
-								)
-							],
-							new Date(chat.read_time),
-							true
-						));
-					}
+					this.add_chat(channel);
 				}
 			} else if ('MessageSending' in api) {
 				const message_sending: MessageSending = api.MessageSending;
@@ -71,8 +73,12 @@ export class ChatSocket {
 					this.all_chat.addMessage(message_sending.channel_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
 				} else {
 					// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
-					toastErr(`找不到聊天室：${message_sending.channel_id}`);
+					console.error(`找不到聊天室：${message_sending.channel_id} ，重新整理可能可以解決問題`);
 				}
+			} else if ('NewChannel' in api) {
+				console.log('new channel');
+				console.log(`${JSON.stringify(api.NewChannel)}`);
+				this.add_chat(api.NewChannel);
 			} else {
 				console.error('無法識別的 server_trigger.API');
 				console.log(`${JSON.stringify(api)}`);

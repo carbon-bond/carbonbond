@@ -25,6 +25,7 @@ pub mod util;
 mod product {
     pub const MAX_ARTICLE_FIELD: usize = 15;
 
+    use crate::chat;
     use crate::custom_error::{ErrorCode, Fallible};
 
     use async_trait::async_trait;
@@ -50,6 +51,7 @@ mod product {
     pub struct Ctx {
         pub headers: HeaderMap<HeaderValue>,
         pub resp: Response<String>,
+        pub users: chat::control::Users,
     }
 
     // XXX: 明碼傳輸，先頂着用，上線前必須處理安全問題
