@@ -59,10 +59,15 @@ async fn run_chitin(query: query::RootQuery, context: &mut Ctx) -> Fallible<Stri
     Ok(resp.0)
 }
 
-async fn _handle_api(body: Bytes, headers: HeaderMap) -> Fallible<Response<Body>> {
+async fn _handle_api(
+    body: Bytes,
+    headers: HeaderMap,
+    users: chat::control::Users,
+) -> Fallible<Response<Body>> {
     let mut context = Ctx {
         headers: headers,
         resp: Response::new(String::new()),
+        users: users,
     };
 
     let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
@@ -74,8 +79,12 @@ async fn _handle_api(body: Bytes, headers: HeaderMap) -> Fallible<Response<Body>
     Ok(context.resp.map(|s| Body::from(s)))
 }
 
-async fn handle_api(body: Bytes, headers: HeaderMap) -> Result<impl warp::Reply, Infallible> {
-    Ok(to_response(_handle_api(body, headers).await))
+async fn handle_api(
+    body: Bytes,
+    headers: HeaderMap,
+    users: chat::control::Users,
+) -> Result<impl warp::Reply, Infallible> {
+    Ok(to_response(_handle_api(body, headers, users).await))
 }
 
 async fn handle_chat(
@@ -84,8 +93,11 @@ async fn handle_chat(
     users: chat::control::Users,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     let mut context = Ctx {
-        headers: headers,
+        headers,
         resp: Response::new(String::new()),
+        // NOTE: handle_chat 其實不需要完整的 Ctx ，只是如此調用 context.get_id() 比較方便而已
+        // 可抽出 get_id 的邏輯，以避免填入不需要的 users 欄位
+        users: users.clone(),
     };
     let id = match context.get_id().await {
         Some(id) => id,
@@ -105,15 +117,20 @@ pub fn get_routes(
     // 設定前端
     let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
     let users = chat::control::Users::default();
-    let users = warp::any().map(move || users.clone());
+    let users_clone = users.clone();
+    let _users = warp::any().map(move || users_clone.clone());
     let chat = warp::path!("chat")
         .and(warp::header::headers_cloned())
         .and(warp::ws())
-        .and(users)
+        .and(_users)
         .and_then(handle_chat);
+
+    let users_clone = users.clone();
+    let _users = warp::any().map(move || users_clone.clone());
     let api = warp::path!("api")
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())
+        .and(_users)
         .and_then(handle_api);
 
     let gets = warp::get().and(avatar.or(chat));

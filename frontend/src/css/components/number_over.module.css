@@ -1,0 +1,12 @@
+.numberOver {
+	position: relative;
+	& .number {
+		position: absolute;
+		top: 0px;
+		color: var(--white);
+		font-size: 14px;
+		background-color: var(--red);
+		padding: 1px 5px;
+		border-radius: 10px;
+	}
+}

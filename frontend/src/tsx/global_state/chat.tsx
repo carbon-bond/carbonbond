@@ -41,7 +41,7 @@ export class DirectChatData implements ChatData {
 		if (last_msg == undefined) {
 			return false;
 		} else {
-			return this.read_time < last_msg.time;
+			return this.read_time <= last_msg.time;
 		}
 	}
 	newestMessage(): Message | undefined {
@@ -110,6 +110,7 @@ export interface IMessage {
 };
 
 export interface ChatData {
+	id: number;
 	exist: boolean;
 	name: string;
 	newestMessage(): IMessage | undefined
@@ -118,49 +119,51 @@ export interface ChatData {
 
 class AllChat {
 	[immerable] = true;
-	group: { [key: string]: GroupChatData };
-	direct: { [key: string]: DirectChatData };
-	constructor(group: { [key: string]: GroupChatData }, direct: { [key: string]: DirectChatData }) {
+	group: { [key: number]: GroupChatData };
+	direct: { [key: number]: DirectChatData };
+	constructor(group: { [key: number]: GroupChatData }, direct: { [key: number]: DirectChatData }) {
 		this.group = group;
 		this.direct = direct;
 	}
-	toRealDirectChat(name: string, chat_id: number): AllChat {
+	toRealDirectChat(fake_id: number, chat_id: number): AllChat {
 		return produce(this, (draft) => {
-			draft.direct[name].exist = true;
-			draft.direct[name].id = chat_id;
+			draft.direct[chat_id] = draft.direct[fake_id];
+			draft.direct[chat_id].exist = true;
+			draft.direct[chat_id].id = chat_id;
+			delete draft.direct[fake_id];
 		});
 	}
-	addChat(name: string, chat: DirectChatData): AllChat {
+	addChat(id: number, chat: DirectChatData): AllChat {
 		return produce(this, (draft) => {
-			draft.direct[name] = chat;
+			draft.direct[id] = chat;
 		});
 	}
-	addMessage(name: string, message: Message): AllChat {
+	addMessage(id: number, message: Message): AllChat {
 		return produce(this, draft => {
-			draft.direct[name] = draft.direct[name].addMessage(message);
+			draft.direct[id] = draft.direct[id].addMessage(message);
 		});
 	}
-	addOldMessages(name: string, old_messages: Message[]): AllChat {
+	addOldMessages(id: number, old_messages: Message[]): AllChat {
 		return produce(this, draft => {
-			draft.direct[name] = draft.direct[name].addOldMessages(old_messages);
+			draft.direct[id] = draft.direct[id].addOldMessages(old_messages);
 		});
 	}
-	addChannelMessage(name: string, channel: string, message: Message): AllChat {
+	addChannelMessage(id: number, channel: string, message: Message): AllChat {
 		return produce(this, draft => {
-			draft.group[name].channels[channel] = draft.group[name].channels[channel]?.addMessage(message);
+			draft.group[id].channels[channel] = draft.group[id].channels[channel]?.addMessage(message);
 		});
 	}
-	updateReadTime(name: string, time: Date): AllChat {
+	updateReadTime(id: number, time: Date): AllChat {
 		return produce(this, draft => {
-			let chat = draft.direct[name];
+			let chat = draft.direct[id];
 			if (chat) {
 				chat.read_time = time;
 			}
 		});
 	}
-	updateChannelReadTime(name: string, channel: string, time: Date): AllChat {
+	updateChannelReadTime(id: number, channel: string, time: Date): AllChat {
 		return produce(this, draft => {
-			let chat = draft.group[name].channels[channel];
+			let chat = draft.group[id].channels[channel];
 			if (chat) {
 				chat.read_time = time;
 			}
@@ -172,11 +175,11 @@ export type AllChatState = {
 	all_chat: AllChat,
 	setAllChat: React.Dispatch<React.SetStateAction<AllChat>>,
 	reset: () => void,
-	addDirectChat: Function,
-	addMessage: Function
-	addChannelMessage: Function
-	updateLastRead: Function
-	updateLastReadChannel: Function
+	addDirectChat: (id: number, chat: DirectChatData) => void,
+	addMessage: (id: number, message: Message) => void
+	addChannelMessage: (id: number, channel_name: string, message: Message) => void
+	updateLastRead: (id: number, time: Date) => void
+	updateLastReadChannel: (id: number, channel_name: string, time: Date) => void
 };
 
 function useAllChatState(): AllChatState {
@@ -190,29 +193,27 @@ function useAllChatState(): AllChatState {
 		setAllChat(new AllChat({}, {}));
 	}
 
-	function addDirectChat(name: string, chat: DirectChatData): void {
+	function addDirectChat(id: number, chat: DirectChatData): void {
 		// TODO: 先去資料庫裏撈聊天室
 		// 可能有太舊的對話沒有被載入到客戶端
-		if (all_chat.direct[name] == undefined) {
-			setAllChat(all_chat.addChat(name, chat));
-		}
+		setAllChat(all_chat.addChat(id, chat));
 	}
 
-	function addMessage(name: string, message: Message): void {
-		setAllChat(all_chat.addMessage(name, message));
+	function addMessage(id: number, message: Message): void {
+		setAllChat(all_chat.addMessage(id, message));
 	}
 
-	function addChannelMessage(name: string, channel_name: string, message: Message): void {
-		setAllChat(all_chat.addChannelMessage(name, channel_name, message));
+	function addChannelMessage(id: number, channel_name: string, message: Message): void {
+		setAllChat(all_chat.addChannelMessage(id, channel_name, message));
 	}
 
 	// 只作用於雙人
-	function updateLastRead(name: string, time: Date): void {
-		setAllChat(all_chat.updateReadTime(name, time));
+	function updateLastRead(id: number, time: Date): void {
+		setAllChat(all_chat.updateReadTime(id, time));
 	}
 
-	function updateLastReadChannel(name: string, channel_name: string, time: Date): void {
-		setAllChat(all_chat.updateChannelReadTime(name, channel_name, time));
+	function updateLastReadChannel(id: number, channel_name: string, time: Date): void {
+		setAllChat(all_chat.updateChannelReadTime(id, channel_name, time));
 	}
 
 	return {

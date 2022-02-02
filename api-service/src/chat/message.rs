@@ -8,7 +8,7 @@ use sqlx::PgConnection;
 pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let pool = get_pool();
     struct TmpChannel {
-        channel_id: i64,
+        id: i64,
         name_1: String,
         name_2: String,
         user_id_1: i64,
@@ -25,7 +25,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let channels = sqlx::query_as!(
         TmpChannel,
         "
-		SELECT chat.direct_chats.id as channel_id,
+		SELECT chat.direct_chats.id,
             u1.user_name as name_1,
             u2.user_name as name_2,
             user_id_1,
@@ -63,7 +63,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
                 Sender::Opposite
             };
             server_trigger::Channel::Direct(server_trigger::Direct {
-                channel_id: tmp.channel_id,
+                channel_id: tmp.id,
                 name,
                 opposite_id,
                 read_time,

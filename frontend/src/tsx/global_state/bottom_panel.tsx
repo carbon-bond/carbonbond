@@ -3,14 +3,18 @@ import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
 
+export enum RoomKind {
+	Simple, Channel
+};
+
 export type SimpleRoomData = {
-	// XXX: 之後要改為 id ，因為可能會撞名
-	name: string,
+	kind: RoomKind.Simple,
+	id: number,
 };
 
 export type ChannelRoomData = {
-	// XXX: 之後要改為 id ，因為可能會撞名
-	name: string,
+	kind: RoomKind.Channel,
+	id: number,
 	channel: string
 };
 
@@ -24,64 +28,75 @@ export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
 function useBottomPanelState(): {
 	chatrooms: RoomData[],
 	clearRoom: () => void,
-	addRoom: (name: string) => void,
-	addRoomWithChannel: (name: string, channel: string) => void,
-	changeChannel: (name: string, channel: string) => void,
-	deleteRoom: (name: string) => void,
+	addRoom: (id: number) => void,
+	addRoomWithChannel: (id: number, channel: string) => void,
+	changeChannel: (id: number, channel: string) => void,
+	deleteRoom: (id: number, kind: RoomKind) => void,
+	toRealRoom: (fake_id: number, id: number) => void,
 	} {
 	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
 
 	function clearRoom(): void {
 		setChatrooms([]);
 	}
-	function addRoom(name: string): void {
+	function addRoom(id: number): void {
 		// TODO: 調整聊天室添加順序
-		let room = chatrooms.find(room => room.name == name);
+		let room = chatrooms.find(room => room.id == id && room.kind == RoomKind.Simple);
 		let new_chatrooms = produce(chatrooms, draft => {
-			draft = draft.filter(room => room.name != name);
+			draft = draft.filter(room => room.id != id);
 			if (room) {
 				// 若聊天室已經存在，將其排列到第一位
 				draft.unshift(room);
 			} else {
-				draft.unshift({name});
+				draft.unshift({id, kind: RoomKind.Simple});
 			}
 			return draft;
 		});
 		setChatrooms(new_chatrooms);
 	}
 
-	function addRoomWithChannel(name: string, channel: string): void {
+	function addRoomWithChannel(id: number, channel: string): void {
 		// TODO: 調整聊天室添加順序
-		let room = chatrooms.find(room => room.name == name);
+		let room = chatrooms.find(room => room.id == id && room.kind == RoomKind.Channel);
 		let new_chatrooms = produce(chatrooms, draft => {
-			draft = draft.filter(room => room.name != name);
+			draft = draft.filter(room => room.id != id);
 			if (room) {
 				// 若聊天室已經存在，將其排列到第一位
 				draft.unshift(room);
 			} else {
-				draft.unshift({name, channel});
+				draft.unshift({id, channel, kind: RoomKind.Channel});
 			}
 			return draft;
 		});
 		setChatrooms(new_chatrooms);
 	}
 
-	function changeChannel(name: string, channel: string): void {
-		let index = chatrooms.findIndex(room => room.name == name);
+	function changeChannel(id: number, channel: string): void {
+		let index = chatrooms.findIndex(room => room.id == id && room.kind == RoomKind.Channel);
 		if (index != -1) {
 			setChatrooms(produce(chatrooms, draft => {
-				draft[index] = {name, channel};
+				draft[index] = {id, channel, kind: RoomKind.Channel};
 			}));
 		} else {
-			console.error(`聊天室 ${name} 不存在，無法切換頻道`);
+			console.error(`聊天室 ${id} 不存在，無法切換頻道`);
 		}
 	}
 
-	function deleteRoom(name: string): void {
-		setChatrooms(chatrooms.filter(room => room.name != name));
+	function deleteRoom(id: number, kind: RoomKind): void {
+		setChatrooms(chatrooms.filter(room => room.id != id || room.kind != kind));
 	}
 
-	return { chatrooms, clearRoom, addRoom, addRoomWithChannel, changeChannel, deleteRoom };
+	function toRealRoom(fake_id: number, id: number): void {
+		let new_rooms = produce(chatrooms, (chatrooms) => {
+			let room = chatrooms.find(room => room.id == fake_id && room.kind == RoomKind.Simple);
+			if (room) {
+				room.id = id;
+			}
+		});
+		setChatrooms(new_rooms);
+	}
+
+	return { chatrooms, clearRoom, addRoom, addRoomWithChannel, changeChannel, deleteRoom, toRealRoom };
 }
 
 export const BottomPanelState = createContainer(useBottomPanelState);

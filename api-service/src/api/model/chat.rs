@@ -30,6 +30,7 @@ pub mod chat_model_root {
         pub enum API {
             InitInfo(InitInfo),
             MessageSending(MessageSending),
+            NewChannel(Channel),
         }
 
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

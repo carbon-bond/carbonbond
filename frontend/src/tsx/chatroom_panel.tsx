@@ -16,7 +16,8 @@ import {
 	RoomData,
 	SimpleRoomData,
 	ChannelRoomData,
-	isChannelRoomData
+	isChannelRoomData,
+	RoomKind
 } from './global_state/bottom_panel';
 import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css';
@@ -27,6 +28,7 @@ import produce from 'immer';
 import { Link } from 'react-router-dom';
 import { server_trigger } from '../ts/api/api_trait';
 import { useScroll } from 'react-use';
+import ReactDOM from 'react-dom';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -198,7 +200,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 
 // 聊天室
 function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
-	const { deleteRoom } = BottomPanelState.useContainer();
+	const { deleteRoom, toRealRoom } = BottomPanelState.useContainer();
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
 	const [scrolling, setScrolling] = React.useState(false);
@@ -209,17 +211,17 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const [ref, scrollToBottom] = useScrollBottom();
 	const {y} = useScroll(ref);
 	const { user_state } = UserState.useContainer();
-	const chat = all_chat.direct[props.room.name];
+	const chat = all_chat.direct[props.room.id];
 	React.useEffect(() => {
 		if (extended && chat?.isUnread()) {
 			let now = new Date();
-			updateLastRead(props.room.name, now);
+			updateLastRead(props.room.id, now);
 			API_FETCHER.chatQuery.updateReadTime(chat.id).then(res => unwrap(res)).catch(err => {
 				console.error(`更新聊天室 ${chat.name} 讀取時間失敗：`);
 				console.error(err);
 			});
 		}
-	}, [extended, chat, updateLastRead, props.room.name]);
+	}, [extended, chat, updateLastRead, props.room.id]);
 
 	React.useEffect(() => {
 		if (scrolling) {
@@ -238,6 +240,18 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		}
 	}, [extended, prev_scroll_top, ref]);
 
+	// 如果聊天室本就捲動至底部，收到訊息時，捲動至底部
+	React.useEffect(() => {
+		// XXX: 47 是實驗出來的數字
+		// 一旦 CSS 有所更動就可能失效
+		// https://stackoverflow.com/questions/876115/how-can-i-determine-if-a-div-is-scrolled-to-the-bottom
+		if (chat.history[chat.history.length - 1].sender == server_trigger.Sender.Opposite
+			&& ref.current
+			&& ref.current.scrollHeight - ref.current.clientHeight - ref.current.scrollTop <= 47) {
+			setScrolling(true);
+		}
+	}, [chat.history, ref]);
+
 	React.useEffect(() => {
 		const PAGE_SIZE = 50;
 		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
@@ -249,7 +263,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				});
 				setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
 					// TODO: 給出真實的 message ID
-					return draft.addOldMessages(props.room.name, old_messages);
+					return draft.addOldMessages(props.room.id, old_messages);
 				}));
 				if (initializing) {
 					setInitializing(false);
@@ -261,7 +275,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				setFetchingHistory(false);
 			});
 		}
-	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.name, scrollToBottom, setAllChat, y, initializing]);
+	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing]);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -279,20 +293,22 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				if (chat.exist) {
 					window.chat_socket.send_message(chat!.id, input_props.value);
 					// TODO: 計算回傳的 id
-					addMessage(props.room.name, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
+					addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
 					setValue('');
 					setScrolling(true);
-				}
-				else {
+				} else {
 					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
 						return unwrap(res);
 					}).then(chat_id => {
-						setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
-							// TODO: 給出真實的 message ID
-							let ret = draft.addMessage(props.room.name,  new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
-							ret = ret.toRealDirectChat(props.room.name, chat_id);
-							return ret;
-						}));
+						ReactDOM.unstable_batchedUpdates(() => {
+							setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
+								// TODO: 給出真實的 message ID
+								let ret = draft.addMessage(props.room.id,  new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
+								ret = ret.toRealDirectChat(props.room.id, chat_id);
+								return ret;
+							}));
+							toRealRoom(props.room.id, chat_id);
+						});
 					}).catch(err => toastErr(err));
 					setValue('');
 					setScrolling(true);
@@ -302,7 +318,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
-				<div className={leftSet}><Link to={`/app/user/${props.room.name}`}>{props.room.name}</Link></div>
+				<div className={leftSet}><Link to={`/app/user/${chat.name}`}>{chat.name}</Link></div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
 						setPrevScrollTop(ref.current?.scrollTop);
@@ -311,21 +327,21 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				}}></div>
 				<div className={rightSet}>
 					<div className={button}>⚙</div>
-					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
+					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Simple)}>✗</div>
 				</div>
 			</div>
 			<div ref={ref} className={style.messages}>
-				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={props.room.name}/>
+				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={chat.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
 	} else {
 		return <div className={`${style.chatPanel} ${roomWidth}`}>
 			<div className={roomTitle}>
-				<div className={leftSet}>{props.room.name}</div>
+				<div className={leftSet}>{chat.name}</div>
 				<div className={middleSet} onClick={() => setExtended(true)}></div>
 				<div className={rightSet}>
-					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
+					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Simple)}>✗</div>
 				</div>
 			</div>
 		</div>;
@@ -340,16 +356,16 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const [ref, _scrollToBottom] = useScrollBottom();
 	const { user_state } = UserState.useContainer();
 
-	const chat = all_chat.group[props.room.name];
-	if (chat == undefined) { console.error(`找不到聊天室 ${props.room.name}`); }
+	const chat = all_chat.group[props.room.id];
+	if (chat == undefined) { console.error(`找不到含頻道聊天室 ${props.room.id}`); }
 	const channel = chat!.channels[props.room.channel];
 	if (channel == undefined) { console.error(`找不到頻道 ${props.room.channel}`); }
 
 	React.useEffect(() => {
 		if (extended && channel!.isUnread()) {
-			updateLastReadChannel(props.room.name, props.room.channel, new Date());
+			updateLastReadChannel(props.room.id, props.room.channel, new Date());
 		}
-	}, [extended, channel, updateLastReadChannel, props.room.name, props.room.channel]);
+	}, [extended, channel, updateLastReadChannel, props.room.id, props.room.channel]);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -360,7 +376,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				addChannelMessage(props.room.name, props.room.channel, new Message(
+				addChannelMessage(props.room.id, props.room.channel, new Message(
 					-1,
 					server_trigger.Sender.Myself,
 					input_props.value,
@@ -376,7 +392,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 					Object.values(chat!.channels).map(c => {
 						const is_current = c.name == channel!.name;
 						const channel_style = `${channel} ${is_current ? style.selected : ''}`;
-						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.name, c.name); }}>
+						return <div className={channel_style} key={c.name} onClick={() => { changeChannel(chat!.id, c.name); }}>
 							<span className={style.channelSymbol}># </span>
 							{c.name}
 						</div>;
@@ -387,11 +403,11 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
-				<div className={leftSet}>{props.room.name}</div>
+				<div className={leftSet}>{chat.name}</div>
 				<div className={middleSet} onClick={() => setExtended(false)}>#{props.room.channel}</div>
 				<div className={rightSet}>
 					<div className={button}>⚙</div>
-					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
+					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Channel)}>✗</div>
 				</div>
 			</div>
 			<div className={style.panelContent}>
@@ -414,10 +430,10 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	} else {
 		return <div className={`${style.chatPanel} ${roomWidth}`}>
 			<div className={roomTitle}>
-				<div className={leftSet}>{props.room.name}</div>
+				<div className={leftSet}>{chat.name}</div>
 				<div className={middleSet} onClick={() => setExtended(true)}>#{props.room.channel}</div>
 				<div className={rightSet}>
-					<div className={button} onClick={() => deleteRoom(props.room.name)}>✗</div>
+					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Channel)}>✗</div>
 				</div>
 			</div>
 		</div>;
