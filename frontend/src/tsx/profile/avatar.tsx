@@ -94,6 +94,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		<ReactModal
 			isOpen={is_editing}
 			onRequestClose={() => setIsEditing(false)}
+			shouldCloseOnOverlayClick={false}
 			style={{
 				overlay: { zIndex: 200 },
 				content: {
