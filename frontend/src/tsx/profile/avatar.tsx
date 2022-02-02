@@ -2,6 +2,8 @@ import * as React from 'react';
 import ReactModal from 'react-modal';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
+import ReactCrop, { Crop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 import style from '../../css/avatar.module.css';
 
@@ -10,6 +12,15 @@ function EditAvatar(props: { name: string }): JSX.Element {
 	// const { user_state } = UserState.useContainer();
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
 	const [preview_data, setPreviewData] = React.useState<string | null>(null);
+	const [crop, setCrop] = React.useState<Crop>({
+		unit: 'px',
+		x: 0,
+		y: 0,
+		width: 50,
+		height: 50,
+		aspect: 3 / 3
+	});
+	const [imageRef, setImageRef] = React.useState<HTMLImageElement | null>(null);
 
 	function chooseAvatar(e: React.ChangeEvent<HTMLInputElement>): void {
 		e.preventDefault();
@@ -30,12 +41,44 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		reader.readAsDataURL(file);
 		return;
 	}
+	function onImageLoaded(image: HTMLImageElement): void {
+		setImageRef(image);
+	};
+	function getCroppedData(image_src: string): string {
+		let image = new Image();
+		image.src = image_src;
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d');
+		if (!ctx || !imageRef) {
+			return '';
+		}
+		const pixelRatio = window.devicePixelRatio;
+		const scaleX = imageRef.naturalWidth / imageRef.width;
+		const scaleY = imageRef.naturalHeight / imageRef.height;
+		canvas.width = crop.width * pixelRatio * scaleX;
+		canvas.height = crop.height * pixelRatio * scaleY;
+		ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+		ctx.imageSmoothingQuality = 'high';
+		ctx.drawImage(image,
+					  crop.x * scaleX,
+					  crop.y * scaleY,
+					  crop.width * scaleX,
+					  crop.height * scaleY,
+					  0,
+					  0,
+					  crop.width * scaleX,
+					  crop.height * scaleY);
+		return canvas.toDataURL('image/png');
+	}
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
 		e.preventDefault();
 		try {
 			if (preview_data != null) {
-				unwrap(await API_FETCHER.userQuery.updateAvatar(preview_data.split(',')[1]));
+				let cropped_data = getCroppedData(preview_data);
+				if (cropped_data != '') {
+					unwrap(await API_FETCHER.userQuery.updateAvatar(cropped_data.split(',')[1]));
+				}
 			}
 			setIsEditing(false);
 			location.reload();
@@ -44,10 +87,14 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		}
 		return {};
 	}
+	function onCropChange(crop: Crop, _percentage: Crop): void {
+		setCrop(crop);
+	}
 	return <div className={`${style.avatar} ${style.isMine}`}>
 		<ReactModal
 			isOpen={is_editing}
 			onRequestClose={() => setIsEditing(false)}
+			shouldCloseOnOverlayClick={false}
 			style={{
 				overlay: { zIndex: 200 },
 				content: {
@@ -61,7 +108,15 @@ function EditAvatar(props: { name: string }): JSX.Element {
 			}} >
 			{
 				preview_data ?
-					<img src={preview_data} height="144" width="144"></img> :
+					<div className={style.cropper}>
+						<ReactCrop
+							src={preview_data}
+							crop={crop}
+							ruleOfThirds
+							onImageLoaded={onImageLoaded}
+							onChange={onCropChange}
+						/>
+					</div> :
 					<div>出了些問題......</div>
 			}
 			<div className={style.buttonSet}>
