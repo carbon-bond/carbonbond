@@ -245,7 +245,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		// XXX: 47 是實驗出來的數字
 		// 一旦 CSS 有所更動就可能失效
 		// https://stackoverflow.com/questions/876115/how-can-i-determine-if-a-div-is-scrolled-to-the-bottom
-		if (chat.history[chat.history.length - 1].sender == server_trigger.Sender.Opposite
+		if (chat.history.length > 0
+			&& chat.history[chat.history.length - 1].sender == server_trigger.Sender.Opposite
 			&& ref.current
 			&& ref.current.scrollHeight - ref.current.clientHeight - ref.current.scrollTop <= 47) {
 			setScrolling(true);
