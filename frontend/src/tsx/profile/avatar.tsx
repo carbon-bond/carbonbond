@@ -55,10 +55,10 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		const pixelRatio = window.devicePixelRatio;
 		const scaleX = imageRef.naturalWidth / imageRef.width;
 		const scaleY = imageRef.naturalHeight / imageRef.height;
-		canvas.width = crop.width * pixelRatio * scaleX;
-		canvas.height = crop.height * pixelRatio * scaleY;
-		ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-		ctx.imageSmoothingQuality = 'high';
+		const output_width = Math.min(crop.width * pixelRatio * scaleX, 300);
+		const output_height = Math.min(crop.height * pixelRatio * scaleY, 300);
+		canvas.width = output_width;
+		canvas.height = output_height;
 		ctx.drawImage(image,
 					  crop.x * scaleX,
 					  crop.y * scaleY,
@@ -66,9 +66,9 @@ function EditAvatar(props: { name: string }): JSX.Element {
 					  crop.height * scaleY,
 					  0,
 					  0,
-					  crop.width * scaleX,
-					  crop.height * scaleY);
-		return canvas.toDataURL('image/png');
+					  output_width,
+					  output_height);
+		return canvas.toDataURL('image/jpeg', 0.5);
 	}
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
