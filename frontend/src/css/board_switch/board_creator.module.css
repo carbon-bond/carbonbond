@@ -1,6 +1,6 @@
-.editModal {
+.boardEditor {
+    margin-top: 20px;
     & .forceEditor {
-        height: 300px;
         width: 400px;
         display: flex;
         flex-direction: row;
@@ -31,4 +31,16 @@
         margin: 0px 0px 5px;
         resize: none;
     }
+}
+
+.categories {
+    margin-left: 20px;
+    & .fields {
+        margin-left: 20px;
+    }
+}
+
+hr {
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
