@@ -41,8 +41,17 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		reader.readAsDataURL(file);
 		return;
 	}
-	function onImageLoaded(image: HTMLImageElement): void {
+	function onImageLoaded(image: HTMLImageElement): boolean {
 		setImageRef(image);
+		setCrop({
+			unit: 'px',
+			x: 0,
+			y: 0,
+			width: Math.min(image.width, image.height),
+			height: Math.min(image.width, image.height),
+			aspect: 3 / 3
+		});
+		return false;
 	};
 	function getCroppedData(image_src: string): string {
 		let image = new Image();
@@ -52,13 +61,12 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		if (!ctx || !imageRef) {
 			return '';
 		}
-		const pixelRatio = window.devicePixelRatio;
 		const scaleX = imageRef.naturalWidth / imageRef.width;
 		const scaleY = imageRef.naturalHeight / imageRef.height;
-		canvas.width = crop.width * pixelRatio * scaleX;
-		canvas.height = crop.height * pixelRatio * scaleY;
-		ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-		ctx.imageSmoothingQuality = 'high';
+		const output_width = Math.min(crop.width * scaleX, 300);
+		const output_height = Math.min(crop.height * scaleY, 300);
+		canvas.width = output_width;
+		canvas.height = output_height;
 		ctx.drawImage(image,
 					  crop.x * scaleX,
 					  crop.y * scaleY,
@@ -66,9 +74,9 @@ function EditAvatar(props: { name: string }): JSX.Element {
 					  crop.height * scaleY,
 					  0,
 					  0,
-					  crop.width * scaleX,
-					  crop.height * scaleY);
-		return canvas.toDataURL('image/png');
+					  output_width,
+					  output_height);
+		return canvas.toDataURL('image/jpeg');
 	}
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
