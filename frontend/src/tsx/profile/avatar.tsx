@@ -41,8 +41,17 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		reader.readAsDataURL(file);
 		return;
 	}
-	function onImageLoaded(image: HTMLImageElement): void {
+	function onImageLoaded(image: HTMLImageElement): boolean {
 		setImageRef(image);
+		setCrop({
+			unit: 'px',
+			x: 0,
+			y: 0,
+			width: Math.min(image.width, image.height),
+			height: Math.min(image.width, image.height),
+			aspect: 3 / 3
+		});
+		return false;
 	};
 	function getCroppedData(image_src: string): string {
 		let image = new Image();
@@ -52,11 +61,10 @@ function EditAvatar(props: { name: string }): JSX.Element {
 		if (!ctx || !imageRef) {
 			return '';
 		}
-		const pixelRatio = window.devicePixelRatio;
 		const scaleX = imageRef.naturalWidth / imageRef.width;
 		const scaleY = imageRef.naturalHeight / imageRef.height;
-		const output_width = Math.min(crop.width * pixelRatio * scaleX, 300);
-		const output_height = Math.min(crop.height * pixelRatio * scaleY, 300);
+		const output_width = Math.min(crop.width * scaleX, 300);
+		const output_height = Math.min(crop.height * scaleY, 300);
 		canvas.width = output_width;
 		canvas.height = output_height;
 		ctx.drawImage(image,
@@ -68,7 +76,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 					  0,
 					  output_width,
 					  output_height);
-		return canvas.toDataURL('image/jpeg', 0.5);
+		return canvas.toDataURL('image/jpeg');
 	}
 
 	async function uploadAvatar(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<{}> {
