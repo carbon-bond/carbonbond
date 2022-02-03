@@ -10,33 +10,7 @@ import style from '../../css/board_switch/board_creator.module.css';
 import { toastErr } from '../utils';
 import produce from 'immer';
 
-enum FieldKind {
-	Number = '數字',
-	MultipleLine = '多行文字',
-	OneLine = '單行文字'
-}
-
-type Field = {
-	name: String,
-	kind: FieldKind,
-};
-
-type Category = {
-	name: String,
-	fields: Field[]
-};
-
-type Force = {
-	categories: Category[],
-	suggested_tags: string[],
-};
-
-type BoardDefinition = {
-	name: string,
-	one_sentence: string,
-	introduction: string,
-	force: Force
-};
+import { FieldKind, Force } from '../../ts/api/api_trait';
 
 function to_string(k: FieldKind): string {
 	switch (k) {
@@ -44,7 +18,7 @@ function to_string(k: FieldKind): string {
 			return '數字';
 		case FieldKind.OneLine:
 			return '單行文字';
-		case FieldKind.MultipleLine:
+		case FieldKind.MultiLine:
 			return '多行文字';
 	}
 }
@@ -61,7 +35,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 						{
 							category.fields.map((field, fid) => {
 								let kinds = [
-									FieldKind.MultipleLine,
+									FieldKind.MultiLine,
 									FieldKind.OneLine,
 									FieldKind.Number,
 								];
@@ -187,7 +161,7 @@ forceExamples.push({
 					},
 					{
 						name: '內文',
-						kind: FieldKind.MultipleLine
+						kind: FieldKind.MultiLine
 					},
 					{
 						name: '超鏈接',
@@ -195,7 +169,7 @@ forceExamples.push({
 					},
 					{
 						name: '備註',
-						kind: FieldKind.MultipleLine
+						kind: FieldKind.MultiLine
 					},
 				]
 			},

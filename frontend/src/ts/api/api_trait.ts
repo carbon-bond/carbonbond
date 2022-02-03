@@ -49,6 +49,10 @@ export type FamilyFilter =
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
 export type Bond = { energy: number; target_article: number; tag: string | null };
+export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
+export type Field = { name: string; kind: FieldKind };
+export type Category = { name: string; fields: Field [] };
+export type Force = { categories: Category []; suggested_tags: string [] };
 export type MessageSending = { channel_id: number; content: string };
 export namespace client_trigger {
 export type API = 

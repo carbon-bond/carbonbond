@@ -19,6 +19,7 @@ fn main() -> std::io::Result<()> {
     println!("cargo:rerun-if-changed=src/api/model/mod.rs");
     println!("cargo:rerun-if-changed=src/api/model/chat.rs");
     println!("cargo:rerun-if-changed=src/api/model/forum.rs");
+    println!("cargo:rerun-if-changed=src/api/model/force.rs");
     println!("cargo:rerun-if-changed=src/api/query.rs");
 
     env_logger::init();
@@ -75,5 +76,6 @@ fn gen_api_files() -> std::io::Result<()> {
     client_file.write_all(model::chat::chat_model_root::gen_typescript().as_bytes())?;
     client_file.write_all(custom_error::gen_typescript().as_bytes())?;
     chitin_entry.root_codegen(&client_option, &mut client_file)?;
+
     Ok(())
 }

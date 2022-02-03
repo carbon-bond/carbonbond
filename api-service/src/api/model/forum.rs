@@ -330,6 +330,31 @@ mod model {
 
     #[chitin_model_use]
     use force::instance_defs::Bond;
+
+    #[derive(Serialize, Deserialize, TypeScriptify)]
+    enum FieldKind {
+        Number,
+        OneLine,
+        MultiLine,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify)]
+    struct Field {
+        name: String,
+        kind: FieldKind,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify)]
+    struct Category {
+        name: String,
+        fields: Vec<Field>,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify)]
+    struct Force {
+        categories: Vec<Category>,
+        suggested_tags: Vec<String>,
+    }
 }
 
 pub use model::*;
