@@ -34,7 +34,6 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 		return <div></div>;
 	} else {
 		return <div className={style.listBody}>
-			<CreatePartyBlock {...props} />
 			{
 				party_list.map(party => {
 					return <div key={party.id} className={style.boardPartyBlock}>
@@ -60,11 +59,12 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 							<div className={style.partyLabel}>{party.party_name}</div>
 							<div className={style.partyLabel}>☘ {party.energy}</div>
 							{/* <div className={style.partyLabel}>👑{party.chairmanId}</div> */}
-							<div className={style.partyLabel}>📊 10%</div>
+							{/* <div className={style.partyLabel}>📊 10%</div> */}
 						</Link>
 					</div>;
 				})
 			}
+			<CreatePartyBlock {...props} />
 		</div>;
 	}
 }
