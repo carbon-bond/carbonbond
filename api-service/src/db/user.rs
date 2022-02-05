@@ -1,12 +1,12 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{
-    LawyerbcResult, LawyerbcResultMini, SignupInvitation, SignupInvitationCredit, User,
-};
+use crate::api::model::forum::{LawyerbcResultMini, LawyerbcResultMiniResponse};
+use crate::api::model::forum::{LawyerbcResult, LawyerbcResultResponse};
+use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
 use reqwest;
-use serde_json::Value;
+use serde_json::Error;
 use std::collections::HashMap;
 use urlencoding::encode;
 
@@ -175,35 +175,11 @@ pub async fn query_search_result_from_lawyerbc(
         .await?;
 
     if ! response.status().is_success() {
-        return Err(ErrorCode::SearchingFail.into());
+        return Err(ErrorCode::SearchingLawyerbcFail.into());
     }
     let response_text = response.text().await?;
-    let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap_or(Value::Null);
-    if parsed == Value::Null || parsed["data"] == Value::Null || parsed["data"]["lawyers"] == Value::Null {
-        return Err(ErrorCode::ParsingJson.into());
-    }
-    let lawyer_array = parsed["data"]["lawyers"].as_array();
-    if lawyer_array == None {
-        return Err(ErrorCode::ParsingJson.into());
-    }
-    let mut lawyers: Vec<LawyerbcResultMini> = Vec::new();
-    for i in 0..(lawyer_array.unwrap().len()) {
-        let lawyer = &lawyer_array.unwrap()[i];
-        if lawyer["name"] == Value::Null || lawyer["now_lic_no"] == Value::Null {
-            continue;
-        }
-        let lawyer_name = lawyer["name"].as_str();
-        let lawyer_license_id = lawyer["now_lic_no"].as_str();
-        if lawyer_name == None || lawyer_license_id == None {
-            continue;
-        }
-        let lawyer_bc_result_mini = LawyerbcResultMini {
-            name: lawyer_name.unwrap().to_string(),
-            license_id: lawyer_license_id.unwrap().to_string(),
-        };
-        lawyers.push(lawyer_bc_result_mini);
-    }
-    Ok(lawyers)
+    let lawyerbc_result_mini_response: LawyerbcResultMiniResponse = serde_json::from_str(response_text.as_str())?;
+    Ok(lawyerbc_result_mini_response.data.lawyers)
 }
 pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {
     let response_text = reqwest::get(format!(
@@ -215,26 +191,13 @@ pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<L
     .text()
     .await?;
 
-    let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap_or(Value::Null);
-    if parsed == Value::Null || parsed["data"] == Value::Null {
+    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> = serde_json::from_str(response_text.as_str());
+    if lawyerbc_result_response.is_err() {
         return Err(ErrorCode::ParsingJson.into());
     }
-    let lawyer_array = parsed["data"].as_array();
-    if lawyer_array == None {
-        return Err(ErrorCode::ParsingJson.into());
-    }
-    let lawyer = &lawyer_array.unwrap()[0];
-    Ok(LawyerbcResult {
-        name: lawyer["name"].as_str().unwrap_or("").to_string(),
-        id_number: lawyer["id_no"].as_str().unwrap_or("").to_string(),
-        license_id: lawyer["now_lic_no"]
-            .as_str()
-            .unwrap_or("")
-            .to_string(),
-        gender: lawyer["sex"].as_str().unwrap_or("").to_string(),
-        birth_year: lawyer["birthsday"].as_i64().unwrap_or(0), // 民國
-        email: lawyer["email"].as_str().unwrap_or("").to_string(),
-    })
+    let lawyerbc_result_response = lawyerbc_result_response.unwrap();
+    let lawyer = &lawyerbc_result_response.data[0];
+    Ok(lawyer.clone())
 }
 pub async fn create_signup_token(
     email: &str,

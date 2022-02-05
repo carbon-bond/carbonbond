@@ -162,7 +162,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 	async function handleSelectResult(_: React.MouseEvent<HTMLElement>, idx: number): Promise<void> {
 		setSelectedSearchResult(idx);
 		setMessageText('');
-		let result = unwrap(await API_FETCHER.userQuery.queryDetailResultFromLawyerbc(lawyer_search_result[idx].license_id));
+		let result = unwrap_or(await API_FETCHER.userQuery.queryDetailResultFromLawyerbc(lawyer_search_result[idx].now_lic_no), null);
 		setLawyerDetailResult(result);
 	}
 
@@ -178,7 +178,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 	const buttons: ModalButton[] = [
 		{ text: '送出申請', handler: () => {
 			if (lawyer_detail_result) {
-				send_email(lawyer_detail_result.email, lawyer_detail_result.birth_year, lawyer_detail_result.gender, lawyer_detail_result.license_id);
+				send_email(lawyer_detail_result.email, lawyer_detail_result.birthsday, lawyer_detail_result.sex, lawyer_detail_result.now_lic_no);
 				props.setSignuping(false);
 			} else {
 				setMessageText('請選擇一個搜尋結果');
@@ -215,25 +215,25 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 			</div>
 			<div className={style.searchResult}>
 				{lawyer_search_result.length > 0 ? lawyer_search_result.map((result, i) => (
-					<div key={result.license_id} className={style.searchResultUnit}>
+					<div key={result.now_lic_no} className={style.searchResultUnit}>
 						<label>
 							<input
-								key={result.license_id}
+								key={result.now_lic_no}
 								type="radio"
-								value={result.license_id}
+								value={result.now_lic_no}
 								checked={selected_search_result_index === i}
 								onClick={(event) => handleSelectResult(event, i)}
 							/>
-							<span>{result.name}, {result.license_id}</span>
+							<span>{result.name}, {result.now_lic_no}</span>
 						</label>
 					</div>
 				)) : <div>查無符合結果</div>}
 			</div>
 			{lawyer_detail_result ? <div className={style.detail} >
 				<div>姓名： {lawyer_detail_result.name}</div>
-				<div>性別： {lawyer_detail_result.gender}</div>
-				<div>證書字號： {lawyer_detail_result.license_id}</div>
-				<div>出生年份： {lawyer_detail_result.birth_year}</div>
+				<div>性別： {lawyer_detail_result.sex}</div>
+				<div>證書字號： {lawyer_detail_result.now_lic_no}</div>
+				<div>出生年份： {lawyer_detail_result.birthsday}</div>
 				<div>電子郵件： {lawyer_detail_result.email}</div>
 			</div> : <div className={style.detail}>
 				<div>尚未選擇律師資料</div>

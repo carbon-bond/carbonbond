@@ -12,8 +12,11 @@ export type Result<T, E> = {
 export type Fetcher = (query: Object) => Promise<string>;
 export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; job: string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
-export type LawyerbcResultMini = { name: string; license_id: string };
-export type LawyerbcResult = {     name: string; gender: string; id_number: string; license_id: string; birth_year: number; email: string };
+export type LawyerbcResultMini = { name: string; now_lic_no: string };
+export type LawyerbcResultMiniResponse = { data: LawyerbcResultMiniResponseData };
+export type LawyerbcResultMiniResponseData = { lawyers: LawyerbcResultMini [] };
+export type LawyerbcResult = {     name: string; sex: string; id_no: string; now_lic_no: string;     birthsday: number; email: string };
+export type LawyerbcResultResponse = { data: LawyerbcResult [] };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
@@ -87,7 +90,7 @@ export type ErrorCode =
  | "NotAllowSelfSignup" 
  | "PasswordLength" 
  | "ParsingJson" 
- | "SearchingFail" 
+ | "SearchingLawyerbcFail" 
  | { ForceValidate: ForceValidateError<BondError>} 
  | "UnImplemented" 
  | { Other: string };
