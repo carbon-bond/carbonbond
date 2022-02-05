@@ -178,7 +178,11 @@ pub async fn query_search_result_from_lawyerbc(
         return Err(ErrorCode::SearchingLawyerbcFail.into());
     }
     let response_text = response.text().await?;
-    let lawyerbc_result_mini_response: LawyerbcResultMiniResponse = serde_json::from_str(response_text.as_str())?;
+    let lawyerbc_result_mini_response: Result<LawyerbcResultMiniResponse, Error> = serde_json::from_str(response_text.as_str());
+    if lawyerbc_result_mini_response.is_err() {
+        return Err(ErrorCode::ParsingJson.into());
+    }
+    let lawyerbc_result_mini_response = lawyerbc_result_mini_response.unwrap();
     Ok(lawyerbc_result_mini_response.data.lawyers)
 }
 pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {

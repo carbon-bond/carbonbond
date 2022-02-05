@@ -170,6 +170,8 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		if (user_input.length > 0) {
 			let result = await getSearchResult(user_input);
 			setLawyerSearchResult(result);
+			setLawyerDetailResult(null);
+			setSelectedSearchResult(-1);
 		} else {
 			toast.warn('至少填入一個字才能搜尋');
 		}
