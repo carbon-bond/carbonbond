@@ -1,7 +1,8 @@
 use super::{article_content, get_pool, DBObject};
+use crate::api::model;
 use crate::api::model::forum::{
     Article, ArticleMeta, BondArticleMeta, Edge, FamilyFilter, Favorite, FavoriteArticleMeta,
-    SearchField,
+    Force, SearchField,
 };
 use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
@@ -443,6 +444,26 @@ pub async fn get_newest_category(board_id: i64, category_name: &str) -> Fallible
     Ok(category)
 }
 
+pub async fn get_category(board_id: i64, category: &str) -> Fallible<model::forum::Category> {
+    let pool = get_pool();
+    let force = sqlx::query!(
+        "
+        SELECT force FROM boards WHERE id = $1
+        ",
+        board_id,
+    )
+    .fetch_one(pool)
+    .await?
+    .force;
+    let force: Force = serde_json::from_str(&force).unwrap();
+    for c in force.categories {
+        if c.name == category {
+            return Ok(c);
+        }
+    }
+    Err(ErrorCode::NotFound(DataType::Category, category.to_string()).into())
+}
+
 lazy_static! {
     static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
 }
@@ -494,19 +515,21 @@ pub async fn create(
             .context(err)
     })?;
 
-    let category = get_newest_category(board_id, category_name).await?;
-    let force_category = parse_category(&category.source)?;
+    let category = get_category(board_id, category_name).await?;
+    // let force_category = parse_category(&category.source)?;
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
-        INSERT INTO articles (author_id, board_id, title, category_id, anonymous)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id
+        INSERT INTO articles (author_id, board_id, title, category_id, anonymous, category, fields)
+        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
         ",
         author_id,
         board_id,
         title,
-        category.id,
+        1, // FIXME: 捨棄 category 表格
         anonymous,
+        category_name,
+        serde_json::to_string(&category.fields).unwrap()
     )
     .fetch_one(&mut conn)
     .await?
@@ -525,24 +548,25 @@ pub async fn create(
         .await?;
     }
 
-    article_content::create(
-        &mut conn,
-        article_id,
-        board_id,
-        Cow::Borrowed(&content),
-        &force_category,
-    )
-    .await?;
+    // force-FIXME: 補上文章內容
+    // article_content::create(
+    //     &mut conn,
+    //     article_id,
+    //     board_id,
+    //     Cow::Borrowed(&content),
+    //     &force_category,
+    // )
+    // .await?;
 
-    let digest = crate::util::create_article_digest(content, force_category)?;
-    sqlx::query!(
-        "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
-        digest.content,
-        digest.truncated,
-        article_id
-    )
-    .execute(&mut conn)
-    .await?;
+    // let digest = crate::util::create_article_digest(content, force_category)?;
+    // sqlx::query!(
+    //     "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
+    //     digest.content,
+    //     digest.truncated,
+    //     article_id
+    // )
+    // .execute(&mut conn)
+    // .await?;
 
     conn.commit().await?;
     Ok(article_id)

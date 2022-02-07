@@ -1,7 +1,6 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::{Board, BoardName, BoardOverview, NewBoard};
 use crate::custom_error::{DataType, Error, Fallible};
-use force::parser::parse;
 
 impl DBObject for Board {
     const TYPE: DataType = DataType::Board;
@@ -69,7 +68,6 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
 
 pub async fn create(board: &NewBoard) -> Fallible<i64> {
     let mut conn = get_pool().begin().await?;
-    let force = parse(&board.force)?;
     let prev_board_id = sqlx::query!(
         "SELECT board_id FROM parties where id = $1",
         board.ruling_party_id
@@ -94,28 +92,26 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
         board.board_type,
         board.detail,
         board.title,
-        board.force,
+        serde_json::to_string(&board.force).unwrap(),
         board.ruling_party_id
     )
     .fetch_one(&mut conn)
     .await?
     .id;
-    for (name, category) in &force.categories {
-        let _category_id = sqlx::query!(
-            "
-        INSERT INTO categories (board_id, category_name, version, source, families)
-        VALUES ($1, $2, 1, $3, $4)
-        RETURNING id
-        ",
-            board_id,
-            name,
-            category.source,
-            &category.family
-        )
-        .fetch_one(&mut conn)
-        .await?
-        .id;
-    }
+    // force-FIXME: 捨棄 category 表格
+    let _category_id = sqlx::query!(
+        "
+    INSERT INTO categories (board_id, category_name, version, source)
+    VALUES ($1, $2, 1, $3)
+    RETURNING id
+    ",
+        board_id,
+        "",
+        ""
+    )
+    .fetch_one(&mut conn)
+    .await?
+    .id;
     super::party::change_board(&mut conn, board.ruling_party_id, board_id).await?;
     conn.commit().await?;
     Ok(board_id)

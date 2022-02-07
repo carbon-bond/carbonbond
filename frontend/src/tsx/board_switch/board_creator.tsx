@@ -29,7 +29,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 		<h2>分類</h2>
 		<div className={style.categories}>
 			{props.value.categories.map((category, cid) => {
-				return <div>
+				return <div key={category.name}>
 					<h3>{category.name}</h3>
 					<div className={style.fields}>
 						{
@@ -39,7 +39,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 									FieldKind.OneLine,
 									FieldKind.Number,
 								];
-								return <div>
+								return <div key={field.name}>
 									{field.name}
 									<select value={field.kind} onChange={(evt) => {
 										const new_kind = evt.target.value as FieldKind;
@@ -48,7 +48,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 										}));
 									}}>
 										{
-											kinds.map(kind => <option value={kind}>{to_string(kind)}</option>)
+											kinds.map(kind => <option key={kind} value={kind}>{to_string(kind)}</option>)
 										}
 									</select>
 								</div>;
@@ -64,7 +64,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 		<div>
 			<h2>建議鍵結標籤</h2>
 			{props.value.suggested_tags.map(tag => {
-				return <div>{tag}</div>;
+				return <div key={tag}>{tag}</div>;
 			})}
 			<input /><button>新增標籤</button>
 		</div>
@@ -81,7 +81,6 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 		board_name: string,
 		title: string,
 		detail: string,
-		force: string,
 	};
 
 	const { register, handleSubmit, errors } = useForm<CreateBoardInput>({ mode: 'onBlur' });
@@ -91,6 +90,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 			API_FETCHER.boardQuery.createBoard({
 				board_type: props.board_type,
 				ruling_party_id: props.party_id,
+				force: forceValue,
 				...data
 			})
 				.then(() => props.history.go(0))
@@ -112,7 +112,6 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 					<div className={style.forceEditorLeft}>
 						<div>看板定義</div>
 						<ForceEditor value={forceValue} setValue={setForceValue}/>
-						{errors.force && <InvalidMessage msg="力語言語法錯誤" />}
 					</div>
 					<div className={style.forceEditorRight}>
 						<div>範本</div>

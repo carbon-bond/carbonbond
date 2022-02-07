@@ -1,6 +1,5 @@
-import { parse, Category } from '../../force/typescript/index';
 import { unwrap } from '../src/ts/api/api';
-import { Bond, RootQuery, BoardType } from '../src/ts/api/api_trait';
+import { Bond, RootQuery, BoardType, Force, Category } from '../src/ts/api/api_trait';
 import request from 'request';
 import prompts from 'prompts';
 import minimist from 'minimist';
@@ -114,7 +113,7 @@ type ArticleConfig = {
 };
 type BoardConfig = {
 	name: string;
-	force: string[];
+	force: Force;
 	articles: ArticleConfig[];
 };
 
@@ -137,9 +136,7 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 		)
 	);
 
-	let force_str = board.force.join('\n');
-	let force = parse(force_str);
-	let categories = force.categories;
+	let categories = board.force.categories;
 	let id_pos_map: IDPosMap = {};
 	let board_id: number;
 
@@ -147,24 +144,29 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 		let b = unwrap(await API_FETCHER.boardQuery.queryBoard(board.name, BoardType.General));
 		board_id = b.id;
 	} catch (err) {
-		console.log(`找不到看板 ${board.name}，嘗試創起來`);
-		board_id = unwrap(
-			await API_FETCHER.boardQuery.createBoard({
-				ruling_party_id: party_id,
-				board_name: board.name,
-				board_type: BoardType.General,
-				title: '測試標題',
-				detail: '測試',
-				force: force_str,
-			})
-		);
-		console.log(`創板成功 ${board.name} = ${board_id}`);
+		try {
+			console.log(`找不到看板 ${board.name}，嘗試創起來`);
+			board_id = unwrap(
+				await API_FETCHER.boardQuery.createBoard({
+					ruling_party_id: party_id,
+					board_name: board.name,
+					board_type: BoardType.General,
+					title: '測試標題',
+					detail: '測試',
+					force: board.force,
+				})
+			);
+			console.log(`創板成功 ${board.name} = ${board_id}`);
+		} catch (err) {
+			console.log(`創板失敗 ${err}`);
+			return;
+		}
 	}
 
 	for (let i = 0; i < board.articles.length; i++) {
 		let article = board.articles[i];
-		let category = categories.get(article.category);
-		if (!category) {
+		let category = categories.find(c => c.name = article.category);
+		if (category == undefined) {
 			throw `未知的分類 ${article.category}`;
 		}
 		let id = await injectArticle(board_id, article, category, id_pos_map);
@@ -176,31 +178,12 @@ async function injectArticle(
 	board_id: number,
 	article: ArticleConfig,
 	category: Category,
-	id_pos_map: IDPosMap
+	_id_pos_map: IDPosMap
 ): Promise<number> {
 	for (let field_name of Object.keys(article.content)) {
 		let field = category.fields.find((f) => f.name == field_name);
-		let content = article.content[field_name];
-		console.log(`處理欄位 ${field_name}： ${JSON.stringify(field)}`);
 		if (!field) {
 			throw `未知的欄位名 ${field_name}`;
-		}
-		if (field.datatype.t.kind == 'bond') {
-			if (field.datatype.kind == 'single') {
-				if (Array.isArray(content)) {
-					throw `${field_name} 不是陣列`;
-				}
-				article.content[field_name] = mapIDAsBond(content, id_pos_map);
-			} else if (field.datatype.kind == 'array') {
-				if (!Array.isArray(content)) {
-					throw `${field_name} 應該是陣列`;
-				} else {
-					for (let i = 0; i < content.length; i++) {
-						let c = content[i];
-						content[i] = mapIDAsBond(c, id_pos_map);
-					}
-				}
-			}
 		}
 	}
 	let id = unwrap(
@@ -216,7 +199,7 @@ async function injectArticle(
 	return id;
 }
 
-function mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
+function _mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
 	if (typeof arg == 'number') {
 		return { target_article: mapID(arg), energy: 0, tag: null };
 	} else if (typeof arg == 'object') {

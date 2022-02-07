@@ -93,7 +93,8 @@ mod model {
         pub board_type: String,
         pub title: String,
         pub detail: String,
-        pub force: String,
+        // pub force: String,
+        pub force: Force,
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
@@ -331,29 +332,29 @@ mod model {
     #[chitin_model_use]
     use force::instance_defs::Bond;
 
-    #[derive(Serialize, Deserialize, TypeScriptify)]
-    enum FieldKind {
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum FieldKind {
         Number,
         OneLine,
         MultiLine,
     }
 
-    #[derive(Serialize, Deserialize, TypeScriptify)]
-    struct Field {
-        name: String,
-        kind: FieldKind,
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Field {
+        pub name: String,
+        pub kind: FieldKind,
     }
 
-    #[derive(Serialize, Deserialize, TypeScriptify)]
-    struct Category {
-        name: String,
-        fields: Vec<Field>,
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Category {
+        pub name: String,
+        pub fields: Vec<Field>,
     }
 
-    #[derive(Serialize, Deserialize, TypeScriptify)]
-    struct Force {
-        categories: Vec<Category>,
-        suggested_tags: Vec<String>,
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Force {
+        pub categories: Vec<Category>,
+        pub suggested_tags: Vec<String>,
     }
 }
 

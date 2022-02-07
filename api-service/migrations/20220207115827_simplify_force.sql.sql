@@ -1,0 +1,3 @@
+ALTER TABLE articles
+ADD fields TEXT NOT NULL,
+ADD category TEXT NOT NULL;

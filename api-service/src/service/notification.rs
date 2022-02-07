@@ -84,8 +84,8 @@ pub async fn handle_article(
             .context("文章內容反序列化失敗")
             .context(err)
     })?;
-    let category = db::article::get_newest_category(board_id, category_name).await?;
-    let category = parse_category(&category.source)?;
+    // let category = db::article::get_newest_category(board_id, category_name).await?;
+    // let category = parse_category(&category.source)?;
 
     let mut mem = HashMap::<i64, ()>::new();
     macro_rules! handle {
@@ -106,25 +106,26 @@ pub async fn handle_article(
         };
     }
 
-    use force::BasicDataType::*;
-    use force::DataType::*;
-    for field in category.fields.iter() {
-        // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
-        let value = content.remove(&field.name).unwrap();
-        match field.datatype {
-            Optional(Bond(_)) | Single(Bond(_)) => {
-                handle!(value);
-            }
-            Array { t: Bond(_), .. } => match value {
-                Value::Array(values) => {
-                    for value in values {
-                        handle!(value);
-                    }
-                }
-                _ => {}
-            },
-            _ => {}
-        }
-    }
+    // force-FIXME
+    // use force::BasicDataType::*;
+    // use force::DataType::*;
+    // for field in category.fields.iter() {
+    //     // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
+    //     let value = content.remove(&field.name).unwrap();
+    //     match field.datatype {
+    //         Optional(Bond(_)) | Single(Bond(_)) => {
+    //             handle!(value);
+    //         }
+    //         Array { t: Bond(_), .. } => match value {
+    //             Value::Array(values) => {
+    //                 for value in values {
+    //                     handle!(value);
+    //                 }
+    //             }
+    //             _ => {}
+    //         },
+    //         _ => {}
+    //     }
+    // }
     Ok(())
 }
