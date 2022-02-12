@@ -41,14 +41,6 @@ mod model {
         pub now_lic_no: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct LawyerbcResultMiniResponse {
-        pub data: LawyerbcResultMiniResponseData,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct LawyerbcResultMiniResponseData {
-        pub lawyers: Vec<LawyerbcResultMini>,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct LawyerbcResult {
         pub name: String,
         pub sex: String,
@@ -56,10 +48,6 @@ mod model {
         pub now_lic_no: String,
         pub birthsday: i64,
         pub email: String,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct LawyerbcResultResponse {
-        pub data: Vec<LawyerbcResult>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Party {

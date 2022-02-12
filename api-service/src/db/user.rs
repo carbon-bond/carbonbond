@@ -1,12 +1,13 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{LawyerbcResultMini, LawyerbcResultMiniResponse};
-use crate::api::model::forum::{LawyerbcResult, LawyerbcResultResponse};
+use crate::api::model::forum::{LawyerbcResultMini};
+use crate::api::model::forum::{LawyerbcResult};
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
 use reqwest;
 use serde_json::Error;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use urlencoding::encode;
 
@@ -177,13 +178,22 @@ pub async fn query_search_result_from_lawyerbc(
     if ! response.status().is_success() {
         return Err(ErrorCode::SearchingLawyerbcFail.into());
     }
+
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultMiniResponse {
+        pub data: LawyerbcResultMiniResponseData,
+    }
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultMiniResponseData {
+        pub lawyers: Vec<LawyerbcResultMini>,
+    }
+
     let response_text = response.text().await?;
     let lawyerbc_result_mini_response: Result<LawyerbcResultMiniResponse, Error> = serde_json::from_str(response_text.as_str());
-    if lawyerbc_result_mini_response.is_err() {
-        return Err(ErrorCode::ParsingJson.into());
+    match lawyerbc_result_mini_response {
+        Ok(resp) => Ok(resp.data.lawyers),
+        Err(_) => Err(ErrorCode::ParsingJson.into()),
     }
-    let lawyerbc_result_mini_response = lawyerbc_result_mini_response.unwrap();
-    Ok(lawyerbc_result_mini_response.data.lawyers)
 }
 pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {
     let response_text = reqwest::get(format!(
@@ -195,13 +205,16 @@ pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<L
     .text()
     .await?;
 
-    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> = serde_json::from_str(response_text.as_str());
-    if lawyerbc_result_response.is_err() {
-        return Err(ErrorCode::ParsingJson.into());
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultResponse {
+        pub data: Vec<LawyerbcResult>,
     }
-    let lawyerbc_result_response = lawyerbc_result_response.unwrap();
-    let lawyer = &lawyerbc_result_response.data[0];
-    Ok(lawyer.clone())
+
+    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> = serde_json::from_str(response_text.as_str());
+    match lawyerbc_result_response {
+        Ok(resp) => Ok(resp.data[0].clone()),
+        Err(_) => Err(ErrorCode::ParsingJson.into()),
+    }
 }
 pub async fn create_signup_token(
     email: &str,
