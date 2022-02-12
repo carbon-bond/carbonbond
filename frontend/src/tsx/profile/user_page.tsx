@@ -102,7 +102,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		}
 	}, [props.profile_user]);
 
-	function EditModal(props: { introduction: string, gender: string, job: string, city: string }): JSX.Element {
+	function EditModal(props: { introduction: string, gender: string, birth_year: number, job: string, city: string }): JSX.Element {
 		const [introduction, setIntroduction] = React.useState<string>(props.introduction);
 		const [gender, setGender] = React.useState<string>(props.gender);
 		const [job, setJob] = React.useState<string>(props.job);
@@ -114,11 +114,13 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => setIntroduction(e.target.value)} />
 				<div className={style.label}>性別</div>
 				<div className={style.gender}>
-					<input type="radio" name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />
+					<input type="radio" disabled name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />
 					<label>男</label>
-					<input type="radio" name="gender" value="女" defaultChecked={gender === '女'} onChange={(e) => setGender(e.target.value)} />
+					<input type="radio" disabled name="gender" value="女" defaultChecked={gender === '女'} onChange={(e) => setGender(e.target.value)} />
 					<label>女</label>
 				</div>
+				<div className={style.label}>生年</div>
+				<input type="number" disabled value={props.birth_year} />
 				<div className={style.label}>職業</div>
 				<input type="text" placeholder="職業" value={job} onChange={(e) => setJob(e.target.value)} />
 				<div className={style.label}>居住城市</div>
@@ -156,7 +158,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
 			</div>
 		</div>
-		<EditModal introduction={introduction} gender={gender} job={job} city={city} />
+		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
 	</div>;
 }
 

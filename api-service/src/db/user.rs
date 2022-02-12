@@ -29,6 +29,7 @@ macro_rules! users {
                 users.energy,
                 users.introduction,
                 users.gender,
+                users.birth_year,
                 users.job,
                 users.city,
                 (
@@ -339,6 +340,18 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         sqlx::query!(
             "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
             token
+        )
+        .execute(pool)
+        .await?;
+        let record = sqlx::query!("SELECT gender, birth_year FROM signup_tokens WHERE token = $1", token)
+            .fetch_optional(pool)
+            .await?
+            .ok_or(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).to_err())?;
+        sqlx::query!(
+            "UPDATE users SET gender = $1, birth_year = $2 WHERE user_name = $3",
+            &record.gender,
+            &record.birth_year,
+            name
         )
         .execute(pool)
         .await?;
