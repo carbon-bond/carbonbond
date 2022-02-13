@@ -37,6 +37,11 @@ mod model {
         pub sentence: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UserTitle {
+        pub user_id: i64,
+        pub title: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct LawyerbcResultMini {
         pub name: String,
         pub now_lic_no: String,

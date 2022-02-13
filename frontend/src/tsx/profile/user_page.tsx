@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserTitle, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -73,7 +73,7 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
-function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
+function ProfileDetail(props: { profile_user: User, user_state: UserStateType, user_titles: UserTitle[] }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
 	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
@@ -168,6 +168,17 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
+			</div>
+			<div className={style.info}>
+				{props.user_titles.length == 0 ? (
+					<div className={style.title}>
+						尚未取得任何身份認證
+					</div>
+				) : (props.user_titles.map((title, idx) => (
+					<div className={style.title} key={`title-${idx}`}>
+						⚖️ {title.title}
+					</div>
+				)))}
 			</div>
 		</div>
 		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
@@ -591,13 +602,16 @@ function UserPage(props: Props): JSX.Element {
 	const { user_state } = UserState.useContainer();
 
 	const [user, setUser] = React.useState<User | null>(null);
+	const [user_titles, setUserTitles] = React.useState<UserTitle[]>([]);
 
 	React.useEffect(() => {
 		Promise.all([
-			API_FETCHER.userQuery.queryUser(profile_name)
-		]).then(([user]) => {
+			API_FETCHER.userQuery.queryUser(profile_name),
+			API_FETCHER.userQuery.queryUserTitleList(profile_name)
+		]).then(([user, user_titles]) => {
 			try {
 				setUser(unwrap(user));
+				setUserTitles(unwrap(user_titles));
 			} catch (err) {
 				toastErr(err);
 			}
@@ -611,7 +625,7 @@ function UserPage(props: Props): JSX.Element {
 		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} />
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
-			<ProfileDetail profile_user={user} user_state={user_state} />
+			<ProfileDetail profile_user={user} user_state={user_state} user_titles={user_titles}/>
 		</div>
 	</div>;
 }

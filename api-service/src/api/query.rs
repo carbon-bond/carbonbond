@@ -110,6 +110,10 @@ pub enum UserQuery {
     #[chitin(leaf, response = "super::model::forum::UserRelation")]
     QueryUserRelation { target_user: i64 },
 
+    // 已認證身份
+    #[chitin(leaf, response = "Vec<super::model::forum::UserTitle>")]
+    QueryUserTitleList { user_name: String },
+
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
     QueryPublicFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]

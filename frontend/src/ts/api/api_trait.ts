@@ -12,6 +12,7 @@ export type Result<T, E> = {
 export type Fetcher = (query: Object) => Promise<string>;
 export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
+export type UserTitle = { user_id: number; title: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; id_no: string; now_lic_no: string;     birthsday: number; email: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
@@ -212,6 +213,9 @@ export class UserQuery {
     }
     async queryUserRelation(target_user: number): Promise<Result<UserRelation, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryUserRelation": { target_user } } }));
+    }
+    async queryUserTitleList(user_name: string): Promise<Result<Array<UserTitle>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryUserTitleList": { user_name } } }));
     }
     async queryPublicFollowerList(user: number): Promise<Result<Array<UserMini>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryPublicFollowerList": { user } } }));

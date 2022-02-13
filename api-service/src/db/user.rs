@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::{LawyerbcResultMini};
 use crate::api::model::forum::{LawyerbcResult};
-use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
+use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User, UserTitle};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
@@ -352,6 +352,14 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         )
         .execute(&mut conn)
         .await?;
+        sqlx::query!(
+            "INSERT INTO title_authentication (user_id, title,  email) VALUES ($1, $2, $3)",
+            id,
+            "律師",
+            email,
+        )
+        .execute(&mut conn)
+        .await?;
         conn.commit().await?;
         Ok(id)
     } else {
@@ -490,4 +498,21 @@ pub async fn update_info(
     .execute(pool)
     .await?;
     Ok(())
+}
+
+pub async fn query_titles(
+    user_name: String,
+) -> Fallible<Vec<UserTitle>> {
+    let pool = get_pool();
+    let titles: Vec<UserTitle> = sqlx::query_as!(
+        UserTitle,
+        r#"
+		SELECT title_authentication.user_id, title_authentication.title FROM title_authentication
+        INNER JOIN users ON title_authentication.user_id = users.id
+		WHERE users.user_name = $1;"#,
+        user_name
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(titles)
 }
