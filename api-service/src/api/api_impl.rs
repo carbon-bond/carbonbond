@@ -295,6 +295,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category_name: String,
         title: String,
         content: String,
+        bonds: Vec<crate::force::Bond>,
         draft_id: Option<i64>,
         anonymous: bool,
     ) -> Result<i64, crate::custom_error::Error> {
@@ -312,6 +313,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             &category_name,
             &title,
             content.clone(),
+            bonds,
             draft_id,
             anonymous,
         )

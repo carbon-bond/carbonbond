@@ -334,10 +334,7 @@ mod model {
     }
 
     #[chitin_model_use]
-    use force::instance_defs::Bond;
-
-    #[chitin_model_use]
-    use crate::force::{Category, Field, FieldKind, Force};
+    use crate::force::{Bond, Category, Field, FieldKind, Force};
 }
 
 pub use model::*;

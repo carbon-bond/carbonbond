@@ -18,7 +18,7 @@ pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
         r#"
         WITH replies AS (
             SELECT abf.value AS id, abf.article_id, (categories.families && '{衛星}') AS is_satellite
-        FROM article_bond_fields abf
+        FROM article_bonds abf
             INNER JOIN articles ON articles.id = abf.article_id
             INNER JOIN categories ON categories.id = articles.category_id
         WHERE abf.value = ANY($1))

@@ -28,6 +28,12 @@ pub struct Force {
     pub suggested_tags: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+pub struct Bond {
+    pub to: i64,
+    pub tag: String,
+}
+
 #[derive(Debug)]
 pub struct ValidationError {
     pub field_name: String,

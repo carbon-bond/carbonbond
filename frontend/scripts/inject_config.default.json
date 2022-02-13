@@ -36,6 +36,15 @@
                         "kind": "MultiLine"
                     }
                 ]
+            },
+            {
+                "name": "回覆",
+                "fields": [
+                    {
+                        "name": "內文",
+                        "kind": "MultiLine"
+                    }
+                ]
             }
         ],
         "suggested_tags": [
@@ -48,7 +57,8 @@
         "category": "問卦",
         "content": {
             "內文": "爽啦"
-        }
+        },
+        "bonds": []
     }, {
         "title": "碳鍵市佔率極速上升",
         "category": "新聞",
@@ -58,7 +68,39 @@
             "內文": "碳鍵在 2022 年社羣網站市佔率中異軍突起",
             "超鏈接": "https://localhost",
             "備註": "Dcard 是不是要涼了"
-        }
-    }]
-}
-]
+        },
+        "bonds": []
+    }, {
+        "title": "怎麽可能",
+        "category": "回覆",
+        "content": {
+            "內文": "低卡兒"
+        },
+        "bonds": [
+            {
+                "to": 0,
+                "tag": "反對"
+            }
+        ]
+    }, {
+        "title": "功能性真的一個天一個地",
+        "category": "問卦",
+        "content": {
+            "內文": "爽啦"
+        },
+        "bonds": [
+            {
+                "to": 0,
+                "tag": "贊成"
+            },
+            {
+                "to": 1,
+                "tag": "贊成"
+            },
+            {
+                "to": 2,
+                "tag": "反對"
+            }
+        ]
+    }
+]}]

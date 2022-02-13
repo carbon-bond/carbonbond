@@ -110,6 +110,7 @@ type ArticleConfig = {
 	title: string;
 	category: string;
 	content: { [key: string]: ArticleContent };
+	bonds: Bond[]
 };
 type BoardConfig = {
 	name: string;
@@ -178,7 +179,7 @@ async function injectArticle(
 	board_id: number,
 	article: ArticleConfig,
 	category: Category,
-	_id_pos_map: IDPosMap
+	id_pos_map: IDPosMap
 ): Promise<number> {
 	for (let field_name of Object.keys(article.content)) {
 		let field = category.fields.find((f) => f.name == field_name);
@@ -192,30 +193,12 @@ async function injectArticle(
 			category.name,
 			article.title,
 			JSON.stringify(article.content),
+			article.bonds.map(bond => {return { ...bond, to: id_pos_map[bond.to] };}),
 			null,
 			false
 		)
 	);
 	return id;
-}
-
-function _mapIDAsBond(arg: ArticleConentElt, id_pos_map: IDPosMap): Bond {
-	if (typeof arg == 'number') {
-		return { target_article: mapID(arg), energy: 0, tag: null };
-	} else if (typeof arg == 'object') {
-		arg.target_article = mapID(arg.target_article);
-		return arg;
-	} else {
-		throw `應該是鍵結，得到 ${arg}`;
-	}
-
-	function mapID(pos: number): number {
-		if (pos in id_pos_map) {
-			console.log(`對應成功：${pos} => ${id_pos_map[pos]}`);
-			return id_pos_map[pos];
-		}
-		throw `未知的文章序：${arg}`;
-	}
 }
 
 async function main(): Promise<void> {

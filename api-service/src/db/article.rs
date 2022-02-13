@@ -5,10 +5,10 @@ use crate::api::model::forum::{
 };
 use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
+use crate::force::Bond;
 use crate::service;
 use chrono::{DateTime, Utc};
 use force;
-use force::parse_category;
 use lazy_static::lazy_static;
 use serde_json::Value;
 use sqlx::PgConnection;
@@ -343,12 +343,12 @@ pub async fn get_bondee_meta(
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
-        DISTINCT abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 
+        DISTINCT ab.article_id as from, ab.value as to,
+        ab.energy as bond_energy, ab.name as bond_name, ab.id as bond_id, ab.tag as bond_tag, 
         ",
         "
-        INNER JOIN article_bond_fields abf on metas.id = abf.value
-        WHERE abf.article_id = $3
+        INNER JOIN article_bonds ab on metas.id = ab.value
+        WHERE ab.article_id = $3
         AND ($4 OR category_name = ANY($5))
         ORDER BY create_time DESC
         ",
@@ -377,12 +377,12 @@ pub async fn get_bonder_meta(
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
-        DISTINCT abf.article_id as from, abf.value as to,
-        abf.energy as bond_energy, abf.name as bond_name, abf.id as bond_id, abf.tag as bond_tag, 
+        DISTINCT ab.article_id as from, ab.value as to,
+        ab.energy as bond_energy, ab.name as bond_name, ab.id as bond_id, ab.tag as bond_tag, 
         ",
         "
-        INNER JOIN article_bond_fields abf ON metas.id = abf.article_id
-        WHERE abf.value = $3
+        INNER JOIN article_bonds ab ON metas.id = ab.article_id
+        WHERE ab.value = $3
         AND ($4 OR category_name = ANY($5))
         ORDER BY create_time DESC
         ",
@@ -510,6 +510,7 @@ pub async fn create(
     category_name: &str,
     title: &str,
     content: String,
+    bonds: Vec<Bond>,
     draft_id: Option<i64>,
     anonymous: bool,
 ) -> Fallible<i64> {
@@ -557,6 +558,7 @@ pub async fn create(
         article_id,
         board_id,
         Cow::Borrowed(&content),
+        bonds,
         &category,
     )
     .await?;

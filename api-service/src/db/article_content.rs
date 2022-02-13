@@ -176,7 +176,7 @@ pub async fn get_by_article_ids(
     let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
         ArticleBondField,
         "
-        SELECT article_id, name, tag, energy, value FROM article_bond_fields
+        SELECT article_id, name, tag, energy, value FROM article_bonds
         WHERE article_id = ANY($1);
         ",
         &ids
@@ -224,7 +224,7 @@ pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String>
     let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
         ArticleBondField,
         "
-        SELECT article_id, name, tag, energy, value FROM article_bond_fields
+        SELECT article_id, name, tag, energy, value FROM article_bonds
         WHERE article_id = $1;
         ",
         id
@@ -324,23 +324,21 @@ async fn insert_string_field(
 async fn insert_bond_field(
     conn: &mut PgConnection,
     article_id: i64,
-    field_name: &String,
-    bond: &Bond,
+    bond: &crate::force::Bond,
 ) -> Fallible<()> {
     sqlx::query!(
-        "INSERT INTO article_bond_fields
+        "INSERT INTO article_bonds
         (article_id, name, value, energy, tag)
         VALUES ($1, $2, $3, $4, $5)",
         article_id,
-        field_name,
-        bond.target_article,
-        bond.energy,
+        "待廢棄",
+        bond.to,
+        0,
         bond.tag,
     )
     .execute(&mut *conn)
     .await?;
-    super::article::update_energy(conn, bond.target_article, bond.energy).await?;
-    service::hot_articles::modify_article_energy(bond.target_article, bond.energy).await?;
+    // TODO: 思考鍵結如何改變鍵能
     Ok(())
 }
 
@@ -414,11 +412,14 @@ pub(super) async fn create(
     article_id: i64,
     board_id: i64,
     content: Cow<'_, Value>,
+    bonds: Vec<crate::force::Bond>,
     category: &crate::force::Category,
 ) -> Fallible<()> {
     use crate::force::FieldKind::*;
     use crate::force::{ValidationError, ValidationErrorCode::*};
-    // 檢驗格式
+    for bond in bonds {
+        insert_bond_field(conn, article_id, &bond).await?;
+    }
 
     // TODO: fields 長度爲 0 的特殊狀況（文章內不分域）
 

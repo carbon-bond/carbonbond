@@ -437,6 +437,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					category.name,
 					editor_panel_data.title,
 					JSON.stringify(content),
+					[],
 					editor_panel_data.draft_id ?? null,
 					editor_panel_data.anonymous
 				);

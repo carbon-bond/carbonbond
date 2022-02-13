@@ -192,6 +192,7 @@ pub enum ArticleQuery {
         category_name: String,
         title: String,
         content: String,
+        bonds: Vec<crate::force::Bond>,
         draft_id: Option<i64>,
         anonymous: bool,
     },

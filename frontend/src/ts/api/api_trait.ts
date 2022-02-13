@@ -48,7 +48,7 @@ export type FamilyFilter =
  | { BlackList: string [] } 
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
-export type Bond = { energy: number; target_article: number; tag: string | null };
+export type Bond = { to: number; tag: string };
 export type Category = { name: string; fields: Field [] };
 export type Field = { name: string; kind: FieldKind };
 export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
@@ -286,8 +286,8 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
     }
-    async createArticle(board_id: number, category_name: string, title: string, content: string, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, draft_id, anonymous } } }));
+    async createArticle(board_id: number, category_name: string, title: string, content: string, bonds: Array<Bond>, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, bonds, draft_id, anonymous } } }));
     }
     async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string, anonymous: boolean): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content, anonymous } } }));
