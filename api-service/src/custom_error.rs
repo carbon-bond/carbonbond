@@ -2,7 +2,8 @@ use chitin::*;
 #[chitin_model]
 mod inner {
     use chitin::chitin_util;
-    use force::error::ValidationError as ForceValidateError;
+    // use force::error::ValidationError as ForceValidateError;
+    use crate::force;
     use serde::{Serialize, Serializer};
     use std::error::Error as StdError;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
@@ -75,7 +76,7 @@ mod inner {
         ParsingJson,
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
-        ForceValidate(ForceValidateError<BondError>),
+        ForceValidate(force::ValidationError),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]
@@ -149,6 +150,7 @@ mod inner {
         Ok(())
     }
     use std::fmt;
+
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {

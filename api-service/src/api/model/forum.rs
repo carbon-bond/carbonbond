@@ -116,6 +116,7 @@ mod model {
                 pub energy: i32,
                 pub board_id: i64,
                 pub board_name: String,
+                pub category: String,
                 pub category_id: i64,
                 pub category_name: String,
                 pub category_source: String,
@@ -127,6 +128,7 @@ mod model {
                 pub category_families: Vec<String>,
                 pub create_time: DateTime<chrono::Utc>,
                 pub anonymous: bool,
+                pub fields: String,
                 $(pub $element: $ty),*
             }
         }
@@ -167,6 +169,7 @@ mod model {
         pub energy: i32,
         pub board_id: i64,
         pub board_name: String,
+        pub category: String,
         pub category_id: i64,
         pub category_name: String,
         pub category_source: String,
@@ -175,6 +178,7 @@ mod model {
         pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
+        pub fields: Vec<Field>,
 
         pub stat: ArticleStatistics,
         pub personal_meta: ArticlePersonalMeta,
@@ -332,30 +336,8 @@ mod model {
     #[chitin_model_use]
     use force::instance_defs::Bond;
 
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub enum FieldKind {
-        Number,
-        OneLine,
-        MultiLine,
-    }
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Field {
-        pub name: String,
-        pub kind: FieldKind,
-    }
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Category {
-        pub name: String,
-        pub fields: Vec<Field>,
-    }
-
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Force {
-        pub categories: Vec<Category>,
-        pub suggested_tags: Vec<String>,
-    }
+    #[chitin_model_use]
+    use crate::force::{Category, Field, FieldKind, Force};
 }
 
 pub use model::*;

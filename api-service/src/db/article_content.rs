@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject};
 use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
 use crate::service;
-use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
+use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category};
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::PgConnection;
@@ -343,38 +343,70 @@ async fn insert_bond_field(
     service::hot_articles::modify_article_energy(bond.target_article, bond.energy).await?;
     Ok(())
 }
-async fn insert_field(
-    conn: &mut PgConnection,
-    article_id: i64,
-    field: &Field,
-    value: Value,
-) -> Fallible<()> {
-    log::debug!("插入文章內容 {:?} {:?}", field, value);
 
-    service::hot_articles::set_hot_article_score(article_id).await?;
+// block 代表文章欄位中佔用空間較大的
+// 目前僅有 multiline 屬於 block
+struct Digest {
+    block_fields: HashMap<String, Value>,
+    non_block_fields: HashMap<String, Value>,
+    char_count: usize,
+}
 
-    match field.datatype.basic_type() {
-        force::BasicDataType::Number => match value {
-            Value::Number(number) => {
-                insert_int_field(conn, article_id, &field.name, number.as_i64().unwrap()).await?
+const MAX_LEN: usize = 300;
+
+impl Digest {
+    fn new() -> Digest {
+        Digest {
+            block_fields: Default::default(),
+            non_block_fields: Default::default(),
+            char_count: 0,
+        }
+    }
+    fn add(&mut self, field_name: &str, value: &Value, is_block: bool) {
+        self.char_count += field_name.len();
+        match value {
+            Value::Number(n) => {
+                self.char_count += format!("{}", &n).len();
+                self.non_block_fields
+                    .insert(field_name.to_string(), value.clone());
             }
-            // validate 過，不可能發生
-            _ => {}
-        },
-        force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
-            match value {
-                Value::String(s) => insert_string_field(conn, article_id, &field.name, &s).await?,
-                // validate 過，不可能發生
-                _ => {}
+            Value::String(s) => {
+                self.char_count += s.len();
+                let truncated_value = if s.len() > MAX_LEN {
+                    Value::String(s[0..MAX_LEN].to_owned())
+                } else {
+                    value.clone()
+                };
+                if is_block {
+                    self.block_fields
+                        .insert(field_name.to_string(), truncated_value);
+                } else {
+                    self.non_block_fields
+                        .insert(field_name.to_string(), truncated_value);
+                }
+            }
+            _ => {
+                log::error!("不支援的文章域類型（僅支援數字與字串）：{}", value)
             }
         }
-        force::BasicDataType::Bond(_) => match serde_json::from_value::<Bond>(value) {
-            Ok(bond) => insert_bond_field(conn, article_id, &field.name, &bond).await?,
-            // validate 過，不可能發生
-            _ => {}
-        },
     }
-    Ok(())
+    fn is_truncated(&self) -> bool {
+        self.char_count > 300
+    }
+    fn to_json(&self) -> Fallible<String> {
+        if self.is_truncated() {
+            if self.block_fields.len() > 0 {
+                Ok(serde_json::to_string(&self.block_fields)?)
+            } else {
+                Ok(serde_json::to_string(&self.non_block_fields)?)
+            }
+        } else {
+            let mut all = HashMap::new();
+            all.extend(&self.block_fields);
+            all.extend(&self.non_block_fields);
+            Ok(serde_json::to_string(&all)?)
+        }
+    }
 }
 
 pub(super) async fn create(
@@ -382,37 +414,67 @@ pub(super) async fn create(
     article_id: i64,
     board_id: i64,
     content: Cow<'_, Value>,
-    category: &Category,
+    category: &crate::force::Category,
 ) -> Fallible<()> {
+    use crate::force::FieldKind::*;
+    use crate::force::{ValidationError, ValidationErrorCode::*};
     // 檢驗格式
-    let validator = Validator { board_id };
-    match validator
-        .validate_category(&category, content.as_ref())
-        .await
-    {
-        Ok(()) => (),
-        Err(err) => return Err(ErrorCode::ForceValidate(err).into()),
-    }
 
-    use force::DataType::*;
+    // TODO: fields 長度爲 0 的特殊狀況（文章內不分域）
 
-    let mut content = content.into_owned();
-    let json = content.as_object_mut().unwrap();
+    let mut digest = Digest::new();
 
     for field in category.fields.iter() {
-        // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
-        let value = json.remove(&field.name).unwrap();
-        match field.datatype {
-            Optional(_) | Single(_) => insert_field(conn, article_id, field, value).await?,
-            Array { .. } => match value {
-                Value::Array(values) => {
-                    for value in values {
-                        insert_field(conn, article_id, field, value).await?
+        let value = &content[&field.name];
+        match (&field.kind, value) {
+            (MultiLine, Value::String(s)) => {
+                insert_string_field(conn, article_id, &field.name, s).await?;
+
+                digest.add(&field.name, &value, true);
+            }
+            (OneLine, Value::String(s)) => {
+                if s.contains('\n') {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code: NotOneline(s.clone()).into(),
                     }
+                    .into());
                 }
-                _ => {}
-            },
+                insert_string_field(conn, article_id, &field.name, s).await?;
+
+                digest.add(&field.name, &value, false);
+            }
+            (Number, Value::Number(n)) => {
+                if !n.is_i64() {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code: NotI64(n.clone()).into(),
+                    }
+                    .into());
+                }
+                let n = n.as_i64().unwrap();
+                insert_int_field(conn, article_id, &field.name, n).await?;
+
+                digest.add(&field.name, &value, false);
+            }
+            _ => {
+                return Err(ValidationError {
+                    field_name: field.name.clone(),
+                    code: TypeMismatch(field.kind.clone(), content[&field.name].clone()).into(),
+                }
+                .into());
+            }
         }
     }
+
+    sqlx::query!(
+        "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
+        digest.to_json()?,
+        digest.is_truncated(),
+        article_id
+    )
+    .execute(conn)
+    .await?;
+
     Ok(())
 }

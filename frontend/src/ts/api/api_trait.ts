@@ -1,6 +1,6 @@
 /*eslint-disable*/
 export type BoxedErr = string
-export type ForceValidateError<T> = string
+export type ValidationError = string
 // @ts-ignore
 export type HashMap<K extends string | number, T> = { [key: K]: T };
 export type Option<T> = T | null;
@@ -25,7 +25,7 @@ export type Author =
  | { NamedAuthor: { id: number; name: string } } 
  | "MyAnonymous" 
  | "Anonymous";
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category_id: number; category_name: string; category_source: string;     title: string; author: Author; digest: ArticleDigest;     category_families: string []; create_time: string; stat:     ArticleStatistics; personal_meta: ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type Favorite = { meta: ArticleMeta; create_time: string};
@@ -49,9 +49,9 @@ export type FamilyFilter =
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
 export type Bond = { energy: number; target_article: number; tag: string | null };
-export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
-export type Field = { name: string; kind: FieldKind };
 export type Category = { name: string; fields: Field [] };
+export type Field = { name: string; kind: FieldKind };
+export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
 export type Force = { categories: Category []; suggested_tags: string [] };
 export type MessageSending = { channel_id: number; content: string };
 export namespace client_trigger {
@@ -91,7 +91,7 @@ export type ErrorCode =
  | "NotAllowSelfSignup" 
  | "PasswordLength" 
  | "ParsingJson" 
- | { ForceValidate: ForceValidateError<BondError>} 
+ | { ForceValidate: ValidationError } 
  | "UnImplemented" 
  | { Other: string };
 export type Error = 

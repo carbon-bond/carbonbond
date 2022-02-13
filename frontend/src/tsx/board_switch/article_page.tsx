@@ -4,8 +4,7 @@ import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, SimpleArticleCardById } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
-import { Article, Board, Bond } from '../../ts/api/api_trait';
-import { parse_category, Field } from '../../../../force/typescript/index';
+import { Article, Board, Bond, Field } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
 import { BonderCards, ReplyButtons, SatelliteButtons, SatelliteCards } from '../article_card/bonder';
@@ -74,54 +73,18 @@ export function ShowText(props: { text: string }): JSX.Element {
 	</>;
 }
 
-// eslint-disable-next-line
-function ShowSingleField(props: { field: Field, value: any }): JSX.Element {
-	const { field, value } = props;
-	if (field.datatype.t.kind == 'bond') {
-		let bond: Bond = value;
-		return <div className={style.cardWrap}>
-			<SimpleArticleCardById article_id={bond.target_article} />
-		</div>;
-	} else {
-		return <ShowText text={`${value}`} />;
-	}
-}
-
-// eslint-disable-next-line
-function ShowArrayField(props: { field: Field, value: any[] }): JSX.Element {
-	const ret = [];
-	for (let i = 0; i < props.value.length; i++) {
-		ret.push(
-			<React.Fragment key={i}>
-				{i > 0 ? <hr /> : null}
-				<ShowSingleField key={i} field={props.field} value={props.value[i]} />
-			</React.Fragment>
-		);
-	}
-	return <>{ret}</>;
-}
 
 export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
-	const category = parse_category(article.meta.category_source);
+	const fields = article.meta.fields;
 	const content = JSON.parse(article.content);
 
 	return <div className={style.articleContent}>
 		{
-			category.fields.map(field =>
+			fields.map(field =>
 				<div className={style.field} key={field.name}>
 					<div className={style.fieldName}>{field.name}：</div>
-					{
-						(() => {
-							const value = content[field.name];
-							if (field.datatype.kind == 'array') {
-								// @ts-ignore
-								return <ShowArrayField key={field.name} field={field} value={value} />;
-							} else {
-								return <ShowSingleField key={field.name} field={field} value={value} />;
-							}
-						})()
-					}
+					<ShowText text={content[field.name]} />
 				</div>
 			)
 		}
@@ -134,7 +97,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	let scrollHandler = React.useCallback(() => { }, []);
 	useScrollToBottom(scrollHandler);
 
-	const category_name = article.meta.category_name;
+	const category_name = article.meta.category;
 
 	return <div className={style.articlePage}>
 		<ArticleHeader

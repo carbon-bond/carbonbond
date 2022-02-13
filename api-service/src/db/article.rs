@@ -1,11 +1,11 @@
 use super::{article_content, get_pool, DBObject};
-use crate::api::model;
 use crate::api::model::forum::{
     Article, ArticleMeta, BondArticleMeta, Edge, FamilyFilter, Favorite, FavoriteArticleMeta,
-    Force, SearchField,
+    SearchField,
 };
 use crate::custom_error::{self, DataType, ErrorCode, Fallible};
 use crate::db::board;
+use crate::service;
 use chrono::{DateTime, Utc};
 use force;
 use force::parse_category;
@@ -41,8 +41,10 @@ macro_rules! metas {
                 + $select
                 + " metas.id,
                 metas.energy,
+                fields,
                 board_id,
                 board_name,
+                category,
                 category_id,
                 category_name,
                 category_source,
@@ -69,11 +71,13 @@ macro_rules! to_meta {
             energy: $data.energy,
             board_id: $data.board_id,
             board_name: $data.board_name,
+            category: $data.category,
             category_id: $data.category_id,
             category_name: $data.category_name,
             category_source: $data.category_source,
             category_families: $data.category_families,
             title: $data.title,
+            fields: serde_json::from_str(&$data.fields).unwrap(),
             author: if $data.anonymous && $viewer_id == Some($data.author_id) {
                 crate::api::model::forum::Author::MyAnonymous
             } else if $data.anonymous {
@@ -444,7 +448,7 @@ pub async fn get_newest_category(board_id: i64, category_name: &str) -> Fallible
     Ok(category)
 }
 
-pub async fn get_category(board_id: i64, category: &str) -> Fallible<model::forum::Category> {
+pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::force::Category> {
     let pool = get_pool();
     let force = sqlx::query!(
         "
@@ -455,7 +459,7 @@ pub async fn get_category(board_id: i64, category: &str) -> Fallible<model::foru
     .fetch_one(pool)
     .await?
     .force;
-    let force: Force = serde_json::from_str(&force).unwrap();
+    let force: crate::force::Force = serde_json::from_str(&force).unwrap();
     for c in force.categories {
         if c.name == category {
             return Ok(c);
@@ -548,27 +552,17 @@ pub async fn create(
         .await?;
     }
 
-    // force-FIXME: 補上文章內容
-    // article_content::create(
-    //     &mut conn,
-    //     article_id,
-    //     board_id,
-    //     Cow::Borrowed(&content),
-    //     &force_category,
-    // )
-    // .await?;
-
-    // let digest = crate::util::create_article_digest(content, force_category)?;
-    // sqlx::query!(
-    //     "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
-    //     digest.content,
-    //     digest.truncated,
-    //     article_id
-    // )
-    // .execute(&mut conn)
-    // .await?;
+    article_content::create(
+        &mut conn,
+        article_id,
+        board_id,
+        Cow::Borrowed(&content),
+        &category,
+    )
+    .await?;
 
     conn.commit().await?;
+    service::hot_articles::set_hot_article_score(article_id).await?;
     Ok(article_id)
 }
 

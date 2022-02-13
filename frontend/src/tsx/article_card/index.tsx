@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { Article, ArticleMeta, Author, Edge } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
-import { parse_category } from '../../../../force/typescript';
 import { ArticleContent } from '../board_switch/article_page';
 import { ReplyModal, SatelliteModal } from './modal';
 
@@ -149,7 +148,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
 	const author = props.article.author;
-	const category_name = props.article.category_name;
+	const category_name = props.article.category;
 
 	return (
 		<div className={style.articleContainer}>
@@ -255,7 +254,6 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 	let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
 	let content_ref = React.useRef<HTMLDivElement | null>(null);
 
-	const category = parse_category(props.article.category_source);
 	// eslint-disable-next-line
 	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
 	let truncated = props.article.digest.truncated;
@@ -344,7 +342,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 		>
 			<div ref={div => onDivLoad(div, false)}>
 				{
-					category.fields.map(field => {
+					props.article.fields.map(field => {
 						let inner = formatValue(content[field.name]);
 						if (inner.length == 0) {
 							return null;
