@@ -36,10 +36,10 @@ export function ArticleHeader(props: { author: Author, board_name: string, date:
 	</div>;
 }
 
-export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
+export function ArticleLine(props: { category: string, title: string, id: number, board_name: string }): JSX.Element {
 
 	return <div className={style.articleLine}>
-		<span className={style.articleType}>{props.category_name}</span>
+		<span className={style.articleType}>{props.category}</span>
 		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
 		</a>
@@ -148,7 +148,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
 	const author = props.article.author;
-	const category_name = props.article.category;
+	const category = props.article.category;
 
 	return (
 		<div className={style.articleContainer}>
@@ -157,7 +157,7 @@ function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 				<div className={style.leftPart}>
 					<ArticleLine
 						board_name={props.article.board_name}
-						category_name={category_name}
+						category={category}
 						title={props.article.title}
 						id={props.article.id} />
 					<ArticleContentShrinkable article={props.article}/>
@@ -194,7 +194,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				board_name={meta.board_name}
 				title={meta.title}
 				id={meta.id}
-				category_name={meta.category_name} />
+				category={meta.category} />
 			<ArticleHeader
 				author={meta.author}
 				board_name={meta.board_name}
@@ -239,7 +239,7 @@ function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 		<BondCard bond={props.bond} />
 		<div className={style.satelliteHeader}>
 			<ShowAuthor author={props.meta.author} />
-			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
+			<div className={style.articleTime}>{date_string} {props.meta.category}</div>
 		</div>
 		<div>
 			{props.meta.title}

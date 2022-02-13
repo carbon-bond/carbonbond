@@ -97,7 +97,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	let scrollHandler = React.useCallback(() => { }, []);
 	useScrollToBottom(scrollHandler);
 
-	const category_name = article.meta.category;
+	const category = article.meta.category;
 
 	return <div className={style.articlePage}>
 		<ArticleHeader
@@ -107,7 +107,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleLine
 			board_name={article.meta.board_name}
 			id={article.meta.id}
-			category_name={category_name}
+			category={category}
 			title={article.meta.title} />
 		<ReplyButtons article={article.meta} board={board} />
 		<ArticleContent article={article} />
