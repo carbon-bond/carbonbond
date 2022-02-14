@@ -73,6 +73,8 @@ mod inner {
         PasswordLength,
         #[display(fmt = "JSON 解析錯誤")]
         ParsingJson,
+        #[display(fmt = "法務部律師查詢系統查詢失敗")]
+        SearchingLawyerbcFail,
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
         ForceValidate(ForceValidateError<BondError>),
