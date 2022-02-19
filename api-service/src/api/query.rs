@@ -156,7 +156,7 @@ pub enum PartyQuery {
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum ArticleQuery {
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     QueryArticleList {
         count: usize,
         max_id: Option<i64>,
@@ -209,7 +209,7 @@ pub enum ArticleQuery {
     QueryDraft {},
     #[chitin(leaf, response = "()")]
     DeleteDraft { draft_id: i64 },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     SearchArticle {
         author_name: Option<String>,
         board_name: Option<String>,
@@ -219,9 +219,9 @@ pub enum ArticleQuery {
         title: Option<String>,
         content: HashMap<String, super::model::forum::SearchField>,
     },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     SearchPopArticle { count: usize },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     GetSubscribeArticle { count: usize },
     #[chitin(leaf, response = "super::model::forum::Graph")]
     QueryGraph {

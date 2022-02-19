@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { ArticleCard } from './article_card';
-import { ArticleMeta } from '../ts/api/api_trait';
+import { ArticleMeta, ArticleMetaWithBonds } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
 
@@ -9,7 +9,7 @@ import style from '../css/pop_article_page.module.css';
 import '../css/layout.css';
 
 export function SubscribeArticlePage(): JSX.Element {
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const { user_state } = UserState.useContainer();
 
 	React.useEffect(() => {
@@ -29,16 +29,16 @@ export function SubscribeArticlePage(): JSX.Element {
 	</div>;
 }
 
-function Articles(props: {articles: ArticleMeta[]}): JSX.Element {
+function Articles(props: {articles: ArticleMetaWithBonds[]}): JSX.Element {
 	return <div>
 		{props.articles.map((article, idx) => (
 			<div className={style.articleWrapper} key={`article-${idx}`}>
-				<ArticleCard article={article} />
+				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
 		))}
 	</div>;
 }
 
-async function fetchSubscribeArticles(): Promise<ArticleMeta[]> {
+async function fetchSubscribeArticles(): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.articleQuery.getSubscribeArticle(10), []);
 }

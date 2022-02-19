@@ -1,13 +1,12 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
-use crate::service;
-use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category};
+use crate::api::model::forum::MiniBondArticleMeta;
+use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
+use force::instance_defs::Bond;
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 #[derive(Debug, Default)]
 pub struct ArticleBondField {
@@ -93,25 +92,8 @@ fn insert_kvs<T: Insertable>(kvs: &mut HashMap<String, Value>, fields: &Vec<T>) 
     for field in fields.into_iter() {
         let value = serde_json::to_value(field.get_value()).unwrap();
         let name = field.get_name();
-        match kvs.get_mut(name) {
-            Some(Value::Array(array)) => {
-                array.push(value);
-            }
-            _ => {
-                kvs.insert(name.to_owned(), value);
-            }
-        }
+        kvs.insert(name.to_owned(), value);
     }
-}
-
-fn init_kvs(category: &Category) -> HashMap<String, Value> {
-    let mut kvs: HashMap<String, Value> = HashMap::new();
-    for field in &category.fields {
-        if let force::DataType::Array { .. } = field.datatype {
-            kvs.insert(field.name.clone(), (Vec::new() as Vec<Value>).into());
-        }
-    }
-    kvs
 }
 
 fn make_group<T: Insertable>(fields: Vec<T>) -> HashMap<i64, Vec<T>> {
@@ -142,14 +124,11 @@ fn insert_id_to_kvs<T: Insertable>(
 }
 
 // ids[i] 的分類為 categories[i]
-pub async fn get_by_article_ids(
-    ids: Vec<i64>,
-    categories: Vec<Arc<Category>>,
-) -> Fallible<Vec<String>> {
+pub async fn get_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<String>> {
     let pool = get_pool();
     let mut id_to_kvs: HashMap<i64, HashMap<String, Value>> = HashMap::new();
     for i in 0..ids.len() {
-        id_to_kvs.insert(ids[i], init_kvs(&categories[i]));
+        id_to_kvs.insert(ids[i], HashMap::new());
     }
     let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
         ArticleStringField,
@@ -173,17 +152,6 @@ pub async fn get_by_article_ids(
     .fetch_all(pool)
     .await?;
     insert_id_to_kvs(&ids, &mut id_to_kvs, int_fields);
-    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
-        ArticleBondField,
-        "
-        SELECT article_id, name, tag, energy, value FROM article_bonds
-        WHERE article_id = ANY($1);
-        ",
-        &ids
-    )
-    .fetch_all(pool)
-    .await?;
-    insert_id_to_kvs(&ids, &mut id_to_kvs, bond_fields);
     let mut ret = Vec::new();
     for id in &ids {
         ret.push(serde_json::to_string(id_to_kvs.get(id).unwrap())?);
@@ -191,14 +159,59 @@ pub async fn get_by_article_ids(
     Ok(ret)
 }
 
-pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String> {
+// ids[i] 的分類為 categories[i]
+pub async fn get_bonds_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<Vec<MiniBondArticleMeta>>> {
     let pool = get_pool();
-    let mut kvs = init_kvs(category);
-    for field in &category.fields {
-        if let force::DataType::Array { .. } = field.datatype {
-            kvs.insert(field.name.clone(), (Vec::new() as Vec<Value>).into());
-        }
+    let mut id_to_bonds: HashMap<i64, Vec<MiniBondArticleMeta>> = HashMap::new();
+    for i in 0..ids.len() {
+        id_to_bonds.insert(ids[i], Vec::new());
     }
+
+    let bonds = sqlx::query!(
+        "
+        SELECT
+            article_bonds.article_id as from_id,
+            tag as bond_tag,
+            articles.category,
+            articles.title,
+            users.user_name as author_name,
+            articles.id as article_id,
+            articles.create_time
+        FROM article_bonds
+            INNER JOIN articles ON articles.id = article_bonds.value
+            INNER JOIN users ON articles.author_id = users.id
+            WHERE article_bonds.article_id = ANY($1);
+        ",
+        &ids
+    )
+    .fetch_all(pool)
+    .await?;
+    // XXX: 不知道爲什麼 SQLX 的類型推導會都是 Option
+    for bond in bonds {
+        let meta = MiniBondArticleMeta {
+            bond_tag: bond.bond_tag,
+            title: bond.title.unwrap(),
+            category: bond.category.unwrap(),
+            create_time: bond.create_time.unwrap(),
+            article_id: bond.article_id.unwrap(),
+            author_name: bond.author_name.unwrap(),
+        };
+        id_to_bonds
+            .get_mut(&bond.from_id.unwrap())
+            .unwrap()
+            .push(meta);
+    }
+
+    let mut ret = Vec::new();
+    for id in &ids {
+        ret.push(id_to_bonds.remove(id).unwrap());
+    }
+    Ok(ret)
+}
+
+pub async fn get_by_article_id(id: i64) -> Fallible<String> {
+    let pool = get_pool();
+    let mut kvs = HashMap::new();
     let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
         ArticleStringField,
         "
@@ -221,66 +234,7 @@ pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String>
     .fetch_all(pool)
     .await?;
     insert_kvs(&mut kvs, &int_fields);
-    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
-        ArticleBondField,
-        "
-        SELECT article_id, name, tag, energy, value FROM article_bonds
-        WHERE article_id = $1;
-        ",
-        id
-    )
-    .fetch_all(pool)
-    .await?;
-    insert_kvs(&mut kvs, &bond_fields);
     Ok(serde_json::to_string(&kvs)?)
-}
-
-struct Validator {
-    board_id: i64,
-}
-
-#[async_trait::async_trait]
-impl ValidatorTrait for Validator {
-    type OtherError = BondError;
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<(), Self::OtherError> {
-        //XXX: 鍵能
-        let meta = match super::article::get_meta_by_id(data.target_article, None).await {
-            Err(e) => {
-                if let Error::LogicError { code, .. } = &e {
-                    if let ErrorCode::NotFound(..) = code {
-                        log::trace!("找不到鍵結文章：{}", data.target_article);
-                        return Err(BondError::TargetNotFound);
-                    }
-                }
-                return Err(BondError::Custom(Box::new(e)));
-            }
-            Ok(m) => m,
-        };
-        if meta.board_id != self.board_id {
-            return Err(BondError::TargetNotSameBoard(meta.board_id));
-        }
-        // XXX: 鍵能錯誤
-        match bondee {
-            Bondee::All => Ok(()),
-            Bondee::Choices { category, family } => {
-                if category.contains(&meta.category_name) {
-                    return Ok(());
-                }
-                for f in &meta.category_families {
-                    if family.contains(f) {
-                        return Ok(());
-                    }
-                }
-                log::trace!(
-                    "鍵結不合力語言定義：定義為{:?}，得到{:?}，指向文章{:?}",
-                    bondee,
-                    data,
-                    meta
-                );
-                Err(BondError::TargetViolateCategory)
-            }
-        }
-    }
 }
 
 async fn insert_int_field(
@@ -321,7 +275,7 @@ async fn insert_string_field(
     Ok(())
 }
 
-async fn insert_bond_field(
+async fn insert_bond(
     conn: &mut PgConnection,
     article_id: i64,
     bond: &crate::force::Bond,
@@ -418,7 +372,7 @@ pub(super) async fn create(
     use crate::force::FieldKind::*;
     use crate::force::{ValidationError, ValidationErrorCode::*};
     for bond in bonds {
-        insert_bond_field(conn, article_id, &bond).await?;
+        insert_bond(conn, article_id, &bond).await?;
     }
 
     // TODO: fields 長度爲 0 的特殊狀況（文章內不分域）

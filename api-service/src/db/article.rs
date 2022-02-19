@@ -1,10 +1,9 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
-    Article, ArticleMeta, BondArticleMeta, Edge, FamilyFilter, Favorite, FavoriteArticleMeta,
-    SearchField,
+    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, Favorite,
+    FavoriteArticleMeta, SearchField,
 };
-use crate::custom_error::{self, DataType, ErrorCode, Fallible};
-use crate::db::board;
+use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::force::Bond;
 use crate::service;
 use chrono::{DateTime, Utc};
@@ -132,14 +131,11 @@ fn filter_tuple(filter: &FamilyFilter) -> (bool, &[String]) {
 pub async fn metas_to_articles(
     metas: Vec<ArticleMeta>,
 ) -> Fallible<impl ExactSizeIterator<Item = Article>> {
-    let mut categories = Vec::new();
     let mut ids = Vec::new();
     for meta in &metas {
-        let category = get_force_category(meta.board_id, &meta.category_name).await?;
-        categories.push(category);
         ids.push(meta.id);
     }
-    let contents = article_content::get_by_article_ids(ids, categories).await?;
+    let contents = article_content::get_by_article_ids(ids).await?;
     Ok(metas
         .into_iter()
         .zip(contents.into_iter())
@@ -148,6 +144,19 @@ pub async fn metas_to_articles(
             content,
             bonds: vec![],
         }))
+}
+
+pub async fn add_bond_to_metas(metas: Vec<ArticleMeta>) -> Fallible<Vec<ArticleMetaWithBonds>> {
+    let mut ids = Vec::new();
+    for meta in &metas {
+        ids.push(meta.id);
+    }
+    let bonds = article_content::get_bonds_by_article_ids(ids).await?;
+    Ok(metas
+        .into_iter()
+        .zip(bonds.into_iter())
+        .map(|(meta, bonds)| ArticleMetaWithBonds { meta, bonds })
+        .collect())
 }
 
 pub async fn search_article(
@@ -287,8 +296,7 @@ pub async fn get_meta_by_ids(ids: Vec<i64>, viewer_id: Option<i64>) -> Fallible<
 
 pub async fn get_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article> {
     let meta = get_meta_by_id(id, viewer_id).await?;
-    let category = get_force_category(meta.board_id, &meta.category_name).await?;
-    let content = article_content::get_by_article_id(meta.id, &category).await?;
+    let content = article_content::get_by_article_id(meta.id).await?;
     Ok(Article {
         meta,
         content,
@@ -336,7 +344,8 @@ pub async fn get_by_board_name(
     )
     .fetch_all(pool)
     .await?;
-    Ok(metas.into_iter().map(move |d| to_meta!(d, viewer_id)))
+    let metas = metas.into_iter().map(move |d| to_meta!(d, viewer_id));
+    Ok(metas)
 }
 
 // `article_id` 指向的文章
@@ -478,38 +487,6 @@ pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::forc
 
 lazy_static! {
     static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
-}
-
-// FIXME: 實作更新看板力語言的時候，更新資料庫的同時也必須更新快取
-async fn get_force(board_id: i64) -> Fallible<Arc<force::Force>> {
-    let exist = {
-        let cache = FORCE_CACHE.read().unwrap();
-        match cache.get(&board_id) {
-            None => None,
-            Some(category) => Some(category.clone()),
-        }
-    };
-    match exist {
-        Some(force) => Ok(force),
-        None => {
-            let force = Arc::new(force::parse(&board::get_by_id(board_id).await?.force)?);
-            FORCE_CACHE.write().unwrap().insert(board_id, force.clone());
-            Ok(force)
-        }
-    }
-}
-
-async fn get_force_category(
-    board_id: i64,
-    category_name: &String,
-) -> Fallible<Arc<force::Category>> {
-    let force = get_force(board_id).await?;
-    match force.categories.get(category_name) {
-        Some(category) => Ok(category.clone()),
-        None => {
-            Err(custom_error::ErrorCode::NotFound(DataType::Category, category_name.clone()).into())
-        }
-    }
 }
 
 pub async fn create(

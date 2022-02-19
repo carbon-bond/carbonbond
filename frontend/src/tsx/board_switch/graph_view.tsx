@@ -467,7 +467,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 							top: (cur_hovering.y + r + init_offset_y) * scale + offset_y,
 							opacity,
 						}} className={style.articleBlock}>
-							<ArticleCard article={cur_hovering.meta} />
+							<ArticleCard article={cur_hovering.meta} bonds={[]}/>
 						</div>;
 					}
 				})()

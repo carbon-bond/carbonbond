@@ -4,7 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
-import { Board, ArticleMeta } from '../../ts/api/api_trait';
+import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -25,10 +25,10 @@ async function fetchArticles(
 	page_size: number,
 	min_id: null | number,
 	setMinID: (min_id: number) => void
-): Promise<ArticleMeta[]> {
+): Promise<ArticleMetaWithBonds[]> {
 	let articles = unwrap_or(await API_FETCHER.articleQuery.queryArticleList(page_size, min_id, null,
 		board_name, { BlackList: [force_util.SATELLITE] }), []);
-	let new_min = Math.min(...articles.map(a => a.id));
+	let new_min = Math.min(...articles.map(a => a.meta.id));
 	if (min_id != null) {
 		new_min = Math.min(min_id, new_min);
 	}
@@ -38,7 +38,7 @@ async function fetchArticles(
 
 export function BoardPage(props: Props): JSX.Element {
 	let board_name = props.board.board_name;
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
 	const [is_end, setIsEnd] = React.useState<boolean>(false);
 	const min_article_id_ref = React.useRef<null | number>(0);
@@ -77,8 +77,8 @@ export function BoardPage(props: Props): JSX.Element {
 	return <>
 		{
 			articles.map((article, pos) => (
-				<div className={articleWrapper} key={`${article.id}-${pos}`}>
-					<ArticleCard article={article} />
+				<div className={articleWrapper} key={`${article.meta.id}-${pos}`}>
+					<ArticleCard article={article.meta} bonds={article.bonds} />
 				</div>
 			))
 		}

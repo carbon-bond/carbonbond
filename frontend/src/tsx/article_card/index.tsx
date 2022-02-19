@@ -3,7 +3,7 @@ import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Bond, Edge, MiniArticleMeta } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Author, Edge, MiniBondArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
@@ -144,10 +144,10 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
-function BondLine(props: { bond: Bond, mini_meta: MiniArticleMeta }): JSX.Element {
+function BondLine(props: { mini_meta: MiniBondArticleMeta, board_name: string }): JSX.Element {
 	return <div className={style.bondLine}>
-		<Link className={style.leftSet} to={`/app/b/${props.mini_meta.board_name}/a/${props.mini_meta.article_id}`}>
-			<span className={style.bondTag}>{props.bond.tag}</span>
+		<Link className={style.leftSet} to={`/app/b/${props.board_name}/a/${props.mini_meta.article_id}`}>
+			<span className={style.bondTag}>{props.mini_meta.bond_tag}</span>
 			<span className={style.border}>{props.mini_meta.category}</span>
 			<span>{props.mini_meta.title}</span>
 		</Link>
@@ -159,46 +159,16 @@ function BondLine(props: { bond: Bond, mini_meta: MiniArticleMeta }): JSX.Elemen
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+function ArticleCard(props: { article: ArticleMeta, bonds: Array<MiniBondArticleMeta> }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
-	const bonds: Array<[Bond, MiniArticleMeta]> = [
-		[
-			{
-				tag: '反對',
-				to: 1,
-			},
-			{
-				board_name: '八尬',
-				author_name: '美堂蠻',
-				category: '新聞',
-				title: '出門掃所有路過的實聯制會怎樣會',
-				article_id: 1,
-				create_time: 'Sat Feb 19 2022 17:38:57 GMT+0800 (Taipei Standard Time)',
-			}
-		],
-		[
-			{
-				tag: '贊成',
-				to: 1,
-			},
-			{
-				board_name: '八尬',
-				author_name: '天野銀次',
-				category: '新聞',
-				title: '自拍照像「氣切」趙正平嚇壞網',
-				article_id: 2,
-				create_time: 'Sat Feb 19 2022 14:18:57 GMT+0800 (Taipei Standard Time)',
-			}
-		]
-	];
 	const author = props.article.author;
 	const category = props.article.category;
 
 	return (
 		<div>
 			{
-				bonds.map(bond => <BondLine bond={bond[0]} mini_meta={bond[1]} />)
+				props.bonds.map(bond => <BondLine mini_meta={bond} board_name={props.article.board_name} key={bond.article_id}/>)
 			}
 			<div className={style.articleContainer}>
 				<ArticleHeader author={author} board_name={props.article.board_name} date={date} />

@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserMini, Favorite, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -433,7 +433,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 
 function ProfileWorks(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 
 	React.useEffect(() => {
 		Promise.all([
@@ -486,11 +486,11 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	</div>;
 }
 
-function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
+function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
 		{props.articles.map((article, idx) => (
 			<div className={articleWrapper} key={`article-${idx}`}>
-				<ArticleCard article={article} />
+				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
 		))}
 	</div>;
@@ -525,7 +525,7 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 			<div className={favoriteWrapper} key={`article-${idx}`}>
 				<div className={favoriteTitle}>{relativeDate(new Date(favorite.create_time))}</div>
 				<div className={articleWrapper} >
-					<ArticleCard article={favorite.meta} />
+					<ArticleCard article={favorite.meta} bonds={[]} />
 				</div>
 			</div>
 		))}
@@ -538,7 +538,7 @@ function Satellites(): JSX.Element {
 
 async function fetchArticles(
 	author_name: string,
-): Promise<ArticleMeta[]> {
+): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.articleQuery.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 

@@ -118,7 +118,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category: Option<i64>,
         title: Option<String>,
         content: HashMap<String, super::model::forum::SearchField>,
-    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
         let viewer_id = context.get_id().await;
         let meta = db::article::search_article(
             viewer_id,
@@ -131,13 +131,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             title,
         )
         .await?;
-        complete_article(meta, context).await
+        let articles = complete_article(meta, context).await?;
+        db::article::add_bond_to_metas(articles).await
     }
     async fn search_pop_article(
         &self,
         context: &mut crate::Ctx,
         count: usize,
-    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
         let mut articles: Vec<model::forum::ArticleMeta> = Vec::new();
         let hot_article_ids = service::hot_articles::get_hot_articles().await?;
         let viewer_id = context.get_id().await;
@@ -150,19 +151,21 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
                 break;
             }
         }
-        complete_article(articles, context).await
+        let articles = complete_article(articles, context).await?;
+        db::article::add_bond_to_metas(articles).await
     }
     async fn get_subscribe_article(
         &self,
         context: &mut crate::Ctx,
         count: usize,
-    ) -> Result<Vec<model::forum::ArticleMeta>, crate::custom_error::Error> {
+    ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
         let articles = db::article::get_meta_by_ids(tracking_articles, Some(user_id)).await?;
 
-        complete_article(articles, context).await
+        let articles = complete_article(articles, context).await?;
+        db::article::add_bond_to_metas(articles).await
     }
     async fn query_article_list(
         &self,
@@ -172,7 +175,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _author_name: Option<String>,
         board_name: Option<String>,
         family_filter: super::model::forum::FamilyFilter,
-    ) -> Fallible<Vec<model::forum::ArticleMeta>> {
+    ) -> Fallible<Vec<model::forum::ArticleMetaWithBonds>> {
         let viewer_id = context.get_id().await;
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
@@ -183,7 +186,8 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             }
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         };
-        complete_article(articles, context).await
+        let articles = complete_article(articles, context).await?;
+        db::article::add_bond_to_metas(articles).await
     }
     async fn query_article(
         &self,

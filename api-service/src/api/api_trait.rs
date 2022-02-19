@@ -278,7 +278,7 @@ pub trait PartyQueryRouter {
 }
 #[async_trait]
 pub trait ArticleQueryRouter {
-    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Article, crate::custom_error::Error>;
     async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error>;
     async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
@@ -287,9 +287,9 @@ pub trait ArticleQueryRouter {
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
-    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
-    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<super::model::forum::Graph, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ArticleQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {

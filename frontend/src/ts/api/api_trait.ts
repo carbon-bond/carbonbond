@@ -30,9 +30,9 @@ export type SignupInvitationCredit = {     id: number; event_name: string; credi
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type Favorite = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
-export type MiniArticleMeta = {     board_name: string; category: string; author_name: string;     article_id: number; title: string; create_time: string};
-export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: [Bond, MiniArticleMeta] [] };
-export type Article = { meta: ArticleMeta; bonds: MiniArticleMeta []; content: string };
+export type MiniBondArticleMeta = {     category: string; author_name: string; article_id: number; title:     string; create_time: string; bond_tag: string | null };
+export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: MiniBondArticleMeta [] };
+export type Article = { meta: ArticleMeta; bonds: MiniBondArticleMeta []; content: string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category_id: number | null; category_name: string | null; title:     string; content: string; create_time: string; edit_time:     string; anonymous: boolean };
 export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
@@ -273,7 +273,7 @@ export class ArticleQuery {
     constructor(fetcher: Fetcher){
         this.fetchResult = fetcher
     }
-    async queryArticleList(count: number, max_id: Option<number>, author_name: Option<string>, board_name: Option<string>, family_filter: FamilyFilter): Promise<Result<Array<ArticleMeta>, Error>> {
+    async queryArticleList(count: number, max_id: Option<number>, author_name: Option<string>, board_name: Option<string>, family_filter: FamilyFilter): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleList": { count, max_id, author_name, board_name, family_filter } } }));
     }
     async queryArticle(id: number): Promise<Result<Article, Error>> {
@@ -300,13 +300,13 @@ export class ArticleQuery {
     async deleteDraft(draft_id: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "DeleteDraft": { draft_id } } }));
     }
-    async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMeta>, Error>> {
+    async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));
     }
-    async searchPopArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
+    async searchPopArticle(count: number): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchPopArticle": { count } } }));
     }
-    async getSubscribeArticle(count: number): Promise<Result<Array<ArticleMeta>, Error>> {
+    async getSubscribeArticle(count: number): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "GetSubscribeArticle": { count } } }));
     }
     async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
