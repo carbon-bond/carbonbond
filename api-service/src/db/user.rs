@@ -469,7 +469,6 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
 pub async fn update_info(
     id: i64,
     introduction: String,
-    gender: String,
     job: String,
     city: String,
 ) -> Fallible<()> {
@@ -477,12 +476,11 @@ pub async fn update_info(
     sqlx::query!(
         "
         UPDATE users
-        SET (introduction, gender, job, city) = ($2, $3, $4, $5)
+        SET (introduction, job, city) = ($2, $3, $4)
         WHERE id = $1
         ",
         id,
         introduction,
-        gender,
         job,
         city
     )

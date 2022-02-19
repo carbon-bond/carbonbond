@@ -242,8 +242,8 @@ export class UserQuery {
     async updateSentence(sentence: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateSentence": { sentence } } }));
     }
-    async updateInformation(introduction: string, gender: string, job: string, city: string): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, gender, job, city } } }));
+    async updateInformation(introduction: string, job: string, city: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, job, city } } }));
     }
 }
 

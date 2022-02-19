@@ -78,12 +78,11 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
 	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
 
-	async function updateInformation(introduction: string, gender: string, job: string, city: string): Promise<{}> {
+	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		console.log('更新我的資料');
 		try {
-			await API_FETCHER.userQuery.updateInformation(introduction, gender, job, city);
+			await API_FETCHER.userQuery.updateInformation(introduction, job, city);
 			setIntroduction(introduction);
-			setGender(gender);
 			setJob(job);
 			setCity(city);
 			setEditing(false);
@@ -129,7 +128,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		}
 
 		let buttons: ModalButton[] = [];
-		buttons.push({ text: '儲存', handler: () => updateInformation(introduction, gender, job, city) });
+		buttons.push({ text: '儲存', handler: () => updateInformation(introduction, job, city) });
 		buttons.push({ text: '取消', handler: () => setEditing(false) });
 
 		return <ModalWindow

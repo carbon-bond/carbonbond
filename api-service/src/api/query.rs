@@ -137,7 +137,6 @@ pub enum UserQuery {
     #[chitin(leaf, response = "()")]
     UpdateInformation {
         introduction: String,
-        gender: String,
         job: String,
         city: String,
     },
