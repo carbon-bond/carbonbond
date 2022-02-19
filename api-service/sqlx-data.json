@@ -323,20 +323,6 @@
       ]
     }
   },
-  "15a4c7ecd622dabfa9ff9b87bc2359db128a9a42656b493f1b16b011110d9210": {
-    "query": "UPDATE users SET gender = $1, birth_year = $2 WHERE user_name = $3",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Int4",
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "180c5e60193dc2a5bb28035f115eb40da11b3d68d27753d3391518f71ef09c99": {
     "query": "\n\t\tINSERT INTO chat.direct_messages (direct_chat_id, sender_id, content)\n\t\tVALUES ($1, $2, $3)\n\t\tRETURNING id\n\t\t",
     "describe": {
@@ -447,32 +433,6 @@
         ]
       },
       "nullable": []
-    }
-  },
-  "1e22d54bc0b9f60bf93b96fdacc2a31a82bab5dd8755114983a4cd15b6542d75": {
-    "query": "SELECT gender, birth_year FROM signup_tokens WHERE token = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "gender",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "birth_year",
-          "type_info": "Int4"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        false
-      ]
     }
   },
   "1fad9a11be067106f152f6af9b5bf889fa86987b9901a3b5d0f5d2c427f2e905": {
@@ -3216,14 +3176,13 @@
       ]
     }
   },
-  "cd582445f11a63595926a45c6f081fee1be0030ea26647d340b42c8966560043": {
-    "query": "\n        UPDATE users\n        SET (introduction, gender, job, city) = ($2, $3, $4, $5)\n        WHERE id = $1\n        ",
+  "cba0978bdd78a73eac86f88b4642088fed46438d3c882fb7261bbacca0f5a4b9": {
+    "query": "\n        UPDATE users\n        SET (introduction, job, city) = ($2, $3, $4)\n        WHERE id = $1\n        ",
     "describe": {
       "columns": [],
       "parameters": {
         "Left": [
           "Int8",
-          "Text",
           "Text",
           "Text",
           "Text"
@@ -3306,6 +3265,19 @@
         "Left": [
           "Text",
           "Varchar"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "d92ca0f691e989536162492a1950d6d5de8c9fab7a0e813ab9cf344397a86a54": {
+    "query": "UPDATE users\n            SET gender = (SELECT gender FROM signup_tokens WHERE token = $1),\n                birth_year = (SELECT birth_year FROM signup_tokens WHERE token = $1)\n            WHERE user_name = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
         ]
       },
       "nullable": []
