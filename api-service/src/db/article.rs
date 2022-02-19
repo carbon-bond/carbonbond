@@ -143,7 +143,11 @@ pub async fn metas_to_articles(
     Ok(metas
         .into_iter()
         .zip(contents.into_iter())
-        .map(|(meta, content)| Article { meta, content }))
+        .map(|(meta, content)| Article {
+            meta,
+            content,
+            bonds: vec![],
+        }))
 }
 
 pub async fn search_article(
@@ -285,7 +289,11 @@ pub async fn get_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article> {
     let meta = get_meta_by_id(id, viewer_id).await?;
     let category = get_force_category(meta.board_id, &meta.category_name).await?;
     let content = article_content::get_by_article_id(meta.id, &category).await?;
-    Ok(Article { meta, content })
+    Ok(Article {
+        meta,
+        content,
+        bonds: vec![],
+    })
 }
 
 pub async fn get_author_by_id(id: i64) -> Fallible<i64> {

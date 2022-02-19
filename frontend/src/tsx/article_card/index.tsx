@@ -1,9 +1,9 @@
 import * as React from 'react';
 import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
-import { relativeDate } from '../../ts/date';
+import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Edge } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Author, Bond, Edge, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
@@ -39,7 +39,7 @@ export function ArticleHeader(props: { author: Author, board_name: string, date:
 export function ArticleLine(props: { category: string, title: string, id: number, board_name: string }): JSX.Element {
 
 	return <div className={style.articleLine}>
-		<span className={style.articleType}>{props.category}</span>
+		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
 		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
 		</a>
@@ -144,26 +144,76 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
+function BondLine(props: { bond: Bond, mini_meta: MiniArticleMeta }): JSX.Element {
+	return <div className={style.bondLine}>
+		<Link className={style.leftSet} to={`/app/b/${props.mini_meta.board_name}/a/${props.mini_meta.article_id}`}>
+			<span className={style.bondTag}>{props.bond.tag}</span>
+			<span className={style.border}>{props.mini_meta.category}</span>
+			<span>{props.mini_meta.title}</span>
+		</Link>
+		<div className={style.rightSet}>
+			<span>{dateDistance(new Date(props.mini_meta.create_time))}</span>
+			<span> • </span>
+			<Link className={style.authorName} to={`/app/user/${props.mini_meta.author_name}`}>{props.mini_meta.author_name}</Link>
+		</div>
+	</div>;
+}
+
 function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
+	const bonds: Array<[Bond, MiniArticleMeta]> = [
+		[
+			{
+				tag: '反對',
+				to: 1,
+			},
+			{
+				board_name: '八尬',
+				author_name: '美堂蠻',
+				category: '新聞',
+				title: '出門掃所有路過的實聯制會怎樣會',
+				article_id: 1,
+				create_time: 'Sat Feb 19 2022 17:38:57 GMT+0800 (Taipei Standard Time)',
+			}
+		],
+		[
+			{
+				tag: '贊成',
+				to: 1,
+			},
+			{
+				board_name: '八尬',
+				author_name: '天野銀次',
+				category: '新聞',
+				title: '自拍照像「氣切」趙正平嚇壞網',
+				article_id: 2,
+				create_time: 'Sat Feb 19 2022 14:18:57 GMT+0800 (Taipei Standard Time)',
+			}
+		]
+	];
 	const author = props.article.author;
 	const category = props.article.category;
 
 	return (
-		<div className={style.articleContainer}>
-			<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
-			<div className={style.articleBody}>
-				<div className={style.leftPart}>
-					<ArticleLine
-						board_name={props.article.board_name}
-						category={category}
-						title={props.article.title}
-						id={props.article.id} />
-					<ArticleContentShrinkable article={props.article}/>
+		<div>
+			{
+				bonds.map(bond => <BondLine bond={bond[0]} mini_meta={bond[1]} />)
+			}
+			<div className={style.articleContainer}>
+				<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
+				<div className={style.articleBody}>
+					<div className={style.leftPart}>
+						<ArticleLine
+							board_name={props.article.board_name}
+							category={category}
+							title={props.article.title}
+							id={props.article.id} />
+						<ArticleContentShrinkable article={props.article}/>
+					</div>
 				</div>
+				<ArticleFooter article={props.article} />
 			</div>
-			<ArticleFooter article={props.article} />
 		</div>
 	);
 }
@@ -287,6 +337,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			setArticle({
 				meta: props.article,
 				content: props.article.digest.content,
+				bonds: []
 			});
 			return;
 		}

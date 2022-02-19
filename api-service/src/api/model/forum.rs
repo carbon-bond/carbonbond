@@ -208,8 +208,23 @@ mod model {
         pub satellite_replies: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct MiniArticleMeta {
+        pub board_name: String,
+        pub category: String,
+        pub author_name: String,
+        pub article_id: i64,
+        pub title: String,
+        pub create_time: DateTime<chrono::Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct ArticleMetaWithBonds {
+        pub meta: ArticleMeta,
+        pub bonds: Vec<(Bond, MiniArticleMeta)>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         pub meta: ArticleMeta,
+        pub bonds: Vec<MiniArticleMeta>,
         pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
