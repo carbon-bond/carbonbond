@@ -334,13 +334,13 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
     log::trace!("使用者用註冊碼註冊");
     let email = get_email_by_signup_token(token).await?;
     if let Some(email) = email {
-        let pool = get_pool();
+        let mut conn = get_pool().begin().await?;
         let id = signup(name, password, &email).await?;
         sqlx::query!(
             "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
             token
         )
-        .execute(pool)
+        .execute(&mut conn)
         .await?;
         sqlx::query!(
             "UPDATE users
@@ -350,8 +350,9 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
             token,
             name
         )
-        .execute(pool)
+        .execute(&mut conn)
         .await?;
+        conn.commit().await?;
         Ok(id)
     } else {
         Err(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).into())
