@@ -342,14 +342,12 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         )
         .execute(pool)
         .await?;
-        let record = sqlx::query!("SELECT gender, birth_year FROM signup_tokens WHERE token = $1", token)
-            .fetch_optional(pool)
-            .await?
-            .ok_or(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).to_err())?;
         sqlx::query!(
-            "UPDATE users SET gender = $1, birth_year = $2 WHERE user_name = $3",
-            &record.gender,
-            &record.birth_year,
+            "UPDATE users
+            SET gender = (SELECT gender FROM signup_tokens WHERE token = $1),
+                birth_year = (SELECT birth_year FROM signup_tokens WHERE token = $1)
+            WHERE user_name = $2",
+            token,
             name
         )
         .execute(pool)
