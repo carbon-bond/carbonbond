@@ -48,8 +48,7 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
 	return <>
         {
         	bonders.map(([bond, meta]) => {
-        		return <div>
-        			{/* <BondCard bond={bond} /> */}
+        		return <div key={meta.id}>
         			<SimpleArticleCard key={meta.id} meta={meta} bond={bond}/>
         		</div>;
         	})

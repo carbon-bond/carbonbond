@@ -40,7 +40,7 @@ export function ArticleLine(props: { category: string, title: string, id: number
 
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
-		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
+		<a href={`/app/b/${props.board_name}/a/${props.id}`} className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
 		</a>
 		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
@@ -227,8 +227,7 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				</div>
 				: <></>
 		}
-		<Link className={style.overlay} to={url} target="_blank"></Link >
-		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
+		<Link className={style.overlay} to={url}></Link >
 	</div>;
 }
 
@@ -238,10 +237,8 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryArticleMeta(props.article_id).then(data => {
 			setMeta(unwrap(data));
-			// setFetching(false);
 		}).catch(err => {
 			toastErr(err);
-			// setFetching(false);
 		});
 	}, [props.article_id]);
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
-import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
@@ -14,8 +13,6 @@ import { BottomPanelState } from '../global_state/bottom_panel';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
-import favorite_wrapper_style from '../../css/favorite_wrapper.module.css';
-const { favoriteTitle, favoriteWrapper } = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 
@@ -518,10 +515,8 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 
 	return <div>
 		{favorites.map(favorite => (
-			<div className={favoriteWrapper} key={`article-${favorite.meta.id}`}>
-				<div className={articleWrapper} >
-					<ArticleCard article={favorite.meta} bonds={favorite.bonds} />
-				</div>
+			<div className={articleWrapper} key={`article-${favorite.meta.id}`} >
+				<ArticleCard article={favorite.meta} bonds={favorite.bonds} />
 			</div>
 		))}
 	</div>;
