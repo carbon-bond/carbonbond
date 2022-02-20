@@ -18,14 +18,14 @@ export type Party = {     id: number; party_name: string; board_id: number | nul
 export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
-export type NewBoard = {     board_name: string; board_type: string; title: string; detail:     string; force: Force; ruling_party_id: number };
+export type NewBoard = {     board_name: string; board_type: string; title: string; detail:     string; force: force.Force; ruling_party_id: number };
 export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type Author = 
  | { NamedAuthor: { id: number; name: string } } 
  | "MyAnonymous" 
  | "Anonymous";
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: force.Field; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type ArticleStatistics = { replies: number; satellite_replies: number };
@@ -49,11 +49,13 @@ export type FamilyFilter =
  | { BlackList: string [] } 
  | "None";
 export type Config = { min_password_length: number; max_password_length: number };
+export namespace force {
 export type Bond = { to: number; tag: string };
 export type Category = { name: string; fields: Field [] };
 export type Field = { name: string; kind: FieldKind };
 export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
 export type Force = { categories: Category []; suggested_tags: string [] };
+}
 export type MessageSending = { channel_id: number; content: string };
 export namespace client_trigger {
 export type API = 
@@ -287,7 +289,7 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
     }
-    async createArticle(board_id: number, category_name: string, title: string, content: string, bonds: Array<Bond>, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
+    async createArticle(board_id: number, category_name: string, title: string, content: string, bonds: Array<force.Bond>, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, bonds, draft_id, anonymous } } }));
     }
     async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string, anonymous: boolean): Promise<Result<number, Error>> {

@@ -1,6 +1,6 @@
 use chitin::*;
 #[chitin_model]
-mod model {
+pub mod forum_model_root {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
@@ -93,8 +93,8 @@ mod model {
         pub board_type: String,
         pub title: String,
         pub detail: String,
-        // pub force: String,
-        pub force: Force,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
@@ -178,7 +178,8 @@ mod model {
         pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
-        pub fields: Vec<Field>,
+        #[ts(ts_type = "force.Field")]
+        pub fields: Vec<force::Field>,
 
         pub stat: ArticleStatistics,
         pub personal_meta: ArticlePersonalMeta,
@@ -343,8 +344,12 @@ mod model {
         pub max_password_length: usize,
     }
 
-    #[chitin_model_use]
-    use crate::force::{Bond, Category, Field, FieldKind, Force};
+    #[chitin_model]
+    pub mod force {
+        use super::*;
+        #[chitin_model_use]
+        pub use crate::force::{Bond, Category, Field, FieldKind, Force};
+    }
 }
 
-pub use model::*;
+pub use forum_model_root::*;
