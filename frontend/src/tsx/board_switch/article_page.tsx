@@ -4,7 +4,7 @@ import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
-import { Article, Board } from '../../ts/api/api_trait';
+import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
 import { BonderCards, ReplyButtons, SatelliteButtons, SatelliteCards } from '../article_card/bonder';
@@ -84,7 +84,11 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 			fields.map(field =>
 				<div className={style.field} key={field.name}>
 					<div className={style.fieldName}>{field.name}：</div>
-					<ShowText text={content[field.name]} />
+					{
+						field.kind == force.FieldKind.MultiLine ?
+							<ShowText text={content[field.name]} /> :
+							content[field.name]
+					}
 				</div>
 			)
 		}

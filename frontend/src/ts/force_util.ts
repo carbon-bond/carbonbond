@@ -1,4 +1,16 @@
-import { Category, Force } from '../../../force/typescript/index';
+import { Force } from '../../../force/typescript/index';
+import { force } from './api/api_trait';
+
+export function show_datatype(datatype: force.FieldKind): string {
+	switch (datatype) {
+		case force.FieldKind.MultiLine:
+			return '多行文字';
+		case force.FieldKind.OneLine:
+			return '單行文字';
+		case force.FieldKind.Number:
+			return '數字';
+	}
+}
 
 // 取得一個力語言定義中所有屬於 family 分類族的分類
 export function get_family_members(force: Force, family: string): string[] {
@@ -36,30 +48,15 @@ export function new_bond(id: string = ''): Bond {
 }
 
 // 創造一個符合力語言型別的空實例
-// eslint-disable-next-line
-export function new_content(category: Category): { [index: string]: any } {
-// eslint-disable-next-line
-	let content: { [index: string]: any } = {};
+export function new_content(category: force.Category): { [index: string]: number | string } {
+	let content: { [index: string]: number | string } = {};
 	for (let field of category.fields) {
-		if (field.datatype.kind == 'array') {
-			if (field.datatype.t.kind == 'bond') {
-				content[field.name] = {
-					confirmed: [],
-					candidate: new_bond()
-				};
-			} else {
-				content[field.name] = {
-					confirmed: [],
-					candidate: ''
-				};
-			}
-		} else if (field.datatype.t.kind == 'bond') {
-			content[field.name] = new_bond();
+		if (field.kind == force.FieldKind.Number) {
+			content[field.name] = 0;
 		} else {
 			content[field.name] = '';
 		}
 	}
-	console.log(`new_content = ${JSON.stringify(content, null, 2)}`);
 	return content;
 }
 

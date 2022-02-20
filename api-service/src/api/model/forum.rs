@@ -78,7 +78,8 @@ pub mod forum_model_root {
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
-        pub force: String,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
         pub ruling_party_id: i64,
         pub popularity: i64,
     }
@@ -178,7 +179,7 @@ pub mod forum_model_root {
         pub digest: ArticleDigest,
         pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
-        #[ts(ts_type = "force.Field")]
+        #[ts(ts_type = "force.Field[]")]
         pub fields: Vec<force::Field>,
 
         pub stat: ArticleStatistics,

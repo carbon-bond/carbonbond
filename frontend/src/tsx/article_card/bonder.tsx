@@ -181,7 +181,9 @@ function ReplyButton(props: { hide_field?: boolean, board: Board, article: Artic
 			data = produce(data, nxt => {
 				if (nxt.category == '') {
 					nxt.category = props.category.name;
-					nxt.content = force_util.new_content(props.category);
+					// force-FIXME
+					// nxt.content = force_util.new_content(props.board.force.categories);
+					nxt.content = {};
 				}
 			});
 			data = produce(data, nxt => {

@@ -10,18 +10,11 @@ import style from '../../css/board_switch/board_creator.module.css';
 import { toastErr } from '../utils';
 import produce from 'immer';
 
-import { FieldKind, Force } from '../../ts/api/api_trait';
+import { force } from '../../ts/api/api_trait';
+import { show_datatype } from '../../ts/force_util';
 
-function to_string(k: FieldKind): string {
-	switch (k) {
-		case FieldKind.Number:
-			return '數字';
-		case FieldKind.OneLine:
-			return '單行文字';
-		case FieldKind.MultiLine:
-			return '多行文字';
-	}
-}
+const FieldKind = force.FieldKind;
+type Force = force.Force;
 
 // TODO: 編輯
 export function ForceEditor(props: { value: Force, setValue: React.Dispatch<React.SetStateAction<Force>> }): JSX.Element {
@@ -42,13 +35,13 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 								return <div key={field.name}>
 									{field.name}
 									<select value={field.kind} onChange={(evt) => {
-										const new_kind = evt.target.value as FieldKind;
+										const new_kind = evt.target.value as force.FieldKind;
 										props.setValue(produce(props.value, force => {
 											force.categories[cid].fields[fid].kind = new_kind;
 										}));
 									}}>
 										{
-											kinds.map(kind => <option key={kind} value={kind}>{to_string(kind)}</option>)
+											kinds.map(kind => <option key={kind} value={kind}>{show_datatype(kind)}</option>)
 										}
 									</select>
 								</div>;

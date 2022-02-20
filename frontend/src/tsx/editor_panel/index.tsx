@@ -1,27 +1,23 @@
 import * as React from 'react';
 import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, BoardType } from '../../ts/api/api_trait';
+import { BoardName, BoardType, force } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Validator } from '../../ts/validator';
-import * as Force from '../../../../force/typescript/index';
-import { ShowText } from '../../tsx/board_switch/article_page';
 import { Modal } from '../../tsx/article_card/modal';
 
 
 import bottom_panel_style from '../../css/bottom_panel/bottom_panel.module.css';
 const { roomTitle, leftSet, middleSet, rightSet, button } = bottom_panel_style;
 import style from '../../css/bottom_panel/editor.module.css';
-import { SimpleArticleCardById } from '../article_card';
 import { toastErr } from '../utils';
-import { new_content, new_bond } from '../../ts/force_util';
+import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
 
 function useDeleteEditor(): () => void {
@@ -124,17 +120,14 @@ function EditorPanel(): JSX.Element | null {
 
 type ChangeEvent = { target: { value: string } };
 
-const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
-	const { field, validator } = props;
-	const [validate_info, setValidateInfo] = useState<undefined | string>(undefined);
+type FieldProps = { field: force.Field, validate_info: string | undefined, set_info: (info: string | undefined) => void };
+
+const SingleField = (props: FieldProps): JSX.Element => {
+	const { field } = props;
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
+	const validate_info = props.validate_info;
 	let content = editor_panel_data!.content;
-
-	useEffect(() => {
-		validator.validate_datatype(field.datatype, content[field.name])
-			.then(res => setValidateInfo(res));
-	}, [field, content, validator]);
 
 	if (editor_panel_data == null) { return <></>; }
 
@@ -143,6 +136,15 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 		id: field.name,
 		value: content[field.name],
 		onChange: (evt: ChangeEvent) => {
+			if (field.kind == force.FieldKind.Number) {
+				if (!Number.isNaN(Number(evt.target.value))) {
+					props.set_info('必須輸入一個整數');
+				} if (!Number.isSafeInteger(Number(evt.target.value))) {
+					props.set_info('超出可接受的整數範圍');
+				} else {
+					props.set_info(undefined);
+				}
+			}
 			setEditorPanelData({
 				...editor_panel_data,
 				content: {
@@ -152,215 +154,91 @@ const SingleField = (props: { field: Force.Field, validator: Validator }): JSX.E
 			});
 		}
 	};
-	if (field.datatype.t.kind == 'text') {
-		return <>
-			<textarea {...input_props} />
-			{validate_info && <InvalidMessage msg={validate_info} />}
-		</>;
-	} else if (field.datatype.t.kind == 'bond') {
-		const onChange = (bond_field: string) => {
-			return (evt: ChangeEvent) => {
-				setEditorPanelData(produce(editor_panel_data, nxt => {
-					nxt.content[field.name][bond_field] = evt.target.value;
-				}));
-			};
-		};
-		return <EditBond onChange={onChange} bond={editor_panel_data.content[field.name]} validate_info= {validate_info} />;
-	} else {
-		return <>
-			<input {...input_props} />
-			{validate_info && <InvalidMessage msg={validate_info} />}
-		</>;
+	switch (field.kind) {
+		case force.FieldKind.MultiLine:
+			return <>
+				<textarea {...input_props} />
+				{validate_info && <InvalidMessage msg={validate_info} />}
+			</>;
+		case force.FieldKind.OneLine: {
+			return <>
+				<input {...input_props} />
+				{validate_info && <InvalidMessage msg={validate_info} />}
+			</>;
+		}
+		case force.FieldKind.Number: {
+			return <>
+				<input {...input_props} type="text" onKeyPress={(evt) => {
+					if (!(/[0-9]/.test(evt.key) || /-/.test(evt.key))) {
+						evt.preventDefault();
+					}
+				}} />
+				{validate_info && <InvalidMessage msg={validate_info} />}
+			</>;
+		}
 	}
 };
 
-type BondOnChange = (bond_field: string) => ((evt: ChangeEvent) => void);
-type UnProcessedBond = {
-	target_article: string,
-	tag: string,
-	energy: string
-};
+// type BondOnChange = (bond_field: string) => ((evt: ChangeEvent) => void);
+// type UnProcessedBond = {
+// 	target_article: string,
+// 	tag: string,
+// 	energy: string
+// };
 
-function EditBond(props: { onChange: BondOnChange, bond: UnProcessedBond, validate_info: string | undefined }): JSX.Element {
-	return <>
-		<div className={style.bond}>
-			<input className={style.id} placeholder="文章代碼"
-				value={props.bond.target_article}
-				onChange={props.onChange('target_article')} />
-			<input className={style.tag} placeholder="標籤（選填）"
-				value={props.bond.tag}
-				onChange={props.onChange('tag')} />
-			<select
-				value={props.bond.energy}
-				onChange={props.onChange('energy')} >
-				<option value="1">正面</option>
-				<option value="0">中立</option>
-				<option value="-1">負面</option>
-			</select>
-		</div>
-		{props.validate_info && <InvalidMessage msg={props.validate_info} />}
-	</>;
-}
-
-// eslint-disable-next-line
-function ShowItem(props: { t: Force.BasicDataType, value: any }): JSX.Element {
-	if (props.t.kind == 'text') {
-		return <div className={style.textValueWrap}>
-			<ShowText text={props.value} />
-		</div>;
-	} else if (props.t.kind == 'bond') {
-		return <SimpleArticleCardById article_id={Number(props.value.target_article)} />;
-	} else {
-		return <>{props.value}</>;
-	}
-}
-
-const ArrayField = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
-	const { field } = props;
-	const [input_validate_info, setInputValidateInfo] = useState<undefined | string>(undefined);
-	const [array_validate_info, setArrayValidateInfo] = useState<undefined | string>(undefined);
-	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
-
-	useEffect(() => {
-		props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name].confirmed)
-			.then(info => setArrayValidateInfo(info));
-	});
-
-	if (editor_panel_data == null) { return <></>; }
-
-	const value = editor_panel_data.content[field.name].candidate;
-	// eslint-disable-next-line
-	const setValue = (v: any): void => {
-		console.log(`content = ${JSON.stringify(editor_panel_data.content, null, 2)}`);
-		setEditorPanelData(produce(editor_panel_data, nxt => {
-			nxt.content[field.name].candidate = v;
-		}));
-	};
-
-	const show_list = (): JSX.Element => {
-		let list = editor_panel_data.content[field.name].confirmed;
-		console.log(`list = ${JSON.stringify(editor_panel_data.content, null, 2)}`);
-		if (list instanceof Array) {
-			return <div>
-				{
-					list.map((item, index) => {
-						return <div key={index}>
-							<span className={style.deleteButton} onClick={() => {
-								const next_state = produce(editor_panel_data, nxt => {
-									nxt.content[field.name].confirmed.splice(index, 1);
-								});
-								setEditorPanelData(next_state);
-							}}>✗</span>
-							<ShowItem t={field.datatype.t} value={item} />
-						</div>;
-					})
-				}
-			</div>;
-		} else {
-			return <></>;
-		}
-	};
-
-	const push_data = (): void => {
-		if (input_validate_info == undefined) {
-			const next_state = produce(editor_panel_data, (nxt) => {
-				nxt.content[field.name].confirmed.push(value);
-				if (field.datatype.t.kind == 'bond') {
-					nxt.content[field.name].candidate = new_bond();
-				} else {
-					nxt.content[field.name].candidate = '';
-				}
-			});
-			setEditorPanelData(next_state);
-			props.validator.validate_datatype(field.datatype, editor_panel_data!.content[field.name].confirmed)
-				.then(info => setArrayValidateInfo(info));
-		}
-	};
-
-	const on_enter = (evt: { key: string }): void => {
-		if (evt.key == 'Enter') {
-			push_data();
-			// @ts-ignore
-			evt.preventDefault();
-		}
-	};
-
-	const input_props = {
-		placeholder: field.name,
-		id: field.name,
-		value,
-		onChange: (evt: ChangeEvent) => {
-			setValue(evt.target.value);
-			props.validator.validate_basic_datatype(field.datatype.t, evt.target.value)
-				.then(res => setInputValidateInfo(res));
-		},
-	};
-	if (field.datatype.t.kind == 'text') {
-		return <>
-			{array_validate_info && <InvalidMessage msg={array_validate_info} />}
-			{show_list()}
-			<button type="button" onClick={push_data}>+</button>
-			<textarea {...input_props} />
-			{input_validate_info && <InvalidMessage msg={input_validate_info} />}
-		</>;
-	} else if (field.datatype.t.kind == 'bond') {
-		const onChange = (bond_field: string) => {
-			return (evt: ChangeEvent) => {
-				const next_state = produce(editor_panel_data, nxt => {
-					nxt.content[field.name].candidate[bond_field] = evt.target.value;
-				});
-				setEditorPanelData(next_state);
-				props.validator.validate_basic_datatype(field.datatype.t, next_state.content[field.name].candidate)
-					.then(res => setInputValidateInfo(res));
-			};
-		};
-		return <>
-			{array_validate_info && <InvalidMessage msg={array_validate_info} />}
-			{show_list()}
-			<button type="button" onClick={push_data}>+</button>
-			<EditBond onChange={onChange} bond={value} validate_info={input_validate_info} />
-		</>;
-	} else {
-		return <>
-			{array_validate_info && <InvalidMessage msg={array_validate_info} />}
-			{show_list()}
-			<input {...input_props} onKeyDown={on_enter} />
-			{input_validate_info && <InvalidMessage msg={input_validate_info} />}
-		</>;
-	}
-};
-
-const Wrap = (element: JSX.Element, field: Force.Field): JSX.Element => {
-	return <div key={field.name} className={style.field}>
-		<label htmlFor={field.name}>
-			{`${field.name}`}
-			<span className={style.dataType}>{`${Force.show_data_type(field.datatype)}`}</span>
-		</label>
-		{element}
-	</div>;
-};
+// function EditBond(props: { onChange: BondOnChange, bond: UnProcessedBond, validate_info: string | undefined }): JSX.Element {
+// 	return <>
+// 		<div className={style.bond}>
+// 			<input className={style.id} placeholder="文章代碼"
+// 				value={props.bond.target_article}
+// 				onChange={props.onChange('target_article')} />
+// 			<input className={style.tag} placeholder="標籤（選填）"
+// 				value={props.bond.tag}
+// 				onChange={props.onChange('tag')} />
+// 			<select
+// 				value={props.bond.energy}
+// 				onChange={props.onChange('energy')} >
+// 				<option value="1">正面</option>
+// 				<option value="0">中立</option>
+// 				<option value="-1">負面</option>
+// 			</select>
+// 		</div>
+// 		{props.validate_info && <InvalidMessage msg={props.validate_info} />}
+// 	</>;
+// }
 
 // @ts-ignore
-const Field = (props: { field: Force.Field, validator: Validator }): JSX.Element => {
+const Field = (props: FieldProps): JSX.Element => {
 	const { field } = props;
 	const { editor_panel_data } = EditorPanelState.useContainer();
 
 	if (editor_panel_data == null) { return <></>; }
-
-	if (field.datatype.kind == 'single') {
-		return Wrap(<SingleField {...props}/>, field);
-	} else if (field.datatype.kind == 'optional') {
-		// TODO: 改為可選
-		return Wrap(<SingleField {...props} />, field);
-	} else if (field.datatype.kind == 'array') {
-		return Wrap(<ArrayField {...props} />, field);
-	}
+	return <div key={field.name} className={style.field}>
+		<label htmlFor={field.name}>
+			{`${field.name}`}
+			<span className={style.dataType}>{`${show_datatype(field.kind)}`}</span>
+		</label>
+		<SingleField {...props} />
+	</div>;
 };
+
+function generate_submit_content(fields: force.Field[], original_content: {[index: string]: string}): string {
+	let content: {[index: string]: string | number} = {};
+	for (const field of fields) {
+		if (field.kind == force.FieldKind.Number) {
+			content[field.name] = Number(original_content[field.name]);
+		} else {
+			content[field.name] = original_content[field.name];
+		}
+	}
+	return JSON.stringify(content);
+}
 
 function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
+	const [ validate_info, set_info ] = useState<{[index: string]: string | undefined}>({});
 	const { user_state } = UserState.useContainer();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
@@ -373,75 +251,28 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.then(data => setBoardOptions(data))
 			.catch(err => console.log(err));
 	}, []);
-	const force = useMemo( () => Force.parse(board.force), [board]);
-	const validator = useMemo(() => new Validator(board.id), [board]);
+	const force = board.force;
 
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
+	let category = force.categories.find(c => c.name == editor_panel_data.category);
 
-	// @ts-ignore
 	const onSubmit = (): void => {
-		let category = force.categories.get(editor_panel_data.category!)!;
-		// eslint-disable-next-line
-		let content: { [index: string]: any } = {};
-		for (let field of category.fields) {
-			if (field.datatype.kind == 'array') {
-				if (field.datatype.t.kind == 'number') {
-					content[field.name] = (editor_panel_data.content[field.name].confirmed as string[]).map(Number);
-				} else {
-					content[field.name] = editor_panel_data.content[field.name].confirmed;
-				}
-			} else {
-				if (field.datatype.t.kind == 'number') {
-					content[field.name] = Number(editor_panel_data.content[field.name]);
-				} else {
-					content[field.name] = editor_panel_data.content[field.name];
-				}
-			}
-		}
-		// XXX: 各個欄位 Field 組件中檢查過了，應嘗試快取該結果
-		validator.validate_category(category, content)
-			.then(info => {
-				if (info != undefined) {
-					toastErr('文章不符力語言格式，請檢查各欄位無誤再送出');
-					return Promise.reject();
-				}
-			})
-			.then(() => {
-
-				for (let field of category.fields) {
-					if (field.datatype.t.kind == 'bond') {
-						type Bond = {
-							target_article: string,
-							energy: string,
-							tag: string,
-						};
-						if (field.datatype.kind == 'array') {
-							content[field.name] = content[field.name].map((bond: Bond) => ({
-								energy: Number(bond.energy),
-								target_article: Number(bond.target_article),
-								tag: bond.tag.trim() == '' ? null : bond.tag
-							}));
-						} else {
-							let bond = content[field.name];
-							content[field.name] = {
-								energy: Number(bond.energy),
-								target_article: Number(bond.target_article),
-								tag: bond.tag.trim() == '' ? null : bond.tag
-							};
-						}
-					}
-				}
-
-				return API_FETCHER.articleQuery.createArticle(
-					board.id,
-					category.name,
-					editor_panel_data.title,
-					JSON.stringify(content),
-					[],
-					editor_panel_data.draft_id ?? null,
-					editor_panel_data.anonymous
-				);
-			})
+		if (category == undefined) {
+			toastErr('請先選擇分類！');
+			return;
+		} else if (!Object.values(validate_info).every(info => info == undefined)) {
+			toastErr('尚未完全符合格式');
+			return;
+		} else {
+			API_FETCHER.articleQuery.createArticle(
+				board.id,
+				category.name,
+				editor_panel_data.title,
+				generate_submit_content(category.fields, editor_panel_data.content),
+				[],
+				editor_panel_data.draft_id ?? null,
+				editor_panel_data.anonymous
+			)
 			.then(data => unwrap(data))
 			.then(id => {
 				toast('發文成功');
@@ -455,6 +286,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.catch(err => {
 				toastErr(err);
 			});
+		}
 	};
 
 	const saveDraft = (): void => {
@@ -512,15 +344,15 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 					className={style.category}
 					value={editor_panel_data.category}
 					onChange={(evt) => {
-						let category = force.categories.get(evt.target.value)!;
+						let category = force.categories.find(category => category.name == evt.target.value)!;
 						let content = new_content(category);
 						setEditorPanelData({ ...editor_panel_data, category: category.name, content });
 					}}
 				>
 					<option value="" disabled hidden>文章分類</option>
 					{
-						Array.from(force.categories.keys()).map(name =>
-							<option value={name} key={name}>{name}</option>)
+						force.categories.map(category =>
+							<option value={category.name} key={category.name}>{category.name}</option>)
 					}
 				</select>
 				<label className={style.anonymous}>
@@ -546,14 +378,17 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 						return <></>;
 					}
 					let input_fields = [];
-					let category = force.categories.get(editor_panel_data.category);
 					if (category == undefined) {
 						return <></>;
 					}
 					for (let field of category.fields) {
 						input_fields.push(
 							<Field
-								validator={validator}
+								validate_info={validate_info[field.name]}
+								set_info={(info) => set_info({
+									...validate_info,
+									[field.name]: info
+								})}
 								key={field.name}
 								field={field} />);
 					}

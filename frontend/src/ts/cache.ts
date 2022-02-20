@@ -1,5 +1,5 @@
 import { Force, parse } from '../../../force/typescript/index';
-import { unwrap, API_FETCHER } from '../ts/api/api';
+// import { unwrap, API_FETCHER } from '../ts/api/api';
 import React from 'react';
 import { toastErr } from '../tsx/utils';
 
@@ -10,8 +10,9 @@ export const get_force: (id: number) => Promise<Force> = (() => {
 		if (force != undefined) {
 			return force;
 		} else {
-			const board = unwrap(await API_FETCHER.boardQuery.queryBoardById(id));
-			force = parse(board.force);
+			// const board = unwrap(await API_FETCHER.boardQuery.queryBoardById(id));
+			// force-FIXME 刪除本檔案
+			force = parse('');
 			cache.set(id, force);
 			return force;
 		}

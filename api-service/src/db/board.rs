@@ -1,8 +1,10 @@
+use chrono::{DateTime, Utc};
+
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::{Board, BoardName, BoardOverview, NewBoard};
 use crate::custom_error::{DataType, Error, Fallible};
 
-impl DBObject for Board {
+impl DBObject for DBBoard {
     const TYPE: DataType = DataType::Board;
 }
 impl DBObject for BoardName {
@@ -12,23 +14,51 @@ impl DBObject for NewBoard {
     const TYPE: DataType = DataType::Board;
 }
 
+struct DBBoard {
+    pub id: i64,
+    pub board_name: String,
+    pub board_type: String,
+    pub create_time: DateTime<Utc>,
+    pub title: String,
+    pub detail: String,
+    pub force: String,
+    pub ruling_party_id: i64,
+    pub popularity: i64,
+}
+
+impl DBBoard {
+    fn to_board(self) -> Board {
+        Board {
+            id: self.id,
+            board_name: self.board_name,
+            board_type: self.board_type,
+            create_time: self.create_time,
+            title: self.title,
+            detail: self.detail,
+            force: serde_json::from_str(&self.force).unwrap(),
+            ruling_party_id: self.ruling_party_id,
+            popularity: self.popularity,
+        }
+    }
+}
+
 pub async fn get_by_id(id: i64) -> Fallible<Board> {
     let pool = get_pool();
     let board = sqlx::query_as!(
-        Board,
+        DBBoard,
         r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE id = $1"#,
         id
     )
     .fetch_one(pool)
     .await
     .to_fallible(id)?;
-    Ok(board)
+    Ok(board.to_board())
 }
 
 pub async fn get_by_name(name: &str, style: &str) -> Fallible<Board> {
     let pool = get_pool();
     let board = sqlx::query_as!(
-        Board,
+        DBBoard,
         r#"SELECT *, 0::bigint as "popularity!" FROM boards WHERE board_name = $1 AND board_type = $2"#,
         name,
         style
@@ -36,15 +66,18 @@ pub async fn get_by_name(name: &str, style: &str) -> Fallible<Board> {
     .fetch_one(pool)
     .await
     .to_fallible(name)?;
-    Ok(board)
+    Ok(board.to_board())
 }
 
 pub async fn get_all() -> Fallible<Vec<Board>> {
     let pool = get_pool();
-    let boards = sqlx::query_as!(Board, r#"SELECT *, 0::bigint as "popularity!" FROM boards"#)
-        .fetch_all(pool)
-        .await?;
-    Ok(boards)
+    let boards = sqlx::query_as!(
+        DBBoard,
+        r#"SELECT *, 0::bigint as "popularity!" FROM boards"#
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(boards.into_iter().map(|b| b.to_board()).collect())
 }
 
 pub async fn get_all_board_names() -> Fallible<Vec<BoardName>> {

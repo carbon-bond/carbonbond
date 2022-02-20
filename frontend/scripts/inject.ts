@@ -1,5 +1,5 @@
 import { unwrap } from '../src/ts/api/api';
-import { Bond, RootQuery, BoardType, Force, Category } from '../src/ts/api/api_trait';
+import { RootQuery, BoardType, force } from '../src/ts/api/api_trait';
 import request from 'request';
 import prompts from 'prompts';
 import minimist from 'minimist';
@@ -103,18 +103,18 @@ let { API_FETCHER, doLogin} = (() => {
 	return { doLogin, API_FETCHER };
 })();
 
-type ArticleConentElt = number | string | Bond;
+type ArticleConentElt = number | string | force.Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
 
 type ArticleConfig = {
 	title: string;
 	category: string;
 	content: { [key: string]: ArticleContent };
-	bonds: Bond[]
+	bonds: force.Bond[]
 };
 type BoardConfig = {
 	name: string;
-	force: Force;
+	force: force.Force;
 	articles: ArticleConfig[];
 };
 
@@ -178,7 +178,7 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 async function injectArticle(
 	board_id: number,
 	article: ArticleConfig,
-	category: Category,
+	category: force.Category,
 	id_pos_map: IDPosMap
 ): Promise<number> {
 	for (let field_name of Object.keys(article.content)) {

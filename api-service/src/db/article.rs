@@ -499,7 +499,6 @@ pub async fn create(
     })?;
 
     let category = get_category(board_id, category_name).await?;
-    // let force_category = parse_category(&category.source)?;
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "

@@ -1,106 +1,152 @@
 [
-{
-    "name": "八尬",
-    "force": {
-        "categories": [
+    {
+        "name": "八尬",
+        "force": {
+            "categories": [
+                {
+                    "name": "新聞",
+                    "fields": [
+                        {
+                            "name": "媒體",
+                            "kind": "OneLine"
+                        },
+                        {
+                            "name": "記者",
+                            "kind": "OneLine"
+                        },
+                        {
+                            "name": "內文",
+                            "kind": "MultiLine"
+                        },
+                        {
+                            "name": "超鏈接",
+                            "kind": "OneLine"
+                        },
+                        {
+                            "name": "備註",
+                            "kind": "MultiLine"
+                        }
+                    ]
+                },
+                {
+                    "name": "問卦",
+                    "fields": [
+                        {
+                            "name": "內文",
+                            "kind": "MultiLine"
+                        }
+                    ]
+                },
+                {
+                    "name": "回覆",
+                    "fields": [
+                        {
+                            "name": "內文",
+                            "kind": "MultiLine"
+                        }
+                    ]
+                }
+            ],
+            "suggested_tags": [
+                "贊同",
+                "反對"
+            ]
+        },
+        "articles": [
             {
-                "name": "新聞",
-                "fields": [
+                "title": "有沒有碳鍵屌打D卡ptt的八卦",
+                "category": "問卦",
+                "content": {
+                    "內文": "爽啦"
+                },
+                "bonds": []
+            },
+            {
+                "title": "碳鍵市佔率極速上升",
+                "category": "新聞",
+                "content": {
+                    "媒體": "豬油時報",
+                    "記者": "41J",
+                    "內文": "碳鍵在 2022 年社羣網站市佔率中異軍突起",
+                    "超鏈接": "https://localhost",
+                    "備註": "Dcard 是不是要涼了"
+                },
+                "bonds": []
+            },
+            {
+                "title": "怎麽可能",
+                "category": "回覆",
+                "content": {
+                    "內文": "低卡兒"
+                },
+                "bonds": [
                     {
-                        "name": "媒體",
-                        "kind": "OneLine"
-                    },
-                    {
-                        "name": "記者",
-                        "kind": "OneLine"
-                    },
-                    {
-                        "name": "內文",
-                        "kind": "MultiLine"
-                    },
-                    {
-                        "name": "超鏈接",
-                        "kind": "OneLine"
-                    },
-                    {
-                        "name": "備註",
-                        "kind": "MultiLine"
+                        "to": 0,
+                        "tag": "反對"
                     }
                 ]
             },
             {
-                "name": "問卦",
-                "fields": [
+                "title": "功能性真的一個天一個地",
+                "category": "問卦",
+                "content": {
+                    "內文": "爽啦"
+                },
+                "bonds": [
                     {
-                        "name": "內文",
-                        "kind": "MultiLine"
-                    }
-                ]
-            },
-            {
-                "name": "回覆",
-                "fields": [
+                        "to": 0,
+                        "tag": "贊成"
+                    },
                     {
-                        "name": "內文",
-                        "kind": "MultiLine"
+                        "to": 1,
+                        "tag": "贊成"
+                    },
+                    {
+                        "to": 2,
+                        "tag": "反對"
                     }
                 ]
             }
-        ],
-        "suggested_tags": [
-            "贊同",
-            "反對"
         ]
     },
-    "articles": [{
-        "title": "有沒有碳鍵屌打D卡ptt的八卦",
-        "category": "問卦",
-        "content": {
-            "內文": "爽啦"
+    {
+        "name": "多樣",
+        "force": {
+            "categories": [
+                {
+                    "name": "文章",
+                    "fields": [
+                        {
+                            "name": "單行",
+                            "kind": "OneLine"
+                        },
+                        {
+                            "name": "多行",
+                            "kind": "MultiLine"
+                        },
+                        {
+                            "name": "數字",
+                            "kind": "Number"
+                        }
+                    ]
+                }
+            ],
+            "suggested_tags": [
+                "贊同",
+                "反對"
+            ]
         },
-        "bonds": []
-    }, {
-        "title": "碳鍵市佔率極速上升",
-        "category": "新聞",
-        "content": {
-            "媒體": "豬油時報",
-            "記者": "41J",
-            "內文": "碳鍵在 2022 年社羣網站市佔率中異軍突起",
-            "超鏈接": "https://localhost",
-            "備註": "Dcard 是不是要涼了"
-        },
-        "bonds": []
-    }, {
-        "title": "怎麽可能",
-        "category": "回覆",
-        "content": {
-            "內文": "低卡兒"
-        },
-        "bonds": [
+        "articles": [
             {
-                "to": 0,
-                "tag": "反對"
-            }
-        ]
-    }, {
-        "title": "功能性真的一個天一個地",
-        "category": "問卦",
-        "content": {
-            "內文": "爽啦"
-        },
-        "bonds": [
-            {
-                "to": 0,
-                "tag": "贊成"
-            },
-            {
-                "to": 1,
-                "tag": "贊成"
-            },
-            {
-                "to": 2,
-                "tag": "反對"
+                "title": "想要的型別，應有僅有",
+                "category": "文章",
+                "content": {
+                    "單行": "xxx",
+                    "多行": "xxx",
+                    "數字": 1
+                },
+                "bonds": []
             }
         ]
     }
-]}]
+]

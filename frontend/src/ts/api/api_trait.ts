@@ -16,7 +16,7 @@ export type LawyerbcResultMini = { name: string; gender: string; id_number: stri
 export type LawyerbcResult = {     name: string; gender: string; id_number: string; license_id: string; birth_year: number; email: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
-export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: string;     ruling_party_id: number; popularity: number };
+export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: force.Force; ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; board_type: string; title: string; detail:     string; force: force.Force; ruling_party_id: number };
 export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
@@ -25,7 +25,7 @@ export type Author =
  | { NamedAuthor: { id: number; name: string } } 
  | "MyAnonymous" 
  | "Anonymous";
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: force.Field; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: force.Field []; stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type ArticleStatistics = { replies: number; satellite_replies: number };
