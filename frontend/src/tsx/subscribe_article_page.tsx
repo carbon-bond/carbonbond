@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { ArticleCard } from './article_card';
-import { ArticleMeta, ArticleMetaWithBonds } from '../ts/api/api_trait';
+import { ArticleMetaWithBonds } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
 

@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, Favorite, ArticleMetaWithBonds } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -498,34 +498,29 @@ function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 
 function Favorites(props: { profile_user: User }): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const [favorites, setFavorites] = React.useState<Favorite[]>([]);
+	const [favorites, setFavorites] = React.useState<ArticleMetaWithBonds[]>([]);
 
 	React.useEffect(() => {
 		// TODO change fetchFavorites to get a user_id as parameter
-		Promise.all([
-			fetchFavorites(),
-		]).then(([more_favorites]) => {
-			try {
-				if (user_state.login && props.profile_user.user_name == user_state.user_name) {
-					setFavorites(more_favorites);
-				} else {
-					setFavorites([]);
+		fetchFavorites()
+			.then((more_favorites) => {
+				try {
+					if (user_state.login && props.profile_user.user_name == user_state.user_name) {
+						setFavorites(more_favorites);
+					} else {
+						setFavorites([]);
+					}
+				} catch (err) {
+					toastErr(err);
 				}
-			} catch (err) {
-				toastErr(err);
-			}
-		});
+			});
 	}, [props.profile_user.user_name, user_state]);
 
-	let sortedFavorites = Array.from(favorites).sort((lhs, rhs) => {
-		return lhs.create_time < rhs.create_time ? 1 : -1;
-	});
 	return <div>
-		{sortedFavorites.map((favorite, idx) => (
-			<div className={favoriteWrapper} key={`article-${idx}`}>
-				<div className={favoriteTitle}>{relativeDate(new Date(favorite.create_time))}</div>
+		{favorites.map(favorite => (
+			<div className={favoriteWrapper} key={`article-${favorite.meta.id}`}>
 				<div className={articleWrapper} >
-					<ArticleCard article={favorite.meta} bonds={[]} />
+					<ArticleCard article={favorite.meta} bonds={favorite.bonds} />
 				</div>
 			</div>
 		))}
@@ -542,7 +537,7 @@ async function fetchArticles(
 	return unwrap_or(await API_FETCHER.articleQuery.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 
-async function fetchFavorites(): Promise<Favorite[]> {
+async function fetchFavorites(): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryMyFavoriteArticleList(), []);
 }
 

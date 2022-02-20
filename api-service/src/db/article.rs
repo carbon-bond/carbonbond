@@ -1,7 +1,6 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
-    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, Favorite,
-    FavoriteArticleMeta, SearchField,
+    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, SearchField,
 };
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::force::Bond;
@@ -98,12 +97,6 @@ macro_rules! to_meta {
     };
 }
 
-pub fn to_favorite(data: FavoriteArticleMeta, viewer_id: Option<i64>) -> Favorite {
-    Favorite {
-        create_time: data.favorite_create_time,
-        meta: to_meta!(data, viewer_id),
-    }
-}
 fn to_bond_and_meta(data: BondArticleMeta, viewer_id: Option<i64>) -> (Edge, ArticleMeta) {
     (
         Edge {
@@ -541,7 +534,6 @@ pub async fn create(
     article_content::create(
         &mut conn,
         article_id,
-        board_id,
         Cow::Borrowed(&content),
         bonds,
         &category,

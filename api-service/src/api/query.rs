@@ -43,7 +43,7 @@ pub enum UserQuery {
     QueryMe {},
     #[chitin(leaf, response = "Vec<super::model::forum::Party>")]
     QueryMyPartyList {},
-    #[chitin(leaf, response = "Vec<super::model::forum::Favorite>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     QueryMyFavoriteArticleList {},
 
     // 法務部律師查詢系統 https://lawyerbc.moj.gov.tw/

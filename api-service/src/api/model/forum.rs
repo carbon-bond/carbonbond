@@ -197,11 +197,6 @@ mod model {
         pub create_time: DateTime<chrono::Utc>,
         pub is_used: bool,
     }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Favorite {
-        pub meta: ArticleMeta,
-        pub create_time: DateTime<Utc>,
-    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {
         pub replies: i64,

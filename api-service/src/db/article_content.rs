@@ -1,6 +1,6 @@
 use super::{get_pool, DBObject};
 use crate::api::model::forum::MiniBondArticleMeta;
-use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
+use crate::custom_error::{DataType, Fallible};
 use force::instance_defs::Bond;
 use serde::Serialize;
 use serde_json::Value;
@@ -364,7 +364,6 @@ impl Digest {
 pub(super) async fn create(
     conn: &mut PgConnection,
     article_id: i64,
-    board_id: i64,
     content: Cow<'_, Value>,
     bonds: Vec<crate::force::Bond>,
     category: &crate::force::Category,

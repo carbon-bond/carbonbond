@@ -1,4 +1,4 @@
-use crate::api::model::forum::{Article, ArticleMeta, Favorite, Graph};
+use crate::api::model::forum::{Article, ArticleMeta, Graph};
 use crate::custom_error::Fallible;
 use crate::db::article_statistics;
 use async_trait::async_trait;
@@ -53,11 +53,6 @@ impl ArticleKind for ArticleMeta {
 }
 
 impl ArticleKind for Article {
-    fn meta(&mut self) -> &mut ArticleMeta {
-        &mut self.meta
-    }
-}
-impl ArticleKind for Favorite {
     fn meta(&mut self) -> &mut ArticleMeta {
         &mut self.meta
     }

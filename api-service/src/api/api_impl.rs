@@ -578,10 +578,11 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     async fn query_my_favorite_article_list(
         &self,
         context: &mut crate::Ctx,
-    ) -> Fallible<Vec<model::forum::Favorite>> {
+    ) -> Fallible<Vec<model::forum::ArticleMetaWithBonds>> {
         let id = context.get_id_strict().await?;
-        let articles: Vec<_> = db::favorite::get_by_user_id(id).await?.collect();
-        complete_article(articles, context).await
+        let metas = db::favorite::get_by_user_id(id).await?;
+        let metas = complete_article(metas, context).await?;
+        db::article::add_bond_to_metas(metas).await
     }
     async fn query_public_follower_list(
         &self,

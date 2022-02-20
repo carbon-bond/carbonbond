@@ -28,7 +28,6 @@ export type Author =
 export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
-export type Favorite = { meta: ArticleMeta; create_time: string};
 export type ArticleStatistics = { replies: number; satellite_replies: number };
 export type MiniBondArticleMeta = {     category: string; author_name: string; article_id: number; title:     string; create_time: string; bond_tag: string | null };
 export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: MiniBondArticleMeta [] };
@@ -148,7 +147,7 @@ export class UserQuery {
     async queryMyPartyList(): Promise<Result<Array<Party>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyPartyList": {  } } }));
     }
-    async queryMyFavoriteArticleList(): Promise<Result<Array<Favorite>, Error>> {
+    async queryMyFavoriteArticleList(): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyFavoriteArticleList": {  } } }));
     }
     async querySearchResultFromLawyerbc(search_text: string): Promise<Result<Array<LawyerbcResultMini>, Error>> {
