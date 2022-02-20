@@ -75,6 +75,8 @@ mod inner {
         ParsingJson,
         #[display(fmt = "法務部律師查詢系統查詢失敗")]
         SearchingLawyerbcFail,
+        #[display(fmt = "格式不正確")]
+        ArgumentFormatError,
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
         ForceValidate(ForceValidateError<BondError>),

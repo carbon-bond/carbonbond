@@ -11,6 +11,7 @@ import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
+import { InvalidMessage } from '../../tsx/components/invalid_message';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -79,9 +80,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
 
 	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
-		console.log('更新我的資料');
 		try {
-			await API_FETCHER.userQuery.updateInformation(introduction, job, city);
+			unwrap(await API_FETCHER.userQuery.updateInformation(introduction, job, city));
 			setIntroduction(introduction);
 			setJob(job);
 			setCity(city);
@@ -106,11 +106,23 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		const [gender, setGender] = React.useState<string>(props.gender);
 		const [job, setJob] = React.useState<string>(props.job);
 		const [city, setCity] = React.useState<string>(props.city);
+		const [validate_info, setValidateInfo] = React.useState<undefined | string>(undefined);
+
+		function onIntroductionChange(introduction: string) : void {
+			const length = [...introduction].length;
+			setIntroduction(introduction);
+			if (length > 200) {
+				setValidateInfo('字數超過 200 上限');
+			} else {
+				setValidateInfo(undefined);
+			}
+		}
 
 		function getBody(): JSX.Element {
 			return <div className={style.editModal}>
 				<div className={style.label}>自我介紹</div>
-				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => setIntroduction(e.target.value)} />
+				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => onIntroductionChange(e.target.value)} />
+				{validate_info && <InvalidMessage msg={validate_info} />}
 				<div className={style.label}>性別</div>
 				<div className={style.gender}>
 					<input type="radio" disabled name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />

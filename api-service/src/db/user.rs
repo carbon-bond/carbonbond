@@ -473,6 +473,9 @@ pub async fn update_info(
     city: String,
 ) -> Fallible<()> {
     let pool = get_pool();
+    if introduction.chars().count() > 200 {
+        return Err(ErrorCode::ArgumentFormatError.into());
+    }
     sqlx::query!(
         "
         UPDATE users
