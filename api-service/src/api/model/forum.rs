@@ -25,6 +25,7 @@ mod model {
         pub following_count_private: i64,
         pub introduction: String,
         pub gender: String,
+        pub birth_year: i32,
         pub job: String,
         pub city: String,
     }

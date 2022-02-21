@@ -10,7 +10,7 @@ export type Result<T, E> = {
     'Err': E
 };
 export type Fetcher = (query: Object) => Promise<string>;
-export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; job: string; city: string };
+export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; id_no: string; now_lic_no: string;     birthsday: number; email: string };
@@ -242,8 +242,8 @@ export class UserQuery {
     async updateSentence(sentence: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateSentence": { sentence } } }));
     }
-    async updateInformation(introduction: string, gender: string, job: string, city: string): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, gender, job, city } } }));
+    async updateInformation(introduction: string, job: string, city: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, job, city } } }));
     }
 }
 

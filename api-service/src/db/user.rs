@@ -30,6 +30,7 @@ macro_rules! users {
                 users.energy,
                 users.introduction,
                 users.gender,
+                users.birth_year,
                 users.job,
                 users.city,
                 (
@@ -333,14 +334,25 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
     log::trace!("使用者用註冊碼註冊");
     let email = get_email_by_signup_token(token).await?;
     if let Some(email) = email {
-        let pool = get_pool();
+        let mut conn = get_pool().begin().await?;
         let id = signup(name, password, &email).await?;
         sqlx::query!(
             "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
             token
         )
-        .execute(pool)
+        .execute(&mut conn)
         .await?;
+        sqlx::query!(
+            "UPDATE users
+            SET gender = (SELECT gender FROM signup_tokens WHERE token = $1),
+                birth_year = (SELECT birth_year FROM signup_tokens WHERE token = $1)
+            WHERE user_name = $2",
+            token,
+            name
+        )
+        .execute(&mut conn)
+        .await?;
+        conn.commit().await?;
         Ok(id)
     } else {
         Err(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).into())
@@ -457,7 +469,6 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
 pub async fn update_info(
     id: i64,
     introduction: String,
-    gender: String,
     job: String,
     city: String,
 ) -> Fallible<()> {
@@ -465,12 +476,11 @@ pub async fn update_info(
     sqlx::query!(
         "
         UPDATE users
-        SET (introduction, gender, job, city) = ($2, $3, $4, $5)
+        SET (introduction, job, city) = ($2, $3, $4)
         WHERE id = $1
         ",
         id,
         introduction,
-        gender,
         job,
         city
     )
