@@ -88,6 +88,7 @@ export type ErrorCode =
  | "PasswordLength" 
  | "ParsingJson" 
  | "SearchingLawyerbcFail" 
+ | { ArgumentFormatError: string } 
  | { ForceValidate: ForceValidateError<BondError>} 
  | "UnImplemented" 
  | { Other: string };
