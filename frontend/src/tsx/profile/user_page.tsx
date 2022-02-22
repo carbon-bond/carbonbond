@@ -12,6 +12,7 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
+import { ShowText } from '../board_switch/article_page';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -111,8 +112,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		function onIntroductionChange(introduction: string) : void {
 			const length = [...introduction].length;
 			setIntroduction(introduction);
-			if (length > 200) {
-				setValidateInfo('字數超過 200 上限');
+			if (length > 1000) {
+				setValidateInfo('字數超過 1000 上限');
 			} else {
 				setValidateInfo(undefined);
 			}
@@ -161,7 +162,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>🖉</button>}
 			</div>
 			<div className={style.info}>
-				<div className={style.item}>{introduction}</div>
+				<ShowText text={introduction} />
 			</div>
 			<div className={style.info}>
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
