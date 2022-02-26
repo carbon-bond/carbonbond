@@ -169,15 +169,15 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType, u
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
 			</div>
-			<div className={style.title_certificate}>
+			<div className={style.titleCertificate}>
 				<div className={style.item}>已取得身份認證列表：</div>
 				{props.user_titles.length == 0 ? (
 					<div className={style.title_empty}>
 						尚未取得任何身份認證
 					</div>
 				) : (props.user_titles.map((title, idx) => (
-					<span className={style.title_lawyer} key={`title-${idx}`}>
-						<span className={style.title_lawyer_image}/> {title.title}
+					<span className={style.titleLawyer} key={`title-${idx}`}>
+						<span className={style.titleLawyerImage}/> {title.title}
 					</span>
 				)))}
 			</div>

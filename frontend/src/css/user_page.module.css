@@ -159,16 +159,16 @@
                 }
             }
         }
-        & .title_certificate {
+        & .titleCertificate {
             & .item {
                 margin: 0px 0px 5px;
             }
-            & .title_lawyer {
+            & .titleLawyer {
                 background-color: var(--sub-theme-color);
                 border-radius: 3px;
                 display: inline-block;
                 padding: 2px 5px 2px 2px;
-                & .title_lawyer_image {
+                & .titleLawyerImage {
                     background-image: url('/src/img/Q_lawyer.png');
                     background-size: 16px;
                     display: inline-block;
