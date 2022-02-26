@@ -5,14 +5,15 @@ import { DraftBar } from './draft_bar';
 import style from '../../css/sidebar.module.css';
 import { NumberOver } from '../components/number_over';
 import { AllChatState } from '../global_state/chat';
+import { STORAGE_NAME } from '../../ts/constants';
 
 enum Option {
-	Browse,
-	Chat,
-	DiscoverFriend,
-	Draft,
-	PluginStore,
-	None            // 側欄關閉
+	Browse         = 'Browse',
+	Chat           = 'Chat',
+	DiscoverFriend = 'DiscoverFriend',
+	Draft          = 'Draft',
+	PluginStore    = 'PluginStore',
+	None           = 'None'            // 側欄關閉
 }
 
 function PanelMain(props: { option: Option }): JSX.Element {
@@ -38,12 +39,31 @@ function LeftPanel(): JSX.Element {
 	// NOTE: 暫時只計算雙人對話
 	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
 
+	React.useEffect(() => {
+		const previous_record = localStorage[STORAGE_NAME.leftbar_expand];
+		if (previous_record === 'Browse') {
+			setOption(Option.Browse);
+		} else if (previous_record === 'Chat') {
+			setOption(Option.Chat);
+		} else if (previous_record === 'DiscoverFriend') {
+			setOption(Option.DiscoverFriend);
+		} else if (previous_record === 'Draft') {
+			setOption(Option.Draft);
+		} else if (previous_record === 'PluginStore') {
+			setOption(Option.PluginStore);
+		} else {
+			setOption(Option.None);
+		}
+	}, []);
+
 	function toggleOption(op: Option): (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void {
 		return () => {
 			if (op == option) {
 				setOption(Option.None);
+				localStorage[STORAGE_NAME.leftbar_expand] = Option.None;
 			} else {
 				setOption(op);
+				localStorage[STORAGE_NAME.leftbar_expand] = op;
 			}
 		};
 	}
