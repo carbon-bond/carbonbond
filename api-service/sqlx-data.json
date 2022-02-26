@@ -132,6 +132,20 @@
       ]
     }
   },
+  "095fcc4371b8bc3f9d40a5a8a8c98b49a056372a68754d304be577e965f70ca3": {
+    "query": "INSERT INTO title_authentication (user_id, title,  email) VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "0bf301c69184642edf8e8728b7e2c3263a5fdf070860cf7d73b35efa50b8686d": {
     "query": "UPDATE articles SET energy = energy + $1 WHERE id = $2",
     "describe": {
@@ -2186,6 +2200,32 @@
         ]
       },
       "nullable": []
+    }
+  },
+  "7b489fcb72de68d76d7eb48fc5e560ac38e15d83a6bb5c2ac0f8d22cc9b35920": {
+    "query": "\n\t\tSELECT title_authentication.user_id, title_authentication.title FROM title_authentication\n        INNER JOIN users ON title_authentication.user_id = users.id\n\t\tWHERE users.user_name = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "title",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false
+      ]
     }
   },
   "7d3c01554491c095e2dc7d144aa71be43b50597debc4ddb46c588e9403826a03": {
