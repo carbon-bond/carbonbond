@@ -139,12 +139,15 @@ pub async fn metas_to_articles(
         }))
 }
 
-pub async fn add_bond_to_metas(metas: Vec<ArticleMeta>) -> Fallible<Vec<ArticleMetaWithBonds>> {
+pub async fn add_bond_to_metas(
+    metas: Vec<ArticleMeta>,
+    viewer_id: Option<i64>,
+) -> Fallible<Vec<ArticleMetaWithBonds>> {
     let mut ids = Vec::new();
     for meta in &metas {
         ids.push(meta.id);
     }
-    let bonds = article_content::get_bonds_by_article_ids(ids).await?;
+    let bonds = article_content::get_bonds_by_article_ids(ids, viewer_id).await?;
     Ok(metas
         .into_iter()
         .zip(bonds.into_iter())

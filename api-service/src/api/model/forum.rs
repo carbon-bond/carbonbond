@@ -205,23 +205,29 @@ pub mod forum_model_root {
         pub satellite_replies: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct MiniBondArticleMeta {
+    pub struct BondInfo {
+        pub article_meta: MiniArticleMeta,
+        pub energy: i64,
+        pub tag: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct MiniArticleMeta {
         pub category: String,
-        pub author_name: String,
-        pub article_id: i64,
+        pub board_name: String,
+        pub author: Author,
+        pub id: i64,
         pub title: String,
         pub create_time: DateTime<chrono::Utc>,
-        pub bond_tag: Option<String>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMetaWithBonds {
         pub meta: ArticleMeta,
-        pub bonds: Vec<MiniBondArticleMeta>,
+        pub bonds: Vec<BondInfo>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         pub meta: ArticleMeta,
-        pub bonds: Vec<MiniBondArticleMeta>,
+        pub bonds: Vec<BondInfo>,
         pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

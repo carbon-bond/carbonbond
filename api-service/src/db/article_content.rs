@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::api::model::forum::MiniBondArticleMeta;
+use crate::api::model::forum::{Author, BondInfo, MiniArticleMeta};
 use crate::custom_error::{DataType, Fallible};
 use force::instance_defs::Bond;
 use serde::Serialize;
@@ -160,14 +160,17 @@ pub async fn get_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<String>> {
 }
 
 // ids[i] 的分類為 categories[i]
-pub async fn get_bonds_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<Vec<MiniBondArticleMeta>>> {
+pub async fn get_bonds_by_article_ids(
+    ids: Vec<i64>,
+    viewer_id: Option<i64>,
+) -> Fallible<Vec<Vec<BondInfo>>> {
     let pool = get_pool();
-    let mut id_to_bonds: HashMap<i64, Vec<MiniBondArticleMeta>> = HashMap::new();
+    let mut id_to_bonds: HashMap<i64, Vec<BondInfo>> = HashMap::new();
     for i in 0..ids.len() {
         id_to_bonds.insert(ids[i], Vec::new());
     }
 
-    let bonds = sqlx::query!(
+    let infos = sqlx::query!(
         "
         SELECT
             article_bonds.article_id as from_id,
@@ -175,11 +178,15 @@ pub async fn get_bonds_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<Vec<MiniBon
             articles.category,
             articles.title,
             users.user_name as author_name,
-            articles.id as article_id,
-            articles.create_time
+            users.id as author_id,
+            articles.id,
+            articles.create_time,
+            articles.anonymous,
+            boards.board_name
         FROM article_bonds
             INNER JOIN articles ON articles.id = article_bonds.value
             INNER JOIN users ON articles.author_id = users.id
+            INNER JOIN boards ON articles.board_id = boards.id
             WHERE article_bonds.article_id = ANY($1);
         ",
         &ids
@@ -187,19 +194,33 @@ pub async fn get_bonds_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<Vec<MiniBon
     .fetch_all(pool)
     .await?;
     // XXX: 不知道爲什麼 SQLX 的類型推導會都是 Option
-    for bond in bonds {
-        let meta = MiniBondArticleMeta {
-            bond_tag: bond.bond_tag,
-            title: bond.title.unwrap(),
-            category: bond.category.unwrap(),
-            create_time: bond.create_time.unwrap(),
-            article_id: bond.article_id.unwrap(),
-            author_name: bond.author_name.unwrap(),
+    for info in infos {
+        let anonymous = info.anonymous.unwrap();
+        let bond_info = BondInfo {
+            article_meta: MiniArticleMeta {
+                title: info.title.unwrap(),
+                category: info.category.unwrap(),
+                create_time: info.create_time.unwrap(),
+                id: info.id.unwrap(),
+                author: if anonymous && viewer_id == Some(info.author_id.unwrap()) {
+                    Author::MyAnonymous
+                } else if anonymous {
+                    Author::Anonymous
+                } else {
+                    Author::NamedAuthor {
+                        id: info.author_id.unwrap(),
+                        name: info.author_name.unwrap(),
+                    }
+                },
+                board_name: info.board_name.unwrap(),
+            },
+            tag: info.bond_tag.unwrap(),
+            energy: 0,
         };
         id_to_bonds
-            .get_mut(&bond.from_id.unwrap())
+            .get_mut(&info.from_id.unwrap())
             .unwrap()
-            .push(meta);
+            .push(bond_info);
     }
 
     let mut ret = Vec::new();

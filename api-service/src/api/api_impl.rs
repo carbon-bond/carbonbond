@@ -132,7 +132,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         )
         .await?;
         let articles = complete_article(meta, context).await?;
-        db::article::add_bond_to_metas(articles).await
+        db::article::add_bond_to_metas(articles, viewer_id).await
     }
     async fn search_pop_article(
         &self,
@@ -152,7 +152,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             }
         }
         let articles = complete_article(articles, context).await?;
-        db::article::add_bond_to_metas(articles).await
+        db::article::add_bond_to_metas(articles, viewer_id).await
     }
     async fn get_subscribe_article(
         &self,
@@ -165,7 +165,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let articles = db::article::get_meta_by_ids(tracking_articles, Some(user_id)).await?;
 
         let articles = complete_article(articles, context).await?;
-        db::article::add_bond_to_metas(articles).await
+        db::article::add_bond_to_metas(articles, Some(user_id)).await
     }
     async fn query_article_list(
         &self,
@@ -187,7 +187,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         };
         let articles = complete_article(articles, context).await?;
-        db::article::add_bond_to_metas(articles).await
+        db::article::add_bond_to_metas(articles, viewer_id).await
     }
     async fn query_article(
         &self,
@@ -582,7 +582,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let id = context.get_id_strict().await?;
         let metas = db::favorite::get_by_user_id(id).await?;
         let metas = complete_article(metas, context).await?;
-        db::article::add_bond_to_metas(metas).await
+        db::article::add_bond_to_metas(metas, Some(id)).await
     }
     async fn query_public_follower_list(
         &self,

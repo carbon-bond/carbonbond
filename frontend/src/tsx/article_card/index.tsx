@@ -3,7 +3,7 @@ import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Edge, MiniBondArticleMeta } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
@@ -13,12 +13,12 @@ const MAX_BRIEF_LINE = 4;
 
 function ShowAuthor(props: {author: Author}): JSX.Element {
 	if (props.author == 'Anonymous') {
-		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶</span>;
 	} else if (props.author == 'MyAnonymous') {
-		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</div>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</span>;
 	} else {
 		return <Link to={`/app/user/${props.author.NamedAuthor.name}`}>
-			<div className={style.authorId}>{props.author.NamedAuthor.name}</div>
+			<span className={style.authorId}>{props.author.NamedAuthor.name}</span>
 		</Link>;
 	}
 }
@@ -144,22 +144,24 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
-function BondLine(props: { mini_meta: MiniBondArticleMeta, board_name: string }): JSX.Element {
+export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.ReactNode }): JSX.Element {
 	return <div className={style.bondLine}>
-		<Link className={style.leftSet} to={`/app/b/${props.board_name}/a/${props.mini_meta.article_id}`}>
-			<span className={style.bondTag}>{props.mini_meta.bond_tag}</span>
-			<span className={style.border}>{props.mini_meta.category}</span>
-			<span>{props.mini_meta.title}</span>
-		</Link>
+		<div className={style.leftSet}>
+			{props.children}
+			<Link to={`/app/b/${props.mini_meta.board_name}/a/${props.mini_meta.id}`}>
+				<span className={style.border}>{props.mini_meta.category}</span>
+				<span>{props.mini_meta.title}</span>
+			</Link>
+		</div>
 		<div className={style.rightSet}>
 			<span>{dateDistance(new Date(props.mini_meta.create_time))}</span>
 			<span> • </span>
-			<Link className={style.authorName} to={`/app/user/${props.mini_meta.author_name}`}>{props.mini_meta.author_name}</Link>
+			<ShowAuthor author={props.mini_meta.author} />
 		</div>
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta, bonds: Array<MiniBondArticleMeta> }): JSX.Element {
+function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
 	const author = props.article.author;
@@ -168,7 +170,13 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<MiniBondArticle
 	return (
 		<div>
 			{
-				props.bonds.map(bond => <BondLine mini_meta={bond} board_name={props.article.board_name} key={bond.article_id}/>)
+				props.bonds.map(bond => {
+					return <BondLine
+						mini_meta={bond.article_meta}
+						key={`${bond.article_meta.id}#${bond.tag}`}>
+						<span className={style.bondTag}>{bond.tag}</span>
+					</BondLine>;
+				})
 			}
 			<div className={style.articleContainer}>
 				<ArticleHeader author={author} board_name={props.article.board_name} date={date} />

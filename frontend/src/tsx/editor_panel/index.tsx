@@ -19,7 +19,7 @@ import style from '../../css/bottom_panel/editor.module.css';
 import { toastErr } from '../utils';
 import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
-import { SimpleArticleCard } from '../article_card';
+import { BondLine } from '../article_card';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -223,8 +223,8 @@ const Field = (props: FieldProps): JSX.Element => {
 	</div>;
 };
 
-function generate_submit_content(fields: force.Field[], original_content: {[index: string]: string}): string {
-	let content: {[index: string]: string | number} = {};
+function generate_submit_content(fields: force.Field[], original_content: { [index: string]: string }): string {
+	let content: { [index: string]: string | number } = {};
 	for (const field of fields) {
 		if (field.kind == force.FieldKind.Number) {
 			content[field.name] = Number(original_content[field.name]);
@@ -239,7 +239,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
-	const [ validate_info, set_info ] = useState<{[index: string]: string | undefined}>({});
+	const [validate_info, set_info] = useState<{ [index: string]: string | undefined }>({});
 	const { user_state } = UserState.useContainer();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
@@ -274,19 +274,19 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				editor_panel_data.draft_id ?? null,
 				editor_panel_data.anonymous
 			)
-			.then(data => unwrap(data))
-			.then(id => {
-				toast('發文成功');
-				minimizeEditorPanel();
-				props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
-				setEditorPanelData(null);
-				return API_FETCHER.articleQuery.queryDraft();
-			})
-			.then(res => unwrap(res))
-			.then(drafts => setDraftData(drafts))
-			.catch(err => {
-				toastErr(err);
-			});
+				.then(data => unwrap(data))
+				.then(id => {
+					toast('發文成功');
+					minimizeEditorPanel();
+					props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
+					setEditorPanelData(null);
+					return API_FETCHER.articleQuery.queryDraft();
+				})
+				.then(res => unwrap(res))
+				.then(drafts => setDraftData(drafts))
+				.catch(err => {
+					toastErr(err);
+				});
 		}
 	};
 
@@ -368,37 +368,34 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				placeholder="文章標題"
 				name="title"
 				onChange={(evt) => {
-					const nxt_state = produce(editor_panel_data, (draft) => {draft.title = evt.target.value;});
+					const nxt_state = produce(editor_panel_data, (draft) => { draft.title = evt.target.value; });
 					setEditorPanelData(nxt_state);
 				}}
 				value={editor_panel_data.title}
 			></input>
 			{
 				editor_panel_data.bonds.map((bond, index) => {
-					return <div>
-						<button onClick={() => {
-							setEditorPanelData(produce(editor_panel_data, (data) => {
-								data.bonds.splice(index, 1);
-							}));
-						}}>✗</button>
-						<SimpleArticleCard key={`${bond.article.id}#${bond.tag}`} meta={bond.article}>
+					return <div className={style.bond} key={`${bond.article.id}#${bond.tag}`}>
+						<BondLine mini_meta={bond.article}>
+							<button onClick={() => {
+								setEditorPanelData(produce(editor_panel_data, (data) => {
+									data.bonds.splice(index, 1);
+								}));
+							}}>✗</button>
 							<select
-								value={bond.energy}
-								onChange={() => { }} >
+								value={bond.tag}
+								onChange={(evt: { target: { value: string } }) => {
+									setEditorPanelData(produce(editor_panel_data, data => {
+										data.bonds[index].tag = evt.target.value;
+									}));
+								}} >
 								{
 									board.force.suggested_tags.map((tag) => {
 										return <option key={tag} value={tag}>{tag}</option>;
 									})
 								}
 							</select>
-							<select
-								value={bond.energy}
-								onChange={() => { }} >
-								<option value="+1">+1</option>
-								<option value="0">0</option>
-								<option value="-1">-1</option>
-							</select>
-						</SimpleArticleCard>
+						</BondLine>
 					</div>;
 				})
 			}

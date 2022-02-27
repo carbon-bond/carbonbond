@@ -40,14 +40,15 @@
     color: var(--gray);
     display: flex;
     justify-content: space-between;
+    width: 100%;
+    & .bondTag {
+        margin-right: 8px;
+    }
     & .leftSet {
         flex: 2;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        & .bondTag {
-            margin-right: 8px;
-        }
     }
     & .rightSet {
         flex: 1;
