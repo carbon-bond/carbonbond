@@ -19,6 +19,7 @@ import style from '../../css/bottom_panel/editor.module.css';
 import { toastErr } from '../utils';
 import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
+import { SimpleArticleCard } from '../article_card';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -372,6 +373,35 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				}}
 				value={editor_panel_data.title}
 			></input>
+			{
+				editor_panel_data.bonds.map((bond, index) => {
+					return <div>
+						<button onClick={() => {
+							setEditorPanelData(produce(editor_panel_data, (data) => {
+								data.bonds.splice(index, 1);
+							}));
+						}}>✗</button>
+						<SimpleArticleCard key={`${bond.article.id}#${bond.tag}`} meta={bond.article}>
+							<select
+								value={bond.energy}
+								onChange={() => { }} >
+								{
+									board.force.suggested_tags.map((tag) => {
+										return <option key={tag} value={tag}>{tag}</option>;
+									})
+								}
+							</select>
+							<select
+								value={bond.energy}
+								onChange={() => { }} >
+								<option value="+1">+1</option>
+								<option value="0">0</option>
+								<option value="-1">-1</option>
+							</select>
+						</SimpleArticleCard>
+					</div>;
+				})
+			}
 			{
 				(() => {
 					if (editor_panel_data.category == undefined || editor_panel_data.category == '') {

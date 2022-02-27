@@ -38,7 +38,9 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						anonymous: props.draft.anonymous,
 						title: props.draft.title,
 						category: props.draft.category_name ?? '',
-						content: JSON.parse(props.draft.content)
+						content: JSON.parse(props.draft.content),
+						// force-FIXME: 從後端取得
+						bonds: [],
 					});
 					expandEditorPanel();
 				})

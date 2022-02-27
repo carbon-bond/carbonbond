@@ -7,7 +7,7 @@ import { Article, ArticleMeta, Author, Edge, MiniBondArticleMeta } from '../../t
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
-import { ReplyModal, SatelliteModal } from './modal';
+import { ReplyModal } from './modal';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -40,9 +40,9 @@ export function ArticleLine(props: { category: string, title: string, id: number
 
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
-		<a href={`/app/b/${props.board_name}/a/${props.id}`} className="styleless">
+		<Link to={`/app/b/${props.board_name}/a/${props.id}`} className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
-		</a>
+		</Link>
 		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
@@ -132,9 +132,9 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 					case ModalType.Reply: {
 						return <ReplyModal article={props.article} close={closeModal}/>;
 					}
-					case ModalType.Satellite: {
-						return <SatelliteModal article={props.article} close={closeModal}/>;
-					}
+					// case ModalType.Satellite: {
+					// 	return <SatelliteModal article={props.article} close={closeModal}/>;
+					// }
 					default: {
 						return null;
 					}
@@ -189,11 +189,11 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<MiniBondArticle
 }
 
 function BondCard(props: { bond: Edge }): JSX.Element {
-	let energy_icon = '👊';
+	let energy_icon = '';
 	if (props.bond.energy > 0) {
-		energy_icon = '👍';
+		energy_icon = '+1';
 	} else if (props.bond.energy < 0) {
-		energy_icon = '👎';
+		energy_icon = '-1';
 	}
 	return <div>
 		<div className={style.upperSet}>
@@ -205,7 +205,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 	</div>;
 }
 
-function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Element {
+function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
@@ -220,13 +220,9 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		{
-			props.bond ?
-				<div className={style.rightSet}>
-					<BondCard bond={props.bond}/>
-				</div>
-				: <></>
-		}
+		<div className={style.rightSet}>
+			{props.children}
+		</div>
 		<Link className={style.overlay} to={url}></Link >
 	</div>;
 }
