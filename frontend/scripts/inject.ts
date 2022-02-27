@@ -189,13 +189,15 @@ async function injectArticle(
 	}
 	let id = unwrap(
 		await API_FETCHER.articleQuery.createArticle(
-			board_id,
-			category.name,
-			article.title,
-			JSON.stringify(article.content),
-			article.bonds.map(bond => {return { ...bond, to: id_pos_map[bond.to] };}),
-			null,
-			false
+			{
+				board_id: board_id,
+				category_name: category.name,
+				title: article.title,
+				content: JSON.stringify(article.content),
+				bonds: article.bonds.map(bond => { return { ...bond, to: id_pos_map[bond.to] }; }),
+				draft_id: null,
+				anonymous: false
+			}
 		)
 	);
 	return id;

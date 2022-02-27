@@ -25,6 +25,7 @@ export type Author =
  | { NamedAuthor: { id: number; name: string } } 
  | "MyAnonymous" 
  | "Anonymous";
+export type NewArticle = {     board_id: number; category_name: string; title: string; content:     string; bonds: force.Bond []; draft_id: number | null; anonymous:     boolean };
 export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: force.Field []; stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
@@ -290,8 +291,8 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
     }
-    async createArticle(board_id: number, category_name: string, title: string, content: string, bonds: Array<force.Bond>, draft_id: Option<number>, anonymous: boolean): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { board_id, category_name, title, content, bonds, draft_id, anonymous } } }));
+    async createArticle(new_article: NewArticle): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { new_article } } }));
     }
     async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string, anonymous: boolean): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content, anonymous } } }));

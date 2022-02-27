@@ -165,6 +165,18 @@ pub mod forum_model_root {
     }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct NewArticle {
+        pub board_id: i64,
+        pub category_name: String,
+        pub title: String,
+        pub content: String,
+        #[ts(ts_type = "force.Bond[]")]
+        pub bonds: Vec<force::Bond>,
+        pub draft_id: Option<i64>,
+        pub anonymous: bool,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,

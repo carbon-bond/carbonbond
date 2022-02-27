@@ -265,15 +265,16 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			toastErr('尚未完全符合格式');
 			return;
 		} else {
-			API_FETCHER.articleQuery.createArticle(
-				board.id,
-				category.name,
-				editor_panel_data.title,
-				generate_submit_content(category.fields, editor_panel_data.content),
-				[],
-				editor_panel_data.draft_id ?? null,
-				editor_panel_data.anonymous
-			)
+			API_FETCHER.articleQuery.createArticle({
+				board_id: board.id,
+				category_name: category.name,
+				title: editor_panel_data.title,
+				content: generate_submit_content(category.fields, editor_panel_data.content),
+				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article.id, tag: bond.tag};}),
+				draft_id: editor_panel_data.draft_id ?? null,
+				anonymous: editor_panel_data.anonymous
+
+			})
 				.then(data => unwrap(data))
 				.then(id => {
 					toast('發文成功');

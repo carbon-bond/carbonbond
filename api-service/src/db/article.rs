@@ -1,9 +1,9 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
-    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, SearchField,
+    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, NewArticle,
+    SearchField,
 };
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::force::Bond;
 use crate::service;
 use chrono::{DateTime, Utc};
 use force;
@@ -485,23 +485,14 @@ lazy_static! {
     static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
 }
 
-pub async fn create(
-    author_id: i64,
-    board_id: i64,
-    category_name: &str,
-    title: &str,
-    content: String,
-    bonds: Vec<Bond>,
-    draft_id: Option<i64>,
-    anonymous: bool,
-) -> Fallible<i64> {
-    let content: Value = serde_json::from_str(&content).map_err(|err| {
+pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
+    let content: Value = serde_json::from_str(&new_article.content).map_err(|err| {
         ErrorCode::ParsingJson
             .context("文章內容反序列化失敗")
             .context(err)
     })?;
 
-    let category = get_category(board_id, category_name).await?;
+    let category = get_category(new_article.board_id, &new_article.category_name).await?;
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
@@ -509,11 +500,11 @@ pub async fn create(
         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
         ",
         author_id,
-        board_id,
-        title,
+        new_article.board_id,
+        new_article.title,
         1, // FIXME: 捨棄 category 表格
-        anonymous,
-        category_name,
+        new_article.anonymous,
+        new_article.category_name,
         serde_json::to_string(&category.fields).unwrap()
     )
     .fetch_one(&mut conn)
@@ -521,7 +512,7 @@ pub async fn create(
     .id;
     log::debug!("成功創建文章元資料");
 
-    if let Some(draft_id) = draft_id {
+    if let Some(draft_id) = new_article.draft_id {
         sqlx::query!(
             "
         DELETE FROM drafts
@@ -537,7 +528,7 @@ pub async fn create(
         &mut conn,
         article_id,
         Cow::Borrowed(&content),
-        bonds,
+        &new_article.bonds,
         &category,
     )
     .await?;

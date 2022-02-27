@@ -1,21 +1,12 @@
 use super::{get_pool, DBObject};
 use crate::api::model::forum::{Author, BondInfo, MiniArticleMeta};
 use crate::custom_error::{DataType, Fallible};
-use force::instance_defs::Bond;
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-#[derive(Debug, Default)]
-pub struct ArticleBondField {
-    pub article_id: i64,
-    pub name: String,
-    pub energy: i16,
-    pub tag: Option<String>,
-    pub value: i64,
-}
 #[derive(Debug, Default)]
 pub struct ArticleIntField {
     pub article_id: i64,
@@ -29,9 +20,6 @@ pub struct ArticleStringField {
     pub value: String,
 }
 
-impl DBObject for ArticleBondField {
-    const TYPE: DataType = DataType::BondField;
-}
 impl DBObject for ArticleIntField {
     const TYPE: DataType = DataType::IntField;
 }
@@ -66,22 +54,6 @@ impl Insertable for ArticleStringField {
     }
     fn get_value(&self) -> Self::Output {
         self.value.clone()
-    }
-    fn get_name(&self) -> &str {
-        &self.name
-    }
-}
-impl Insertable for ArticleBondField {
-    type Output = Bond;
-    fn get_id(&self) -> i64 {
-        self.article_id
-    }
-    fn get_value(&self) -> Self::Output {
-        Bond {
-            energy: self.energy,
-            target_article: self.value,
-            tag: self.tag.clone(),
-        }
     }
     fn get_name(&self) -> &str {
         &self.name
@@ -386,7 +358,7 @@ pub(super) async fn create(
     conn: &mut PgConnection,
     article_id: i64,
     content: Cow<'_, Value>,
-    bonds: Vec<crate::force::Bond>,
+    bonds: &Vec<crate::force::Bond>,
     category: &crate::force::Category,
 ) -> Fallible<()> {
     use crate::force::FieldKind::*;

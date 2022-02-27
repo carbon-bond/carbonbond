@@ -1,3 +1,4 @@
+use super::model::forum::NewArticle;
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::chat;
@@ -295,40 +296,24 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn create_article(
         &self,
         context: &mut crate::Ctx,
-        board_id: i64,
-        category_name: String,
-        title: String,
-        content: String,
-        bonds: Vec<crate::force::Bond>,
-        draft_id: Option<i64>,
-        anonymous: bool,
+        new_article: NewArticle,
     ) -> Result<i64, crate::custom_error::Error> {
         log::trace!(
             "發表文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
-            board_id,
-            category_name,
-            title,
-            content
+            new_article.board_id,
+            new_article.category_name,
+            new_article.title,
+            new_article.content
         );
         let author_id = context.get_id_strict().await?;
-        let id = db::article::create(
-            author_id,
-            board_id,
-            &category_name,
-            &title,
-            content.clone(),
-            bonds,
-            draft_id,
-            anonymous,
-        )
-        .await?;
+        let id = db::article::create(&new_article, author_id).await?;
         service::notification::handle_article(
             author_id,
-            board_id,
+            new_article.board_id,
             id,
-            &category_name,
-            content,
-            anonymous,
+            &new_article.category_name,
+            new_article.content,
+            new_article.anonymous,
         )
         .await?;
         Ok(id)
