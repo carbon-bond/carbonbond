@@ -76,12 +76,12 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 function CertificationItem(props: { title: string, idx: number }) : JSX.Element {
 	if (props.title === '律師') {
 		return (<span className={style.titleLawyer} key={`title-${props.idx}`}>
-					<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
-				</span>);
+			<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
+		</span>);
 	}
 	return (<span className={style.titleUnknown} key={`title-${props.idx}`}>
-				{props.title}
-			</span>);
+		{props.title}
+	</span>);
 }
 
 function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
