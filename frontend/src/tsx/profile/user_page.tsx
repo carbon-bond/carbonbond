@@ -182,6 +182,9 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
+		setPublicUsers([]);
+		setPrivateUsers([]);
+		setSelectTab(0);
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
 			fetchUsers(props.user.id)
