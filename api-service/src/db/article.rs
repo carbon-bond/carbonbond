@@ -272,7 +272,7 @@ pub async fn get_meta_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article
     Ok(to_meta!(meta, viewer_id))
 }
 
-pub async fn get_meta_by_ids(ids: Vec<i64>, viewer_id: Option<i64>) -> Fallible<Vec<ArticleMeta>> {
+pub async fn get_meta_by_ids(ids: &Vec<i64>, viewer_id: Option<i64>) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
     let metas = metas!(
         crate::api::model::forum::PrimitiveArticleMeta,
@@ -442,23 +442,6 @@ pub struct Category {
 }
 impl DBObject for Category {
     const TYPE: DataType = DataType::Category;
-}
-
-pub async fn get_newest_category(board_id: i64, category_name: &str) -> Fallible<Category> {
-    let pool = get_pool();
-    let category = sqlx::query_as!(
-        Category,
-        "
-        SELECT * FROM categories WHERE board_id = $1 AND category_name = $2
-        ORDER BY version DESC
-        LIMIT 1
-        ",
-        board_id,
-        category_name
-    )
-    .fetch_one(pool)
-    .await?;
-    Ok(category)
 }
 
 pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::force::Category> {

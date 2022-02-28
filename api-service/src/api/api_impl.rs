@@ -163,7 +163,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         let user_id = context.get_id_strict().await?;
 
         let tracking_articles = db::tracking::query_tracking_articles(user_id, count).await?;
-        let articles = db::article::get_meta_by_ids(tracking_articles, Some(user_id)).await?;
+        let articles = db::article::get_meta_by_ids(&tracking_articles, Some(user_id)).await?;
 
         let articles = complete_article(articles, context).await?;
         db::article::add_bond_to_metas(articles, Some(user_id)).await
@@ -204,7 +204,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         draft_id: Option<i64>,
         board_id: i64,
-        category_name: Option<String>,
+        category: Option<String>,
         title: String,
         content: String,
         anonymous: bool,
@@ -213,26 +213,13 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         match draft_id {
             Some(id) => {
                 db::draft::update_draft(
-                    id,
-                    board_id,
-                    category_name,
-                    title,
-                    content,
-                    author_id,
-                    anonymous,
+                    id, board_id, category, title, content, author_id, anonymous,
                 )
                 .await
             }
             None => {
-                db::draft::create_draft(
-                    board_id,
-                    category_name,
-                    title,
-                    content,
-                    author_id,
-                    anonymous,
-                )
-                .await
+                db::draft::create_draft(board_id, category, title, content, author_id, anonymous)
+                    .await
             }
         }
     }

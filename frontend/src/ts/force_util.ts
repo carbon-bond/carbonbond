@@ -48,11 +48,11 @@ export function new_bond(id: string = ''): Bond {
 }
 
 // 創造一個符合力語言型別的空實例
-export function new_content(category: force.Category): { [index: string]: number | string } {
-	let content: { [index: string]: number | string } = {};
+export function new_content(category: force.Category): { [index: string]: string } {
+	let content: { [index: string]: string } = {};
 	for (let field of category.fields) {
 		if (field.kind == force.FieldKind.Number) {
-			content[field.name] = 0;
+			content[field.name] = '0';
 		} else {
 			content[field.name] = '';
 		}

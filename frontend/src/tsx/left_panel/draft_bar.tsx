@@ -37,7 +37,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						board: board,
 						anonymous: props.draft.anonymous,
 						title: props.draft.title,
-						category: props.draft.category_name ?? '',
+						category: props.draft.category ?? '',
 						content: JSON.parse(props.draft.content),
 						// force-FIXME: 從後端取得
 						bonds: [],

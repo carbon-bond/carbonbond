@@ -1,5 +1,5 @@
 use super::get_pool;
-use crate::api::model::forum::{ArticleMeta, ArticlePersonalMeta};
+use crate::api::model::forum::ArticleMeta;
 use crate::custom_error::Fallible;
 use std::collections::HashMap;
 

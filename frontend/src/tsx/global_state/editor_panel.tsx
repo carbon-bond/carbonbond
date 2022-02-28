@@ -16,8 +16,7 @@ export type EditorPanelData = {
 	category?: string,
 	title: string,
 	anonymous: boolean,
-	// eslint-disable-next-line
-	content: { [index: string]: any },
+	content: { [index: string]: string },
 	bonds: Bond[],
 };
 
