@@ -301,8 +301,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             author_id,
             new_article.board_id,
             id,
-            &new_article.category_name,
-            new_article.content,
+            &new_article.bonds,
             new_article.anonymous,
         )
         .await?;

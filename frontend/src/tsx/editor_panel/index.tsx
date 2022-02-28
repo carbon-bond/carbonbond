@@ -180,35 +180,6 @@ const SingleField = (props: FieldProps): JSX.Element => {
 	}
 };
 
-// type BondOnChange = (bond_field: string) => ((evt: ChangeEvent) => void);
-// type UnProcessedBond = {
-// 	target_article: string,
-// 	tag: string,
-// 	energy: string
-// };
-
-// function EditBond(props: { onChange: BondOnChange, bond: UnProcessedBond, validate_info: string | undefined }): JSX.Element {
-// 	return <>
-// 		<div className={style.bond}>
-// 			<input className={style.id} placeholder="文章代碼"
-// 				value={props.bond.target_article}
-// 				onChange={props.onChange('target_article')} />
-// 			<input className={style.tag} placeholder="標籤（選填）"
-// 				value={props.bond.tag}
-// 				onChange={props.onChange('tag')} />
-// 			<select
-// 				value={props.bond.energy}
-// 				onChange={props.onChange('energy')} >
-// 				<option value="1">正面</option>
-// 				<option value="0">中立</option>
-// 				<option value="-1">負面</option>
-// 			</select>
-// 		</div>
-// 		{props.validate_info && <InvalidMessage msg={props.validate_info} />}
-// 	</>;
-// }
-
-// @ts-ignore
 const Field = (props: FieldProps): JSX.Element => {
 	const { field } = props;
 	const { editor_panel_data } = EditorPanelState.useContainer();
