@@ -15,11 +15,11 @@ pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
         Entry,
         r#"
         WITH replies AS (
-            SELECT article_bonds.value AS id, article_bonds.article_id 
+            SELECT article_bonds.to_id AS id, article_bonds.from_id 
         FROM article_bonds
-            INNER JOIN articles ON articles.id = article_bonds.article_id
-        WHERE article_bonds.value = ANY($1))
-        SELECT id, COUNT(DISTINCT article_id) as "count!"
+            INNER JOIN articles ON articles.id = article_bonds.from_id
+        WHERE article_bonds.to_id = ANY($1))
+        SELECT id, COUNT(DISTINCT from_id) as "count!"
         FROM replies
         GROUP BY id
         "#,

@@ -145,7 +145,7 @@ pub async fn get_bonds_by_article_ids(
     let infos = sqlx::query!(
         "
         SELECT
-            article_bonds.article_id as from_id,
+            article_bonds.from_id,
             tag as bond_tag,
             articles.category,
             articles.title,
@@ -156,10 +156,10 @@ pub async fn get_bonds_by_article_ids(
             articles.anonymous,
             boards.board_name
         FROM article_bonds
-            INNER JOIN articles ON articles.id = article_bonds.value
+            INNER JOIN articles ON articles.id = article_bonds.to_id
             INNER JOIN users ON articles.author_id = users.id
             INNER JOIN boards ON articles.board_id = boards.id
-            WHERE article_bonds.article_id = ANY($1);
+            WHERE article_bonds.from_id = ANY($1);
         ",
         &ids
     )
@@ -275,10 +275,9 @@ async fn insert_bond(
 ) -> Fallible<()> {
     sqlx::query!(
         "INSERT INTO article_bonds
-        (article_id, name, value, energy, tag)
-        VALUES ($1, $2, $3, $4, $5)",
+        (from_id, to_id, energy, tag)
+        VALUES ($1, $2, $3, $4)",
         article_id,
-        "待廢棄",
         bond.to,
         0,
         bond.tag,

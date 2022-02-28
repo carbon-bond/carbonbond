@@ -43,7 +43,7 @@ export type Notification = {     id: number; kind: NotificationKind; user_id: nu
 export type SearchField = 
  | { String: string } 
  | { Range: [number, number] };
-export type Edge = {     id: number; from: number; to: number; energy: number; name:     string; tag: string | null };
+export type Edge = {     id: number; from: number; to: number; energy: number; tag: string     | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
 export type Config = { min_password_length: number; max_password_length: number };
 export namespace force {

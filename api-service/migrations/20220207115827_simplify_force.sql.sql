@@ -13,5 +13,11 @@ RENAME TO article_bonds;
 
 DROP TABLE categories;
 
--- ALTER TABLE article_bonds
--- DROP COLUMN name;
+ALTER TABLE article_bonds
+RENAME COLUMN article_id TO from_id;
+
+ALTER TABLE article_bonds
+RENAME COLUMN value TO to_id;
+
+ALTER TABLE article_bonds
+DROP COLUMN name;

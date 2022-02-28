@@ -83,10 +83,9 @@ macro_rules! to_meta {
 fn to_bond_and_meta(data: BondArticleMeta, viewer_id: Option<i64>) -> (Edge, ArticleMeta) {
     (
         Edge {
-            from: data.from,
-            to: data.to,
+            from: data.from_id,
+            to: data.to_id,
             energy: data.bond_energy,
-            name: data.bond_name,
             tag: data.bond_tag,
             id: data.bond_id,
         },
@@ -319,12 +318,12 @@ pub async fn get_bondee_meta(
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
-        DISTINCT ab.article_id as from, ab.value as to,
-        ab.energy as bond_energy, ab.name as bond_name, ab.id as bond_id, ab.tag as bond_tag, 
+        DISTINCT ab.from_id, ab.to_id,
+        ab.energy as bond_energy, ab.id as bond_id, ab.tag as bond_tag, 
         ",
         "
-        INNER JOIN article_bonds ab on metas.id = ab.value
-        WHERE ab.article_id = $1
+        INNER JOIN article_bonds ab on metas.id = ab.to_id
+        WHERE ab.from_id = $1
         AND ($2 OR category = ANY($3))
         ORDER BY create_time DESC
         ",
@@ -349,12 +348,12 @@ pub async fn get_bonder_meta(
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
-        DISTINCT ab.article_id as from, ab.value as to,
-        ab.energy as bond_energy, ab.name as bond_name, ab.id as bond_id, ab.tag as bond_tag, 
+        DISTINCT ab.from_id, ab.to_id,
+        ab.energy as bond_energy, ab.id as bond_id, ab.tag as bond_tag, 
         ",
         "
-        INNER JOIN article_bonds ab ON metas.id = ab.article_id
-        WHERE ab.value = $1
+        INNER JOIN article_bonds ab ON metas.id = ab.from_id
+        WHERE ab.to_id = $1
         AND ($2 OR category = ANY($3))
         ORDER BY create_time DESC
         ",

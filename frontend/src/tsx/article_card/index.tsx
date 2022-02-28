@@ -204,12 +204,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 		energy_icon = '-1';
 	}
 	return <div>
-		<div className={style.upperSet}>
-			<span>{props.bond.tag}</span> <span>{energy_icon}</span>
-		</div>
-		<div className={style.lowerSet}>
-			<span>{props.bond.name}</span>
-		</div>
+		<span>{props.bond.tag}</span> <span>{energy_icon}</span>
 	</div>;
 }
 

@@ -178,18 +178,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        & .upperSet {
-            font-size: 24px;
-            color: var(--font-color);
-        }
-        & .lowerSet {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 4px;
-            color: var(--light-font-color);
-            font-size: 10px;
-        }
+        font-size: 24px;
+        color: var(--font-color);
     }
 }
 

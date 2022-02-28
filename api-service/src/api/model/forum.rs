@@ -139,14 +139,12 @@ pub mod forum_model_root {
     );
     make_meta!(
         BondArticleMeta,
-        from,
+        from_id,
         i64,
-        to,
+        to_id,
         i64,
         bond_energy,
         i16,
-        bond_name,
-        String,
         bond_id,
         i64,
         bond_tag,
@@ -326,7 +324,6 @@ pub mod forum_model_root {
         pub from: i64,
         pub to: i64,
         pub energy: i16,
-        pub name: String,
         pub tag: Option<String>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
