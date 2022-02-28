@@ -116,7 +116,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         board_name: Option<String>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-        category: Option<i64>,
+        category: Option<String>,
         title: Option<String>,
         content: HashMap<String, super::model::forum::SearchField>,
     ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
@@ -175,16 +175,13 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         max_id: Option<i64>,
         _author_name: Option<String>,
         board_name: Option<String>,
-        family_filter: super::model::forum::FamilyFilter,
     ) -> Fallible<Vec<model::forum::ArticleMetaWithBonds>> {
         let viewer_id = context.get_id().await;
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
-            Some(name) => {
-                db::article::get_by_board_name(viewer_id, &name, max_id, count, &family_filter)
-                    .await?
-                    .collect()
-            }
+            Some(name) => db::article::get_by_board_name(viewer_id, &name, max_id, count)
+                .await?
+                .collect(),
             _ => return Err(crate::custom_error::ErrorCode::UnImplemented.into()),
         };
         let articles = complete_article(articles, context).await?;
@@ -246,16 +243,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     ) -> Result<
         Vec<(super::model::forum::Edge, super::model::forum::Article)>,
         crate::custom_error::Error,
     > {
         let viewer_id = context.get_id().await;
-        let bonders: Vec<_> =
-            db::article::get_bonder(viewer_id, id, opt_slice(&category_set), &family_filter)
-                .await?
-                .collect();
+        let bonders: Vec<_> = db::article::get_bonder(viewer_id, id, opt_slice(&category_set))
+            .await?
+            .collect();
         complete_article(bonders, context).await
     }
     async fn query_bonder_meta(
@@ -263,16 +258,14 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     ) -> Result<
         Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>,
         crate::custom_error::Error,
     > {
         let viewer_id = context.get_id().await;
-        let bonders: Vec<_> =
-            db::article::get_bonder_meta(viewer_id, id, opt_slice(&category_set), &family_filter)
-                .await?
-                .collect();
+        let bonders: Vec<_> = db::article::get_bonder_meta(viewer_id, id, opt_slice(&category_set))
+            .await?
+            .collect();
         complete_article(bonders, context).await
     }
     async fn query_article_meta(
@@ -312,17 +305,11 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     ) -> Result<super::model::forum::Graph, crate::custom_error::Error> {
         let viewer_id = context.get_id().await;
-        let graph = service::graph_view::query_graph(
-            viewer_id,
-            10,
-            article_id,
-            opt_slice(&category_set),
-            &family_filter,
-        )
-        .await?;
+        let graph =
+            service::graph_view::query_graph(viewer_id, 10, article_id, opt_slice(&category_set))
+                .await?;
         complete_article(graph, context).await
     }
 }
@@ -421,14 +408,6 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
             .await?
             .assign_props()
             .await
-    }
-    async fn query_category_by_id(
-        &self,
-        _context: &mut crate::Ctx,
-        id: i64,
-    ) -> Result<String, crate::custom_error::Error> {
-        let source = db::board::get_category_by_id(id).await?;
-        Ok(source)
     }
 }
 

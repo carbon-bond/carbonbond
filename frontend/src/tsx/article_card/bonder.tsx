@@ -2,7 +2,6 @@ import * as React from 'react';
 import { SimpleArticleCard, SatelliteCard, BondCard } from './index';
 import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
 import style from '../../css/board_switch/bonder.module.css';
-import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import produce from 'immer';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -12,7 +11,7 @@ export function SatelliteCards(props: { article: ArticleMeta, expanded: boolean 
 	let { article, expanded }= props;
 	let [satellite_articles, setSatelliteArticles] = React.useState<[Edge, Article][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonder(article.id, null, { WhiteList: [force_util.SATELLITE] }).then(data => {
+		API_FETCHER.articleQuery.queryBonder(article.id, null).then(data => {
 			setSatelliteArticles(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
@@ -34,7 +33,7 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
 	let { article, expanded } = props;
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonderMeta(article.id, null, { BlackList: [force_util.SATELLITE] }).then(data => {
+		API_FETCHER.articleQuery.queryBonderMeta(article.id, null).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);

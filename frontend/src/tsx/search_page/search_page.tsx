@@ -1,3 +1,4 @@
+// TODO: 暫時廢棄
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
@@ -11,7 +12,7 @@ import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, parse_category, DataType } from '../../../../force/typescript/index';
+import { Category, DataType } from '../../../../force/typescript/index';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {
@@ -112,17 +113,17 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.articleQuery.searchArticle(query.author, query.board, query.start_time, query.end_time, query.category, query.title, query.fields).then(res => {
+		API_FETCHER.articleQuery.searchArticle(query.author, query.board, query.start_time, query.end_time, null, query.title, query.fields).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
-				for (let article of articles) {
-					category_map[article.meta.category_id] = {
-						id: article.meta.category_id,
-						name: article.meta.category_name,
-						board_name: article.meta.board_name
-					};
-				}
+				// for (let article of articles) {
+				// 	category_map[article.meta.category_id] = {
+				// 		id: article.meta.category_id,
+				// 		name: article.meta.category_name,
+				// 		board_name: article.meta.board_name
+				// 	};
+				// }
 				let categories = Object.keys(category_map).map(id => {
 					return category_map[id];
 				});
@@ -256,15 +257,15 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 			setCategory(null);
 			setInputs({});
 		} else {
-			API_FETCHER.boardQuery.queryCategoryById(category_id).then(res => {
-				try {
-					let category_src = unwrap(res);
-					setCategory(parse_category(category_src));
-					setInputs({});
-				} catch (err) {
-					toastErr(err);
-				}
-			});
+			// API_FETCHER.boardQuery.queryCategoryById(category_id).then(res => {
+			// 	try {
+			// 		let category_src = unwrap(res);
+			// 		setCategory(parse_category(category_src));
+			// 		setInputs({});
+			// 	} catch (err) {
+			// 		toastErr(err);
+			// 	}
+			// });
 		}
 	}, [category_id, setInputs]);
 

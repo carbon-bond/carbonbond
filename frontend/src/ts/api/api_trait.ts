@@ -26,7 +26,7 @@ export type Author =
  | "MyAnonymous" 
  | "Anonymous";
 export type NewArticle = {     board_id: number; category_name: string; title: string; content:     string; bonds: force.Bond []; draft_id: number | null; anonymous:     boolean };
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; category_id: number; category_name: string;     category_source: string; title: string; author: Author; digest:     ArticleDigest; category_families: string []; create_time: string; fields: force.Field []; stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; title: string; author: Author; digest:     ArticleDigest; create_time: string; fields: force.Field [];     stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type ArticleStatistics = { replies: number; satellite_replies: number };
@@ -35,7 +35,6 @@ export type MiniArticleMeta = {     category: string; board_name: string; author
 export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: BondInfo [] };
 export type Article = { meta: ArticleMeta; bonds: BondInfo []; content: string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; title: string; content: string; bonds:     string; create_time: string; edit_time: string;     anonymous: boolean };
-export type NewDraft = {     id: number; board_id: number; category_id: number | null; title:     string; content: string };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
 export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
@@ -46,10 +45,6 @@ export type SearchField =
  | { Range: [number, number] };
 export type Edge = {     id: number; from: number; to: number; energy: number; name:     string; tag: string | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
-export type FamilyFilter = 
- | { WhiteList: string [] } 
- | { BlackList: string [] } 
- | "None";
 export type Config = { min_password_length: number; max_password_length: number };
 export namespace force {
 export type Bond = { to: number; tag: string };
@@ -276,8 +271,8 @@ export class ArticleQuery {
     constructor(fetcher: Fetcher){
         this.fetchResult = fetcher
     }
-    async queryArticleList(count: number, max_id: Option<number>, author_name: Option<string>, board_name: Option<string>, family_filter: FamilyFilter): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleList": { count, max_id, author_name, board_name, family_filter } } }));
+    async queryArticleList(count: number, max_id: Option<number>, author_name: Option<string>, board_name: Option<string>): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleList": { count, max_id, author_name, board_name } } }));
     }
     async queryArticle(id: number): Promise<Result<Article, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticle": { id } } }));
@@ -285,11 +280,11 @@ export class ArticleQuery {
     async queryArticleMeta(id: number): Promise<Result<ArticleMeta, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryArticleMeta": { id } } }));
     }
-    async queryBonder(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, Article]>, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "QueryBonder": { id, category_set, family_filter } } }));
+    async queryBonder(id: number, category_set: Option<Array<string>>): Promise<Result<Array<[Edge, Article]>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryBonder": { id, category_set } } }));
     }
-    async queryBonderMeta(id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set, family_filter } } }));
+    async queryBonderMeta(id: number, category_set: Option<Array<string>>): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set } } }));
     }
     async createArticle(new_article: NewArticle): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { new_article } } }));
@@ -303,7 +298,7 @@ export class ArticleQuery {
     async deleteDraft(draft_id: number): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "DeleteDraft": { draft_id } } }));
     }
-    async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<number>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
+    async searchArticle(author_name: Option<string>, board_name: Option<string>, start_time: Option<string>, end_time: Option<string>, category: Option<string>, title: Option<string>, content: HashMap<string,SearchField>): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SearchArticle": { author_name, board_name, start_time, end_time, category, title, content } } }));
     }
     async searchPopArticle(count: number): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
@@ -312,8 +307,8 @@ export class ArticleQuery {
     async getSubscribeArticle(count: number): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "GetSubscribeArticle": { count } } }));
     }
-    async queryGraph(article_id: number, category_set: Option<Array<string>>, family_filter: FamilyFilter): Promise<Result<Graph, Error>> {
-        return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set, family_filter } } }));
+    async queryGraph(article_id: number, category_set: Option<Array<string>>): Promise<Result<Graph, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set } } }));
     }
 }
 
@@ -342,9 +337,6 @@ export class BoardQuery {
     }
     async queryHotBoards(): Promise<Result<Array<BoardOverview>, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryHotBoards": {  } } }));
-    }
-    async queryCategoryById(id: number): Promise<Result<string, Error>> {
-        return JSON.parse(await this.fetchResult({ "Board": { "QueryCategoryById": { id } } }));
     }
 }
 

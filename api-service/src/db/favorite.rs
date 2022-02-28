@@ -10,11 +10,9 @@ pub async fn get_by_user_id(id: i64) -> Fallible<Vec<ArticleMeta>> {
         "",
         "
         INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id
-        WHERE favorite_articles.user_id = $3
+        WHERE favorite_articles.user_id = $1
         ORDER BY favorite_articles.create_time DESC
         ",
-        true,
-        EMPTY_SET,
         id
     )
     .fetch_all(pool)

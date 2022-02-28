@@ -131,30 +131,7 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     .fetch_one(&mut conn)
     .await?
     .id;
-    // force-FIXME: 捨棄 category 表格
-    let _category_id = sqlx::query!(
-        "
-    INSERT INTO categories (board_id, category_name, version, source)
-    VALUES ($1, $2, 1, $3)
-    RETURNING id
-    ",
-        board_id,
-        "",
-        ""
-    )
-    .fetch_one(&mut conn)
-    .await?
-    .id;
     super::party::change_board(&mut conn, board.ruling_party_id, board_id).await?;
     conn.commit().await?;
     Ok(board_id)
-}
-
-pub async fn get_category_by_id(id: i64) -> Fallible<String> {
-    let pool = get_pool();
-    let category_str = sqlx::query!("SELECT source FROM categories WHERE id = $1", id)
-        .fetch_one(pool)
-        .await?
-        .source;
-    Ok(category_str)
 }

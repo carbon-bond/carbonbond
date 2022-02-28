@@ -1,7 +1,6 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
-    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, FamilyFilter, NewArticle,
-    SearchField,
+    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, NewArticle, SearchField,
 };
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
@@ -17,23 +16,17 @@ use std::sync::RwLock;
 
 // XXX: 密切關注 sqlx user defined macro
 macro_rules! metas {
-    ($structure:path, $select:literal, $remain:literal, $is_black_list:expr, $family_filter:expr, $($arg:expr),*) => {
+    ($structure:path, $select:literal, $remain:literal, $($arg:expr),*) => {
         sqlx::query_as!(
             $structure,
             "WITH metas AS (SELECT
                 articles.*,
                 users.user_name AS author_name,
-                boards.board_name,
-                categories.category_name,
-                categories.source AS category_source,
-                categories.families AS category_families
+                boards.board_name
             FROM
                 articles
                 INNER JOIN users ON articles.author_id = users.id
                 INNER JOIN boards ON articles.board_id = boards.id
-                INNER JOIN categories ON articles.category_id = categories.id
-            WHERE ($1 AND NOT categories.families && $2)
-                OR (NOT $1 AND categories.families && $2)
                 )
             SELECT "
                 + $select
@@ -43,20 +36,14 @@ macro_rules! metas {
                 board_id,
                 board_name,
                 category,
-                category_id,
-                category_name,
-                category_source,
                 title,
                 author_id,
                 author_name,
                 digest AS digest_content,
                 digest_truncated,
-                category_families,
                 metas.create_time,
                 anonymous FROM metas "
                 + $remain,
-            $is_black_list,
-            $family_filter,
             $($arg),*
         )
     };
@@ -70,10 +57,6 @@ macro_rules! to_meta {
             board_id: $data.board_id,
             board_name: $data.board_name,
             category: $data.category,
-            category_id: $data.category_id,
-            category_name: $data.category_name,
-            category_source: $data.category_source,
-            category_families: $data.category_families,
             title: $data.title,
             fields: serde_json::from_str(&$data.fields).unwrap(),
             author: if $data.anonymous && $viewer_id == Some($data.author_id) {
@@ -113,14 +96,6 @@ fn to_bond_and_meta(data: BondArticleMeta, viewer_id: Option<i64>) -> (Edge, Art
 
 const EMPTY_SET: &[String] = &[];
 
-fn filter_tuple(filter: &FamilyFilter) -> (bool, &[String]) {
-    match filter {
-        FamilyFilter::BlackList(f) => (true, f),
-        FamilyFilter::WhiteList(f) => (false, f),
-        FamilyFilter::None => (true, EMPTY_SET),
-    }
-}
-
 pub async fn metas_to_articles(
     metas: Vec<ArticleMeta>,
 ) -> Fallible<impl ExactSizeIterator<Item = Article>> {
@@ -159,7 +134,7 @@ pub async fn search_article(
     viewer_id: Option<i64>,
     author_name: Option<String>,
     board_name: Option<String>,
-    category: Option<i64>,
+    category: Option<String>,
     content: HashMap<String, SearchField>,
     end_time: Option<DateTime<Utc>>,
     start_time: Option<DateTime<Utc>>,
@@ -170,16 +145,14 @@ pub async fn search_article(
         crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "
-        WHERE ($3 OR board_name = $4)
-        AND ($5 OR (author_name = $6 AND (anonymous = false OR author_id = $7)))
-        AND ($8 OR category_id = $9)
-        AND ($10 OR create_time < $11)
-        AND ($12 OR create_time > $13)
-        AND ($14 OR title ~ $15)
+        WHERE ($1 OR board_name = $2)
+        AND ($3 OR (author_name = $4 AND (anonymous = false OR author_id = $5)))
+        AND ($6 OR category = $7)
+        AND ($8 OR create_time < $9)
+        AND ($10 OR create_time > $11)
+        AND ($12 OR title ~ $13)
         ORDER BY create_time DESC
         ",
-        true,
-        EMPTY_SET,
         board_name.is_none(),
         board_name,
         author_name.is_none(),
@@ -261,9 +234,7 @@ pub async fn get_meta_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article
     let meta = metas!(
         crate::api::model::forum::PrimitiveArticleMeta,
         "",
-        "WHERE id = $3",
-        true,
-        EMPTY_SET,
+        "WHERE id = $1",
         id
     )
     .fetch_optional(pool)
@@ -277,9 +248,7 @@ pub async fn get_meta_by_ids(ids: &Vec<i64>, viewer_id: Option<i64>) -> Fallible
     let metas = metas!(
         crate::api::model::forum::PrimitiveArticleMeta,
         "",
-        "WHERE id = ANY($3) ORDER BY create_time DESC",
-        true,
-        EMPTY_SET,
+        "WHERE id = ANY($1) ORDER BY create_time DESC",
         &ids[..]
     )
     .fetch_all(pool)
@@ -319,20 +288,16 @@ pub async fn get_by_board_name(
     board_name: &str,
     max_id: Option<i64>,
     limit: usize,
-    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = ArticleMeta>> {
     let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
     let metas = metas!(
         crate::api::model::forum::PrimitiveArticleMeta,
         "",
         "
-        WHERE board_name = $3 AND ($5 OR id < $6)
+        WHERE board_name = $1 AND ($3 OR id < $4)
         ORDER BY create_time DESC
-        LIMIT $4
+        LIMIT $2
         ",
-        family_filter.0,
-        family_filter.1,
         board_name,
         limit as i64,
         max_id.is_none(),
@@ -349,10 +314,8 @@ pub async fn get_bondee_meta(
     viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
-    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
@@ -361,12 +324,10 @@ pub async fn get_bondee_meta(
         ",
         "
         INNER JOIN article_bonds ab on metas.id = ab.value
-        WHERE ab.article_id = $3
-        AND ($4 OR category_name = ANY($5))
+        WHERE ab.article_id = $1
+        AND ($2 OR category = ANY($3))
         ORDER BY create_time DESC
         ",
-        family_filter.0,
-        family_filter.1,
         article_id,
         category_set.is_none(),
         category_set.unwrap_or(EMPTY_SET)
@@ -383,10 +344,8 @@ pub async fn get_bonder_meta(
     viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
-    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, ArticleMeta)>> {
     let pool = get_pool();
-    let family_filter = filter_tuple(family_filter);
     let data = metas!(
         crate::api::model::forum::BondArticleMeta,
         "
@@ -395,12 +354,10 @@ pub async fn get_bonder_meta(
         ",
         "
         INNER JOIN article_bonds ab ON metas.id = ab.article_id
-        WHERE ab.value = $3
-        AND ($4 OR category_name = ANY($5))
+        WHERE ab.value = $1
+        AND ($2 OR category = ANY($3))
         ORDER BY create_time DESC
         ",
-        family_filter.0,
-        family_filter.1,
         article_id,
         category_set.is_none(),
         category_set.unwrap_or(EMPTY_SET)
@@ -416,9 +373,8 @@ pub async fn get_bonder(
     viewer_id: Option<i64>,
     article_id: i64,
     category_set: Option<&[String]>,
-    family_filter: &FamilyFilter,
 ) -> Fallible<impl ExactSizeIterator<Item = (Edge, Article)>> {
-    let iter = get_bonder_meta(viewer_id, article_id, category_set, family_filter).await?;
+    let iter = get_bonder_meta(viewer_id, article_id, category_set).await?;
     let mut bonds = Vec::<Edge>::with_capacity(iter.len());
     let metas: Vec<_> = iter
         .map(|(bond, meta)| {
@@ -479,13 +435,12 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "
-        INSERT INTO articles (author_id, board_id, title, category_id, anonymous, category, fields)
-        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
+        INSERT INTO articles (author_id, board_id, title, anonymous, category, fields)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
         ",
         author_id,
         new_article.board_id,
         new_article.title,
-        1, // FIXME: 捨棄 category 表格
         new_article.anonymous,
         new_article.category_name,
         serde_json::to_string(&category.fields).unwrap()

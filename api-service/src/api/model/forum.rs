@@ -118,15 +118,11 @@ pub mod forum_model_root {
                 pub board_id: i64,
                 pub board_name: String,
                 pub category: String,
-                pub category_id: i64,
-                pub category_name: String,
-                pub category_source: String,
                 pub title: String,
                 pub author_id: i64,
                 pub author_name: String,
                 pub digest_content: String,
                 pub digest_truncated: bool,
-                pub category_families: Vec<String>,
                 pub create_time: DateTime<chrono::Utc>,
                 pub anonymous: bool,
                 pub fields: String,
@@ -183,13 +179,9 @@ pub mod forum_model_root {
         pub board_id: i64,
         pub board_name: String,
         pub category: String,
-        pub category_id: i64,
-        pub category_name: String,
-        pub category_source: String,
         pub title: String,
         pub author: Author,
         pub digest: ArticleDigest,
-        pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
         #[ts(ts_type = "force.Field[]")]
         pub fields: Vec<force::Field>,
@@ -255,14 +247,6 @@ pub mod forum_model_root {
         pub create_time: DateTime<chrono::Utc>,
         pub edit_time: DateTime<chrono::Utc>,
         pub anonymous: bool,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct NewDraft {
-        pub id: i64,
-        pub board_id: i64,
-        pub category_id: Option<i64>,
-        pub title: String,
-        pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BoardOverview {
@@ -349,12 +333,6 @@ pub mod forum_model_root {
     pub struct Graph {
         pub nodes: Vec<ArticleMeta>,
         pub edges: Vec<Edge>,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub enum FamilyFilter {
-        WhiteList(Vec<String>),
-        BlackList(Vec<String>),
-        None,
     }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

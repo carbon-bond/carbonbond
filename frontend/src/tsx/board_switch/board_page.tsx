@@ -9,7 +9,6 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
-import * as force_util from '../../ts/force_util';
 
 const PAGE_SIZE: number = 10;
 
@@ -27,7 +26,7 @@ async function fetchArticles(
 	setMinID: (min_id: number) => void
 ): Promise<ArticleMetaWithBonds[]> {
 	let articles = unwrap_or(await API_FETCHER.articleQuery.queryArticleList(page_size, min_id, null,
-		board_name, { BlackList: [force_util.SATELLITE] }), []);
+		board_name), []);
 	let new_min = Math.min(...articles.map(a => a.meta.id));
 	if (min_id != null) {
 		new_min = Math.min(min_id, new_min);
