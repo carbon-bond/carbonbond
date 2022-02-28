@@ -7,20 +7,22 @@ pub async fn create_draft(
     category: Option<String>,
     title: String,
     content: String,
+    bonds: String,
     author_id: i64,
     anonymous: bool,
 ) -> Fallible<i64> {
     let pool = get_pool();
     let draft_id = sqlx::query!(
         "
-        INSERT INTO drafts (author_id, board_id, title, category, content, anonymous)
-        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
+        INSERT INTO drafts (author_id, board_id, title, category, content, bonds, anonymous)
+        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
         ",
         author_id,
         board_id,
         title,
         category,
         content,
+        bonds,
         anonymous
     )
     .fetch_one(pool)
@@ -35,6 +37,7 @@ pub async fn update_draft(
     category: Option<String>,
     title: String,
     content: String,
+    bonds: String,
     author_id: i64,
     anonymous: bool,
 ) -> Fallible<i64> {
@@ -48,8 +51,9 @@ pub async fn update_draft(
         title=$3,
         category=$4,
         content=$5,
-        anonymous=$6
-        WHERE id=$7 AND author_id=$1
+        anonymous=$6,
+        bonds=$7
+        WHERE id=$8 AND author_id=$1
         ",
         author_id,
         board_id,
@@ -57,6 +61,7 @@ pub async fn update_draft(
         category,
         content,
         anonymous,
+        bonds,
         draft_id,
     )
     .execute(pool)
@@ -77,7 +82,8 @@ pub async fn get_all(author_id: i64) -> Fallible<Vec<Draft>> {
         drafts.content,
         drafts.create_time,
         drafts.edit_time,
-        drafts.anonymous
+        drafts.anonymous,
+        drafts.bonds
         FROM drafts
         JOIN boards ON drafts.board_id = boards.id
         WHERE drafts.author_id = $1

@@ -39,8 +39,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						title: props.draft.title,
 						category: props.draft.category ?? '',
 						content: JSON.parse(props.draft.content),
-						// force-FIXME: 從後端取得
-						bonds: [],
+						bonds: JSON.parse(props.draft.bonds),
 					});
 					expandEditorPanel();
 				})

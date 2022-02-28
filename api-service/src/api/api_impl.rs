@@ -207,19 +207,22 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         category: Option<String>,
         title: String,
         content: String,
+        bonds: String,
         anonymous: bool,
     ) -> Result<i64, crate::custom_error::Error> {
         let author_id = context.get_id_strict().await?;
         match draft_id {
             Some(id) => {
                 db::draft::update_draft(
-                    id, board_id, category, title, content, author_id, anonymous,
+                    id, board_id, category, title, content, bonds, author_id, anonymous,
                 )
                 .await
             }
             None => {
-                db::draft::create_draft(board_id, category, title, content, author_id, anonymous)
-                    .await
+                db::draft::create_draft(
+                    board_id, category, title, content, bonds, author_id, anonymous,
+                )
+                .await
             }
         }
     }

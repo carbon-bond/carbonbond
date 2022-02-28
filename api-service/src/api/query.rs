@@ -197,6 +197,7 @@ pub enum ArticleQuery {
         category_name: Option<String>,
         title: String,
         content: String,
+        bonds: String,
         anonymous: bool,
     },
     #[chitin(leaf, response = "Vec<super::model::forum::Draft>")]

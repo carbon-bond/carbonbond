@@ -251,6 +251,7 @@ pub mod forum_model_root {
         pub category: Option<String>,
         pub title: String,
         pub content: String,
+        pub bonds: String,
         pub create_time: DateTime<chrono::Utc>,
         pub edit_time: DateTime<chrono::Utc>,
         pub anonymous: bool,

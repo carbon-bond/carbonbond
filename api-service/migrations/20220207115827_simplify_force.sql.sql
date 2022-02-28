@@ -4,6 +4,7 @@ ADD category TEXT NOT NULL;
 
 ALTER TABLE drafts
 DROP COLUMN category_id,
+ADD bonds TEXT NOT NULL,
 ADD category TEXT;
 
 ALTER TABLE article_bond_fields

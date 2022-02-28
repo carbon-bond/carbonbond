@@ -284,7 +284,7 @@ pub trait ArticleQueryRouter {
     async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
     async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>, crate::custom_error::Error>;
     async fn create_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle) -> Result<i64, crate::custom_error::Error>;
-    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
+    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, bonds: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
@@ -323,8 +323,8 @@ pub trait ArticleQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content, anonymous } => {
-                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content, anonymous).await;
+             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content, bonds, anonymous } => {
+                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content, bonds, anonymous).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -298,6 +298,8 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			editor_panel_data.category ?? null,
 			editor_panel_data.title,
 			JSON.stringify(editor_panel_data.content),
+			// XXX: 文章標題可能會改變，草稿中顯示的仍然會是舊標題
+			JSON.stringify(editor_panel_data.bonds),
 			editor_panel_data.anonymous)
 			.then(data => unwrap(data))
 			.then(id => {
