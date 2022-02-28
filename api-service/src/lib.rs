@@ -3,6 +3,7 @@ extern crate derive_more;
 
 pub mod config;
 pub mod custom_error;
+pub mod force;
 
 #[cfg(not(feature = "prepare"))]
 pub mod api;
@@ -12,8 +13,6 @@ pub mod chat;
 pub mod db;
 #[cfg(not(feature = "prepare"))]
 pub mod email;
-#[cfg(not(feature = "prepare"))]
-pub mod force;
 #[cfg(not(feature = "prepare"))]
 pub mod redis;
 #[cfg(not(feature = "prepare"))]
