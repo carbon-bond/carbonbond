@@ -46,14 +46,15 @@ mod inner {
         ResetPasswordToken,
     }
 
-    #[derive(Serialize, Display, Debug, TypeScriptify)]
-    pub enum BondError {
-        Custom(Box<Error>),
-        TargetNotFound,
-        TargetNotSameBoard(i64),
-        TargetViolateCategory,
-        TargetViolateEnergy,
-    }
+    // TODO: 加入鍵結錯誤
+    // #[derive(Serialize, Display, Debug, TypeScriptify)]
+    // pub enum BondError {
+    //     Custom(Box<Error>),
+    //     TargetNotFound,
+    //     TargetNotSameBoard(i64),
+    //     TargetViolateCategory,
+    //     TargetViolateEnergy,
+    // }
     #[derive(Serialize, Display, Debug, TypeScriptify)]
     pub enum ErrorCode {
         #[display(fmt = "尚未登入")]

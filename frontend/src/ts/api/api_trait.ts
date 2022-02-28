@@ -75,12 +75,6 @@ export type Channel =
  | { IAmAnonymousAuthor: IAmAnonymousAuthor };
 }
 export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
-export type BondError = 
- | { Custom: Error } 
- | "TargetNotFound" 
- | { TargetNotSameBoard: number } 
- | "TargetViolateCategory" 
- | "TargetViolateEnergy";
 export type ErrorCode = 
  | "NeedLogin" 
  | "PermissionDenied" 
