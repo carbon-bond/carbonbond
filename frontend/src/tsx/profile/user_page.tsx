@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserTitle, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -73,7 +73,18 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
-function ProfileDetail(props: { profile_user: User, user_state: UserStateType, user_titles: UserTitle[] }): JSX.Element {
+function CertificationItem(props: { title: string, idx: number }) : JSX.Element {
+	if (props.title === '律師') {
+		return (<span className={style.titleLawyer} key={`title-${props.idx}`}>
+					<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
+				</span>);
+	}
+	return (<span className={style.titleUnknown} key={`title-${props.idx}`}>
+				{props.title}
+			</span>);
+}
+
+function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
 	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
@@ -170,14 +181,14 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType, u
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
 			</div>
 			<div className={style.titleCertificate}>
-				<div className={style.item}>已取得身份認證列表：</div>
-				{props.user_titles.length == 0 ? (
+				<div className={style.item}>已認證稱號：</div>
+				{!props.profile_user.titles || props.profile_user.titles === '' ? (
 					<div className={style.title_empty}>
-						尚未取得任何身份認證
+						無
 					</div>
-				) : (props.user_titles.map((title, idx) => (
-					<span className={style.titleLawyer} key={`title-${idx}`}>
-						<span className={style.titleLawyerImage}/> {title.title}
+				) : (props.profile_user.titles.split(',').map((title, idx) => (
+					<span className={style.titleLabel}>
+						<CertificationItem title={title} idx={idx}/>
 					</span>
 				)))}
 			</div>
@@ -603,16 +614,13 @@ function UserPage(props: Props): JSX.Element {
 	const { user_state } = UserState.useContainer();
 
 	const [user, setUser] = React.useState<User | null>(null);
-	const [user_titles, setUserTitles] = React.useState<UserTitle[]>([]);
 
 	React.useEffect(() => {
 		Promise.all([
 			API_FETCHER.userQuery.queryUser(profile_name),
-			API_FETCHER.userQuery.queryUserTitleList(profile_name)
-		]).then(([user, user_titles]) => {
+		]).then(([user]) => {
 			try {
 				setUser(unwrap(user));
-				setUserTitles(unwrap(user_titles));
 			} catch (err) {
 				toastErr(err);
 			}
@@ -626,7 +634,7 @@ function UserPage(props: Props): JSX.Element {
 		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} />
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
-			<ProfileDetail profile_user={user} user_state={user_state} user_titles={user_titles}/>
+			<ProfileDetail profile_user={user} user_state={user_state} />
 		</div>
 	</div>;
 }

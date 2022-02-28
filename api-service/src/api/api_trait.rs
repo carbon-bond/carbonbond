@@ -55,7 +55,6 @@ pub trait UserQueryRouter {
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind, is_public: bool) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::forum::UserRelation, crate::custom_error::Error>;
-    async fn query_user_title_list(&self, context: &mut crate::Ctx, user_name: String) -> Result<Vec<super::model::forum::UserTitle>, crate::custom_error::Error>;
     async fn query_public_follower_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
     async fn query_public_hater_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
     async fn query_public_following_list(&self, context: &mut crate::Ctx, user: i64) -> Result<Vec<super::model::forum::UserMini>, crate::custom_error::Error>;
@@ -191,11 +190,6 @@ pub trait UserQueryRouter {
             }
              UserQuery::QueryUserRelation { target_user } => {
                  let resp = self.query_user_relation(context, target_user).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::QueryUserTitleList { user_name } => {
-                 let resp = self.query_user_title_list(context, user_name).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

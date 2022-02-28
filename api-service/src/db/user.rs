@@ -1,7 +1,7 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::{LawyerbcResultMini};
 use crate::api::model::forum::{LawyerbcResult};
-use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User, UserTitle};
+use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
@@ -104,7 +104,14 @@ macro_rules! users {
                 WHERE
                     from_user = users.id
                     AND kind = 'follow'
-                    AND is_public = false) AS "following_count_private!"
+                    AND is_public = false) AS "following_count_private!",
+                (
+                SELECT
+                    string_agg(title_authentication_user.title, ',')
+                FROM
+                    title_authentication_user
+                WHERE
+                    title_authentication_user.user_id = users.id) AS "titles! : Option<String>"
             FROM users) SELECT * FROM metas "# + $remain,
             $($arg),*
         )
@@ -353,8 +360,14 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         .execute(&mut conn)
         .await?;
         sqlx::query!(
-            "INSERT INTO title_authentication (user_id, title,  email) VALUES ($1, $2, $3)",
+            "INSERT INTO title_authentication_user (user_id, title) VALUES ($1, $2)",
             id,
+            "律師",
+        )
+        .execute(&mut conn)
+        .await?;
+        sqlx::query!(
+            "INSERT INTO title_authentication_email (title,  email) VALUES ($1, $2)",
             "律師",
             email,
         )
@@ -498,21 +511,4 @@ pub async fn update_info(
     .execute(pool)
     .await?;
     Ok(())
-}
-
-pub async fn query_titles(
-    user_name: String,
-) -> Fallible<Vec<UserTitle>> {
-    let pool = get_pool();
-    let titles: Vec<UserTitle> = sqlx::query_as!(
-        UserTitle,
-        r#"
-		SELECT title_authentication.user_id, title_authentication.title FROM title_authentication
-        INNER JOIN users ON title_authentication.user_id = users.id
-		WHERE users.user_name = $1;"#,
-        user_name
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(titles)
 }

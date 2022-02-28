@@ -159,12 +159,15 @@
                 }
             }
         }
+        & .titleLabel {
+            margin: 0px 5px 0px 0px;
+        }
         & .titleCertificate {
             & .item {
                 margin: 0px 0px 5px;
             }
             & .titleLawyer {
-                background-color: var(--sub-theme-color);
+                background-color: var(--lighter-gray);
                 border-radius: 3px;
                 display: inline-block;
                 padding: 2px 5px 2px 2px;
@@ -174,7 +177,17 @@
                     display: inline-block;
                     width: 16px;
                     height: 16px;
+                    vertical-align: middle;
                 }
+                & .titleLawyerText {
+                    vertical-align: middle;
+                }
+            }
+            & .titleUnknown {
+                background-color: var(--lighter-gray);
+                border-radius: 3px;
+                display: inline-block;
+                padding: 2px 5px 2px 2px;
             }
         }
     

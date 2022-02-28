@@ -763,14 +763,6 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         let relation = db::user_relation::query_relation(from_user, target_user).await?;
         Ok(relation)
     }
-    async fn query_user_title_list(
-        &self,
-        _context: &mut crate::Ctx,
-        user_name: String,
-    ) -> Result<Vec<super::model::forum::UserTitle>, crate::custom_error::Error> {
-        let titles = db::user::query_titles(user_name).await?;
-        Ok(titles)
-    }
     async fn update_avatar(
         &self,
         context: &mut crate::Ctx,

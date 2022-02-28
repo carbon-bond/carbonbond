@@ -28,6 +28,7 @@ mod model {
         pub birth_year: i32,
         pub job: String,
         pub city: String,
+        pub titles: Option<String>
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct UserMini {
@@ -35,11 +36,6 @@ mod model {
         pub user_name: String,
         pub energy: i64,
         pub sentence: String,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct UserTitle {
-        pub user_id: i64,
-        pub title: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct LawyerbcResultMini {
