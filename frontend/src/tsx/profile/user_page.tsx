@@ -10,6 +10,8 @@ import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
+import { InvalidMessage } from '../../tsx/components/invalid_message';
+import { ShowText } from '../board_switch/article_page';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
@@ -75,12 +77,10 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
 	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
 
-	async function updateInformation(introduction: string, gender: string, job: string, city: string): Promise<{}> {
-		console.log('更新我的資料');
+	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		try {
-			await API_FETCHER.userQuery.updateInformation(introduction, gender, job, city);
+			unwrap(await API_FETCHER.userQuery.updateInformation(introduction, job, city));
 			setIntroduction(introduction);
-			setGender(gender);
 			setJob(job);
 			setCity(city);
 			setEditing(false);
@@ -99,23 +99,37 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		}
 	}, [props.profile_user]);
 
-	function EditModal(props: { introduction: string, gender: string, job: string, city: string }): JSX.Element {
+	function EditModal(props: { introduction: string, gender: string, birth_year: number, job: string, city: string }): JSX.Element {
 		const [introduction, setIntroduction] = React.useState<string>(props.introduction);
 		const [gender, setGender] = React.useState<string>(props.gender);
 		const [job, setJob] = React.useState<string>(props.job);
 		const [city, setCity] = React.useState<string>(props.city);
+		const [validate_info, setValidateInfo] = React.useState<undefined | string>(undefined);
+
+		function onIntroductionChange(introduction: string) : void {
+			const length = [...introduction].length;
+			setIntroduction(introduction);
+			if (length > 1000) {
+				setValidateInfo('字數超過 1000 上限');
+			} else {
+				setValidateInfo(undefined);
+			}
+		}
 
 		function getBody(): JSX.Element {
 			return <div className={style.editModal}>
 				<div className={style.label}>自我介紹</div>
-				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => setIntroduction(e.target.value)} />
+				<textarea placeholder="自我介紹" autoFocus value={introduction} onChange={(e) => onIntroductionChange(e.target.value)} />
+				{validate_info && <InvalidMessage msg={validate_info} />}
 				<div className={style.label}>性別</div>
 				<div className={style.gender}>
-					<input type="radio" name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />
+					<input type="radio" disabled name="gender" value="男" defaultChecked={gender === '男'} onChange={(e) => setGender(e.target.value)} />
 					<label>男</label>
-					<input type="radio" name="gender" value="女" defaultChecked={gender === '女'} onChange={(e) => setGender(e.target.value)} />
+					<input type="radio" disabled name="gender" value="女" defaultChecked={gender === '女'} onChange={(e) => setGender(e.target.value)} />
 					<label>女</label>
 				</div>
+				<div className={style.label}>生年</div>
+				<input type="number" disabled value={props.birth_year} />
 				<div className={style.label}>職業</div>
 				<input type="text" placeholder="職業" value={job} onChange={(e) => setJob(e.target.value)} />
 				<div className={style.label}>居住城市</div>
@@ -124,7 +138,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		}
 
 		let buttons: ModalButton[] = [];
-		buttons.push({ text: '儲存', handler: () => updateInformation(introduction, gender, job, city) });
+		buttons.push({ text: '儲存', handler: () => updateInformation(introduction, job, city) });
 		buttons.push({ text: '取消', handler: () => setEditing(false) });
 
 		return <ModalWindow
@@ -145,7 +159,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>🖉</button>}
 			</div>
 			<div className={style.info}>
-				<div className={style.item}>{introduction}</div>
+				<ShowText text={introduction} />
 			</div>
 			<div className={style.info}>
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
@@ -153,7 +167,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
 			</div>
 		</div>
-		<EditModal introduction={introduction} gender={gender} job={job} city={city} />
+		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
 	</div>;
 }
 
@@ -165,6 +179,9 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
+		setPublicUsers([]);
+		setPrivateUsers([]);
+		setSelectTab(0);
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
 			fetchUsers(props.user.id)

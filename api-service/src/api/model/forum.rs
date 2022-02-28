@@ -25,6 +25,7 @@ pub mod forum_model_root {
         pub following_count_private: i64,
         pub introduction: String,
         pub gender: String,
+        pub birth_year: i32,
         pub job: String,
         pub city: String,
     }
@@ -38,17 +39,15 @@ pub mod forum_model_root {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct LawyerbcResultMini {
         pub name: String,
-        pub gender: String,
-        pub id_number: String,
-        pub license_id: String,
+        pub now_lic_no: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct LawyerbcResult {
         pub name: String,
-        pub gender: String,
-        pub id_number: String,
-        pub license_id: String,
-        pub birth_year: i64,
+        pub sex: String,
+        pub id_no: String,
+        pub now_lic_no: String,
+        pub birthsday: i64,
         pub email: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

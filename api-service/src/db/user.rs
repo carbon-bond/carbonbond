@@ -1,12 +1,13 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{
-    LawyerbcResult, LawyerbcResultMini, SignupInvitation, SignupInvitationCredit, User,
-};
+use crate::api::model::forum::{LawyerbcResultMini};
+use crate::api::model::forum::{LawyerbcResult};
+use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
 use reqwest;
-use serde_json::Value;
+use serde_json::Error;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use urlencoding::encode;
 
@@ -29,6 +30,7 @@ macro_rules! users {
                 users.energy,
                 users.introduction,
                 users.gender,
+                users.birth_year,
                 users.job,
                 users.city,
                 (
@@ -174,27 +176,28 @@ pub async fn query_search_result_from_lawyerbc(
         .send()
         .await?;
 
-    let mut lawyers: Vec<LawyerbcResultMini> = Vec::new();
-    if response.status().is_success() {
-        let response_text = response.text().await?;
-        let parsed: Value = serde_json::from_str(response_text.as_str()).unwrap();
-        log::debug!("parsed = {}", parsed);
-        for i in 0..(parsed["data"]["lawyers"].as_array().unwrap().len()) {
-            let lawyer = &parsed["data"]["lawyers"][i];
-            log::debug!("lawyer {}", lawyer["name"]);
-            let lawyer_bc_result_mini = LawyerbcResultMini {
-                name: lawyer["name"].as_str().unwrap().to_string(),
-                id_number: lawyer["id_no"].as_str().unwrap().to_string(),
-                license_id: lawyer["now_lic_no"].as_str().unwrap().to_string(),
-                gender: lawyer["sex"].as_str().unwrap().to_string(),
-            };
-            lawyers.push(lawyer_bc_result_mini);
-        }
+    if ! response.status().is_success() {
+        return Err(ErrorCode::SearchingLawyerbcFail.into());
     }
-    Ok(lawyers)
+
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultMiniResponse {
+        pub data: LawyerbcResultMiniResponseData,
+    }
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultMiniResponseData {
+        pub lawyers: Vec<LawyerbcResultMini>,
+    }
+
+    let response_text = response.text().await?;
+    let lawyerbc_result_mini_response: Result<LawyerbcResultMiniResponse, Error> = serde_json::from_str(response_text.as_str());
+    match lawyerbc_result_mini_response {
+        Ok(resp) => Ok(resp.data.lawyers),
+        Err(_) => Err(ErrorCode::ParsingJson.into()),
+    }
 }
 pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<LawyerbcResult> {
-    let response = reqwest::get(format!(
+    let response_text = reqwest::get(format!(
         "{}{}",
         "https://lawyerbc.moj.gov.tw/api/cert/info/",
         encode(&license_id).into_owned()
@@ -203,19 +206,16 @@ pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<L
     .text()
     .await?;
 
-    let parsed: Value = serde_json::from_str(response.as_str()).unwrap();
-    let lawyer = LawyerbcResult {
-        name: parsed["data"][0]["name"].as_str().unwrap().to_string(),
-        id_number: parsed["data"][0]["id_no"].as_str().unwrap().to_string(),
-        license_id: parsed["data"][0]["now_lic_no"]
-            .as_str()
-            .unwrap()
-            .to_string(),
-        gender: parsed["data"][0]["sex"].as_str().unwrap().to_string(),
-        birth_year: parsed["data"][0]["birthsday"].as_i64().unwrap_or(0), // 民國
-        email: parsed["data"][0]["email"].as_str().unwrap().to_string(),
-    };
-    Ok(lawyer)
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    struct LawyerbcResultResponse {
+        pub data: Vec<LawyerbcResult>,
+    }
+
+    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> = serde_json::from_str(response_text.as_str());
+    match lawyerbc_result_response {
+        Ok(resp) => Ok(resp.data[0].clone()),
+        Err(_) => Err(ErrorCode::ParsingJson.into()),
+    }
 }
 pub async fn create_signup_token(
     email: &str,
@@ -334,14 +334,25 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
     log::trace!("使用者用註冊碼註冊");
     let email = get_email_by_signup_token(token).await?;
     if let Some(email) = email {
-        let pool = get_pool();
+        let mut conn = get_pool().begin().await?;
         let id = signup(name, password, &email).await?;
         sqlx::query!(
             "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
             token
         )
-        .execute(pool)
+        .execute(&mut conn)
         .await?;
+        sqlx::query!(
+            "UPDATE users
+            SET gender = (SELECT gender FROM signup_tokens WHERE token = $1),
+                birth_year = (SELECT birth_year FROM signup_tokens WHERE token = $1)
+            WHERE user_name = $2",
+            token,
+            name
+        )
+        .execute(&mut conn)
+        .await?;
+        conn.commit().await?;
         Ok(id)
     } else {
         Err(ErrorCode::NotFound(DataType::SignupToken, token.to_owned()).into())
@@ -458,20 +469,21 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
 pub async fn update_info(
     id: i64,
     introduction: String,
-    gender: String,
     job: String,
     city: String,
 ) -> Fallible<()> {
     let pool = get_pool();
+    if introduction.chars().count() > 1000 {
+        return Err(ErrorCode::ArgumentFormatError("自我介紹長度".to_owned()).into());
+    }
     sqlx::query!(
         "
         UPDATE users
-        SET (introduction, gender, job, city) = ($2, $3, $4, $5)
+        SET (introduction, job, city) = ($2, $3, $4)
         WHERE id = $1
         ",
         id,
         introduction,
-        gender,
         job,
         city
     )

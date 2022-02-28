@@ -743,12 +743,11 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         &self,
         context: &mut crate::Ctx,
         introduction: String,
-        gender: String,
         job: String,
         city: String,
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
-        db::user::update_info(id, introduction, gender, job, city).await
+        db::user::update_info(id, introduction, job, city).await
     }
 }
 
