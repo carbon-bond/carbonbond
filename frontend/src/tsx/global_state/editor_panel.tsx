@@ -1,7 +1,13 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { Board } from '../../ts/api/api_trait';
+import { ArticleMeta, Board } from '../../ts/api/api_trait';
+
+type Bond = {
+	tag: string,
+	article: ArticleMeta,
+	energy: number,
+};
 
 export type EditorPanelData = {
 	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
@@ -10,8 +16,8 @@ export type EditorPanelData = {
 	category?: string,
 	title: string,
 	anonymous: boolean,
-	// eslint-disable-next-line
-	content: { [index: string]: any },
+	content: { [index: string]: string },
+	bonds: Bond[],
 };
 
 export enum WindowState {

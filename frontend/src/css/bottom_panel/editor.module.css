@@ -89,6 +89,12 @@
     }
 }
 
+.bond {
+    display: flex;
+    flex-direction: row;
+    font-size: 16px;
+}
+
 .editorBody {
     & .fields label {
         padding: 5px 10px 0px 10px;

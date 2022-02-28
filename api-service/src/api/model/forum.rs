@@ -1,6 +1,6 @@
 use chitin::*;
 #[chitin_model]
-mod model {
+pub mod forum_model_root {
     use chitin::*;
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
@@ -77,7 +77,8 @@ mod model {
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
-        pub force: String,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
         pub ruling_party_id: i64,
         pub popularity: i64,
     }
@@ -92,7 +93,8 @@ mod model {
         pub board_type: String,
         pub title: String,
         pub detail: String,
-        pub force: String,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
         pub ruling_party_id: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
@@ -114,17 +116,15 @@ mod model {
                 pub energy: i32,
                 pub board_id: i64,
                 pub board_name: String,
-                pub category_id: i64,
-                pub category_name: String,
-                pub category_source: String,
+                pub category: String,
                 pub title: String,
                 pub author_id: i64,
                 pub author_name: String,
                 pub digest_content: String,
                 pub digest_truncated: bool,
-                pub category_families: Vec<String>,
                 pub create_time: DateTime<chrono::Utc>,
                 pub anonymous: bool,
+                pub fields: String,
                 $(pub $element: $ty),*
             }
         }
@@ -138,14 +138,12 @@ mod model {
     );
     make_meta!(
         BondArticleMeta,
-        from,
+        from_id,
         i64,
-        to,
+        to_id,
         i64,
         bond_energy,
         i16,
-        bond_name,
-        String,
         bond_id,
         i64,
         bond_tag,
@@ -160,19 +158,30 @@ mod model {
     }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct NewArticle {
+        pub board_id: i64,
+        pub category_name: String,
+        pub title: String,
+        pub content: String,
+        #[ts(ts_type = "force.Bond[]")]
+        pub bonds: Vec<force::Bond>,
+        pub draft_id: Option<i64>,
+        pub anonymous: bool,
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,
         pub board_id: i64,
         pub board_name: String,
-        pub category_id: i64,
-        pub category_name: String,
-        pub category_source: String,
+        pub category: String,
         pub title: String,
         pub author: Author,
         pub digest: ArticleDigest,
-        pub category_families: Vec<String>,
         pub create_time: DateTime<chrono::Utc>,
+        #[ts(ts_type = "force.Field[]")]
+        pub fields: Vec<force::Field>,
 
         pub stat: ArticleStatistics,
         pub personal_meta: ArticlePersonalMeta,
@@ -191,19 +200,35 @@ mod model {
         pub create_time: DateTime<chrono::Utc>,
         pub is_used: bool,
     }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct Favorite {
-        pub meta: ArticleMeta,
-        pub create_time: DateTime<Utc>,
-    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {
         pub replies: i64,
         pub satellite_replies: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct BondInfo {
+        pub article_meta: MiniArticleMeta,
+        pub energy: i64,
+        pub tag: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct MiniArticleMeta {
+        pub category: String,
+        pub board_name: String,
+        pub author: Author,
+        pub id: i64,
+        pub title: String,
+        pub create_time: DateTime<chrono::Utc>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct ArticleMetaWithBonds {
+        pub meta: ArticleMeta,
+        pub bonds: Vec<BondInfo>,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Article {
         pub meta: ArticleMeta,
+        pub bonds: Vec<BondInfo>,
         pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -212,21 +237,13 @@ mod model {
         pub author_id: i64,
         pub board_id: i64,
         pub board_name: String,
-        pub category_id: Option<i64>,
-        pub category_name: Option<String>,
+        pub category: Option<String>,
         pub title: String,
         pub content: String,
+        pub bonds: String,
         pub create_time: DateTime<chrono::Utc>,
         pub edit_time: DateTime<chrono::Utc>,
         pub anonymous: bool,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub struct NewDraft {
-        pub id: i64,
-        pub board_id: i64,
-        pub category_id: Option<i64>,
-        pub title: String,
-        pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BoardOverview {
@@ -306,19 +323,12 @@ mod model {
         pub from: i64,
         pub to: i64,
         pub energy: i16,
-        pub name: String,
         pub tag: Option<String>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct Graph {
         pub nodes: Vec<ArticleMeta>,
         pub edges: Vec<Edge>,
-    }
-    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-    pub enum FamilyFilter {
-        WhiteList(Vec<String>),
-        BlackList(Vec<String>),
-        None,
     }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -327,8 +337,12 @@ mod model {
         pub max_password_length: usize,
     }
 
-    #[chitin_model_use]
-    use force::instance_defs::Bond;
+    #[chitin_model]
+    pub mod force {
+        use super::*;
+        #[chitin_model_use]
+        pub use crate::force::{Bond, Category, Field, FieldKind, Force};
+    }
 }
 
-pub use model::*;
+pub use forum_model_root::*;

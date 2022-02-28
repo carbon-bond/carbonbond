@@ -28,14 +28,15 @@
 .listBody {
     display: flex;
     flex-direction: column;
-    width: 400;
-    margin-top: 50;
+    width: 400px;
+    margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
 }
 .createParty {
     color: var(--light-font-color);
-    text-align: right;
+    text-align: left;
+    margin-top: 50px;
     cursor: pointer;
 }
 .createPartyInput {

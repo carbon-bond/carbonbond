@@ -1,10 +1,12 @@
 use carbonbond::{
     api::model,
     config,
-    custom_error::{BondError, DataType, Error, ErrorCode, Fallible},
-    db, redis,
+    custom_error::{DataType, ErrorCode, Fallible},
+    db,
+    force::{Category, Field, Force},
+    redis,
 };
-use force::error::{ValidationError, ValidationErrorCode};
+// use force::error::{ValidationError, ValidationErrorCode};
 
 async fn setup() {
     env_logger::init();
@@ -51,13 +53,25 @@ async fn party_test(chairman_id: i64) -> Fallible<i64> {
     db::party::create("測試無法黨", None, chairman_id).await
 }
 async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
-    let force = "
-大文章 {
-    文本 內文
-}
-小留言 @ [衛星] {
-    鍵結[大文章] 本體
-}";
+    let force = Force {
+        categories: vec![
+            Category {
+                name: "分類1".to_owned(),
+                fields: vec![Field {
+                    name: "欄位1".to_owned(),
+                    kind: carbonbond::force::FieldKind::MultiLine,
+                }],
+            },
+            Category {
+                name: "分類2".to_owned(),
+                fields: vec![Field {
+                    name: "欄位2".to_owned(),
+                    kind: carbonbond::force::FieldKind::MultiLine,
+                }],
+            },
+        ],
+        suggested_tags: Vec::new(),
+    };
     let board_id = db::board::create(&model::forum::NewBoard {
         board_name: "測試板".to_string(),
         board_type: "general".to_string(),
@@ -112,81 +126,31 @@ async fn notification_test(user_id: i64, user2_id: i64) -> Fallible {
 
 async fn article_test(user_id: i64, board_id: i64) -> Fallible {
     macro_rules! post {
-        ($category:expr, $title:expr, $content:expr) => {
+        ($category:expr, $title:expr, $content:expr, $bonds:expr) => {
             db::article::create(
+                &model::forum::NewArticle {
+                    board_id: board_id,
+                    category_name: $category,
+                    title: $title,
+                    content: $content.to_owned(),
+                    bonds: $bonds,
+                    draft_id: None,
+                    anonymous: false,
+                },
                 user_id,
-                board_id,
-                $category,
-                $title,
-                $content.to_owned(),
-                None,
-                false,
             )
         };
     }
-    let big_id = post!("大文章", "測試大文章", "{\"內文\": \"測試內文\"}")
-        .await
-        .unwrap();
-    let satellite_id = post!(
-        "小留言",
-        "會通過",
-        &format!(
-            "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
-            big_id
-        )
+    post!(
+        "分類1".to_owned(),
+        "測試文章".to_owned(),
+        "{\"欄位1\": \"測試內文\"}",
+        Vec::new()
     )
     .await
     .unwrap();
-    let res = post!(
-        "小留言",
-        "會通過才有鬼",
-        &format!(
-            "{{ \"本體\": {{ \"target_article\": {}, \"energy\": 1 }} }}",
-            satellite_id
-        )
-    )
-    .await;
-
-    fn unwrap_bond_err<T>(res: Result<T, Error>) -> BondError {
-        if let Err(Error::LogicError {
-            code:
-                ErrorCode::ForceValidate(ValidationError {
-                    code: ValidationErrorCode::Other(e),
-                    ..
-                }),
-            ..
-        }) = res
-        {
-            return e;
-        }
-        panic!();
-    }
-
-    match unwrap_bond_err(res) {
-        BondError::TargetViolateCategory => (),
-        _ => panic!(),
-    }
-
-    let res = post!(
-        "小留言",
-        "會通過才有鬼2",
-        &format!("{{ \"本體\": {{ \"target_article\": 99999, \"energy\": 1 }} }}")
-    )
-    .await;
-    match unwrap_bond_err(res) {
-        BondError::TargetNotFound => (),
-        _ => panic!(),
-    }
-
-    let articles = db::article::get_by_board_name(
-        None,
-        "測試板",
-        None,
-        999,
-        &model::forum::FamilyFilter::None,
-    )
-    .await?;
-    assert_eq!(articles.len(), 2, "文章不是兩篇！？");
+    let articles = db::article::get_by_board_name(None, "測試板", None, 999).await?;
+    assert_eq!(articles.len(), 1, "文章不是一篇");
     Ok(())
 }
 

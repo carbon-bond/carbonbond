@@ -1,8 +1,8 @@
 use chitin::*;
 #[chitin_model]
 mod inner {
+    use crate::force;
     use chitin::chitin_util;
-    use force::error::ValidationError as ForceValidateError;
     use serde::{Serialize, Serializer};
     use std::error::Error as StdError;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
@@ -45,14 +45,15 @@ mod inner {
         ResetPasswordToken,
     }
 
-    #[derive(Serialize, Display, Debug, TypeScriptify)]
-    pub enum BondError {
-        Custom(Box<Error>),
-        TargetNotFound,
-        TargetNotSameBoard(i64),
-        TargetViolateCategory,
-        TargetViolateEnergy,
-    }
+    // TODO: 加入鍵結錯誤
+    // #[derive(Serialize, Display, Debug, TypeScriptify)]
+    // pub enum BondError {
+    //     Custom(Box<Error>),
+    //     TargetNotFound,
+    //     TargetNotSameBoard(i64),
+    //     TargetViolateCategory,
+    //     TargetViolateEnergy,
+    // }
     #[derive(Serialize, Display, Debug, TypeScriptify)]
     pub enum ErrorCode {
         #[display(fmt = "尚未登入")]
@@ -79,7 +80,7 @@ mod inner {
         ArgumentFormatError(String),
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
-        ForceValidate(ForceValidateError<BondError>),
+        ForceValidate(force::ValidationError),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]
@@ -153,6 +154,7 @@ mod inner {
         Ok(())
     }
     use std::fmt;
+
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {

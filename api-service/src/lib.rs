@@ -3,6 +3,7 @@ extern crate derive_more;
 
 pub mod config;
 pub mod custom_error;
+pub mod force;
 
 #[cfg(not(feature = "prepare"))]
 pub mod api;

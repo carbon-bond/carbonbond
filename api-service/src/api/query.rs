@@ -43,7 +43,7 @@ pub enum UserQuery {
     QueryMe {},
     #[chitin(leaf, response = "Vec<super::model::forum::Party>")]
     QueryMyPartyList {},
-    #[chitin(leaf, response = "Vec<super::model::forum::Favorite>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     QueryMyFavoriteArticleList {},
 
     // 法務部律師查詢系統 https://lawyerbc.moj.gov.tw/
@@ -155,13 +155,12 @@ pub enum PartyQuery {
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum ArticleQuery {
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     QueryArticleList {
         count: usize,
         max_id: Option<i64>,
         author_name: Option<String>,
         board_name: Option<String>,
-        family_filter: super::model::forum::FamilyFilter,
     },
     #[chitin(leaf, response = "super::model::forum::Article")]
     QueryArticle { id: i64 },
@@ -174,7 +173,6 @@ pub enum ArticleQuery {
     QueryBonder {
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     },
     #[chitin(
         leaf,
@@ -183,16 +181,10 @@ pub enum ArticleQuery {
     QueryBonderMeta {
         id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     },
     #[chitin(leaf, response = "i64")]
     CreateArticle {
-        board_id: i64,
-        category_name: String,
-        title: String,
-        content: String,
-        draft_id: Option<i64>,
-        anonymous: bool,
+        new_article: super::model::forum::NewArticle,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {
@@ -201,31 +193,31 @@ pub enum ArticleQuery {
         category_name: Option<String>,
         title: String,
         content: String,
+        bonds: String,
         anonymous: bool,
     },
     #[chitin(leaf, response = "Vec<super::model::forum::Draft>")]
     QueryDraft {},
     #[chitin(leaf, response = "()")]
     DeleteDraft { draft_id: i64 },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     SearchArticle {
         author_name: Option<String>,
         board_name: Option<String>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-        category: Option<i64>,
+        category: Option<String>,
         title: Option<String>,
         content: HashMap<String, super::model::forum::SearchField>,
     },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     SearchPopArticle { count: usize },
-    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMeta>")]
+    #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     GetSubscribeArticle { count: usize },
     #[chitin(leaf, response = "super::model::forum::Graph")]
     QueryGraph {
         article_id: i64,
         category_set: Option<Vec<String>>,
-        family_filter: super::model::forum::FamilyFilter,
     },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
@@ -246,9 +238,6 @@ pub enum BoardQuery {
     },
     #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
     QueryHotBoards {},
-
-    #[chitin(leaf, response = "String")]
-    QueryCategoryById { id: i64 },
 }
 
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]

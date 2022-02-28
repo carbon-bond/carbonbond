@@ -32,7 +32,7 @@ pub trait ChatQueryRouter {
 pub trait UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Party>, crate::custom_error::Error>;
-    async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Favorite>, crate::custom_error::Error>;
+    async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn query_search_result_from_lawyerbc(&self, context: &mut crate::Ctx, search_text: String) -> Result<Vec<super::model::forum::LawyerbcResultMini>, crate::custom_error::Error>;
     async fn query_detail_result_from_lawyerbc(&self, context: &mut crate::Ctx, license_id: String) -> Result<super::model::forum::LawyerbcResult, crate::custom_error::Error>;
     async fn record_signup_apply(&self, context: &mut crate::Ctx, email: String, birth_year: i32, gender: String, license_id: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
@@ -278,23 +278,23 @@ pub trait PartyQueryRouter {
 }
 #[async_trait]
 pub trait ArticleQueryRouter {
-    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
+    async fn query_article_list(&self, context: &mut crate::Ctx, count: usize, max_id: Option<i64>, author_name: Option<String>, board_name: Option<String>) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn query_article(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Article, crate::custom_error::Error>;
     async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error>;
-    async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
-    async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>, crate::custom_error::Error>;
-    async fn create_article(&self, context: &mut crate::Ctx, board_id: i64, category_name: String, title: String, content: String, draft_id: Option<i64>, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
-    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
+    async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
+    async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>) -> Result<Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>, crate::custom_error::Error>;
+    async fn create_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle) -> Result<i64, crate::custom_error::Error>;
+    async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, bonds: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<i64>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
-    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
-    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMeta>, crate::custom_error::Error>;
-    async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>, family_filter: super::model::forum::FamilyFilter) -> Result<super::model::forum::Graph, crate::custom_error::Error>;
+    async fn search_article(&self, context: &mut crate::Ctx, author_name: Option<String>, board_name: Option<String>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>, category: Option<String>, title: Option<String>, content: HashMap<String,super::model::forum::SearchField>) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>) -> Result<super::model::forum::Graph, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ArticleQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
-             ArticleQuery::QueryArticleList { count, max_id, author_name, board_name, family_filter } => {
-                 let resp = self.query_article_list(context, count, max_id, author_name, board_name, family_filter).await;
+             ArticleQuery::QueryArticleList { count, max_id, author_name, board_name } => {
+                 let resp = self.query_article_list(context, count, max_id, author_name, board_name).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
@@ -308,23 +308,23 @@ pub trait ArticleQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::QueryBonder { id, category_set, family_filter } => {
-                 let resp = self.query_bonder(context, id, category_set, family_filter).await;
+             ArticleQuery::QueryBonder { id, category_set } => {
+                 let resp = self.query_bonder(context, id, category_set).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::QueryBonderMeta { id, category_set, family_filter } => {
-                 let resp = self.query_bonder_meta(context, id, category_set, family_filter).await;
+             ArticleQuery::QueryBonderMeta { id, category_set } => {
+                 let resp = self.query_bonder_meta(context, id, category_set).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::CreateArticle { board_id, category_name, title, content, draft_id, anonymous } => {
-                 let resp = self.create_article(context, board_id, category_name, title, content, draft_id, anonymous).await;
+             ArticleQuery::CreateArticle { new_article } => {
+                 let resp = self.create_article(context, new_article).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content, anonymous } => {
-                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content, anonymous).await;
+             ArticleQuery::SaveDraft { draft_id, board_id, category_name, title, content, bonds, anonymous } => {
+                 let resp = self.save_draft(context, draft_id, board_id, category_name, title, content, bonds, anonymous).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
@@ -353,8 +353,8 @@ pub trait ArticleQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::QueryGraph { article_id, category_set, family_filter } => {
-                 let resp = self.query_graph(context, article_id, category_set, family_filter).await;
+             ArticleQuery::QueryGraph { article_id, category_set } => {
+                 let resp = self.query_graph(context, article_id, category_set).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
@@ -370,7 +370,6 @@ pub trait BoardQueryRouter {
     async fn query_subscribed_user_count(&self, context: &mut crate::Ctx, id: i64) -> Result<usize, crate::custom_error::Error>;
     async fn create_board(&self, context: &mut crate::Ctx, new_board: super::model::forum::NewBoard) -> Result<i64, crate::custom_error::Error>;
     async fn query_hot_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
-    async fn query_category_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<String, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: BoardQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              BoardQuery::QueryBoardList { count } => {
@@ -405,11 +404,6 @@ pub trait BoardQueryRouter {
             }
              BoardQuery::QueryHotBoards {  } => {
                  let resp = self.query_hot_boards(context, ).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             BoardQuery::QueryCategoryById { id } => {
-                 let resp = self.query_category_by_id(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

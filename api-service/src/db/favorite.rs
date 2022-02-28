@@ -1,26 +1,24 @@
 use super::get_pool;
-use crate::api::model::forum::Favorite;
-use crate::custom_error::Fallible;
-use crate::db::article::to_favorite;
+use crate::{api::model::forum::ArticleMeta, custom_error::Fallible};
 
-const EMPTY_SET: &[String] = &[];
-
-pub async fn get_by_user_id(id: i64) -> Fallible<impl ExactSizeIterator<Item = Favorite>> {
+pub async fn get_by_user_id(id: i64) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();
-    let data = metas!(
-        crate::api::model::forum::FavoriteArticleMeta,
-        "favorite_articles.create_time AS favorite_create_time, ",
+    let metas = metas!(
+        crate::api::model::forum::PrimitiveArticleMeta,
+        "",
         "
         INNER JOIN favorite_articles ON metas.id = favorite_articles.article_id
-        WHERE favorite_articles.user_id = $3
+        WHERE favorite_articles.user_id = $1
+        ORDER BY favorite_articles.create_time DESC
         ",
-        true,
-        EMPTY_SET,
         id
     )
     .fetch_all(pool)
     .await?;
-    Ok(data.into_iter().map(move |d| to_favorite(d, Some(id))))
+    Ok(metas
+        .into_iter()
+        .map(move |d| to_meta!(d, Some(id)))
+        .collect())
 }
 
 pub async fn favorite(user_id: i64, article_id: i64) -> Fallible<i64> {

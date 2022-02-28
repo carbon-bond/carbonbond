@@ -3,7 +3,6 @@ import { RouteComponentProps } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleMeta } from '../../ts/api/api_trait';
 import { ArticleCard } from '../article_card';
-import * as force_util from '../../ts/force_util';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
@@ -198,14 +197,14 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	}
 
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryGraph(props.meta.id, null, { BlackList: [force_util.SATELLITE] }).then(res => {
+		API_FETCHER.articleQuery.queryGraph(props.meta.id, null).then(res => {
 			let g = unwrap(res);
 			let counter = new LinkNumCounter();
 			let nodes = g.nodes.map(n => {
 				return {
 					id: n.id,
 					url: `/app/b/${n.board_name}/a/${n.id}`,
-					name: `[${n.category_name}] ${n.title}`,
+					name: `[${n.category}] ${n.title}`,
 					meta: n,
 				};
 			});
@@ -467,7 +466,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 							top: (cur_hovering.y + r + init_offset_y) * scale + offset_y,
 							opacity,
 						}} className={style.articleBlock}>
-							<ArticleCard article={cur_hovering.meta} />
+							<ArticleCard article={cur_hovering.meta} bonds={[]}/>
 						</div>;
 					}
 				})()

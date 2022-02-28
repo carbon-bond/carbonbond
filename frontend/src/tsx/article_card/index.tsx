@@ -1,25 +1,24 @@
 import * as React from 'react';
 import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
-import { relativeDate } from '../../ts/date';
+import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Edge } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
-import { parse_category } from '../../../../force/typescript';
 import { ArticleContent } from '../board_switch/article_page';
-import { ReplyModal, SatelliteModal } from './modal';
+import { ReplyModal } from './modal';
 
 const MAX_BRIEF_LINE = 4;
 
 function ShowAuthor(props: {author: Author}): JSX.Element {
 	if (props.author == 'Anonymous') {
-		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶</div>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶</span>;
 	} else if (props.author == 'MyAnonymous') {
-		return <div className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</div>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</span>;
 	} else {
 		return <Link to={`/app/user/${props.author.NamedAuthor.name}`}>
-			<div className={style.authorId}>{props.author.NamedAuthor.name}</div>
+			<span className={style.authorId}>{props.author.NamedAuthor.name}</span>
 		</Link>;
 	}
 }
@@ -37,13 +36,13 @@ export function ArticleHeader(props: { author: Author, board_name: string, date:
 	</div>;
 }
 
-export function ArticleLine(props: { category_name: string, title: string, id: number, board_name: string }): JSX.Element {
+export function ArticleLine(props: { category: string, title: string, id: number, board_name: string }): JSX.Element {
 
 	return <div className={style.articleLine}>
-		<span className={style.articleType}>{props.category_name}</span>
-		<a href={`/app/b/${props.board_name}/a/${props.id}`} target="_blank" className="styleless">
+		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
+		<Link to={`/app/b/${props.board_name}/a/${props.id}`} className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
-		</a>
+		</Link>
 		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
@@ -133,9 +132,9 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 					case ModalType.Reply: {
 						return <ReplyModal article={props.article} close={closeModal}/>;
 					}
-					case ModalType.Satellite: {
-						return <SatelliteModal article={props.article} close={closeModal}/>;
-					}
+					// case ModalType.Satellite: {
+					// 	return <SatelliteModal article={props.article} close={closeModal}/>;
+					// }
 					default: {
 						return null;
 					}
@@ -145,48 +144,71 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	</div>;
 }
 
-function ArticleCard(props: { article: ArticleMeta }): JSX.Element {
+export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.ReactNode }): JSX.Element {
+	return <div className={style.bondLine}>
+		<div className={style.leftSet}>
+			{props.children}
+			<Link to={`/app/b/${props.mini_meta.board_name}/a/${props.mini_meta.id}`}>
+				<span className={style.border}>{props.mini_meta.category}</span>
+				<span>{props.mini_meta.title}</span>
+			</Link>
+		</div>
+		<div className={style.rightSet}>
+			<span>{dateDistance(new Date(props.mini_meta.create_time))}</span>
+			<span> • </span>
+			<ShowAuthor author={props.mini_meta.author} />
+		</div>
+	</div>;
+}
+
+function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
 	const author = props.article.author;
-	const category_name = props.article.category_name;
+	const category = props.article.category;
 
 	return (
-		<div className={style.articleContainer}>
-			<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
-			<div className={style.articleBody}>
-				<div className={style.leftPart}>
-					<ArticleLine
-						board_name={props.article.board_name}
-						category_name={category_name}
-						title={props.article.title}
-						id={props.article.id} />
-					<ArticleContentShrinkable article={props.article}/>
+		<div>
+			{
+				props.bonds.map(bond => {
+					return <BondLine
+						mini_meta={bond.article_meta}
+						key={`${bond.article_meta.id}#${bond.tag}`}>
+						<span className={style.bondTag}>{bond.tag}</span>
+					</BondLine>;
+				})
+			}
+			<div className={style.articleContainer}>
+				<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
+				<div className={style.articleBody}>
+					<div className={style.leftPart}>
+						<ArticleLine
+							board_name={props.article.board_name}
+							category={category}
+							title={props.article.title}
+							id={props.article.id} />
+						<ArticleContentShrinkable article={props.article}/>
+					</div>
 				</div>
+				<ArticleFooter article={props.article} />
 			</div>
-			<ArticleFooter article={props.article} />
 		</div>
 	);
 }
 
 function BondCard(props: { bond: Edge }): JSX.Element {
-	let energy_icon = '👊';
+	let energy_icon = '';
 	if (props.bond.energy > 0) {
-		energy_icon = '👍';
+		energy_icon = '+1';
 	} else if (props.bond.energy < 0) {
-		energy_icon = '👎';
+		energy_icon = '-1';
 	}
 	return <div>
-		<div className={style.upperSet}>
-			<span>{props.bond.tag}</span> <span>{energy_icon}</span>
-		</div>
-		<div className={style.lowerSet}>
-			<span>{props.bond.name}</span>
-		</div>
+		<span>{props.bond.tag}</span> <span>{energy_icon}</span>
 	</div>;
 }
 
-function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Element {
+function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
@@ -195,21 +217,16 @@ function SimpleArticleCard(props: { meta: ArticleMeta, bond?: Edge }): JSX.Eleme
 				board_name={meta.board_name}
 				title={meta.title}
 				id={meta.id}
-				category_name={meta.category_name} />
+				category={meta.category} />
 			<ArticleHeader
 				author={meta.author}
 				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
-		{
-			props.bond ?
-				<div className={style.rightSet}>
-					<BondCard bond={props.bond}/>
-				</div>
-				: <></>
-		}
-		<Link className={style.overlay} to={url} target="_blank"></Link >
-		{/* TODO: 有沒有可能讓上一行不要開新分頁？ */}
+		<div className={style.rightSet}>
+			{props.children}
+		</div>
+		<Link className={style.overlay} to={url}></Link >
 	</div>;
 }
 
@@ -219,10 +236,8 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryArticleMeta(props.article_id).then(data => {
 			setMeta(unwrap(data));
-			// setFetching(false);
 		}).catch(err => {
 			toastErr(err);
-			// setFetching(false);
 		});
 	}, [props.article_id]);
 
@@ -240,7 +255,7 @@ function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
 		<BondCard bond={props.bond} />
 		<div className={style.satelliteHeader}>
 			<ShowAuthor author={props.meta.author} />
-			<div className={style.articleTime}>{date_string} {props.meta.category_name}</div>
+			<div className={style.articleTime}>{date_string} {props.meta.category}</div>
 		</div>
 		<div>
 			{props.meta.title}
@@ -255,7 +270,6 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 	let wrapper_ref = React.useRef<HTMLDivElement | null>(null);
 	let content_ref = React.useRef<HTMLDivElement | null>(null);
 
-	const category = parse_category(props.article.category_source);
 	// eslint-disable-next-line
 	let content: { [name: string]: any } = JSON.parse(props.article.digest.content);
 	let truncated = props.article.digest.truncated;
@@ -289,6 +303,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			setArticle({
 				meta: props.article,
 				content: props.article.digest.content,
+				bonds: []
 			});
 			return;
 		}
@@ -344,7 +359,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 		>
 			<div ref={div => onDivLoad(div, false)}>
 				{
-					category.fields.map(field => {
+					props.article.fields.map(field => {
 						let inner = formatValue(content[field.name]);
 						if (inner.length == 0) {
 							return null;
