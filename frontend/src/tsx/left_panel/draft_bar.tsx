@@ -37,8 +37,9 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						board: board,
 						anonymous: props.draft.anonymous,
 						title: props.draft.title,
-						category: props.draft.category_name ?? '',
-						content: JSON.parse(props.draft.content)
+						category: props.draft.category ?? '',
+						content: JSON.parse(props.draft.content),
+						bonds: JSON.parse(props.draft.bonds),
 					});
 					expandEditorPanel();
 				})

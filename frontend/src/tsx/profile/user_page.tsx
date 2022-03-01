@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
-import { relativeDate } from '../../ts/date';
 import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, ArticleMeta, Favorite } from '../../ts/api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
@@ -16,8 +15,6 @@ import { ShowText } from '../board_switch/article_page';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
-import favorite_wrapper_style from '../../css/favorite_wrapper.module.css';
-const { favoriteTitle, favoriteWrapper } = favorite_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 
@@ -205,6 +202,9 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
+		setPublicUsers([]);
+		setPrivateUsers([]);
+		setSelectTab(0);
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
 			fetchUsers(props.user.id)
@@ -470,7 +470,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 
 function ProfileWorks(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
-	const [articles, setArticles] = React.useState<ArticleMeta[]>([]);
+	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 
 	React.useEffect(() => {
 		Promise.all([
@@ -523,11 +523,11 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	</div>;
 }
 
-function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
+function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
 		{props.articles.map((article, idx) => (
 			<div className={articleWrapper} key={`article-${idx}`}>
-				<ArticleCard article={article} />
+				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
 		))}
 	</div>;
@@ -535,35 +535,28 @@ function Articles(props: { articles: ArticleMeta[] }): JSX.Element {
 
 function Favorites(props: { profile_user: User }): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const [favorites, setFavorites] = React.useState<Favorite[]>([]);
+	const [favorites, setFavorites] = React.useState<ArticleMetaWithBonds[]>([]);
 
 	React.useEffect(() => {
 		// TODO change fetchFavorites to get a user_id as parameter
-		Promise.all([
-			fetchFavorites(),
-		]).then(([more_favorites]) => {
-			try {
-				if (user_state.login && props.profile_user.user_name == user_state.user_name) {
-					setFavorites(more_favorites);
-				} else {
-					setFavorites([]);
+		fetchFavorites()
+			.then((more_favorites) => {
+				try {
+					if (user_state.login && props.profile_user.user_name == user_state.user_name) {
+						setFavorites(more_favorites);
+					} else {
+						setFavorites([]);
+					}
+				} catch (err) {
+					toastErr(err);
 				}
-			} catch (err) {
-				toastErr(err);
-			}
-		});
+			});
 	}, [props.profile_user.user_name, user_state]);
 
-	let sortedFavorites = Array.from(favorites).sort((lhs, rhs) => {
-		return lhs.create_time < rhs.create_time ? 1 : -1;
-	});
 	return <div>
-		{sortedFavorites.map((favorite, idx) => (
-			<div className={favoriteWrapper} key={`article-${idx}`}>
-				<div className={favoriteTitle}>{relativeDate(new Date(favorite.create_time))}</div>
-				<div className={articleWrapper} >
-					<ArticleCard article={favorite.meta} />
-				</div>
+		{favorites.map(favorite => (
+			<div className={articleWrapper} key={`article-${favorite.meta.id}`} >
+				<ArticleCard article={favorite.meta} bonds={favorite.bonds} />
 			</div>
 		))}
 	</div>;
@@ -575,11 +568,11 @@ function Satellites(): JSX.Element {
 
 async function fetchArticles(
 	author_name: string,
-): Promise<ArticleMeta[]> {
+): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.articleQuery.searchArticle(author_name, null, null, null, null, null, new Map()), []);
 }
 
-async function fetchFavorites(): Promise<Favorite[]> {
+async function fetchFavorites(): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryMyFavoriteArticleList(), []);
 }
 

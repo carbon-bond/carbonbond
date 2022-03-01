@@ -35,6 +35,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 				category: '',
 				title: '',
 				content: {},
+				bonds: [],
 			});
 			openEditorPanel();
 		}

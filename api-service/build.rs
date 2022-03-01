@@ -5,6 +5,8 @@ extern crate derive_more;
 mod config;
 #[path = "src/custom_error.rs"]
 mod custom_error;
+#[path = "src/force.rs"]
+mod force;
 #[path = "src/api/model/mod.rs"]
 mod model;
 #[path = "src/api/query.rs"]
@@ -66,7 +68,7 @@ fn gen_api_files() -> std::io::Result<()> {
     let mut client_file = File::create("../frontend/src/ts/api/api_trait.ts")?;
     client_file.write_all(b"/*eslint-disable*/\n")?;
     client_file.write_all(b"export type BoxedErr = string\n")?;
-    client_file.write_all(b"export type ForceValidateError<T> = string\n")?;
+    client_file.write_all(b"export type ValidationError = string\n")?;
     client_file.write_all(
         b"// @ts-ignore\nexport type HashMap<K extends string | number, T> = { [key: K]: T };\n",
     )?;
@@ -75,5 +77,6 @@ fn gen_api_files() -> std::io::Result<()> {
     client_file.write_all(model::chat::chat_model_root::gen_typescript().as_bytes())?;
     client_file.write_all(custom_error::gen_typescript().as_bytes())?;
     chitin_entry.root_codegen(&client_option, &mut client_file)?;
+
     Ok(())
 }

@@ -1,22 +1,12 @@
 use super::{get_pool, DBObject};
-use crate::custom_error::{BondError, DataType, Error, ErrorCode, Fallible};
-use crate::service;
-use force::{instance_defs::Bond, validate::ValidatorTrait, Bondee, Category, Field};
+use crate::api::model::forum::{Author, BondInfo, MiniArticleMeta};
+use crate::custom_error::{DataType, Fallible};
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::Arc;
 
-#[derive(Debug, Default)]
-pub struct ArticleBondField {
-    pub article_id: i64,
-    pub name: String,
-    pub energy: i16,
-    pub tag: Option<String>,
-    pub value: i64,
-}
 #[derive(Debug, Default)]
 pub struct ArticleIntField {
     pub article_id: i64,
@@ -30,9 +20,6 @@ pub struct ArticleStringField {
     pub value: String,
 }
 
-impl DBObject for ArticleBondField {
-    const TYPE: DataType = DataType::BondField;
-}
 impl DBObject for ArticleIntField {
     const TYPE: DataType = DataType::IntField;
 }
@@ -72,46 +59,13 @@ impl Insertable for ArticleStringField {
         &self.name
     }
 }
-impl Insertable for ArticleBondField {
-    type Output = Bond;
-    fn get_id(&self) -> i64 {
-        self.article_id
-    }
-    fn get_value(&self) -> Self::Output {
-        Bond {
-            energy: self.energy,
-            target_article: self.value,
-            tag: self.tag.clone(),
-        }
-    }
-    fn get_name(&self) -> &str {
-        &self.name
-    }
-}
 
 fn insert_kvs<T: Insertable>(kvs: &mut HashMap<String, Value>, fields: &Vec<T>) {
     for field in fields.into_iter() {
         let value = serde_json::to_value(field.get_value()).unwrap();
         let name = field.get_name();
-        match kvs.get_mut(name) {
-            Some(Value::Array(array)) => {
-                array.push(value);
-            }
-            _ => {
-                kvs.insert(name.to_owned(), value);
-            }
-        }
+        kvs.insert(name.to_owned(), value);
     }
-}
-
-fn init_kvs(category: &Category) -> HashMap<String, Value> {
-    let mut kvs: HashMap<String, Value> = HashMap::new();
-    for field in &category.fields {
-        if let force::DataType::Array { .. } = field.datatype {
-            kvs.insert(field.name.clone(), (Vec::new() as Vec<Value>).into());
-        }
-    }
-    kvs
 }
 
 fn make_group<T: Insertable>(fields: Vec<T>) -> HashMap<i64, Vec<T>> {
@@ -142,14 +96,11 @@ fn insert_id_to_kvs<T: Insertable>(
 }
 
 // ids[i] 的分類為 categories[i]
-pub async fn get_by_article_ids(
-    ids: Vec<i64>,
-    categories: Vec<Arc<Category>>,
-) -> Fallible<Vec<String>> {
+pub async fn get_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<String>> {
     let pool = get_pool();
     let mut id_to_kvs: HashMap<i64, HashMap<String, Value>> = HashMap::new();
     for i in 0..ids.len() {
-        id_to_kvs.insert(ids[i], init_kvs(&categories[i]));
+        id_to_kvs.insert(ids[i], HashMap::new());
     }
     let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
         ArticleStringField,
@@ -173,17 +124,6 @@ pub async fn get_by_article_ids(
     .fetch_all(pool)
     .await?;
     insert_id_to_kvs(&ids, &mut id_to_kvs, int_fields);
-    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
-        ArticleBondField,
-        "
-        SELECT article_id, name, tag, energy, value FROM article_bond_fields
-        WHERE article_id = ANY($1);
-        ",
-        &ids
-    )
-    .fetch_all(pool)
-    .await?;
-    insert_id_to_kvs(&ids, &mut id_to_kvs, bond_fields);
     let mut ret = Vec::new();
     for id in &ids {
         ret.push(serde_json::to_string(id_to_kvs.get(id).unwrap())?);
@@ -191,14 +131,80 @@ pub async fn get_by_article_ids(
     Ok(ret)
 }
 
-pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String> {
+// ids[i] 的分類為 categories[i]
+pub async fn get_bonds_by_article_ids(
+    ids: Vec<i64>,
+    viewer_id: Option<i64>,
+) -> Fallible<Vec<Vec<BondInfo>>> {
     let pool = get_pool();
-    let mut kvs = init_kvs(category);
-    for field in &category.fields {
-        if let force::DataType::Array { .. } = field.datatype {
-            kvs.insert(field.name.clone(), (Vec::new() as Vec<Value>).into());
-        }
+    let mut id_to_bonds: HashMap<i64, Vec<BondInfo>> = HashMap::new();
+    for i in 0..ids.len() {
+        id_to_bonds.insert(ids[i], Vec::new());
     }
+
+    let infos = sqlx::query!(
+        "
+        SELECT
+            article_bonds.from_id,
+            tag as bond_tag,
+            articles.category,
+            articles.title,
+            users.user_name as author_name,
+            users.id as author_id,
+            articles.id,
+            articles.create_time,
+            articles.anonymous,
+            boards.board_name
+        FROM article_bonds
+            INNER JOIN articles ON articles.id = article_bonds.to_id
+            INNER JOIN users ON articles.author_id = users.id
+            INNER JOIN boards ON articles.board_id = boards.id
+            WHERE article_bonds.from_id = ANY($1);
+        ",
+        &ids
+    )
+    .fetch_all(pool)
+    .await?;
+    // XXX: 不知道爲什麼 SQLX 的類型推導會都是 Option
+    for info in infos {
+        let anonymous = info.anonymous.unwrap();
+        let bond_info = BondInfo {
+            article_meta: MiniArticleMeta {
+                title: info.title.unwrap(),
+                category: info.category.unwrap(),
+                create_time: info.create_time.unwrap(),
+                id: info.id.unwrap(),
+                author: if anonymous && viewer_id == Some(info.author_id.unwrap()) {
+                    Author::MyAnonymous
+                } else if anonymous {
+                    Author::Anonymous
+                } else {
+                    Author::NamedAuthor {
+                        id: info.author_id.unwrap(),
+                        name: info.author_name.unwrap(),
+                    }
+                },
+                board_name: info.board_name.unwrap(),
+            },
+            tag: info.bond_tag.unwrap(),
+            energy: 0,
+        };
+        id_to_bonds
+            .get_mut(&info.from_id.unwrap())
+            .unwrap()
+            .push(bond_info);
+    }
+
+    let mut ret = Vec::new();
+    for id in &ids {
+        ret.push(id_to_bonds.remove(id).unwrap());
+    }
+    Ok(ret)
+}
+
+pub async fn get_by_article_id(id: i64) -> Fallible<String> {
+    let pool = get_pool();
+    let mut kvs = HashMap::new();
     let string_fields: Vec<ArticleStringField> = sqlx::query_as!(
         ArticleStringField,
         "
@@ -221,66 +227,7 @@ pub async fn get_by_article_id(id: i64, category: &Category) -> Fallible<String>
     .fetch_all(pool)
     .await?;
     insert_kvs(&mut kvs, &int_fields);
-    let bond_fields: Vec<ArticleBondField> = sqlx::query_as!(
-        ArticleBondField,
-        "
-        SELECT article_id, name, tag, energy, value FROM article_bond_fields
-        WHERE article_id = $1;
-        ",
-        id
-    )
-    .fetch_all(pool)
-    .await?;
-    insert_kvs(&mut kvs, &bond_fields);
     Ok(serde_json::to_string(&kvs)?)
-}
-
-struct Validator {
-    board_id: i64,
-}
-
-#[async_trait::async_trait]
-impl ValidatorTrait for Validator {
-    type OtherError = BondError;
-    async fn validate_bond(&self, bondee: &Bondee, data: &Bond) -> Result<(), Self::OtherError> {
-        //XXX: 鍵能
-        let meta = match super::article::get_meta_by_id(data.target_article, None).await {
-            Err(e) => {
-                if let Error::LogicError { code, .. } = &e {
-                    if let ErrorCode::NotFound(..) = code {
-                        log::trace!("找不到鍵結文章：{}", data.target_article);
-                        return Err(BondError::TargetNotFound);
-                    }
-                }
-                return Err(BondError::Custom(Box::new(e)));
-            }
-            Ok(m) => m,
-        };
-        if meta.board_id != self.board_id {
-            return Err(BondError::TargetNotSameBoard(meta.board_id));
-        }
-        // XXX: 鍵能錯誤
-        match bondee {
-            Bondee::All => Ok(()),
-            Bondee::Choices { category, family } => {
-                if category.contains(&meta.category_name) {
-                    return Ok(());
-                }
-                for f in &meta.category_families {
-                    if family.contains(f) {
-                        return Ok(());
-                    }
-                }
-                log::trace!(
-                    "鍵結不合力語言定義：定義為{:?}，得到{:?}，指向文章{:?}",
-                    bondee,
-                    data,
-                    meta
-                );
-                Err(BondError::TargetViolateCategory)
-            }
-        }
-    }
 }
 
 async fn insert_int_field(
@@ -321,98 +268,159 @@ async fn insert_string_field(
     Ok(())
 }
 
-async fn insert_bond_field(
+async fn insert_bond(
     conn: &mut PgConnection,
     article_id: i64,
-    field_name: &String,
-    bond: &Bond,
+    bond: &crate::force::Bond,
 ) -> Fallible<()> {
     sqlx::query!(
-        "INSERT INTO article_bond_fields
-        (article_id, name, value, energy, tag)
-        VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO article_bonds
+        (from_id, to_id, energy, tag)
+        VALUES ($1, $2, $3, $4)",
         article_id,
-        field_name,
-        bond.target_article,
-        bond.energy,
+        bond.to,
+        0,
         bond.tag,
     )
     .execute(&mut *conn)
     .await?;
-    super::article::update_energy(conn, bond.target_article, bond.energy).await?;
-    service::hot_articles::modify_article_energy(bond.target_article, bond.energy).await?;
+    // TODO: 思考鍵結如何改變鍵能
     Ok(())
 }
-async fn insert_field(
-    conn: &mut PgConnection,
-    article_id: i64,
-    field: &Field,
-    value: Value,
-) -> Fallible<()> {
-    log::debug!("插入文章內容 {:?} {:?}", field, value);
 
-    service::hot_articles::set_hot_article_score(article_id).await?;
+// block 代表文章欄位中佔用空間較大的
+// 目前僅有 multiline 屬於 block
+struct Digest {
+    block_fields: HashMap<String, Value>,
+    non_block_fields: HashMap<String, Value>,
+    char_count: usize,
+}
 
-    match field.datatype.basic_type() {
-        force::BasicDataType::Number => match value {
-            Value::Number(number) => {
-                insert_int_field(conn, article_id, &field.name, number.as_i64().unwrap()).await?
+const MAX_LEN: usize = 300;
+
+impl Digest {
+    fn new() -> Digest {
+        Digest {
+            block_fields: Default::default(),
+            non_block_fields: Default::default(),
+            char_count: 0,
+        }
+    }
+    fn add(&mut self, field_name: &str, value: &Value, is_block: bool) {
+        self.char_count += field_name.len();
+        match value {
+            Value::Number(n) => {
+                self.char_count += format!("{}", &n).len();
+                self.non_block_fields
+                    .insert(field_name.to_string(), value.clone());
             }
-            // validate 過，不可能發生
-            _ => {}
-        },
-        force::BasicDataType::OneLine | force::BasicDataType::Text(_) => {
-            match value {
-                Value::String(s) => insert_string_field(conn, article_id, &field.name, &s).await?,
-                // validate 過，不可能發生
-                _ => {}
+            Value::String(s) => {
+                self.char_count += s.len();
+                let truncated_value = if s.len() > MAX_LEN {
+                    Value::String(s[0..MAX_LEN].to_owned())
+                } else {
+                    value.clone()
+                };
+                if is_block {
+                    self.block_fields
+                        .insert(field_name.to_string(), truncated_value);
+                } else {
+                    self.non_block_fields
+                        .insert(field_name.to_string(), truncated_value);
+                }
+            }
+            _ => {
+                log::error!("不支援的文章域類型（僅支援數字與字串）：{}", value)
             }
         }
-        force::BasicDataType::Bond(_) => match serde_json::from_value::<Bond>(value) {
-            Ok(bond) => insert_bond_field(conn, article_id, &field.name, &bond).await?,
-            // validate 過，不可能發生
-            _ => {}
-        },
     }
-    Ok(())
+    fn is_truncated(&self) -> bool {
+        self.char_count > 300
+    }
+    fn to_json(&self) -> Fallible<String> {
+        if self.is_truncated() {
+            if self.block_fields.len() > 0 {
+                Ok(serde_json::to_string(&self.block_fields)?)
+            } else {
+                Ok(serde_json::to_string(&self.non_block_fields)?)
+            }
+        } else {
+            let mut all = HashMap::new();
+            all.extend(&self.block_fields);
+            all.extend(&self.non_block_fields);
+            Ok(serde_json::to_string(&all)?)
+        }
+    }
 }
 
 pub(super) async fn create(
     conn: &mut PgConnection,
     article_id: i64,
-    board_id: i64,
     content: Cow<'_, Value>,
-    category: &Category,
+    bonds: &Vec<crate::force::Bond>,
+    category: &crate::force::Category,
 ) -> Fallible<()> {
-    // 檢驗格式
-    let validator = Validator { board_id };
-    match validator
-        .validate_category(&category, content.as_ref())
-        .await
-    {
-        Ok(()) => (),
-        Err(err) => return Err(ErrorCode::ForceValidate(err).into()),
+    use crate::force::FieldKind::*;
+    use crate::force::{ValidationError, ValidationErrorCode::*};
+    for bond in bonds {
+        insert_bond(conn, article_id, &bond).await?;
     }
 
-    use force::DataType::*;
+    // TODO: fields 長度爲 0 的特殊狀況（文章內不分域）
 
-    let mut content = content.into_owned();
-    let json = content.as_object_mut().unwrap();
+    let mut digest = Digest::new();
 
     for field in category.fields.iter() {
-        // XXX: 如果使用者搞出一個有撞名欄位的分類，這裡的 unwrap 就會爆掉
-        let value = json.remove(&field.name).unwrap();
-        match field.datatype {
-            Optional(_) | Single(_) => insert_field(conn, article_id, field, value).await?,
-            Array { .. } => match value {
-                Value::Array(values) => {
-                    for value in values {
-                        insert_field(conn, article_id, field, value).await?
+        let value = &content[&field.name];
+        match (&field.kind, value) {
+            (MultiLine, Value::String(s)) => {
+                insert_string_field(conn, article_id, &field.name, s).await?;
+
+                digest.add(&field.name, &value, true);
+            }
+            (OneLine, Value::String(s)) => {
+                if s.contains('\n') {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code: NotOneline(s.clone()).into(),
                     }
+                    .into());
                 }
-                _ => {}
-            },
+                insert_string_field(conn, article_id, &field.name, s).await?;
+
+                digest.add(&field.name, &value, false);
+            }
+            (Number, Value::Number(n)) => {
+                if !n.is_i64() {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code: NotI64(n.clone()).into(),
+                    }
+                    .into());
+                }
+                let n = n.as_i64().unwrap();
+                insert_int_field(conn, article_id, &field.name, n).await?;
+
+                digest.add(&field.name, &value, false);
+            }
+            _ => {
+                return Err(ValidationError {
+                    field_name: field.name.clone(),
+                    code: TypeMismatch(field.kind.clone(), content[&field.name].clone()).into(),
+                }
+                .into());
+            }
         }
     }
+
+    sqlx::query!(
+        "UPDATE articles SET digest = $1, digest_truncated = $2 where id = $3",
+        digest.to_json()?,
+        digest.is_truncated(),
+        article_id
+    )
+    .execute(conn)
+    .await?;
+
     Ok(())
 }

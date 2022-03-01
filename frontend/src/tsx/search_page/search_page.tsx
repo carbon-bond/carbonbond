@@ -1,9 +1,10 @@
+// TODO: 暫時廢棄
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
-import { ArticleMeta, HashMap, SearchField } from '../../ts/api/api_trait';
+import { ArticleMetaWithBonds, HashMap, SearchField } from '../../ts/api/api_trait';
 import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
@@ -11,7 +12,7 @@ import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, parse_category, DataType } from '../../../../force/typescript/index';
+import { Category, DataType } from '../../../../force/typescript/index';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {
@@ -54,7 +55,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 	let [search_fields, setSearchFields] = React.useState<SearchFields>({});
 
 	let [url_board, setUrlBoard] = React.useState('');
-	let [articles, setArticles] = React.useState(new Array<ArticleMeta>());
+	let [articles, setArticles] = React.useState(new Array<ArticleMetaWithBonds>());
 	let [categories, setCategories] = React.useState(new Array<CategoryEntry>());
 
 	function onSearchCategoryChange(category_id_str: string): void {
@@ -112,17 +113,17 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		if (typeof query == 'string') {
 			return;
 		}
-		API_FETCHER.articleQuery.searchArticle(query.author, query.board, query.start_time, query.end_time, query.category, query.title, query.fields).then(res => {
+		API_FETCHER.articleQuery.searchArticle(query.author, query.board, query.start_time, query.end_time, null, query.title, query.fields).then(res => {
 			try {
 				let articles = unwrap(res);
 				let category_map: { [id: string]: CategoryEntry } = {};
-				for (let article of articles) {
-					category_map[article.category_id] = {
-						id: article.category_id,
-						name: article.category_name,
-						board_name: article.board_name
-					};
-				}
+				// for (let article of articles) {
+				// 	category_map[article.meta.category_id] = {
+				// 		id: article.meta.category_id,
+				// 		name: article.meta.category_name,
+				// 		board_name: article.meta.board_name
+				// 	};
+				// }
 				let categories = Object.keys(category_map).map(id => {
 					return category_map[id];
 				});
@@ -182,8 +183,8 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
                 <>
                     {
                     	articles.map(article => {
-                    		return <div className={style.articleWrapper} key={`article-${article.id}`}>
-                    			<ArticleCard article={article} />
+                    		return <div className={style.articleWrapper} key={`article-${article.meta.id}`}>
+                    			<ArticleCard article={article.meta} bonds={article.bonds} />
                     		</div>;
                     	})
                     }
@@ -256,15 +257,15 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 			setCategory(null);
 			setInputs({});
 		} else {
-			API_FETCHER.boardQuery.queryCategoryById(category_id).then(res => {
-				try {
-					let category_src = unwrap(res);
-					setCategory(parse_category(category_src));
-					setInputs({});
-				} catch (err) {
-					toastErr(err);
-				}
-			});
+			// API_FETCHER.boardQuery.queryCategoryById(category_id).then(res => {
+			// 	try {
+			// 		let category_src = unwrap(res);
+			// 		setCategory(parse_category(category_src));
+			// 		setInputs({});
+			// 	} catch (err) {
+			// 		toastErr(err);
+			// 	}
+			// });
 		}
 	}, [category_id, setInputs]);
 

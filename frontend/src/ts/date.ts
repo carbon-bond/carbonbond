@@ -1,6 +1,25 @@
-import { isYesterday, isToday, format, isThisYear } from 'date-fns';
-// import { formatRelative } from 'date-fns';
+import { isYesterday, isToday, format, isThisYear, differenceInSeconds } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+
+function dateDistance(date: Date): string {
+	const seconds = differenceInSeconds(new Date(), date);
+	if (seconds < 60) {
+		return '剛才';
+	}
+	const minutes = Math.floor(seconds / 60);
+	if (minutes < 60) {
+		return `${minutes} 分鐘`;
+	}
+	const hours = Math.floor(minutes / 60);
+	if (hours < 60) {
+		return `${hours} 小時`;
+	}
+	const days = Math.floor(minutes / 24);
+	if (days <= 10) {
+		return `${days} 天`;
+	}
+	return roughDate(date);
+}
 
 // 根據時間的久遠程度來決定輸出
 function relativeDate(date: Date): string {
@@ -31,4 +50,5 @@ function roughDate(date: Date): string {
 export {
 	relativeDate,
 	roughDate,
+	dateDistance
 };

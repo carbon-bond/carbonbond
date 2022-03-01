@@ -1,41 +1,25 @@
-use crate::api::model::forum::{FamilyFilter, Graph};
+use crate::api::model::forum::Graph;
 use crate::custom_error::Fallible;
 use crate::db;
 use std::collections::HashMap;
-
-fn should_show(_families: &[String], _filter: &FamilyFilter) -> bool {
-    // if let Some(hide_families) = hide_families {
-    //     for f in families.iter() {
-    //         if hide_families.contains(f) {
-    //             return false;
-    //         }
-    //     }
-    // }
-    true
-}
 
 pub async fn query_graph(
     viewer_id: Option<i64>,
     count: usize,
     article_id: i64,
     category_set: Option<&[String]>,
-    family_filer: &FamilyFilter,
 ) -> Fallible<Graph> {
     log::debug!(
-        "詢問鳥瞰圖，中心點為 {}，分類為 {:?}，忽略分類族{:?}",
+        "詢問鳥瞰圖，中心點為 {}，分類為 {:?}",
         article_id,
         category_set,
-        family_filer
     );
     let mut articles_to_expand = vec![article_id];
     let mut nodes = HashMap::new();
     let mut edges = HashMap::new();
     let meta = db::article::get_meta_by_id(article_id, viewer_id).await?;
 
-    if category_set.map_or(false, |c| !c.contains(&meta.category_name)) {
-        return Ok(Default::default());
-    }
-    if !should_show(&meta.category_families, family_filer) {
+    if category_set.map_or(false, |c| !c.contains(&meta.category)) {
         return Ok(Default::default());
     }
     nodes.insert(meta.id, meta);
@@ -45,8 +29,8 @@ pub async fn query_graph(
         let mut articles_next = vec![];
         for id in articles_to_expand.into_iter() {
             let (bondee, bonder) = tokio::join!(
-                db::article::get_bondee_meta(viewer_id, id, category_set, family_filer),
-                db::article::get_bonder_meta(viewer_id, id, category_set, family_filer)
+                db::article::get_bondee_meta(viewer_id, id, category_set),
+                db::article::get_bonder_meta(viewer_id, id, category_set)
             );
             let (bondee, bonder) = (bondee?, bonder?);
             macro_rules! insert {
