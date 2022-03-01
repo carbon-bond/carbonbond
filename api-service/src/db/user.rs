@@ -367,7 +367,7 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         .execute(&mut conn)
         .await?;
         sqlx::query!(
-            "INSERT INTO title_authentication_email (title,  email) VALUES ($1, $2)",
+            "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)",
             "律師",
             email,
         )

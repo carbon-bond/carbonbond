@@ -9,9 +9,9 @@ CREATE TABLE title_authentication_user  (
 
 CREATE INDEX title_authentication_user_index ON title_authentication_user (user_id);
 
-CREATE TABLE title_authentication_email (
+CREATE TABLE title_authentication_unique_id (
   id bigserial PRIMARY KEY,
   title text NOT NULL DEFAULT '',
-  email text NOT NULL DEFAULT '',
-  UNIQUE (title, email)
+  unique_id text NOT NULL DEFAULT '',
+  UNIQUE (title, unique_id)
 );
