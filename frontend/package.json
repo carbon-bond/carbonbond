@@ -4,7 +4,6 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
-		"postinstall": "cd ../force/typescript && yarn",
 		"dev": "vite",
 		"build": "vite build",
 		"lint": "eslint --cache --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
