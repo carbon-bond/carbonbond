@@ -5,7 +5,6 @@ use crate::api::model::forum::{
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
 use chrono::{DateTime, Utc};
-use force;
 use lazy_static::lazy_static;
 use serde_json::Value;
 use sqlx::PgConnection;
@@ -417,10 +416,6 @@ pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::forc
         }
     }
     Err(ErrorCode::NotFound(DataType::Category, category.to_string()).into())
-}
-
-lazy_static! {
-    static ref FORCE_CACHE: RwLock<HashMap<i64, Arc<force::Force>>> = RwLock::new(HashMap::new());
 }
 
 pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
