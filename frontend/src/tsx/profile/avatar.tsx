@@ -7,7 +7,6 @@ import 'react-image-crop/dist/ReactCrop.css';
 
 import style from '../../css/avatar.module.css';
 
-// TODO: 可剪裁非正方形的圖片
 function EditAvatar(props: { name: string }): JSX.Element {
 	// const { user_state } = UserState.useContainer();
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);

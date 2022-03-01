@@ -412,7 +412,6 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		<div className={style.operation}>
 			<div className={style.links}>
 				{
-					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
 						<div className={style.relation}>
 							<button onClick={() => onChangeRelation(UserRelationKind.Follow, true)}>
