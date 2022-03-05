@@ -3,11 +3,11 @@ import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
+import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
-import { ReplyModal } from './modal';
+import { BonderCards } from './bonder';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -47,74 +47,92 @@ export function ArticleLine(props: { category: string, title: string, id: number
 	</div>;
 }
 
-enum ModalType {
-	Reply,
-	Satellite,
-	None
+export function CommentCards(props: { article_id: number }): JSX.Element {
+	let [comments, setComments] = React.useState<Comment[]>([
+		{
+			id: 1,
+			author: { NamedAuthor: {id: 3, name: '無定'} },
+			content: '安安',
+			create_time: (new Date()).toDateString(),
+		}
+	]);
+	React.useEffect(() => {
+		API_FETCHER.articleQuery.queryBonderMeta(props.article_id, null).then(data => {
+			// setBonders(unwrap(data));
+		}).catch(err => {
+			toastErr(err);
+		});
+	}, [props.article_id]);
+	return <div>
+		{
+			comments.map((comment) => {
+				return <div key={comment.id}>
+					{comment.content}
+				</div>;
+			})
+		}
+	</div>;
 }
+
+enum Hit {
+	Comment, Reply, None
+};
 
 export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
-	const [opening_modal, setOpeningModal] = React.useState(ModalType.None);
+	const [hit, setHit] = React.useState<Hit>(Hit.None);
 
 	async function onFavoriteArticleClick(): Promise<void> {
-		if (favorite) {
-			console.log('按下取消收藏');
-			try {
+		try {
+			if (favorite) {
 				unwrap(await API_FETCHER.userQuery.unfavoriteArticle(props.article.id));
 				setFavorite(false);
-			} catch (err) {
-				toastErr(err);
-			}
-		} else {
-			console.log('按下收藏');
-			try {
+			} else {
 				unwrap(await API_FETCHER.userQuery.favoriteArticle(props.article.id));
 				setFavorite(true);
-			} catch (err) {
-				toastErr(err);
 			}
+		} catch (err) {
+			toastErr(err);
 		}
 	}
 
 	async function onTrackingArticleClick(): Promise<void> {
-		if (tracking) {
-			console.log('按下取消追蹤');
-			try {
+		try {
+			if (tracking) {
 				unwrap(await API_FETCHER.userQuery.untrackingArticle(props.article.id));
 				setTracking(false);
-			} catch (err) {
-				toastErr(err);
-			}
-		} else {
-			console.log('按下追蹤');
-			try {
+			} else {
 				unwrap(await API_FETCHER.userQuery.trackingArticle(props.article.id));
 				setTracking(true);
-			} catch (err) {
-				toastErr(err);
 			}
+		} catch (err) {
+			toastErr(err);
 		}
-	}
-
-	function openModal(ty: ModalType): void {
-		setOpeningModal(ty);
-	}
-	function closeModal(): void {
-		setOpeningModal(ModalType.None);
 	}
 
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
 			<div className={style.articleBtnItem}>
-				☘️&nbsp;<span className={style.num}>{props.article.energy}</span>鍵能
+				☘️ <span className={style.num}>{props.article.energy}</span>鍵能
 			</div>
-			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span className={style.num}>{props.article.stat.comments}</span>則留言
+			<div className={`${style.articleBtnItem} ${hit == Hit.Comment ? style.hit : ''}`} onClick={() => {
+				if (hit == Hit.Comment) {
+					setHit(Hit.None);
+				} else {
+					setHit(Hit.Comment);
+				}
+			}}>
+				🗯️ <span className={style.num}>{props.article.stat.comments}</span>則留言
 			</div>
-			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
-				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
+			<div className={`${style.articleBtnItem} ${hit == Hit.Reply ? style.hit : ''}`} onClick={() => {
+				if (hit == Hit.Reply) {
+					setHit(Hit.None);
+				} else {
+					setHit(Hit.Reply);
+				}
+			}}>
+				➡️ <span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
 			<div className={style.articleBtnItem} onClick={() => onTrackingArticleClick()}>
 				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
@@ -128,16 +146,17 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		</div>
 		{
 			(() => {
-				switch (opening_modal) {
-					case ModalType.Reply: {
-						return <ReplyModal article={props.article} close={closeModal}/>;
-					}
-					// case ModalType.Satellite: {
-					// 	return <SatelliteModal article={props.article} close={closeModal}/>;
-					// }
-					default: {
-						return null;
-					}
+				switch (hit) {
+					case Hit.Comment:
+						return <div className={style.replies}>
+							<CommentCards article_id={props.article.id} />
+						</div>;
+					case Hit.Reply:
+						return <div className={style.replies}>
+							<BonderCards article_id={props.article.id} />
+						</div>;
+					case Hit.None:
+						return <></>;
 				}
 			})()
 		}

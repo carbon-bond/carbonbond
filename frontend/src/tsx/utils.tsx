@@ -48,6 +48,19 @@ export function useSubscribeBoard(board: Board): { has_subscribed: boolean, togg
 	};
 }
 
+export function useBoard(board_id: number): Board | null {
+	// TODO: 記憶
+	const [board, setBoard] = React.useState<Board | null>(null);
+	React.useEffect(() => {
+		API_FETCHER.boardQuery.queryBoardById(board_id).then(res => {
+			setBoard(unwrap(res));
+		}).catch(err => {
+			toastErr(err);
+		});
+	}, [board_id]);
+	return board;
+}
+
 // 以返回的 value, onChange 綁定 input 的值
 function useInputValue(initialValue: string = '', onChange: (s: string) => void = () => { }): {
 	input_props: {

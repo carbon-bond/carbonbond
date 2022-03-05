@@ -29,20 +29,16 @@ export function SatelliteCards(props: { article: ArticleMeta, expanded: boolean 
 	</>;
 }
 
-export function BonderCards(props: { article: ArticleMeta, expanded: boolean }): JSX.Element {
-	let { article, expanded } = props;
+export function BonderCards(props: { article_id: number }): JSX.Element {
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonderMeta(article.id, null).then(data => {
+		API_FETCHER.articleQuery.queryBonderMeta(props.article_id, null).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
 		});
-	}, [article.id]);
-	if (!expanded) {
-		return <></>;
-	}
-	return <>
+	}, [props.article_id]);
+	return <div>
 		{
 			bonders.map(([bond, meta]) => {
 				return <div key={meta.id}>
@@ -52,7 +48,7 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
 				</div>;
 			})
 		}
-	</>;
+	</div>;
 }
 
 export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX.Element {

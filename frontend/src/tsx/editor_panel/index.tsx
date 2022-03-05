@@ -10,7 +10,7 @@ import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
 import { BoardName, BoardType, force } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Modal } from '../../tsx/article_card/modal';
+import { SimpleModal } from '../../tsx/components/modal_window';
 
 
 import bottom_panel_style from '../../css/bottom_panel/bottom_panel.module.css';
@@ -94,12 +94,12 @@ function BottomEditor(): JSX.Element {
 function ExpandedEditor(): JSX.Element {
 	const { minimizeEditorPanel }
 		= EditorPanelState.useContainer();
-	return <Modal close={minimizeEditorPanel}>
+	return <SimpleModal close={minimizeEditorPanel}>
 		<div className={style.expandedEditorPanel}>
 			<EditorUpperBar />
 			<EditorBody />
 		</div>
-	</Modal>;
+	</SimpleModal>;
 }
 
 function EditorPanel(): JSX.Element | null {

@@ -1093,6 +1093,38 @@
       ]
     }
   },
+  "3c3ce4a98fa6967a7ef2cd85a7f689a8fea3f808bd25214b56ccdeab2e3b7e97": {
+    "query": "\n        SELECT\n            articles.id,\n            COUNT(DISTINCT article_bonds.from_id) AS \"replies_count!\",\n            COUNT(DISTINCT comments.id) AS \"comments_count!\"\n        FROM\n            articles\n            LEFT JOIN article_bonds ON articles.id = article_bonds.to_id\n            LEFT JOIN comments ON articles.id = comments.article_id\n        WHERE\n            articles.id = ANY($1)\n        GROUP BY\n            articles.id\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "replies_count!",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "comments_count!",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8Array"
+        ]
+      },
+      "nullable": [
+        false,
+        null,
+        null
+      ]
+    }
+  },
   "3c8e27dadb8139140e3893d954e8fbbfd3bb1cd2d3eb075da73dff186ad31fb3": {
     "query": "SELECT *, 0::bigint as \"popularity!\" FROM boards",
     "describe": {
@@ -2438,32 +2470,6 @@
         false,
         false,
         false
-      ]
-    }
-  },
-  "aae6101b7575984b0e031c3cf79126449322078a7c7e0a100bd904b461137848": {
-    "query": "\n        WITH replies AS (\n            SELECT article_bonds.to_id AS id, article_bonds.from_id \n        FROM article_bonds\n            INNER JOIN articles ON articles.id = article_bonds.from_id\n        WHERE article_bonds.to_id = ANY($1))\n        SELECT id, COUNT(DISTINCT from_id) as \"count!\"\n        FROM replies\n        GROUP BY id\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "count!",
-          "type_info": "Int8"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8Array"
-        ]
-      },
-      "nullable": [
-        false,
-        null
       ]
     }
   },
