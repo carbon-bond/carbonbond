@@ -51,3 +51,24 @@ export function ModalWindow(props: {
 		</div>
 	</ReactModal>;
 }
+
+export function SimpleModal<T>(props: { close: () => void, children: T }): JSX.Element {
+	ReactModal.setAppElement('body');
+	return <ReactModal
+		isOpen={true}
+		onRequestClose={() => props.close()}
+		style={{
+			overlay: { zIndex: 200 },
+			content: {
+				position: 'absolute',
+				top: '50%',
+				left: '50%',
+				transform: 'translate(-50%, -50%)',
+				right: 'none',
+				bottom: 'none',
+				padding: '2px'
+			}
+		}} >
+		{props.children}
+	</ReactModal>;
+}

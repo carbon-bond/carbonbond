@@ -1,48 +1,22 @@
 import * as React from 'react';
-import { SimpleArticleCard, SatelliteCard, BondCard } from './index';
-import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
+import { SimpleArticleCard, BondCard } from './index';
+import { ArticleMeta, Edge, Board } from '../../ts/api/api_trait';
 import style from '../../css/board_switch/bonder.module.css';
 import { toastErr } from '../utils';
 import produce from 'immer';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
-export function SatelliteCards(props: { article: ArticleMeta, expanded: boolean }): JSX.Element {
-	let { article, expanded }= props;
-	let [satellite_articles, setSatelliteArticles] = React.useState<[Edge, Article][]>([]);
-	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonder(article.id, null).then(data => {
-			setSatelliteArticles(unwrap(data));
-		}).catch(err => {
-			toastErr(err);
-		});
-	}, [article.id]);
-	if (!expanded) {
-		return <></>;
-	}
-	return <>
-		{
-			satellite_articles.map(([bond, article]) => {
-				return <SatelliteCard key={article.meta.id} meta={article.meta} bond={bond} />;
-			})
-		}
-	</>;
-}
-
-export function BonderCards(props: { article: ArticleMeta, expanded: boolean }): JSX.Element {
-	let { article, expanded } = props;
+export function BonderCards(props: { article_id: number }): JSX.Element {
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonderMeta(article.id, null).then(data => {
+		API_FETCHER.articleQuery.queryBonderMeta(props.article_id, null).then(data => {
 			setBonders(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
 		});
-	}, [article.id]);
-	if (!expanded) {
-		return <></>;
-	}
-	return <>
+	}, [props.article_id]);
+	return <div>
 		{
 			bonders.map(([bond, meta]) => {
 				return <div key={meta.id}>
@@ -52,14 +26,13 @@ export function BonderCards(props: { article: ArticleMeta, expanded: boolean }):
 				</div>;
 			})
 		}
-	</>;
+	</div>;
 }
 
 export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX.Element {
 	const { board } = props;
 	const tags = board.force.suggested_tags;
 	return <div className={style.replyButtons}>
-		<span> 🙋️鍵結到本文 </span>
 		{
 			tags.map((tag) => {
 				return <ReplyButton {...props} key={tag} tag={tag} />;

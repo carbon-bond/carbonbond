@@ -181,6 +181,10 @@ pub enum ArticleQuery {
         id: i64,
         category_set: Option<Vec<String>>,
     },
+    #[chitin(leaf, response = "Vec<super::model::forum::Comment>")]
+    QueryCommentList { article_id: i64 },
+    #[chitin(leaf, response = "i64")]
+    CreateComment { article_id: i64, content: String },
     #[chitin(leaf, response = "i64")]
     CreateArticle {
         new_article: super::model::forum::NewArticle,

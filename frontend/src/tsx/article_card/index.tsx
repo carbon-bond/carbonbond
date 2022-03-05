@@ -3,11 +3,11 @@ import style from '../../css/board_switch/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
+import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { toastErr } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
-import { ReplyModal } from './modal';
+import { BonderCards } from './bonder';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -47,74 +47,109 @@ export function ArticleLine(props: { category: string, title: string, id: number
 	</div>;
 }
 
-enum ModalType {
-	Reply,
-	Satellite,
-	None
+export function CommentCard(props: {comment: Comment}): JSX.Element {
+	return <div>
+		<div className={style.commentHeader}>
+			<ShowAuthor author={props.comment.author} />
+			<span>{relativeDate(new Date(props.comment.create_time))}</span>
+		</div>
+		<div className={style.commentContent}>{props.comment.content}</div>
+	</div>;
 }
 
-export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
+export function CommentCards(props: { article_id: number }): JSX.Element {
+	let [comments, setComments] = React.useState<Comment[]>([]);
+	const { input_props, setValue } = useInputValue('');
+	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
+		if (e.key == 'Enter' && !e.shiftKey && input_props.value.length > 0) {
+			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value).then(_id => {
+				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
+			}).then(data => {
+				setComments(unwrap(data));
+			}).catch(err => {
+				toastErr(err);
+			});
+			setValue('');
+			e.preventDefault();
+		}
+	}
+	React.useEffect(() => {
+		API_FETCHER.articleQuery.queryCommentList(props.article_id).then(data => {
+			setComments(unwrap(data));
+		}).catch(err => {
+			toastErr(err);
+		});
+	}, [props.article_id]);
+
+	return <div className={style.commentCards}>
+		{
+			comments.map((comment) => {
+				return <CommentCard comment={comment} key={comment.id} />;
+			})
+		}
+		<textarea {...input_props} onKeyDown={onKeyDown} placeholder="我來留言" />
+	</div>;
+}
+
+export enum Hit {
+	Comment, Reply, None
+};
+
+export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.Element {
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
-	const [opening_modal, setOpeningModal] = React.useState(ModalType.None);
+	const [hit, setHit] = React.useState<Hit>(props.hit ?? Hit.None);
 
 	async function onFavoriteArticleClick(): Promise<void> {
-		if (favorite) {
-			console.log('按下取消收藏');
-			try {
+		try {
+			if (favorite) {
 				unwrap(await API_FETCHER.userQuery.unfavoriteArticle(props.article.id));
 				setFavorite(false);
-			} catch (err) {
-				toastErr(err);
-			}
-		} else {
-			console.log('按下收藏');
-			try {
+			} else {
 				unwrap(await API_FETCHER.userQuery.favoriteArticle(props.article.id));
 				setFavorite(true);
-			} catch (err) {
-				toastErr(err);
 			}
+		} catch (err) {
+			toastErr(err);
 		}
 	}
 
 	async function onTrackingArticleClick(): Promise<void> {
-		if (tracking) {
-			console.log('按下取消追蹤');
-			try {
+		try {
+			if (tracking) {
 				unwrap(await API_FETCHER.userQuery.untrackingArticle(props.article.id));
 				setTracking(false);
-			} catch (err) {
-				toastErr(err);
-			}
-		} else {
-			console.log('按下追蹤');
-			try {
+			} else {
 				unwrap(await API_FETCHER.userQuery.trackingArticle(props.article.id));
 				setTracking(true);
-			} catch (err) {
-				toastErr(err);
 			}
+		} catch (err) {
+			toastErr(err);
 		}
-	}
-
-	function openModal(ty: ModalType): void {
-		setOpeningModal(ty);
-	}
-	function closeModal(): void {
-		setOpeningModal(ModalType.None);
 	}
 
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
 			<div className={style.articleBtnItem}>
-				☘️&nbsp;<span className={style.num}>{props.article.energy}</span>鍵能
+				☘️ <span className={style.num}>{props.article.energy}</span>鍵能
 			</div>
-			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span className={style.num}>{props.article.stat.satellite_replies}</span>則衛星
+			<div className={`${style.articleBtnItem} ${hit == Hit.Comment ? style.hit : ''}`} onClick={() => {
+				if (hit == Hit.Comment) {
+					setHit(Hit.None);
+				} else {
+					setHit(Hit.Comment);
+				}
+			}}>
+				🗯️ <span className={style.num}>{props.article.stat.comments}</span>則留言
 			</div>
-			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
-				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文
+			<div className={`${style.articleBtnItem} ${hit == Hit.Reply ? style.hit : ''}`} onClick={() => {
+				if (hit == Hit.Reply) {
+					setHit(Hit.None);
+				} else {
+					setHit(Hit.Reply);
+				}
+			}}>
+				➡️ <span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
 			<div className={style.articleBtnItem} onClick={() => onTrackingArticleClick()}>
 				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
@@ -128,16 +163,17 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 		</div>
 		{
 			(() => {
-				switch (opening_modal) {
-					case ModalType.Reply: {
-						return <ReplyModal article={props.article} close={closeModal}/>;
-					}
-					// case ModalType.Satellite: {
-					// 	return <SatelliteModal article={props.article} close={closeModal}/>;
-					// }
-					default: {
-						return null;
-					}
+				switch (hit) {
+					case Hit.Comment:
+						return <div className={style.replies}>
+							<CommentCards article_id={props.article.id} />
+						</div>;
+					case Hit.Reply:
+						return <div className={style.replies}>
+							<BonderCards article_id={props.article.id} />
+						</div>;
+					case Hit.None:
+						return <></>;
 				}
 			})()
 		}
@@ -247,20 +283,6 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	} else {
 		return <SimpleArticleCard meta={meta} />;
 	}
-}
-
-function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
-	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div className={style.satelliteCard}>
-		<BondCard bond={props.bond} />
-		<div className={style.satelliteHeader}>
-			<ShowAuthor author={props.meta.author} />
-			<div className={style.articleTime}>{date_string} {props.meta.category}</div>
-		</div>
-		<div>
-			{props.meta.title}
-		</div>
-	</div>;
 }
 
 function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element {
@@ -381,6 +403,5 @@ export {
 	ArticleCard,
 	SimpleArticleCardById,
 	SimpleArticleCard,
-	SatelliteCard,
 	BondCard,
 };

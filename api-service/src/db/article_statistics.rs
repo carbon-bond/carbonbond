@@ -5,34 +5,38 @@ use std::collections::HashMap;
 
 struct Entry {
     id: i64,
-    count: i64,
+    replies_count: i64,
+    comments_count: i64,
 }
 
 pub async fn get(metas: Vec<&mut ArticleMeta>) -> Fallible {
     let pool = get_pool();
     let ids: Vec<_> = metas.iter().map(|a| a.id).collect();
-    let replies = sqlx::query_as!(
+    let counts = sqlx::query_as!(
         Entry,
         r#"
-        WITH replies AS (
-            SELECT article_bonds.to_id AS id, article_bonds.from_id 
-        FROM article_bonds
-            INNER JOIN articles ON articles.id = article_bonds.from_id
-        WHERE article_bonds.to_id = ANY($1))
-        SELECT id, COUNT(DISTINCT from_id) as "count!"
-        FROM replies
-        GROUP BY id
+        SELECT
+            articles.id,
+            COUNT(DISTINCT article_bonds.from_id) AS "replies_count!",
+            COUNT(DISTINCT comments.id) AS "comments_count!"
+        FROM
+            articles
+            LEFT JOIN article_bonds ON articles.id = article_bonds.to_id
+            LEFT JOIN comments ON articles.id = comments.article_id
+        WHERE
+            articles.id = ANY($1)
+        GROUP BY
+            articles.id
         "#,
         &ids,
     )
     .fetch_all(pool)
     .await?;
     let mut map: HashMap<_, _> = metas.into_iter().map(|meta| (meta.id, meta)).collect();
-    for r in replies.into_iter() {
+    for r in counts.into_iter() {
         if let Some(a) = map.get_mut(&r.id) {
-            // TODO: 刪除衛星
-            a.stat.satellite_replies = 0;
-            a.stat.replies = r.count;
+            a.stat.comments = r.comments_count;
+            a.stat.replies = r.replies_count;
         }
     }
     Ok(())

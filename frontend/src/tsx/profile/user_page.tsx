@@ -438,7 +438,6 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		<div className={style.operation}>
 			<div className={style.links}>
 				{
-					// TODO 支援 private Follow, Hate
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
 						<div className={style.relation}>
 							<button onClick={() => onChangeRelation(UserRelationKind.Follow, true)}>
@@ -515,12 +514,12 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
+			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>留言</div>
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
 		</div>
 		<div className={style.switchContent}>
 			{selectTab == 0 && <Articles articles={articles} />}
-			{selectTab == 1 && <Satellites />}
+			{selectTab == 1 && <Comments />}
 			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
 		</div>
 	</div>;
@@ -565,8 +564,8 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 	</div>;
 }
 
-function Satellites(): JSX.Element {
-	return <div>衛星文章</div>;
+function Comments(): JSX.Element {
+	return <div>留言</div>;
 }
 
 async function fetchArticles(

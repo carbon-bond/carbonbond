@@ -2,28 +2,13 @@ import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr } from '../utils';
-import { BonderCards, ReplyButtons } from '../article_card/bonder';
+import { ReplyButtons } from '../article_card/bonder';
 
-function ReplyList(props: { article: Article }): JSX.Element {
-	// TODO: 從上層傳遞
-	const { article } = props;
-	let [expanded, setExpanded] = React.useState<boolean>(false);
-
-	return <div className={style.replyCardList}>
-		<div className={style.listTitle} onClick={() => setExpanded(!expanded)}>
-			<span className={style.toggleButton}> {expanded ? '⯆' : '⯈'} </span>
-			<span>{article.meta.stat.replies} 篇回文</span>
-		</div>
-		<div>
-			<BonderCards expanded={expanded} article={article.meta} />
-		</div>
-	</div>;
-}
 
 export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
@@ -95,8 +80,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			title={article.meta.title} />
 		<ReplyButtons article={article.meta} board={board} />
 		<ArticleContent article={article} />
-		<ArticleFooter article={article.meta} />
-		<ReplyList article={article} />
+		<ArticleFooter article={article.meta} hit={Hit.Comment} />
 	</div>;
 }
 
