@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps, Redirect } from 'react-router';
 import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
@@ -80,7 +80,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			title={article.meta.title} />
 		<ReplyButtons article={article.meta} board={board} />
 		<ArticleContent article={article} />
-		<ArticleFooter article={article.meta} />
+		<ArticleFooter article={article.meta} hit={Hit.Comment} />
 	</div>;
 }
 

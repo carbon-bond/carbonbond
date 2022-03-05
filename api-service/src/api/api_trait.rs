@@ -283,6 +283,8 @@ pub trait ArticleQueryRouter {
     async fn query_article_meta(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error>;
     async fn query_bonder(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>) -> Result<Vec<(super::model::forum::Edge, super::model::forum::Article)>, crate::custom_error::Error>;
     async fn query_bonder_meta(&self, context: &mut crate::Ctx, id: i64, category_set: Option<Vec<String>>) -> Result<Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>, crate::custom_error::Error>;
+    async fn query_comment_list(&self, context: &mut crate::Ctx, article_id: i64) -> Result<Vec<super::model::forum::Comment>, crate::custom_error::Error>;
+    async fn create_comment(&self, context: &mut crate::Ctx, article_id: i64, content: String) -> Result<i64, crate::custom_error::Error>;
     async fn create_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle) -> Result<i64, crate::custom_error::Error>;
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, bonds: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
@@ -315,6 +317,16 @@ pub trait ArticleQueryRouter {
             }
              ArticleQuery::QueryBonderMeta { id, category_set } => {
                  let resp = self.query_bonder_meta(context, id, category_set).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::QueryCommentList { article_id } => {
+                 let resp = self.query_comment_list(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::CreateComment { article_id, content } => {
+                 let resp = self.create_comment(context, article_id, content).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -191,24 +191,26 @@
     box-shadow: inset 0 0 2px var(--theme-color);
 }
 
-.satelliteCard {
-    margin: 5px 10px;
-    & .satelliteHeader {
+.offset {
+    margin-left: 20px;
+}
+
+.commentCards {
+    font-size: 16px;
+    & textarea {
+        margin-top: 2px;
+        width: 100%;
+        height: 60px;
+    }
+    & .commentHeader {
+        font-size: 14px;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        margin: 5px 0px;
-        font-size: 14px;
-        color: var(--light-font-color);
-        & .authorId {
-            text-decoration: underline;
-        }
-        & .anonymous {
-            text-decoration: none;
-        }
+        margin: 2px 0px;
     }
-}
-
-.offset {
-    margin-left: 20px;
+    & .commentContent {
+        margin-top: 2px;
+        color: var(--font-color);
+    }
 }

@@ -5,7 +5,7 @@ import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { toastErr } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 import { ArticleContent } from '../board_switch/article_page';
 import { BonderCards } from './bonder';
 
@@ -47,41 +47,58 @@ export function ArticleLine(props: { category: string, title: string, id: number
 	</div>;
 }
 
+export function CommentCard(props: {comment: Comment}): JSX.Element {
+	return <div>
+		<div className={style.commentHeader}>
+			<ShowAuthor author={props.comment.author} />
+			<span>{relativeDate(new Date(props.comment.create_time))}</span>
+		</div>
+		<div className={style.commentContent}>{props.comment.content}</div>
+	</div>;
+}
+
 export function CommentCards(props: { article_id: number }): JSX.Element {
-	let [comments, setComments] = React.useState<Comment[]>([
-		{
-			id: 1,
-			author: { NamedAuthor: {id: 3, name: '無定'} },
-			content: '安安',
-			create_time: (new Date()).toDateString(),
+	let [comments, setComments] = React.useState<Comment[]>([]);
+	const { input_props, setValue } = useInputValue('');
+	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
+		if (e.key == 'Enter' && !e.shiftKey && input_props.value.length > 0) {
+			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value).then(_id => {
+				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
+			}).then(data => {
+				setComments(unwrap(data));
+			}).catch(err => {
+				toastErr(err);
+			});
+			setValue('');
+			e.preventDefault();
 		}
-	]);
+	}
 	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonderMeta(props.article_id, null).then(data => {
-			// setBonders(unwrap(data));
+		API_FETCHER.articleQuery.queryCommentList(props.article_id).then(data => {
+			setComments(unwrap(data));
 		}).catch(err => {
 			toastErr(err);
 		});
 	}, [props.article_id]);
-	return <div>
+
+	return <div className={style.commentCards}>
 		{
 			comments.map((comment) => {
-				return <div key={comment.id}>
-					{comment.content}
-				</div>;
+				return <CommentCard comment={comment} key={comment.id} />;
 			})
 		}
+		<textarea {...input_props} onKeyDown={onKeyDown} placeholder="我來留言" />
 	</div>;
 }
 
-enum Hit {
+export enum Hit {
 	Comment, Reply, None
 };
 
-export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
+export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.Element {
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
-	const [hit, setHit] = React.useState<Hit>(Hit.None);
+	const [hit, setHit] = React.useState<Hit>(props.hit ?? Hit.None);
 
 	async function onFavoriteArticleClick(): Promise<void> {
 		try {

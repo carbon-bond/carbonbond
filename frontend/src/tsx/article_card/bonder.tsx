@@ -55,7 +55,6 @@ export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX
 	const { board } = props;
 	const tags = board.force.suggested_tags;
 	return <div className={style.replyButtons}>
-		<span> 🙋️鍵結到本文 </span>
 		{
 			tags.map((tag) => {
 				return <ReplyButton {...props} key={tag} tag={tag} />;

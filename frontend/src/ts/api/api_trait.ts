@@ -283,6 +283,12 @@ export class ArticleQuery {
     async queryBonderMeta(id: number, category_set: Option<Array<string>>): Promise<Result<Array<[Edge, ArticleMeta]>, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryBonderMeta": { id, category_set } } }));
     }
+    async queryCommentList(article_id: number): Promise<Result<Array<Comment>, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "QueryCommentList": { article_id } } }));
+    }
+    async createComment(article_id: number, content: string): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "CreateComment": { article_id, content } } }));
+    }
     async createArticle(new_article: NewArticle): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { new_article } } }));
     }

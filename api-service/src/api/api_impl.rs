@@ -238,6 +238,22 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         // TODO: 僅有草稿擁有者纔可以刪除草稿
         db::draft::delete(draft_id).await
     }
+    async fn query_comment_list(
+        &self,
+        _context: &mut crate::Ctx,
+        article_id: i64,
+    ) -> Fallible<Vec<super::model::forum::Comment>> {
+        db::comment::get_by_article_id(article_id).await
+    }
+    async fn create_comment(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+        content: String,
+    ) -> Fallible<i64> {
+        let author_id = context.get_id_strict().await?;
+        db::comment::create(author_id, article_id, content).await
+    }
     async fn query_bonder(
         &self,
         context: &mut crate::Ctx,
