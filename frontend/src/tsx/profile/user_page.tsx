@@ -70,6 +70,22 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
+function CertificationItem(props: { title: string }) : JSX.Element {
+	if (props.title === '律師') {
+		return <span className={style.titleLabel}>
+			<span className={style.titleLawyer}>
+				<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
+			</span>
+		</span>;
+	}
+
+	return <span className={style.titleLabel}>
+		<span className={style.titleUnknown}>
+			{props.title}
+		</span>
+	</span>;
+}
+
 function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
@@ -165,6 +181,16 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
 				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
+			</div>
+			<div className={style.titleCertificate}>
+				<div className={style.item}>已認證稱號：</div>
+				{!props.profile_user.titles || props.profile_user.titles === '' ?
+					<div className={style.title_empty}>
+						無
+					</div>
+					: props.profile_user.titles.split(',').map(title => (
+						<CertificationItem title={title} key={`key-${title}`}/>
+					))}
 			</div>
 		</div>
 		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
@@ -501,8 +527,8 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 
 function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
-		{props.articles.map((article, idx) => (
-			<div className={articleWrapper} key={`article-${idx}`}>
+		{props.articles.map(article => (
+			<div className={articleWrapper} key={`article-${article.meta.id}`}>
 				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
 		))}
@@ -586,7 +612,7 @@ function UserPage(props: Props): JSX.Element {
 
 	React.useEffect(() => {
 		Promise.all([
-			API_FETCHER.userQuery.queryUser(profile_name)
+			API_FETCHER.userQuery.queryUser(profile_name),
 		]).then(([user]) => {
 			try {
 				setUser(unwrap(user));
