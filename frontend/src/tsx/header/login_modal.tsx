@@ -159,7 +159,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		return result;
 	}
 
-	async function handleSelectResult(_: React.MouseEvent<HTMLElement>, idx: number): Promise<void> {
+	async function handleSelectResult(_: React.ChangeEvent<HTMLElement>, idx: number): Promise<void> {
 		setSelectedSearchResult(idx);
 		setMessageText('');
 		let result = unwrap_or(await API_FETCHER.userQuery.queryDetailResultFromLawyerbc(lawyer_search_result[idx].now_lic_no), null);
@@ -224,7 +224,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 								type="radio"
 								value={result.now_lic_no}
 								checked={selected_search_result_index === i}
-								onClick={(event) => handleSelectResult(event, i)}
+								onChange={(event) => handleSelectResult(event, i)}
 							/>
 							<span>{result.name}, {result.now_lic_no}</span>
 						</label>

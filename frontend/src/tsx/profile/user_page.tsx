@@ -70,15 +70,20 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: Functi
 	}
 }
 
-function CertificationItem(props: { title: string, idx: number }) : JSX.Element {
+function CertificationItem(props: { title: string }) : JSX.Element {
 	if (props.title === '律師') {
-		return (<span className={style.titleLawyer} key={`title-${props.idx}`}>
-			<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
-		</span>);
+		return <span className={style.titleLabel}>
+			<span className={style.titleLawyer}>
+				<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
+			</span>
+		</span>;
 	}
-	return (<span className={style.titleUnknown} key={`title-${props.idx}`}>
-		{props.title}
-	</span>);
+
+	return <span className={style.titleLabel}>
+		<span className={style.titleUnknown}>
+			{props.title}
+		</span>
+	</span>;
 }
 
 function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
@@ -179,15 +184,13 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 			</div>
 			<div className={style.titleCertificate}>
 				<div className={style.item}>已認證稱號：</div>
-				{!props.profile_user.titles || props.profile_user.titles === '' ? (
+				{!props.profile_user.titles || props.profile_user.titles === '' ?
 					<div className={style.title_empty}>
 						無
 					</div>
-				) : (props.profile_user.titles.split(',').map((title, idx) => (
-					<span className={style.titleLabel}>
-						<CertificationItem title={title} idx={idx}/>
-					</span>
-				)))}
+					: props.profile_user.titles.split(',').map(title => (
+						<CertificationItem title={title} key={`key-${title}`}/>
+					))}
 			</div>
 		</div>
 		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
@@ -525,8 +528,8 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 
 function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
-		{props.articles.map((article, idx) => (
-			<div className={articleWrapper} key={`article-${idx}`}>
+		{props.articles.map(article => (
+			<div className={articleWrapper} key={`article-${article.meta.id}`}>
 				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
 		))}
