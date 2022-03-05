@@ -104,7 +104,14 @@ macro_rules! users {
                 WHERE
                     from_user = users.id
                     AND kind = 'follow'
-                    AND is_public = false) AS "following_count_private!"
+                    AND is_public = false) AS "following_count_private!",
+                (
+                SELECT
+                    string_agg(title_authentication_user.title, ',')
+                FROM
+                    title_authentication_user
+                WHERE
+                    title_authentication_user.user_id = users.id) AS "titles! : Option<String>"
             FROM users) SELECT * FROM metas "# + $remain,
             $($arg),*
         )
@@ -349,6 +356,20 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
             WHERE user_name = $2",
             token,
             name
+        )
+        .execute(&mut conn)
+        .await?;
+        sqlx::query!(
+            "INSERT INTO title_authentication_user (user_id, title) VALUES ($1, $2)",
+            id,
+            "律師",
+        )
+        .execute(&mut conn)
+        .await?;
+        sqlx::query!(
+            "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)",
+            "律師",
+            email,
         )
         .execute(&mut conn)
         .await?;
