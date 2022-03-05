@@ -7,7 +7,7 @@ pub async fn query_tracking_articles(user_id: i64, count: usize) -> Fallible<Vec
     let article_ids = sqlx::query!(
         "
         SELECT * FROM articles
-        WHERE author_id IN (SELECT to_user FROM user_relations WHERE from_user = $1) OR
+        WHERE (author_id IN (SELECT to_user FROM user_relations WHERE from_user = $1) AND articles.anonymous = false) OR
         id IN (SELECT article_id FROM tracking_articles WHERE user_id = $1)
         ORDER BY create_time DESC
         LIMIT $2

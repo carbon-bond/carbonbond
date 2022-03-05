@@ -2064,87 +2064,6 @@
       "nullable": []
     }
   },
-  "9e1c99a983c23a1604ccbd713936a03f6494a92e367cb015f43102cdcd09eb65": {
-    "query": "\n        SELECT * FROM articles\n        WHERE author_id IN (SELECT to_user FROM user_relations WHERE from_user = $1) OR\n        id IN (SELECT article_id FROM tracking_articles WHERE user_id = $1)\n        ORDER BY create_time DESC\n        LIMIT $2\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 1,
-          "name": "author_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 2,
-          "name": "board_id",
-          "type_info": "Int8"
-        },
-        {
-          "ordinal": 3,
-          "name": "title",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "energy",
-          "type_info": "Int4"
-        },
-        {
-          "ordinal": 5,
-          "name": "create_time",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 6,
-          "name": "digest",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "digest_truncated",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 8,
-          "name": "anonymous",
-          "type_info": "Bool"
-        },
-        {
-          "ordinal": 9,
-          "name": "fields",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 10,
-          "name": "category",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "a5694a6fc51bd98daf7d483a05402539226e6b969b818914aa70d8e4ee4e904f": {
     "query": "UPDATE users SET (password_hashed, salt) = ($1, $2)\n        FROM reset_password\n        WHERE reset_password.token = $3 and reset_password.user_id = users.id",
     "describe": {
@@ -2860,6 +2779,87 @@
         ]
       },
       "nullable": [
+        false
+      ]
+    }
+  },
+  "dd11a79df9885118f6103e3f5055bb430418b2d53652e068b00fc3efeff6e41d": {
+    "query": "\n        SELECT * FROM articles\n        WHERE (author_id IN (SELECT to_user FROM user_relations WHERE from_user = $1) AND articles.anonymous = false) OR\n        id IN (SELECT article_id FROM tracking_articles WHERE user_id = $1)\n        ORDER BY create_time DESC\n        LIMIT $2\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "author_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "board_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 3,
+          "name": "title",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "energy",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 5,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 6,
+          "name": "digest",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 7,
+          "name": "digest_truncated",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 8,
+          "name": "anonymous",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 9,
+          "name": "fields",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 10,
+          "name": "category",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
         false
       ]
     }
