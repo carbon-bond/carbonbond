@@ -1,8 +1,15 @@
 use carbonbond::{
     config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards,
 };
+use structopt::StructOpt;
 
 mod bin_util;
+
+#[derive(StructOpt, Debug)]
+struct ArgRoot {
+    #[structopt(short, long = "config-file")]
+    config_file: Option<String>,
+}
 
 #[tokio::main]
 async fn main() -> Fallible<()> {
@@ -10,12 +17,10 @@ async fn main() -> Fallible<()> {
     env_logger::init();
 
     // 解析命令行參數
-    let args_config = clap::load_yaml!("args.yaml");
-    let arg_matches = clap::App::from_yaml(args_config).get_matches();
+    let args = ArgRoot::from_args();
 
     // 載入設定
-    let config_file = arg_matches.value_of("config_file").map(|s| s.to_string());
-    config::init(config_file);
+    config::init(args.config_file);
     let conf = config::get_config();
 
     log::info!("資料庫遷移");

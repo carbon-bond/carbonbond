@@ -11,7 +11,6 @@ tokio-stream = "0.1"
 async-trait = "0.1.38"
 chitin = { git = "https://github.com/carbon-bond/chitin", rev = "8c87dc" }
 chrono = { version = "0.4.15", features = ["serde"] }
-clap = { version = "2.33.3", features = ["yaml"] }
 cookie = { version = "0.14.2", features = ["secure", "percent-encode"] }
 derive_more = "0.99.9"
 env_logger = "0.7.1"
@@ -23,7 +22,7 @@ serde = { version = "1.0.115", features = ["derive"] }
 serde_json = "1.0.57"
 sqlx = { version = "0.5.1", default-features = false, features = [ "runtime-tokio-native-tls", "macros", "postgres", "chrono", "migrate", "any", "offline" ] }
 state = { version = "0.4.1", features = ["const_fn", "tls"] }
-structopt = "0.3.17"
+structopt = { version ="0.3.17", default-features = false }
 tempfile = "3.1.0"
 time = "0.2.16"
 tokio = { version = "1", features = ["full"] }
