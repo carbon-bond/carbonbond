@@ -10,7 +10,7 @@ export type Result<T, E> = {
     'Err': E
 };
 export type Fetcher = (query: Object) => Promise<string>;
-export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string };
+export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string; titles: string | null };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; id_no: string; now_lic_no: string;     birthsday: number; email: string };

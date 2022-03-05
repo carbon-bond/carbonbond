@@ -109,7 +109,6 @@ pub enum UserQuery {
     DeleteUserRelation { target_user: i64 },
     #[chitin(leaf, response = "super::model::forum::UserRelation")]
     QueryUserRelation { target_user: i64 },
-
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]
     QueryPublicFollowerList { user: i64 },
     #[chitin(leaf, response = "Vec<super::model::forum::UserMini>")]

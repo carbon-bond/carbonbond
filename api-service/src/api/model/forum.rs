@@ -28,6 +28,7 @@ pub mod forum_model_root {
         pub birth_year: i32,
         pub job: String,
         pub city: String,
+        pub titles: Option<String>
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct UserMini {
