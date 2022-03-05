@@ -20,7 +20,7 @@ log = "0.4.11"
 rustyline = "6.2.0"
 serde = { version = "1.0.115", features = ["derive"] }
 serde_json = "1.0.57"
-sqlx = { version = "0.5.1", default-features = false, features = [ "runtime-tokio-native-tls", "macros", "postgres", "chrono", "migrate", "any", "offline" ] }
+sqlx = { version = "0.5.11", default-features = false, features = [ "runtime-tokio-native-tls", "macros", "postgres", "chrono", "migrate", "any", "offline" ] }
 state = { version = "0.4.1", features = ["const_fn", "tls"] }
 structopt = { version ="0.3.17", default-features = false }
 tempfile = "3.1.0"
