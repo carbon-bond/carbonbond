@@ -1,10 +1,10 @@
-// TODO: 暫時廢棄
+// TODO: 重寫搜尋頁面
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
-import { ArticleMetaWithBonds, HashMap, SearchField } from '../../ts/api/api_trait';
+import { ArticleMetaWithBonds, HashMap, SearchField, force } from '../../ts/api/api_trait';
 import { DualSlider } from '../components/dual_slider';
 import { produce } from 'immer';
 
@@ -12,7 +12,6 @@ import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
-import { Category, DataType } from '../../../../force/typescript/index';
 
 function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
 	try {
@@ -239,7 +238,7 @@ type CategoryBlockProps = {
 };
 function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 	let { category_id, inputs, setInputs } = props;
-	let [category, setCategory] = React.useState<Category | null>(null);
+	let [category, setCategory] = React.useState<force.Category | null>(null);
 
 	function setField(name: string, value: [number, number] | string): void {
 		let new_inputs = produce(inputs, nxt => {
@@ -275,17 +274,14 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 		return <>
 		{
 			category.fields.map((field) => {
-				let ty = extractFieldType(field.datatype);
-				if (ty == Type.None) {
-					return null;
-				}
+				let ty = field.kind;
 				let name = field.name;
 				return <>
 					<div key={`${category_id}${name}`}>
 						<label>{name}</label> <br />
 						{
 							(() => {
-								if (ty == Type.Number) {
+								if (ty == force.FieldKind.Number) {
 									return <DualSlider
 										range={[1, 20]}
 										onChange={r => setField(name, r)}
@@ -305,16 +301,4 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 		}
 		</>;
 	}
-}
-
-enum Type { Text, Number, None };
-function extractFieldType(ty: DataType): Type {
-	if (ty.kind == 'single') {
-		if (ty.t.kind == 'text') {
-			return Type.Text;
-		} else if (ty.t.kind == 'number') {
-			return Type.Number;
-		}
-	}
-	return Type.None;
 }
