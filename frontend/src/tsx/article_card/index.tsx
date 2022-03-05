@@ -285,20 +285,6 @@ function SimpleArticleCardById(props: { article_id: number }): JSX.Element {
 	}
 }
 
-function SatelliteCard(props: { meta: ArticleMeta, bond: Edge }): JSX.Element {
-	const date_string = relativeDate(new Date(props.meta.create_time));
-	return <div className={style.satelliteCard}>
-		<BondCard bond={props.bond} />
-		<div className={style.satelliteHeader}>
-			<ShowAuthor author={props.meta.author} />
-			<div className={style.articleTime}>{date_string} {props.meta.category}</div>
-		</div>
-		<div>
-			{props.meta.title}
-		</div>
-	</div>;
-}
-
 function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element {
 	const [article, setArticle] = React.useState<Article | null>(null);
 	const [shrinkable, setShrinkable] = React.useState(false);
@@ -417,6 +403,5 @@ export {
 	ArticleCard,
 	SimpleArticleCardById,
 	SimpleArticleCard,
-	SatelliteCard,
 	BondCard,
 };

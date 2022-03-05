@@ -1,33 +1,11 @@
 import * as React from 'react';
-import { SimpleArticleCard, SatelliteCard, BondCard } from './index';
-import { ArticleMeta, Edge, Board, Article } from '../../ts/api/api_trait';
+import { SimpleArticleCard, BondCard } from './index';
+import { ArticleMeta, Edge, Board } from '../../ts/api/api_trait';
 import style from '../../css/board_switch/bonder.module.css';
 import { toastErr } from '../utils';
 import produce from 'immer';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-
-export function SatelliteCards(props: { article: ArticleMeta, expanded: boolean }): JSX.Element {
-	let { article, expanded }= props;
-	let [satellite_articles, setSatelliteArticles] = React.useState<[Edge, Article][]>([]);
-	React.useEffect(() => {
-		API_FETCHER.articleQuery.queryBonder(article.id, null).then(data => {
-			setSatelliteArticles(unwrap(data));
-		}).catch(err => {
-			toastErr(err);
-		});
-	}, [article.id]);
-	if (!expanded) {
-		return <></>;
-	}
-	return <>
-		{
-			satellite_articles.map(([bond, article]) => {
-				return <SatelliteCard key={article.meta.id} meta={article.meta} bond={bond} />;
-			})
-		}
-	</>;
-}
 
 export function BonderCards(props: { article_id: number }): JSX.Element {
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
