@@ -34,26 +34,14 @@ function PanelMain(props: { option: Option }): JSX.Element {
 }
 
 function LeftPanel(): JSX.Element {
-	const [option, setOption] = React.useState(Option.Browse);
+	const [option, setOption] = React.useState(Option.None);
 	const { all_chat } = AllChatState.useContainer();
 	// NOTE: 暫時只計算雙人對話
 	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
 
 	React.useEffect(() => {
 		const previous_record = localStorage[STORAGE_NAME.leftbar_expand];
-		if (previous_record === 'Browse') {
-			setOption(Option.Browse);
-		} else if (previous_record === 'Chat') {
-			setOption(Option.Chat);
-		} else if (previous_record === 'DiscoverFriend') {
-			setOption(Option.DiscoverFriend);
-		} else if (previous_record === 'Draft') {
-			setOption(Option.Draft);
-		} else if (previous_record === 'PluginStore') {
-			setOption(Option.PluginStore);
-		} else {
-			setOption(Option.None);
-		}
+		setOption(previous_record);
 	}, []);
 
 	function toggleOption(op: Option): (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void {
