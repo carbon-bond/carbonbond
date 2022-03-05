@@ -111,7 +111,7 @@ export function ArticleFooter(props: { article: ArticleMeta }): JSX.Element {
 				☘️&nbsp;<span className={style.num}>{props.article.energy}</span>鍵能
 			</div>
 			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Satellite)}>
-				🗯️&nbsp;<span className={style.num}>{props.article.stat.satellite_replies}</span>則衛星
+				🗯️&nbsp;<span className={style.num}>{props.article.stat.comments}</span>則留言
 			</div>
 			<div className={style.articleBtnItem} onClick={() => openModal(ModalType.Reply)}>
 				➡️&nbsp;<span className={style.num}>{props.article.stat.replies}</span>篇回文

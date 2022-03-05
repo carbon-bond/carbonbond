@@ -488,7 +488,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>衛星文章</div>
+			<div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>留言</div>
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
 		</div>
 		<div className={style.switchContent}>
@@ -539,7 +539,7 @@ function Favorites(props: { profile_user: User }): JSX.Element {
 }
 
 function Satellites(): JSX.Element {
-	return <div>衛星文章</div>;
+	return <div>留言</div>;
 }
 
 async function fetchArticles(

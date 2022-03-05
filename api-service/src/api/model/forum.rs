@@ -203,7 +203,7 @@ pub mod forum_model_root {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {
         pub replies: i64,
-        pub satellite_replies: i64,
+        pub comments: i64,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct BondInfo {
@@ -229,6 +229,13 @@ pub mod forum_model_root {
     pub struct Article {
         pub meta: ArticleMeta,
         pub bonds: Vec<BondInfo>,
+        pub content: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Comment {
+        pub id: i64,
+        pub author: Author,
+        pub create_time: DateTime<chrono::Utc>,
         pub content: String,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]

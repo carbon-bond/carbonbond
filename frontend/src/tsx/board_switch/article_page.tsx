@@ -10,7 +10,6 @@ import { toastErr } from '../utils';
 import { BonderCards, ReplyButtons } from '../article_card/bonder';
 
 function ReplyList(props: { article: Article }): JSX.Element {
-	// TODO: 從上層傳遞
 	const { article } = props;
 	let [expanded, setExpanded] = React.useState<boolean>(false);
 
@@ -21,6 +20,21 @@ function ReplyList(props: { article: Article }): JSX.Element {
 		</div>
 		<div>
 			<BonderCards expanded={expanded} article={article.meta} />
+		</div>
+	</div>;
+}
+
+function CommentList(props: {article: Article}): JSX.Element {
+	const { article } = props;
+	let [expanded, setExpanded] = React.useState<boolean>(false);
+
+	return <div className={style.replyCardList}>
+		<div className={style.listTitle} onClick={() => setExpanded(!expanded)}>
+			<span className={style.toggleButton}> {expanded ? '⯆' : '⯈'} </span>
+			<span>{article.meta.stat.comments} 則留言</span>
+		</div>
+		<div>
+			留言
 		</div>
 	</div>;
 }
@@ -97,6 +111,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleContent article={article} />
 		<ArticleFooter article={article.meta} />
 		<ReplyList article={article} />
+		<CommentList article={article} />
 	</div>;
 }
 

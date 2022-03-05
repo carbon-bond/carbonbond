@@ -29,11 +29,12 @@ export type NewArticle = {     board_id: number; category_name: string; title: s
 export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     category: string; title: string; author: Author; digest:     ArticleDigest; create_time: string; fields: force.Field [];     stat: ArticleStatistics; personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
-export type ArticleStatistics = { replies: number; satellite_replies: number };
+export type ArticleStatistics = { replies: number; comments: number };
 export type BondInfo = { article_meta: MiniArticleMeta; energy: number; tag: string };
 export type MiniArticleMeta = {     category: string; board_name: string; author: Author; id: number;     title: string; create_time: string};
 export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: BondInfo [] };
 export type Article = { meta: ArticleMeta; bonds: BondInfo []; content: string };
+export type Comment = {     id: number; author: Author; create_time: string; content:     string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; title: string; content: string; bonds:     string; create_time: string; edit_time: string;     anonymous: boolean };
 export type BoardOverview = { id: number; board_name: string; title: string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
