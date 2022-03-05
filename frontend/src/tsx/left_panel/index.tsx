@@ -40,7 +40,7 @@ function LeftPanel(): JSX.Element {
 	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
 
 	React.useEffect(() => {
-		const previous_record = localStorage[STORAGE_NAME.leftbar_expand];
+		const previous_record = localStorage[STORAGE_NAME.leftbar_expand] ?? Option.Browse;
 		setOption(previous_record);
 	}, []);
 
