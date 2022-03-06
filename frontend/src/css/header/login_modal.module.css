@@ -5,7 +5,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    & input::-ms-reveal { . /* disable reveal password icon from Edge and IE */
+    /* disable reveal password icon from Edge and IE */
+    & input::-ms-reveal {
         display: none;
     }
     & input {
