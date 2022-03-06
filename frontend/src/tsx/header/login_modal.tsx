@@ -8,6 +8,8 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { isEmail } from '../../ts/regex_util';
 import style from '../../css/header/login_modal.module.css';
 import { LawyerbcResult, LawyerbcResultMini } from '../../ts/api/api_trait';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 enum Status {
 	ForgetPassword,
@@ -20,6 +22,7 @@ function LoginStatus(
 		setStatus: (status: Status) => void
 	}
 ): JSX.Element {
+	const [password_visible, SetPasswordVisible] = React.useState(false);
 	let name = useInputValue('').input_props;
 	let password = useInputValue('').input_props;
 	const { setLogin } = UserState.useContainer();
@@ -59,8 +62,11 @@ function LoginStatus(
 	function getBody(): JSX.Element {
 		return <div className={style.loginModal}>
 			<div>
-				<input type="text" placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
-				<input type="password" placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
+				<input type="text" className={style.inputContainer} placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
+				<div className={style.inputContainer}>
+					<input type={password_visible ? 'text' : 'password'} className={style.password} placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
+					<span className={style.eye} onClick={() => {SetPasswordVisible(!password_visible);}}>{password_visible ? <FontAwesomeIcon icon={faEyeSlash}/> : <FontAwesomeIcon icon={faEye} />}</span>
+				</div>
 				<div className={style.fogetPassword} onClick={() => {props.setStatus(Status.ForgetPassword);}}>忘記密碼？</div>
 			</div>
 		</div>;
