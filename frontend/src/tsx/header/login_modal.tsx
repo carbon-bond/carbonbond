@@ -8,8 +8,6 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { isEmail } from '../../ts/regex_util';
 import style from '../../css/header/login_modal.module.css';
 import { LawyerbcResult, LawyerbcResultMini } from '../../ts/api/api_trait';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 enum Status {
 	ForgetPassword,
@@ -65,7 +63,7 @@ function LoginStatus(
 				<input type="text" className={style.inputContainer} placeholder="😎 使用者名稱" autoFocus {...name} onKeyDown={onKeyDown} />
 				<div className={style.inputContainer}>
 					<input type={password_visible ? 'text' : 'password'} className={style.password} placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
-					<span className={style.eye} onClick={() => {SetPasswordVisible(!password_visible);}}>{password_visible ? <FontAwesomeIcon icon={faEyeSlash}/> : <FontAwesomeIcon icon={faEye} />}</span>
+					<span className={style.eye} onClick={() => {SetPasswordVisible(!password_visible);}}>{password_visible ? '🙈' : '👁️'}</span>
 				</div>
 				<div className={style.fogetPassword} onClick={() => {props.setStatus(Status.ForgetPassword);}}>忘記密碼？</div>
 			</div>

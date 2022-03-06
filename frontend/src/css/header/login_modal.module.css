@@ -28,7 +28,12 @@
         & .eye {
             height: 40px;
             display: flex;
+            justify-content: center;
             align-items: center;
+            cursor: pointer;
+        }
+        & .eye:hover {
+            background-color: var(--hover-background-color);
         }
     }
     & .fogetPassword {
