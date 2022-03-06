@@ -14,8 +14,8 @@ export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
 	return <>{
 		props.text.split('\n').map(line => {
-			if (line.length == 0) {
-				// 換行
+			if (/^\s*$/.test(line)) {
+				// 若整行都是空的，換行
 				return <br key={key++} />;
 			} else if (isImageLink(line.trim())) {
 				return <>
