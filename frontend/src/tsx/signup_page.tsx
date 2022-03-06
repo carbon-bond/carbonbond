@@ -23,7 +23,7 @@ export function SignupPage(props: Props): JSX.Element {
 		handleSubmit,
 		watch,
 		errors
-	} = useForm({mode: 'onBlur'});
+	} = useForm({mode: 'onSubmit'});
 
 	const password = React.useRef({});
 	password.current = watch('password', '');
@@ -92,11 +92,15 @@ export function SignupPage(props: Props): JSX.Element {
 					})}  />
 					{errors.repeat_password && <InvalidMessage msg={errors.repeat_password.message} />}
 					<div>
-						<button>
-							註冊帳號
-						</button>
+						<button> 註冊帳號 </button>
 					</div>
 				</form>
+				<div className={style.terms}>
+					點擊註冊按鈕，代表你已同意
+					<a target="_blank" href="/app/law/terms">服務條款</a>
+					以及
+					<a target="_blank" href="/app/law/rules">論壇守則</a>
+				</div>
 			</div>
 		</div>;
 	} else if (err) {

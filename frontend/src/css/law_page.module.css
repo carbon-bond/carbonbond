@@ -1,0 +1,21 @@
+.lawPage {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    & div {
+        width: 800px;
+        line-height: 24px;
+        & * {
+            margin: 20px 0px;
+        }
+        & li {
+           margin: 5px 0px;
+        }
+        & ul {
+            padding-left: 20px;
+        }
+        & h1 {
+            margin-bottom: 40px;
+        }
+    }
+}

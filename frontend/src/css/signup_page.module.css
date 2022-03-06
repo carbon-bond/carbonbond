@@ -16,5 +16,12 @@
             width: 100%;
             margin-bottom: 10px;
         }
+        & button {
+            margin-top: 12px;
+        }
+        & .terms {
+            font-size: 14px;
+            margin-top: 2px;
+        }
     }
 }

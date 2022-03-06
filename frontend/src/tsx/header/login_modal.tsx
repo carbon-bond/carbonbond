@@ -147,7 +147,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 				throw '信箱格式異常';
 			}
 			unwrap(await API_FETCHER.userQuery.recordSignupApply(email, birth_year, gender, license_id, false));
-			toast('申請成功');
+			toast(`申請成功，請至 ${email} 查收認證信`);
 		} catch (err) {
 			toastErr(err);
 		}
@@ -204,7 +204,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 	function getBody(): JSX.Element {
 		return <div className={style.signupModal}>
 			<div className={style.description}>
-				輸入關鍵字後按下查詢搜尋，本站將使用法務部律師查詢系統確認您的個人資料，並寄送確認信件至您在查詢系統上登記的信箱。
+				輸入關鍵字後按下查詢，本站將使用法務部律師查詢系統搜尋您的個人資料。
 			</div>
 			<div className={style.searchBar} >
 				<input
@@ -241,6 +241,11 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 				<div>尚未選擇律師資料</div>
 			</div>}
 			<div className={style.message}>{message_text}</div>
+			<div className={style.bottom}>{
+				lawyer_detail_result ?
+					`送出申請後，碳鍵將寄送認證信至 ${lawyer_detail_result.email}`
+					: ''
+			}</div>
 		</div>;
 	}
 
