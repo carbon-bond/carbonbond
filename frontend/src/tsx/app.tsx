@@ -37,6 +37,7 @@ import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { SearchPage } from './search_page/search_page';
+import { LawPage } from './law_page';
 import { toastErr } from './utils';
 
 // 配置全域提醒
@@ -89,6 +90,9 @@ function App(): JSX.Element {
 				} />
 				<Route path="/app/pop_article" render={() =>
 					<PopArticlePage />
+				} />
+				<Route path="/app/law" render={() =>
+					<LawPage />
 				} />
 				<Route path="*" render={() =>
 					<Redirect to="/app" />

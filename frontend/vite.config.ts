@@ -2,9 +2,11 @@ import { defineConfig } from 'vite';
 import reactRefresh from '@vitejs/plugin-react-refresh';
 import { resolve } from 'path';
 import mobilePlugin from './vite_plugins/mobile';
+import mdPlugin from 'vite-plugin-markdown';
+import { Mode as mdMode } from 'vite-plugin-markdown';
 
 export default defineConfig({
-	plugins: [reactRefresh(), mobilePlugin()],
+	plugins: [reactRefresh(), mobilePlugin(), mdPlugin({mode: [mdMode.REACT]})],
 	build: {
 		rollupOptions: {
 			input: {
