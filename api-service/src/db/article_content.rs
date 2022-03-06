@@ -317,7 +317,8 @@ impl Digest {
             Value::String(s) => {
                 self.char_count += s.len();
                 let truncated_value = if s.len() > MAX_LEN {
-                    Value::String(s[0..MAX_LEN].to_owned())
+                    let end = s.char_indices().map(|(i, _)| i).nth(MAX_LEN).unwrap();
+                    Value::String(s[0..end].to_owned())
                 } else {
                     value.clone()
                 };
