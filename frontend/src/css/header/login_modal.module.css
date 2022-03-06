@@ -6,8 +6,9 @@
 .signupModal {
     width: 360px;
     height: 450px;
+    position: relative;
     & .description {
-        font-size: 12px;
+        font-size: 14px;
         margin-top: 2px;
     }
     & .searchBar {
@@ -33,6 +34,11 @@
         border-radius: 10px;
         border: 0px;
         background: var(--third-theme-color);
+    }
+    & .bottom {
+        position: absolute;
+        bottom: 4px;
+        font-size: 14px
     }
 }
 
