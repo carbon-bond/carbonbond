@@ -16,14 +16,56 @@ import { show_datatype } from '../../ts/force_util';
 const FieldKind = force.FieldKind;
 type Force = force.Force;
 
+let counter = 0;
+
 // TODO: 編輯
 export function ForceEditor(props: { value: Force, setValue: React.Dispatch<React.SetStateAction<Force>> }): JSX.Element {
+	function onAddCategory(event: React.MouseEvent<HTMLElement>): void {
+		event.preventDefault();
+		props.setValue(produce(props.value, force => {
+			force.categories.push({name: `新分類${counter++}`, fields: []});
+		}));
+	}
+	function onRemoveCategory(category_id: number): (event: React.MouseEvent<HTMLElement>) => void {
+		return (event: React.MouseEvent<HTMLElement>) => {
+			event.preventDefault();
+			props.setValue(produce(props.value, force => {
+				force.categories.splice(category_id, 1);
+			}));
+		};
+	}
+	function onAddField(category_id: number): (event: React.MouseEvent<HTMLElement>) => void {
+		return (event: React.MouseEvent<HTMLElement>) => {
+			event.preventDefault();
+			props.setValue(produce(props.value, force => {
+				force.categories[category_id].fields.push({kind: FieldKind.MultiLine, name: '新欄位'});
+			}));
+		};
+	}
+	function onSelectFieldKind(category_id: number, field_id: number): (event: React.ChangeEvent<HTMLSelectElement>) => void {
+		return (event: React.ChangeEvent<HTMLSelectElement>) => {
+			const new_kind = event.target.value as force.FieldKind;
+			props.setValue(produce(props.value, force => {
+				force.categories[category_id].fields[field_id].kind = new_kind;
+			}));
+		};
+	}
+	function onRemoveField(category_id: number, field_id: number): (event: React.MouseEvent<HTMLElement>) => void {
+		return (event: React.MouseEvent<HTMLElement>) => {
+			event.preventDefault();
+			props.setValue(produce(props.value, force => {
+				force.categories[category_id].fields.splice(field_id, 1);
+			}));
+		};
+	}
+
 	return <div>
 		<h2>分類</h2>
 		<div className={style.categories}>
 			{props.value.categories.map((category, cid) => {
 				return <div key={category.name}>
-					<h3>{category.name}</h3>
+					<span onClick={onRemoveCategory(cid)}>✗</span>
+					<span>{category.name}</span>
 					<div className={style.fields}>
 						{
 							category.fields.map((field, fid) => {
@@ -33,13 +75,9 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 									FieldKind.Number,
 								];
 								return <div key={field.name}>
-									{field.name}
-									<select value={field.kind} onChange={(evt) => {
-										const new_kind = evt.target.value as force.FieldKind;
-										props.setValue(produce(props.value, force => {
-											force.categories[cid].fields[fid].kind = new_kind;
-										}));
-									}}>
+									<span onClick={onRemoveField(cid, fid)}>✗</span>
+									<span>{field.name}</span>
+									<select value={field.kind} onChange={onSelectFieldKind(cid, fid)}>
 										{
 											kinds.map(kind => <option key={kind} value={kind}>{show_datatype(kind)}</option>)
 										}
@@ -47,11 +85,13 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 								</div>;
 							})
 						}
-						<button>新增欄位</button>
+						<button onClick={onAddField(cid)}>新增欄位</button>
 					</div>
 				</div>;
 			})}
-			<button>新增分類</button>
+			<button onClick={onAddCategory}>
+				新增分類
+			</button>
 		</div>
 
 		<div>

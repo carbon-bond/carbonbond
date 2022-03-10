@@ -1,13 +1,13 @@
 .boardEditor {
     margin-top: 20px;
     & .forceEditor {
-        width: 400px;
+        width: 500px;
         display: flex;
         flex-direction: row;
         & .forceEditorLeft {
             display: flex;
             flex-direction: column;
-            width: 300px;
+            width: 400px;
             & textarea {
                 flex: 1;
             }
