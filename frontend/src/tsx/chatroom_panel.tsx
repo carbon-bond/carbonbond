@@ -100,15 +100,20 @@ const MessageBlocks = React.memo((props: {messages: IMessage[], user_name: strin
 			agg_messages.map(message => {
 				let sender_name = (message.who == server_trigger.Sender.Myself ? props.user_name : props.room_name);
 				return <div key={Number(message.date)} className={style.messageBlock}>
-					<div className={style.meta}>
-						<span className={style.who}><Link to={`/app/user/${sender_name}`}>{sender_name}</Link></span>
-						<span className={style.date}>{relativeDate(message.date)}</span>
+					<div className={style.leftSet}>
+						<img src={`/avatar/${sender_name}`} />
 					</div>
-					{
-						message.contents.map((content, index) => {
-							return <MessageShow content={content} key={index} />;
-						})
-					}
+					<div className={style.rightSet}>
+						<div className={style.meta}>
+							<Link to={`/app/user/${sender_name}`}><span className={style.who}>{sender_name}</span></Link>
+							<span className={style.date}>{relativeDate(message.date)}</span>
+						</div>
+						{
+							message.contents.map((content, index) => {
+								return <MessageShow content={content} key={index} />;
+							})
+						}
+					</div>
 				</div>;
 			})
 		}

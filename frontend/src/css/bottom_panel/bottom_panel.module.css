@@ -1,5 +1,5 @@
 :root {
-    --room-width: 300px;
+    --room-width: 320px;
 }
 .roomWidth {
     width: var(--room-width);

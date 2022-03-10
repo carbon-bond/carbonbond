@@ -37,7 +37,7 @@
 
 .messages {
     width: var(--room-width);
-    height: 320px;
+    height: 350px;
     padding: 4px;
     background: white;
     border: 1px #DDDDDD solid;
@@ -80,33 +80,49 @@
 }
 /* 在 chatContent 之中 */
 .messageBlock {
-    & .meta {
-        & .who {
-            font-weight: bold;
-        }
-        & .date {
-            font-size: 12px;
-            color: #888888;
-            margin-left: 5px;
-        }
-    }
-    & .normal {
-        word-break: break-all;
-        margin-top: 4px;
-        font-size: 15px;
-        & a:hover {
-            text-decoration: underline;
-        }
-    }
-    & .emojis {
-        font-size: 35px;
-    }
-    & .image {
-        & img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        width: calc(var(--room-width ) - 20px)
-    }
     margin-bottom: 6px;
+    display: flex;
+    flex-direction: row;
+
+    & .leftSet {
+        margin-right: 4px;
+        & img {
+            width: 40px; 
+            height: 40px; 
+            border-radius: 10px;
+        }
+    }
+
+    & .rightSet {
+        & .meta {
+            & .who {
+                font-weight: bold;
+                color: black;
+            }
+            & .date {
+                font-size: 12px;
+                color: var(--gray);
+                margin-left: 5px;
+            }
+        }
+        & .normal {
+            color: var(--deep-gray);
+            word-break: break-all;
+            margin-top: 4px;
+            font-size: 15px;
+            & a:hover {
+                text-decoration: underline;
+            }
+        }
+        & .emojis {
+            font-size: 35px;
+        }
+        & .image {
+            & img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+            width: calc(var(--room-width ) - 20px)
+        }
+    }
 }
