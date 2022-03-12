@@ -32,6 +32,12 @@
                 /* width: 125px;
                 height: var(--header-height); */
             }
+            & .imageText {
+                width: 80px;
+            }
+            & .imageIcon {
+                width: 40px;
+            }
         }
         & .location {
             color: var(--light-font-color);
