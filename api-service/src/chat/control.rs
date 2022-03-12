@@ -86,20 +86,41 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
         }
     };
 
-    tokio::task::spawn(async move {
+    let agent = tokio::task::spawn(async move {
         user_ws_tx
             .send(Message::text(serde_json::to_string(&init_info).unwrap()))
             .unwrap_or_else(|e| {
                 eprintln!("websocket send error: {}", e);
             })
             .await;
-        while let Some(message) = rx.next().await {
-            user_ws_tx
-                .send(message)
-                .unwrap_or_else(|e| {
-                    eprintln!("websocket send error: {}", e);
-                })
-                .await;
+
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(30));
+
+        loop {
+            tokio::select! {
+                from_rx = rx.next() => {
+                    match from_rx {
+                        None => {
+                            break;
+                        },
+                        Some(message) => {
+                            user_ws_tx
+                                .send(message)
+                                .unwrap_or_else(|e| {
+                                    eprintln!("websocket 傳輸錯誤: {}", e);
+                                })
+                                .await;
+                        }
+                    }
+                },
+                _ = interval.tick() => {
+                    user_ws_tx.send(Message::ping("yo"))
+                                .unwrap_or_else(|e| {
+                                    eprintln!("websocket ping 錯誤: {}", e);
+                                })
+                                .await;
+                }
+            }
         }
     });
     users.add_tx(id, tx_id, tx).await;
@@ -121,13 +142,16 @@ pub async fn user_connected(id: i64, websocket: WebSocket, users: Users) {
                 }
             }
             Err(_) => {
-                // ping, pong
+                // 忽略非文字訊息
                 continue;
             }
         }
     }
 
     users.remove_tx(id, tx_id).await;
+    if let Err(err) = agent.await {
+        log::warn!("join agent task 錯誤：{}", err);
+    }
 }
 
 async fn handle_message(msg: &str, id: i64, users: &Users) -> Fallible<()> {
