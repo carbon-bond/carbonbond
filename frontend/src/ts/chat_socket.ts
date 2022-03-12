@@ -1,12 +1,18 @@
+import { toast } from 'react-toastify';
 import { AllChatState, DirectChatData, Message } from '../tsx/global_state/chat';
+import { toastErr } from '../tsx/utils';
 import { server_trigger, MessageSending, client_trigger } from './api/api_trait';
+
+const MAX_ATTEMPT_TIMES = 3;
 
 export class ChatSocket {
 	socket: WebSocket | null;
 	all_chat: AllChatState | null;
+	attempt_counter: number;
 	constructor() {
 		this.all_chat = null;
 		this.socket = null;
+		this.attempt_counter = 0;
 	}
 	init(all_chat: AllChatState): void {
 		console.log('初始化 chat socket');
@@ -46,7 +52,32 @@ export class ChatSocket {
 	reset(): void {
 		const url = `ws://${window.location.hostname}:${window.location.port}/chat`;
 		this.socket = new WebSocket(url);
-		this.socket.onopen = () => { };
+		this.socket.onopen = () => {
+			if (this.attempt_counter > 0) {
+				this.attempt_counter = 0;
+				toast('聊天室重連成功');
+			}
+		};
+		this.socket.onclose = () => {
+			if (this.attempt_counter >= MAX_ATTEMPT_TIMES) {
+				toastErr('抱歉，無法恢復聊天室連線，請等待一段時間後手動重新整理');
+				return;
+			}
+
+			const duration = Math.pow(5, this.attempt_counter);
+
+			this.attempt_counter++;
+
+			if (this.attempt_counter == 1) {
+				toastErr(`聊天室已斷線，嘗試重連 ${this.attempt_counter}/${MAX_ATTEMPT_TIMES}`);
+			} else {
+				toastErr(`重連失敗，將在 ${duration} 秒內再次嘗試重連 ${this.attempt_counter}/${MAX_ATTEMPT_TIMES}`);
+			}
+
+			setTimeout(() => {
+				this.reset();
+			}, duration * Math.random() * 1000);
+		};
 		this.socket.onmessage = (event) => {
 			// XXX: 使用 server_trigger.API
 			// eslint-disable-next-line
