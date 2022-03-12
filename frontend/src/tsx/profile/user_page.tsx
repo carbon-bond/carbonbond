@@ -324,6 +324,141 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	/>;
 }
 
+function RelationEditModal(props: {target_user_id: number, relation_type: UserRelationKind, setRelationType: Function, relation_public: boolean, setRelationPublic: Function, visible: boolean, setVisible: Function }) : JSX.Element {
+	const [new_relation_type, setNewRelationType] = React.useState<UserRelationKind>(props.relation_type);
+	const [new_relation_public, setNewRelationPublic] = React.useState<boolean>(props.relation_public);
+
+	React.useEffect(() => {
+		setNewRelationType(props.relation_type);
+		setNewRelationPublic(props.relation_public);
+	}, [props.relation_type, props.relation_public]);
+
+	function getBody(): JSX.Element {
+		return <div className={style.relationEditModal}>
+			<label>
+				<input
+					// key={"無狀態"}
+					type="radio"
+					value={'取消關係'}
+					checked={new_relation_type === UserRelationKind.None}
+					onChange={() => {setNewRelationType(UserRelationKind.None);}}
+				/>
+				<span>取消關係</span>
+			</label>
+			<label>
+				<input
+					type="radio"
+					value={'公開追蹤'}
+					checked={new_relation_type === UserRelationKind.Follow && new_relation_public === true}
+					onChange={() => {setNewRelationType(UserRelationKind.Follow); setNewRelationPublic(true); }}
+				/>
+				<span>公開追蹤</span>
+			</label>
+			<label>
+				<input
+					type="radio"
+					value={'偷偷追蹤'}
+					checked={new_relation_type === UserRelationKind.Follow && new_relation_public === false}
+					onChange={() => {setNewRelationType(UserRelationKind.Follow); setNewRelationPublic(false); }}
+				/>
+				<span>偷偷追蹤</span>
+			</label>
+			<label>
+				<input
+					type="radio"
+					value={'公開仇視'}
+					checked={new_relation_type === UserRelationKind.Hate && new_relation_public === true}
+					onChange={() => {setNewRelationType(UserRelationKind.Hate); setNewRelationPublic(true); }}
+				/>
+				<span>公開仇視</span>
+			</label>
+			<label>
+				<input
+					type="radio"
+					value={'偷偷仇視'}
+					checked={new_relation_type === UserRelationKind.Hate && new_relation_public === false}
+					onChange={() => {setNewRelationType(UserRelationKind.Hate); setNewRelationPublic(false); }}
+				/>
+				<span>偷偷仇視</span>
+			</label>
+		</div>;
+	}
+
+	async function createUserRelation(kind: UserRelationKind, is_public: boolean): Promise<{}> {
+		try {
+			await API_FETCHER.userQuery.createUserRelation(props.target_user_id, kind, is_public);
+		} catch (err) {
+			toastErr(err);
+		}
+		return {};
+	}
+
+	async function deleteUserRelation(): Promise<{}> {
+		try {
+			await API_FETCHER.userQuery.deleteUserRelation(props.target_user_id);
+		} catch (err) {
+			toastErr(err);
+		}
+		return {};
+	}
+
+	function onChangeRelation(kind: UserRelationKind, is_public: boolean): void {
+		// if same as the old relation, we just remove it
+		// otherwise, change it to new relation
+		if (props.relation_type === kind && props.relation_public === is_public) {
+			deleteUserRelation();
+			props.setRelationType(UserRelationKind.None);
+			props.setRelationPublic(false);
+		} else {
+			createUserRelation(kind, is_public);
+			props.setRelationType(kind);
+			props.setRelationPublic(is_public);
+		}
+		props.setVisible(false);
+		window.location.reload();
+	}
+
+	function onCancel(): void {
+		setNewRelationType(props.relation_type);
+		setNewRelationPublic(props.relation_public);
+		props.setVisible(false);
+	}
+
+	let buttons: ModalButton[] = [];
+	buttons.push({ text: '儲存', handler: () => onChangeRelation(new_relation_type, new_relation_public) });
+	buttons.push({ text: '取消', handler: () => onCancel() });
+
+	return <ModalWindow
+		title={'更改關係'}
+		body={getBody()}
+		buttons={buttons}
+		visible={props.visible}
+		setVisible={props.setVisible}
+		onCancel={onCancel}
+	/>;
+}
+
+function RelationEditComponent(props: {target_user_id: number, relation_type: UserRelationKind, setRelationType: Function, relation_public: boolean, setRelationPublic: Function}) : JSX.Element {
+	const [visible, setVisible] = React.useState<boolean>(false);
+	function getButtonText() : string {
+		if (props.relation_type === UserRelationKind.None) {
+		} else if (props.relation_type === UserRelationKind.Follow && props.relation_public) {
+			return '公開追蹤中';
+		} else if (props.relation_type === UserRelationKind.Follow && !props.relation_public) {
+			return '偷偷追蹤中';
+		} else if (props.relation_type === UserRelationKind.Hate && props.relation_public) {
+			return '公開仇視中';
+		} else if (props.relation_type === UserRelationKind.Hate && !props.relation_public) {
+			return '偷偷仇視中';
+		}
+		return '建立關係';
+	}
+	return <div className={style.relationEditComponent}>
+		<button onClick={() => setVisible(true)}>{getButtonText()}</button>
+		<RelationEditModal visible={visible} setVisible={setVisible} {...props}/>
+	</div>;
+}
+
 function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
@@ -341,42 +476,6 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			}
 		});
 		props.setProfileUser(new_state);
-	}
-
-	async function createUserRelation(kind: UserRelationKind, is_public: boolean): Promise<{}> {
-		if (props.profile_user) {
-			try {
-				await API_FETCHER.userQuery.createUserRelation(props.profile_user.id, kind, is_public);
-			} catch (err) {
-				toastErr(err);
-			}
-		}
-		return {};
-	}
-
-	async function deleteUserRelation(): Promise<{}> {
-		if (props.profile_user) {
-			try {
-				await API_FETCHER.userQuery.deleteUserRelation(props.profile_user.id);
-			} catch (err) {
-				toastErr(err);
-			}
-		}
-		return {};
-	}
-
-	function onChangeRelation(kind: UserRelationKind, is_public: boolean): void {
-		// if same as the old relation, we just remove it
-		// otherwise, change it to new relation
-		if (relation_type === kind && relation_public === is_public) {
-			deleteUserRelation();
-			setRelationType(UserRelationKind.None);
-			setRelationPublic(false);
-		} else {
-			createUserRelation(kind, is_public);
-			setRelationType(kind);
-			setRelationPublic(is_public);
-		}
 	}
 
 	function onStartChat(): void {
@@ -439,21 +538,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.links}>
 				{
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-						<div className={style.relation}>
-							<button onClick={() => onChangeRelation(UserRelationKind.Follow, true)}>
-								{relation_type == UserRelationKind.Follow && relation_public ? '取消公開追蹤' : '公開追蹤'}
-							</button>
-							<button onClick={() => onChangeRelation(UserRelationKind.Follow, false)}>
-								{relation_type == UserRelationKind.Follow && !relation_public ? '取消偷偷追蹤' : '偷偷追蹤'}
-							</button>
-							<button onClick={() => onChangeRelation(UserRelationKind.Hate, true)}>
-								{relation_type == UserRelationKind.Hate && relation_public ? '取消公開仇視' : '公開仇視'}
-							</button>
-							<button onClick={() => onChangeRelation(UserRelationKind.Hate, false)}>
-								{relation_type == UserRelationKind.Hate && !relation_public ? '取消偷偷仇視' : '偷偷仇視'}
-							</button>
-						</div> :
-						<></>
+						<RelationEditComponent target_user_id={props.profile_user.id} relation_type={relation_type} setRelationType={setRelationType} relation_public={relation_public} setRelationPublic={setRelationPublic}/>: <></>
 				}
 				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
 				{

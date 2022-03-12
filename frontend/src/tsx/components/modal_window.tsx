@@ -12,7 +12,8 @@ export function ModalWindow(props: {
 	body: JSX.Element,
 	buttons: ModalButton[],
 	visible: boolean,
-	setVisible: Function
+	setVisible: Function,
+	onCancel?: Function | undefined
 }): JSX.Element {
 	const buttons = [];
 	for (const x of props.buttons) {
@@ -21,7 +22,10 @@ export function ModalWindow(props: {
 	ReactModal.setAppElement('body');
 	return <ReactModal
 		isOpen={props.visible}
-		onRequestClose={() => props.setVisible(false)}
+		onRequestClose={() => {
+			if (props.onCancel) {props.onCancel();}
+			props.setVisible(false);
+		}}
 		className={'ModalWindow--Content'}
 		style={{
 			overlay: { zIndex: 200 },
@@ -40,7 +44,10 @@ export function ModalWindow(props: {
 			<div className={style.leftSet}>{props.title}</div>
 			<div className={style.middleSet}></div>
 			<div className={style.rightSet}>
-				<div className={style.button} onClick={() => props.setVisible(false)}>✗</div>
+				<div className={style.button} onClick={() => {
+					if (props.onCancel) {props.onCancel();}
+					props.setVisible(false);
+				}}>✗</div>
 			</div>
 		</div>
 		<div className={style.body}>
