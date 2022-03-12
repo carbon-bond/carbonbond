@@ -1,7 +1,7 @@
 .boardEditor {
     margin-top: 20px;
     & .forceEditor {
-        width: 500px;
+        width: 600px;
         display: flex;
         flex-direction: row;
         & .forceEditorLeft {
@@ -20,6 +20,9 @@
                 & .forceExample {
                     border: var(--border-color) solid 1px;
                 }
+                & .forceExample:hover {
+                    cursor: pointer;
+                }
             }
         }
     }
@@ -31,12 +34,39 @@
         margin: 0px 0px 5px;
         resize: none;
     }
+    & .remove {
+        color: red;
+    }
+    & .remove:hover {
+        cursor: pointer;
+    }
+}
+
+.error {
+    color: red;
+    margin-left: 5px;
 }
 
 .categories {
-    margin-left: 20px;
-    & .fields {
-        margin-left: 20px;
+    & .category {
+        padding: 5px;
+        margin: 20px 0px;
+        border-radius: 10px;
+        background: var(--light-gray);
+        & .categoryName {
+            margin-right: 10px;
+            margin-left: 2px;
+        }
+        & .fields {
+            & .field {
+                margin: 4px 0px;
+                & .fieldName {
+                    margin-right: 10px;
+                    margin-left: 2px;
+                }
+            }
+            margin-left: 20px;
+        }
     }
 }
 

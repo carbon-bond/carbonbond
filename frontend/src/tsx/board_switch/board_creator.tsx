@@ -16,14 +16,40 @@ import { show_datatype } from '../../ts/force_util';
 const FieldKind = force.FieldKind;
 type Force = force.Force;
 
-let counter = 0;
+function ScalableInput(props: {onChange: ((value: string) => void), value: string}): JSX.Element {
+	const inputRef = React.useRef<HTMLInputElement | null>(null);
+	const measurer = React.useRef<HTMLInputElement | null>(null);
+	const [width, setWidth] = React.useState<number>(30);
+
+	React.useEffect(() => {
+		if (measurer.current) {
+			setWidth(measurer.current.offsetWidth + 10);
+		}
+	}, [props.value]);
+
+	return <span>
+		{
+			<>
+				<input
+					value={props.value}
+					ref={inputRef}
+					style={{ width }}
+					onChange={(evt) => {
+						props.onChange(evt.target.value);
+					}}
+				/>
+			</>
+		}
+		<span style={{position: 'absolute', opacity: 0}} ref={measurer}>{props.value}</span>
+	</span>;
+}
 
 // TODO: 編輯
 export function ForceEditor(props: { value: Force, setValue: React.Dispatch<React.SetStateAction<Force>> }): JSX.Element {
 	function onAddCategory(event: React.MouseEvent<HTMLElement>): void {
 		event.preventDefault();
 		props.setValue(produce(props.value, force => {
-			force.categories.push({name: `新分類${counter++}`, fields: []});
+			force.categories.push({name: '新分類', fields: []});
 		}));
 	}
 	function onRemoveCategory(category_id: number): (event: React.MouseEvent<HTMLElement>) => void {
@@ -31,6 +57,13 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 			event.preventDefault();
 			props.setValue(produce(props.value, force => {
 				force.categories.splice(category_id, 1);
+			}));
+		};
+	}
+	function onChangeCategory(category_id: number): (new_name: string) => void {
+		return (new_name: string) => {
+			props.setValue(produce(props.value, force => {
+				force.categories[category_id].name = new_name;
 			}));
 		};
 	}
@@ -58,14 +91,32 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 			}));
 		};
 	}
+	function onChangeField(category_id: number, field_id: number): (new_name: string) => void {
+		return (new_name: string) => {
+			props.setValue(produce(props.value, force => {
+				force.categories[category_id].fields[field_id].name = new_name;
+			}));
+		};
+	}
 
 	return <div>
-		<h2>分類</h2>
+		<button onClick={onAddCategory}>
+			新增分類
+		</button>
 		<div className={style.categories}>
 			{props.value.categories.map((category, cid) => {
-				return <div key={category.name}>
-					<span onClick={onRemoveCategory(cid)}>✗</span>
-					<span>{category.name}</span>
+				// category.name, field.name 可能暫時重複，故不適合當 key
+
+				const is_repeat = (props.value.categories.filter(other_category => other_category.name == category.name).length > 1);
+				return <div className={style.category} key={cid}>
+					<span className={style.remove} onClick={onRemoveCategory(cid)}>✗</span>
+					<span className={style.categoryName}>
+						<ScalableInput onChange={onChangeCategory(cid)} value={category.name} />
+					</span>
+					{is_repeat ? <span className={style.error}>不允許同名分類</span> : <></>}
+					<div>
+						<button onClick={onAddField(cid)}>新增欄位</button>
+					</div>
 					<div className={style.fields}>
 						{
 							category.fields.map((field, fid) => {
@@ -74,24 +125,24 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 									FieldKind.OneLine,
 									FieldKind.Number,
 								];
-								return <div key={field.name}>
-									<span onClick={onRemoveField(cid, fid)}>✗</span>
-									<span>{field.name}</span>
+								const is_repeat = (category.fields.filter(other_field => other_field.name == field.name).length > 1);
+								return <div className={style.field} key={fid}>
+									<span className={style.remove} onClick={onRemoveField(cid, fid)}>✗</span>
+									<span className={style.fieldName}>
+										<ScalableInput onChange={onChangeField(cid, fid)} value={field.name} />
+									</span>
 									<select value={field.kind} onChange={onSelectFieldKind(cid, fid)}>
 										{
 											kinds.map(kind => <option key={kind} value={kind}>{show_datatype(kind)}</option>)
 										}
 									</select>
+									{is_repeat ? <span className={style.error}>不允許同名欄位</span> : <></>}
 								</div>;
 							})
 						}
-						<button onClick={onAddField(cid)}>新增欄位</button>
 					</div>
 				</div>;
 			})}
-			<button onClick={onAddCategory}>
-				新增分類
-			</button>
 		</div>
 
 		<div>
