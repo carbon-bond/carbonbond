@@ -17,8 +17,8 @@
     }
     & .leftSet {
         display: flex;
-        flex: 1;
         align-items: center;
+        padding: 0px 15px 0px;
 
         & .carbonbond {
             display: flex;
@@ -42,33 +42,14 @@
         & .location {
             color: var(--light-font-color);
             font-size: 18px;
-            margin-right: 10px;
+            margin-left: 10px;
             cursor: pointer;
             width: auto;
             white-space: nowrap;
         }
-        & .searchPart {
-            line-height: 40px;
-            cursor: text;
-            flex: 1;
-
-            display: flex;
-            flex-direction: row;
-
-            & select {
-                margin: 0;
-                width: 100px;
-            }
-            & input {
-                margin: 0;
-                padding: 10px;
-                flex: 1;
-
-                border-radius: 3px;
-                border: 1px solid var(--border-color);
-                background: var(--background-color);
-            }
-        }
+    }
+    & .middleSet {
+        flex: 1;
     }
     & .rightSet {
         display: flex;

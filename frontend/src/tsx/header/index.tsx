@@ -120,7 +120,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			{logining ? <LoginModal setLogining={setLogining} /> : null}
 			{signuping ? <SignupModal setSignuping={setSignuping}/> : null}
 			<div className={style.container}>
-				<div className={style.space} />
 				<div className={style.leftSet}>
 					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
 						{/* TODO: 修正 vite 路徑 */}
@@ -128,10 +127,10 @@ function _Header(props: RouteComponentProps): JSX.Element {
 						<img className={style.imageText} src={carbonbondTextURL} alt="" />
 					</div>
 					<div className={style.location}>{title}</div>
+				</div>
+				<div className={style.middleSet}>
 					<SearchBar history={props.history} cur_board={cur_board} />
 				</div>
-				<div className={style.space} />
-
 				<div className={style.rightSet}>
 					{UserStatus()}
 				</div>
