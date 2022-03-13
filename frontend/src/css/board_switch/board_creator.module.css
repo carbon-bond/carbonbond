@@ -42,11 +42,6 @@
     }
 }
 
-.error {
-    color: red;
-    margin-left: 5px;
-}
-
 .categories {
     & .category {
         padding: 5px;
@@ -68,6 +63,10 @@
             margin-left: 20px;
         }
     }
+}
+
+.suggestedTags {
+    margin-top: 40px;
 }
 
 hr {
