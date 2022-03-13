@@ -1,6 +1,7 @@
 /*eslint-disable*/
 export type BoxedErr = string
 export type ValidationError = string
+export type ForceLangError = string
 // @ts-ignore
 export type HashMap<K extends string | number, T> = { [key: K]: T };
 export type Option<T> = T | null;

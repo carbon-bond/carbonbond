@@ -426,6 +426,9 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     })?;
 
     let category = get_category(new_article.board_id, &new_article.category_name).await?;
+
+    category.validate_json(&content)?;
+
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
         "

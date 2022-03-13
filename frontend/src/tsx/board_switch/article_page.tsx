@@ -48,7 +48,11 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 		{
 			fields.map(field =>
 				<div className={style.field} key={field.name}>
-					<div className={style.fieldName}>{field.name}：</div>
+					{
+						field.name == '' ?
+							<></> :
+							<div className={style.fieldName}>{field.name}：</div>
+					}
 					{
 						field.kind == force.FieldKind.MultiLine ?
 							<ShowText text={content[field.name]} /> :

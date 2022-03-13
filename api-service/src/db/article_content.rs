@@ -366,8 +366,7 @@ pub(super) async fn create(
     for bond in bonds {
         insert_bond(conn, article_id, &bond).await?;
     }
-
-    // TODO: fields 長度爲 0 的特殊狀況（文章內不分域）
+    // 需在他處已驗證過 category.validate_json(&content)?;
 
     let mut digest = Digest::new();
 
@@ -376,29 +375,13 @@ pub(super) async fn create(
         match (&field.kind, value) {
             (MultiLine, Value::String(s)) => {
                 insert_string_field(conn, article_id, &field.name, s).await?;
-
                 digest.add(&field.name, &value, true);
             }
             (OneLine, Value::String(s)) => {
-                if s.contains('\n') {
-                    return Err(ValidationError {
-                        field_name: field.name.clone(),
-                        code: NotOneline(s.clone()).into(),
-                    }
-                    .into());
-                }
                 insert_string_field(conn, article_id, &field.name, s).await?;
-
                 digest.add(&field.name, &value, false);
             }
             (Number, Value::Number(n)) => {
-                if !n.is_i64() {
-                    return Err(ValidationError {
-                        field_name: field.name.clone(),
-                        code: NotI64(n.clone()).into(),
-                    }
-                    .into());
-                }
                 let n = n.as_i64().unwrap();
                 insert_int_field(conn, article_id, &field.name, n).await?;
 
@@ -407,7 +390,7 @@ pub(super) async fn create(
             _ => {
                 return Err(ValidationError {
                     field_name: field.name.clone(),
-                    code: TypeMismatch(field.kind.clone(), content[&field.name].clone()).into(),
+                    code: TypeMismatch(field.kind.clone()).into(),
                 }
                 .into());
             }

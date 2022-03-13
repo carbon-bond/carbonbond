@@ -191,6 +191,13 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 				}
 			}
 
+			// 若 fields 爲空，塞入一個多行文字的欄位
+			for (const category of forceValue.categories) {
+				if (category.fields.length == 0) {
+					category.fields.push({name: '', kind: FieldKind.MultiLine});
+				}
+			}
+
 			API_FETCHER.boardQuery.createBoard({
 				board_type: props.board_type,
 				ruling_party_id: props.party_id,

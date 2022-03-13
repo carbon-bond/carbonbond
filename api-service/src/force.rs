@@ -1,17 +1,17 @@
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::{
-    collections::HashSet,
-    fmt::{Debug, Display, Formatter, Result as FmtResult},
-};
+use std::{collections::HashSet, fmt::Debug};
 use typescript_definitions::TypeScriptify;
 
 use crate::custom_error::{ErrorCode, Fallible};
 
-#[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+#[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Display)]
 pub enum FieldKind {
+    #[display(fmt = "數字")]
     Number,
+    #[display(fmt = "單行文字")]
     OneLine,
+    #[display(fmt = "多行文字")]
     MultiLine,
 }
 
@@ -25,6 +25,50 @@ pub struct Field {
 pub struct Category {
     pub name: String,
     pub fields: Vec<Field>,
+}
+
+impl Category {
+    pub fn validate_json(&self, content: &serde_json::Value) -> Fallible<()> {
+        for field in &self.fields {
+            match content.get(&field.name) {
+                Some(value) => match (&field.kind, value) {
+                    (FieldKind::MultiLine, serde_json::Value::String(_v)) => {
+                        // TODO: 彈性限制字數
+                    }
+                    (FieldKind::OneLine, serde_json::Value::String(v)) => {
+                        if v.contains("\n") {
+                            return ValidationError::to_err(
+                                field.name.clone(),
+                                ValidationErrorCode::NotOneline,
+                            );
+                        }
+                    }
+                    (FieldKind::Number, serde_json::Value::Number(v)) => {
+                        if !v.is_i64() {
+                            return ValidationError::to_err(
+                                field.name.clone(),
+                                ValidationErrorCode::NotI64(v.clone()),
+                            );
+                        }
+                    }
+                    _ => {
+                        return ValidationError::to_err(
+                            field.name.clone(),
+                            ValidationErrorCode::TypeMismatch(field.kind.clone()),
+                        );
+                    }
+                },
+                None => {
+                    return Err(ValidationError {
+                        field_name: field.name.clone(),
+                        code: ValidationErrorCode::NotFound,
+                    }
+                    .into())
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -89,20 +133,29 @@ pub struct Bond {
     pub tag: String,
 }
 
-#[derive(Debug)]
+#[derive(Display, Debug)]
+#[display(fmt = "力語言驗證錯誤，欄位 {} 發生錯誤 {}", "field_name", "code")]
 pub struct ValidationError {
     pub field_name: String,
     pub code: ValidationErrorCode,
 }
-#[derive(Debug)]
+impl ValidationError {
+    pub fn to_err(field_name: String, code: ValidationErrorCode) -> Fallible<()> {
+        Err(ValidationError { field_name, code }.into())
+    }
+}
+#[derive(Display, Debug)]
 pub enum ValidationErrorCode {
     NotI64(serde_json::Number),
-    NotOneline(String),
-    TypeMismatch(FieldKind, serde_json::Value),
+    NotOneline,
+    TypeMismatch(FieldKind),
+    NoEmpty,
+    NotFound,
+    Nothing,
 }
-impl Display for ValidationError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        write!(f, "{:?}", self)
+impl Into<ErrorCode> for ValidationError {
+    fn into(self) -> ErrorCode {
+        ErrorCode::ForceValidate(self)
     }
 }
 impl std::error::Error for ValidationError {}
