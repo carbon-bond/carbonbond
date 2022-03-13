@@ -100,6 +100,9 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
 }
 
 pub async fn create(board: &NewBoard) -> Fallible<i64> {
+    // 檢查力語言語義
+    board.force.check_semantic()?;
+
     let mut conn = get_pool().begin().await?;
     let prev_board_id = sqlx::query!(
         "SELECT board_id FROM parties where id = $1",

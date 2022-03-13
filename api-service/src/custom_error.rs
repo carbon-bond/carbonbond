@@ -81,6 +81,8 @@ mod inner {
         #[display(fmt = "力語言驗證： {:?}", "_0")]
         #[serde(serialize_with = "serialize_err")]
         ForceValidate(force::ValidationError),
+        #[display(fmt = "力語言： {}", "_0")]
+        ForceLangError(force::ForceLangError),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]

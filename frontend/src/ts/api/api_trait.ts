@@ -89,6 +89,7 @@ export type ErrorCode =
  | "SearchingLawyerbcFail" 
  | { ArgumentFormatError: string } 
  | { ForceValidate: ValidationError } 
+ | { ForceLangError: ForceLangError } 
  | "UnImplemented" 
  | { Other: string };
 export type Error = 
