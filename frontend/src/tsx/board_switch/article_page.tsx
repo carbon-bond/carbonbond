@@ -14,8 +14,8 @@ export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
 	return <>{
 		props.text.split('\n').map(line => {
-			if (line.length == 0) {
-				// 換行
+			if (/^\s*$/.test(line)) {
+				// 若整行都是空的，換行
 				return <br key={key++} />;
 			} else if (isImageLink(line.trim())) {
 				return <>
@@ -48,7 +48,11 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 		{
 			fields.map(field =>
 				<div className={style.field} key={field.name}>
-					<div className={style.fieldName}>{field.name}：</div>
+					{
+						field.name == '' ?
+							<></> :
+							<div className={style.fieldName}>{field.name}：</div>
+					}
 					{
 						field.kind == force.FieldKind.MultiLine ?
 							<ShowText text={content[field.name]} /> :

@@ -13,7 +13,7 @@
         margin-left: 20px;
     }
     & .createBoardBlock {
-        width: 400px;
+        width: 600px;
         & .createButton {
             cursor: pointer;
         }
