@@ -217,7 +217,7 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 				toastErr(err);
 			});
 
-			// 僅在自己的個人頁請求偷偷追蹤、仇視的人
+			// 僅在自己的個人頁請求偷偷喜歡、仇視的人
 			if (props.is_myself) {
 				let fetchUsers = props.kind == 'following' ? fetchMyPrivateFollowings : fetchMyPrivateHatings;
 				fetchUsers().then(private_results => {
@@ -263,15 +263,15 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 		return <div className={style.userListContainer}>
 			<div className={style.navigateBar}>
 				<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')}
-					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `追蹤 (${public_count})` : `仇視 (${public_count})`}</div>
+					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `喜歡 (${public_count})` : `仇視 (${public_count})`}</div>
 				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
-					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷追蹤 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
+					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
 			</div>
 			<div className={style.switchContent}>
 				{selectTab == 0 && <div>
 					{public_users.length == 0 ? (
 						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開追蹤的人' : '沒有公開仇視的人'}</div>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開喜歡的人' : '沒有公開仇視的人'}</div>
 						</div>
 					) : (
 						public_users.map(user => (
@@ -284,7 +284,7 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 				{selectTab == 1 && <div>
 					{private_users.length == 0 ? (
 						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷追蹤的人' : '沒有偷偷仇視的人'}</div>
+							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷喜歡的人' : '沒有偷偷仇視的人'}</div>
 						</div>
 					) : (
 						private_users.map(user => (
@@ -302,13 +302,13 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	let kind_text: string;
 	switch (props.kind) {
 		case 'follower':
-			kind_text = `追蹤 ${props.user.user_name} 的人`;
+			kind_text = `喜歡 ${props.user.user_name} 的人`;
 			break;
 		case 'hater':
 			kind_text = `仇視 ${props.user.user_name} 的人`;
 			break;
 		case 'following':
-			kind_text = `${props.user.user_name} 追蹤的人`;
+			kind_text = `${props.user.user_name} 喜歡的人`;
 			break;
 		default:
 			kind_text = `${props.user.user_name} 仇視的人`;
@@ -337,31 +337,30 @@ function RelationEditModal(props: {target_user_id: number, relation_type: UserRe
 		return <div className={style.relationEditModal}>
 			<label>
 				<input
-					// key={"無狀態"}
 					type="radio"
-					value={'取消關係'}
+					value={'無關係'}
 					checked={new_relation_type === UserRelationKind.None}
 					onChange={() => {setNewRelationType(UserRelationKind.None);}}
 				/>
-				<span>取消關係</span>
+				<span>無關係</span>
 			</label>
 			<label>
 				<input
 					type="radio"
-					value={'公開追蹤'}
+					value={'公開喜歡'}
 					checked={new_relation_type === UserRelationKind.Follow && new_relation_public === true}
 					onChange={() => {setNewRelationType(UserRelationKind.Follow); setNewRelationPublic(true); }}
 				/>
-				<span>公開追蹤</span>
+				<span>公開喜歡</span>
 			</label>
 			<label>
 				<input
 					type="radio"
-					value={'偷偷追蹤'}
+					value={'偷偷喜歡'}
 					checked={new_relation_type === UserRelationKind.Follow && new_relation_public === false}
 					onChange={() => {setNewRelationType(UserRelationKind.Follow); setNewRelationPublic(false); }}
 				/>
-				<span>偷偷追蹤</span>
+				<span>偷偷喜歡</span>
 			</label>
 			<label>
 				<input
@@ -443,9 +442,9 @@ function RelationEditComponent(props: {target_user_id: number, relation_type: Us
 	function getButtonText() : string {
 		if (props.relation_type === UserRelationKind.None) {
 		} else if (props.relation_type === UserRelationKind.Follow && props.relation_public) {
-			return '公開追蹤中';
+			return '公開喜歡中';
 		} else if (props.relation_type === UserRelationKind.Follow && !props.relation_public) {
-			return '偷偷追蹤中';
+			return '偷偷喜歡中';
 		} else if (props.relation_type === UserRelationKind.Hate && props.relation_public) {
 			return '公開仇視中';
 		} else if (props.relation_type === UserRelationKind.Hate && !props.relation_public) {
@@ -525,8 +524,8 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.data}>
 				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
 				<div className={style.trace}>
-					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.follower_count_public + props.profile_user.follower_count_private} 人追蹤</div>
-					<div onClick={() => setVisibleFollowing(true)}>❤️ 追蹤 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
+					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.follower_count_public + props.profile_user.follower_count_private} 人喜歡</div>
+					<div onClick={() => setVisibleFollowing(true)}>❤️ 喜歡 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
 				</div>
 				<div className={style.hate}>
 					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hater_count_public + props.profile_user.hater_count_private} 人仇視</div>
