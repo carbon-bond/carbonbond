@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { History } from 'history';
-import style from '../../css/header/index.module.css';
+import style from '../../css/header/search_bar.module.css';
 
 export function SearchBar(props: { cur_board: string | null, hide_select_board?: boolean, history: History }): JSX.Element {
 	let [content, setContent] = React.useState('');
