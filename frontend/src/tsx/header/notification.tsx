@@ -155,7 +155,7 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <NotiConcreteRow>{replier_name(n.user2_name)} 追蹤了你</NotiConcreteRow>;
+			return <NotiConcreteRow>{replier_name(n.user2_name)} 喜歡了你</NotiConcreteRow>;
 		case NotificationKind.Hate:
 			return <NotiConcreteRow>{replier_name(n.user2_name)} 仇視了你</NotiConcreteRow>;
 		case NotificationKind.ArticleBadReplied:
