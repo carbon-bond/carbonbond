@@ -1,13 +1,13 @@
 .boardEditor {
     margin-top: 20px;
     & .forceEditor {
-        width: 400px;
+        width: 600px;
         display: flex;
         flex-direction: row;
         & .forceEditorLeft {
             display: flex;
             flex-direction: column;
-            width: 300px;
+            width: 400px;
             & textarea {
                 flex: 1;
             }
@@ -20,6 +20,9 @@
                 & .forceExample {
                     border: var(--border-color) solid 1px;
                 }
+                & .forceExample:hover {
+                    cursor: pointer;
+                }
             }
         }
     }
@@ -31,13 +34,39 @@
         margin: 0px 0px 5px;
         resize: none;
     }
+    & .remove {
+        color: red;
+    }
+    & .remove:hover {
+        cursor: pointer;
+    }
 }
 
 .categories {
-    margin-left: 20px;
-    & .fields {
-        margin-left: 20px;
+    & .category {
+        padding: 5px;
+        margin: 20px 0px;
+        border-radius: 10px;
+        background: var(--light-gray);
+        & .categoryName {
+            margin-right: 10px;
+            margin-left: 2px;
+        }
+        & .fields {
+            & .field {
+                margin: 4px 0px;
+                & .fieldName {
+                    margin-right: 10px;
+                    margin-left: 2px;
+                }
+            }
+            margin-left: 20px;
+        }
     }
+}
+
+.suggestedTags {
+    margin-top: 40px;
 }
 
 hr {

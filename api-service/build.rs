@@ -69,6 +69,7 @@ fn gen_api_files() -> std::io::Result<()> {
     client_file.write_all(b"/*eslint-disable*/\n")?;
     client_file.write_all(b"export type BoxedErr = string\n")?;
     client_file.write_all(b"export type ValidationError = string\n")?;
+    client_file.write_all(b"export type ForceLangError = string\n")?;
     client_file.write_all(
         b"// @ts-ignore\nexport type HashMap<K extends string | number, T> = { [key: K]: T };\n",
     )?;

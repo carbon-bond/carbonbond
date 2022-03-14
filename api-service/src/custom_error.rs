@@ -78,9 +78,12 @@ mod inner {
         SearchingLawyerbcFail,
         #[display(fmt = "{} 格式不正確", "_0")]
         ArgumentFormatError(String),
-        #[display(fmt = "力語言驗證： {:?}", "_0")]
+        #[display(fmt = "{}", "_0")]
         #[serde(serialize_with = "serialize_err")]
         ForceValidate(force::ValidationError),
+        #[display(fmt = "力語言： {}", "_0")]
+        #[serde(serialize_with = "serialize_err")]
+        ForceLangError(force::ForceLangError),
         #[display(fmt = "後端尚未實作")]
         UnImplemented,
         #[display(fmt = "其它： {}", "_0")]

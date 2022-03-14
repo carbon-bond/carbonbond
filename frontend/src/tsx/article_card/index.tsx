@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr, useInputValue } from '../utils';
-import { ArticleContent } from '../board_switch/article_page';
+import { ArticleContent, ShowText } from '../board_switch/article_page';
 import { BonderCards } from './bonder';
 
 const MAX_BRIEF_LINE = 4;
@@ -53,7 +53,9 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<ShowAuthor author={props.comment.author} />
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
-		<div className={style.commentContent}>{props.comment.content}</div>
+		<div className={style.commentContent}>
+			<ShowText text={props.comment.content} />
+		</div>
 	</div>;
 }
 
