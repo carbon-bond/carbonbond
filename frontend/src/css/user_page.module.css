@@ -234,6 +234,20 @@
     }
 }
 
+.relationEditComponent {
+    & span {
+        margin-right: 10px;
+    }
+}
+
+.relationEditModal {
+    margin: 10px 0px 0px;
+    & label {
+        display: block;
+        margin-bottom: 10px;
+    }
+}
+
 .userListContainer {
     width: 480px;
     height: 280px;
