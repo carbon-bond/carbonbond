@@ -414,7 +414,6 @@ function RelationEditModal(props: {target_user_id: number, relation_type: UserRe
 			props.setRelationPublic(is_public);
 		}
 		props.setVisible(false);
-		window.location.reload();
 	}
 
 	function onCancel(): void {
