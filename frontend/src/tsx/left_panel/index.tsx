@@ -6,11 +6,12 @@ import style from '../../css/sidebar.module.css';
 import { NumberOver } from '../components/number_over';
 import { AllChatState } from '../global_state/chat';
 import { STORAGE_NAME } from '../../ts/constants';
+import { UserState } from '../global_state/user';
 
 enum Option {
 	Browse         = 'Browse',
 	Chat           = 'Chat',
-	DiscoverFriend = 'DiscoverFriend',
+	// DiscoverFriend = 'DiscoverFriend',
 	Draft          = 'Draft',
 	PluginStore    = 'PluginStore',
 	None           = 'None'            // 側欄關閉
@@ -22,8 +23,8 @@ function PanelMain(props: { option: Option }): JSX.Element {
 			return <div className={style.sidebar}><BrowseBar /></div>;
 		case Option.Chat:
 			return <div className={style.sidebar}><ChatBar /></div>;
-		case Option.DiscoverFriend:
-			return <div className={style.sidebar}>交友</div>;
+		// case Option.DiscoverFriend:
+		// 	return <div className={style.sidebar}>交友</div>;
 		case Option.Draft:
 			return <div className={style.sidebar}><DraftBar /></div>;
 		case Option.PluginStore:
@@ -36,6 +37,7 @@ function PanelMain(props: { option: Option }): JSX.Element {
 function LeftPanel(): JSX.Element {
 	const [option, setOption] = React.useState(Option.None);
 	const { all_chat } = AllChatState.useContainer();
+	const { user_state } = UserState.useContainer();
 	// NOTE: 暫時只計算雙人對話
 	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
 
@@ -60,12 +62,20 @@ function LeftPanel(): JSX.Element {
 		<>
 			<div className={style.menubar}>
 				<div className={style.topSet}>
-					<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-					<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
-						<div onClick={toggleOption(Option.Chat)}>🗨️</div>
-					</NumberOver>
-					<div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div>
-					<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
+					{
+						user_state.login ?
+						<>
+							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+							<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
+								<div onClick={toggleOption(Option.Chat)}>🗨️</div>
+							</NumberOver>
+							{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
+							<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
+						</> :
+						<>
+							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+						</>
+					}
 				</div>
 				<div className={style.bottomSet}>
 					<div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div>

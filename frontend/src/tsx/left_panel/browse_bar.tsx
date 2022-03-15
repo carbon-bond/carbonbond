@@ -47,7 +47,7 @@ export function BrowseBar(): JSX.Element {
 		localStorage[STORAGE_NAME.browsebar_expand] = JSON.stringify(new_expand);
 	}
 	function genGridTemplate(): string {
-		let g1 = expand[0] ? '25px 80px' : '25px 0px';
+		let g1 = expand[0] ? '25px auto' : '25px 0px';
 		let g2 = expand[1] ? '25px 1fr' : '25px 0fr';
 		let g3 = expand[2] ? '25px 1fr' : '25px 0fr';
 		if (user_state.login) {
@@ -67,11 +67,15 @@ export function BrowseBar(): JSX.Element {
 				onClick={() => onTitleClick(0)}
 			>
 				<div className={style.special}>
-					<Link to={'/app/subscribe_article'}>
-						<div>
-							<span className={style.specialBlock}> 📰 我的訂閱 </span>
-						</div>
-					</Link>
+					{
+						user_state.login ?
+							<Link to={'/app/subscribe_article'}>
+								<div>
+									<span className={style.specialBlock}> 📰 我的訂閱 </span>
+								</div>
+							</Link> :
+							<></>
+					}
 					<Link to={'/app/pop_article'}>
 						<div>
 							<span className={style.specialBlock}>🔥 全站熱門</span>

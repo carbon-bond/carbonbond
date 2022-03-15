@@ -597,6 +597,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
+			{/* 暫時不顯示一個帳號的所有留言 */}
 			{/* <div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>留言</div> */}
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
 		</div>
