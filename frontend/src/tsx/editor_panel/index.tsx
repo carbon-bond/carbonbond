@@ -187,7 +187,11 @@ const Field = (props: FieldProps): JSX.Element => {
 	if (editor_panel_data == null) { return <></>; }
 	return <div key={field.name} className={style.field}>
 		<label htmlFor={field.name}>
-			{`${field.name}`}
+			{
+				field.name == '' ?
+					<></> :
+					<span className={style.fieldName}>{field.name}</span>
+			}
 			<span className={style.dataType}>{`${show_datatype(field.kind)}`}</span>
 		</label>
 		<SingleField {...props} />

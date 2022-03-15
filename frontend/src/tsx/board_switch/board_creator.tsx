@@ -175,13 +175,16 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 	function onSubmit(data: CreateBoardInput): void {
 		if (user_state.login) {
 			const category_name_set = new Set<string>();
-			for (const category of forceValue.categories) {
+
+			let forceValueCopy = JSON.parse(JSON.stringify(forceValue)) as Force;
+
+			for (let category of forceValueCopy.categories) {
 				if (category_name_set.has(category.name)) {
 					toastErr('不允許同名分類');
 					return;
 				}
 				category_name_set.add(category.name);
-				const field_name_set = new Set<string>();
+				let field_name_set = new Set<string>();
 				for (const field of category.fields) {
 					if (field_name_set.has(field.name)) {
 						toastErr('不允許同名欄位');
@@ -189,10 +192,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 					}
 					field_name_set.add(field.name);
 				}
-			}
-
-			// 若 fields 爲空，塞入一個多行文字的欄位
-			for (const category of forceValue.categories) {
+				// 若 fields 爲空，塞入一個多行文字的欄位
 				if (category.fields.length == 0) {
 					category.fields.push({name: '', kind: FieldKind.MultiLine});
 				}
@@ -201,7 +201,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 			API_FETCHER.boardQuery.createBoard({
 				board_type: props.board_type,
 				ruling_party_id: props.party_id,
-				force: forceValue,
+				force: forceValueCopy,
 				...data
 			})
 				.then(() => props.history.go(0))

@@ -101,9 +101,11 @@
         background-color: var(--deep-gray);
         color: var(--reverse-font-color);
         border-radius: 20% 20% 0 0;
+        & .fieldName {
+            margin-right: 10px;
+        }
         & .dataType {
             color: var(--light-reverse-font-color);
-            margin-left: 20px;
         }
     }
     display: flex;

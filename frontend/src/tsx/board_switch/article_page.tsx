@@ -54,7 +54,7 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 							<div className={style.fieldName}>{field.name}：</div>
 					}
 					{
-						field.kind == force.FieldKind.MultiLine ?
+						(field.kind == force.FieldKind.MultiLine || field.kind == force.FieldKind.OneLine) ?
 							<ShowText text={content[field.name]} /> :
 							content[field.name]
 					}
