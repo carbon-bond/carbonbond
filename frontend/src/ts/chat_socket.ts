@@ -21,8 +21,11 @@ export class ChatSocket {
 	}
 	close(): void {
 		console.log('關閉 chat socket');
-		this.socket?.close();
-		this.socket = null;
+		if (this.socket) {
+			this.socket.onclose = (() => {});
+			this.socket.close();
+			this.socket = null;
+		}
 		this.all_chat = null;
 	}
 	set_all_chat(all_chat: AllChatState): void {
@@ -64,7 +67,7 @@ export class ChatSocket {
 				return;
 			}
 
-			const duration = Math.pow(5, this.attempt_counter);
+			const duration = Math.pow(5, this.attempt_counter + 1);
 
 			this.attempt_counter++;
 
