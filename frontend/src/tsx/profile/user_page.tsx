@@ -5,7 +5,7 @@ import { Avatar } from './avatar';
 import { UserCard } from './user_card';
 import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
-import { toastErr, useInputValue } from '../utils';
+import { toastErr, useDocumentTitle, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
@@ -725,6 +725,8 @@ function UserPage(): JSX.Element {
 			}
 		});
 	}, [profile_name, reload]);
+
+	useDocumentTitle(`個人卷宗/${profile_name}`);
 
 	if (!user) {
 		return <></>;

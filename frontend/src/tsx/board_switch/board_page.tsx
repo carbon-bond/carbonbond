@@ -7,7 +7,7 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
-import { useMainScroll } from '../utils';
+import { useMainScroll, useDocumentTitle } from '../utils';
 import { BoardSidebar } from './right_sidebar';
 
 const PAGE_SIZE: number = 10;
@@ -50,6 +50,8 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 			setArticles(more_articles);
 		});
 	}, [board_name, setCurBoard]);
+
+	useDocumentTitle(board_name);
 
 	const scrollHandler = React.useCallback((): void => {
 		// 第一次載入結束前 or 已經載到最早的文章了，不要動作

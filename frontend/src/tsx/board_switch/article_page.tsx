@@ -8,6 +8,7 @@ import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
+import { useDocumentTitle } from '../utils';
 
 
 export function ShowText(props: { text: string }): JSX.Element {
@@ -104,6 +105,8 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 			setFetching(false);
 		});
 	}, [article_id, board_name]);
+
+	useDocumentTitle(`${article ? article.meta.board_name : ''}/${article ? article.meta.title : ''}`);
 
 	if (fetching) {
 		return <></>;
