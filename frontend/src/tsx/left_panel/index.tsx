@@ -13,7 +13,7 @@ enum Option {
 	Chat           = 'Chat',
 	// DiscoverFriend = 'DiscoverFriend',
 	Draft          = 'Draft',
-	PluginStore    = 'PluginStore',
+	// PluginStore    = 'PluginStore',
 	None           = 'None'            // 側欄關閉
 }
 
@@ -27,8 +27,8 @@ function PanelMain(props: { option: Option }): JSX.Element {
 		// 	return <div className={style.sidebar}>交友</div>;
 		case Option.Draft:
 			return <div className={style.sidebar}><DraftBar /></div>;
-		case Option.PluginStore:
-			return <div className={style.sidebar}>市集</div>;
+		// case Option.PluginStore:
+		// 	return <div className={style.sidebar}>市集</div>;
 		case Option.None:
 			return <></>;
 	}
@@ -78,7 +78,7 @@ function LeftPanel(): JSX.Element {
 					}
 				</div>
 				<div className={style.bottomSet}>
-					<div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div>
+					{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
 				</div>
 			</div>
 			<PanelMain option={option}/>
