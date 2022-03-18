@@ -11,6 +11,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 	// const { user_state } = UserState.useContainer();
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
 	const [preview_data, setPreviewData] = React.useState<string | null>(null);
+	const [image_hash, setImageHash] = React.useState<number>(0);
 	const [crop, setCrop] = React.useState<Crop>({
 		unit: 'px',
 		x: 0,
@@ -87,8 +88,8 @@ function EditAvatar(props: { name: string }): JSX.Element {
 					unwrap(await API_FETCHER.userQuery.updateAvatar(cropped_data.split(',')[1]));
 				}
 			}
+			setImageHash(Date.now());
 			setIsEditing(false);
-			location.reload();
 		} catch (err) {
 			toastErr(err);
 		}
@@ -132,7 +133,7 @@ function EditAvatar(props: { name: string }): JSX.Element {
 			</div>
 		</ReactModal>
 		<label htmlFor="fileUploader">
-			<img className={style.isMine} src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
+			<img className={style.isMine} src={`/avatar/${props.name}?${image_hash}`} alt={`${props.name}的大頭貼`} />
 			<div className={style.editPrompt}>
 				換頭貼
 			</div>
