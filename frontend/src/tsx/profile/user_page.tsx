@@ -199,7 +199,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 
 type RelationKind = 'following' | 'hating' | 'follower' | 'hater';
 
-function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean, visible: boolean, setVisible: Function }): JSX.Element {
+function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean, visible: boolean, setVisible: Function, reload: number }): JSX.Element {
 	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
 	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
 	const [selectTab, setSelectTab] = React.useState<number>(0);
@@ -236,7 +236,7 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 				}
 			});
 		}
-	}, [props.user, props.kind, props.is_myself]);
+	}, [props.user, props.kind, props.is_myself, props.reload]);
 
 	let public_count = 0;
 	let private_count = 0;
@@ -324,7 +324,11 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 	/>;
 }
 
-function RelationEditModal(props: {target_user_id: number, relation_type: UserRelationKind, setRelationType: Function, relation_public: boolean, setRelationPublic: Function, visible: boolean, setVisible: Function }) : JSX.Element {
+function RelationEditModal(props: {target_user_id: number,
+			relation_type: UserRelationKind, setRelationType: Function,
+			relation_public: boolean, setRelationPublic: Function,
+			visible: boolean, setVisible: Function
+			setReload: Function}) : JSX.Element {
 	const [new_relation_type, setNewRelationType] = React.useState<UserRelationKind>(props.relation_type);
 	const [new_relation_public, setNewRelationPublic] = React.useState<boolean>(props.relation_public);
 
@@ -340,7 +344,7 @@ function RelationEditModal(props: {target_user_id: number, relation_type: UserRe
 					type="radio"
 					value={'無關係'}
 					checked={new_relation_type === UserRelationKind.None}
-					onChange={() => {setNewRelationType(UserRelationKind.None);}}
+					onChange={() => {setNewRelationType(UserRelationKind.None); setNewRelationPublic(true); }}
 				/>
 				<span>無關係</span>
 			</label>
@@ -402,16 +406,16 @@ function RelationEditModal(props: {target_user_id: number, relation_type: UserRe
 	}
 
 	function onChangeRelation(kind: UserRelationKind, is_public: boolean): void {
-		// if same as the old relation, we just remove it
-		// otherwise, change it to new relation
-		if (props.relation_type === kind && props.relation_public === is_public) {
+		if (kind === UserRelationKind.None && kind != props.relation_type) {
 			deleteUserRelation();
 			props.setRelationType(UserRelationKind.None);
-			props.setRelationPublic(false);
-		} else {
+			props.setRelationPublic(true);
+			props.setReload(Date.now());
+		} else if (props.relation_type !== kind || props.relation_public !== is_public) {
 			createUserRelation(kind, is_public);
 			props.setRelationType(kind);
 			props.setRelationPublic(is_public);
+			props.setReload(Date.now());
 		}
 		props.setVisible(false);
 	}
@@ -436,7 +440,10 @@ function RelationEditModal(props: {target_user_id: number, relation_type: UserRe
 	/>;
 }
 
-function RelationEditComponent(props: {target_user_id: number, relation_type: UserRelationKind, setRelationType: Function, relation_public: boolean, setRelationPublic: Function}) : JSX.Element {
+function RelationEditComponent(props: {target_user_id: number,
+			relation_type: UserRelationKind, setRelationType: Function,
+			relation_public: boolean, setRelationPublic: Function
+			setReload: Function}) : JSX.Element {
 	const [visible, setVisible] = React.useState<boolean>(false);
 	function getButtonText() : string {
 		if (props.relation_type === UserRelationKind.None) {
@@ -457,7 +464,7 @@ function RelationEditComponent(props: {target_user_id: number, relation_type: Us
 	</div>;
 }
 
-function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType }): JSX.Element {
+function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType, reload: number, setReload: Function }): JSX.Element {
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
 	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
@@ -509,7 +516,7 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 		setVisibleHater(false);
 		setVisibleFollowing(false);
 		setVisibleHating(false);
-	}, [props.profile_user, props.user_state.login]);
+	}, [props.profile_user, props.user_state.login, props.reload]);
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
@@ -536,7 +543,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 			<div className={style.links}>
 				{
 					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-						<RelationEditComponent target_user_id={props.profile_user.id} relation_type={relation_type} setRelationType={setRelationType} relation_public={relation_public} setRelationPublic={setRelationPublic}/>: <></>
+						<RelationEditComponent target_user_id={props.profile_user.id}
+							relation_type={relation_type} setRelationType={setRelationType}
+							relation_public={relation_public} setRelationPublic={setRelationPublic}
+							setReload={props.setReload}/>: <></>
 				}
 				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
 				{
@@ -546,10 +556,10 @@ function Profile(props: { profile_user: User, setProfileUser: Function, user_sta
 				}
 			</div>
 		</div>
-		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} />
-		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} />
-		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} />
-		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} />
+		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} reload={props.reload} />
 	</div>;
 }
 
@@ -691,6 +701,7 @@ type Props = RouteComponentProps<{ profile_name: string }>;
 function UserPage(props: Props): JSX.Element {
 	const profile_name = props.match.params.profile_name;
 	const { user_state } = UserState.useContainer();
+	const [reload, setReload] = React.useState<number>(Date.now());
 
 	const [user, setUser] = React.useState<User | null>(null);
 
@@ -704,13 +715,13 @@ function UserPage(props: Props): JSX.Element {
 				toastErr(err);
 			}
 		});
-	}, [profile_name]);
+	}, [profile_name, reload]);
 
 	if (!user) {
 		return <></>;
 	}
 	return <div>
-		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} />
+		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
 			<ProfileDetail profile_user={user} user_state={user_state} />
