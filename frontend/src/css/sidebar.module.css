@@ -1,8 +1,7 @@
-:root {
-    --menubar-width: 56px;
-}
 
-.menubar {
+.menubarInner {
+    position: fixed;
+    height: 100%;
     background-color: var(--bar-color);
     width: var(--menubar-width);
     border-right-width: 1px;
@@ -55,9 +54,10 @@
 .sidebar {
     background-color: var(--background-color);
     z-index: 100;
+    height: calc(100vh - var(--header-height));
+    position: fixed;
     width: 300px;
     border-right-width: 1px;
     border-right-color: var(--border-color);
     border-right-style: solid;
-    height: 100%;
 }

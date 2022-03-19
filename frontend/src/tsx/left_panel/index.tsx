@@ -20,13 +20,13 @@ enum Option {
 function PanelMain(props: { option: Option }): JSX.Element {
 	switch (props.option) {
 		case Option.Browse:
-			return <div className={style.sidebar}><BrowseBar /></div>;
+			return <div className="sidebar"><div className={style.sidebar}><BrowseBar /></div></div>;
 		case Option.Chat:
-			return <div className={style.sidebar}><ChatBar /></div>;
+			return <div className="sidebar"><div className={style.sidebar}><ChatBar /></div></div>;
 		// case Option.DiscoverFriend:
 		// 	return <div className={style.sidebar}>交友</div>;
 		case Option.Draft:
-			return <div className={style.sidebar}><DraftBar /></div>;
+			return <div className="sidebar"><div className={style.sidebar}><DraftBar /></div></div>;
 		// case Option.PluginStore:
 		// 	return <div className={style.sidebar}>市集</div>;
 		case Option.None:
@@ -60,25 +60,27 @@ function LeftPanel(): JSX.Element {
 
 	return (
 		<>
-			<div className={style.menubar}>
-				<div className={style.topSet}>
-					{
-						user_state.login ?
-						<>
-							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-							<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
-								<div onClick={toggleOption(Option.Chat)}>🗨️</div>
-							</NumberOver>
-							{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
-							<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
-						</> :
-						<>
-							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-						</>
-					}
-				</div>
-				<div className={style.bottomSet}>
-					{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
+			<div className="menubar">
+				<div className={style.menubarInner}>
+					<div className={style.topSet}>
+						{
+							user_state.login ?
+							<>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+								<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
+									<div onClick={toggleOption(Option.Chat)}>🗨️</div>
+								</NumberOver>
+								{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
+								<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
+							</> :
+							<>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+							</>
+						}
+					</div>
+					<div className={style.bottomSet}>
+						{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
+					</div>
 				</div>
 			</div>
 			<PanelMain option={option}/>

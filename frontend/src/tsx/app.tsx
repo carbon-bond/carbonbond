@@ -7,6 +7,7 @@ import {
 	Redirect,
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import KeepAlive, { AliveScope } from 'react-activation';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'normalize.css';
@@ -73,7 +74,9 @@ function App(): JSX.Element {
 					<SettingPage />
 				} />
 				<Route path="/app/user/:profile_name" render={props =>
-					<UserPage {...props} />
+					<KeepAlive>
+						<UserPage {...props} />
+					</KeepAlive>
 				} />
 				<Route path="/app/user_board/:profile_name" render={props =>
 					<PersonalBoard {...props} render_header={
@@ -172,4 +175,4 @@ import { ConfigState } from './global_state/config';
 
 window.chat_socket = new ChatSocket();
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<AliveScope><App /></AliveScope>, document.getElementById('root'));

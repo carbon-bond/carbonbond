@@ -23,6 +23,7 @@
 		"normalize.css": "^8.0.1",
 		"query-string": "^6.13.5",
 		"react": "^16.13.1",
+		"react-activation": "^0.9.11",
 		"react-dom": "^16.13.1",
 		"react-hook-form": "^6.0.7",
 		"react-image-crop": "^9.0.5",
