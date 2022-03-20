@@ -1,12 +1,11 @@
 import * as React from 'react';
 import { Navigate, useParams } from 'react-router';
-import { MainScrollState } from '../global_state/main_scroll';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
-import { toastErr } from '../utils';
+import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 
 
@@ -66,9 +65,9 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 
 function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
-	let { useScrollToBottom } = MainScrollState.useContainer();
+	let { useMainScrollToBottom } = useMainScroll();
 	let scrollHandler = React.useCallback(() => { }, []);
-	useScrollToBottom(scrollHandler);
+	useMainScrollToBottom(scrollHandler);
 
 	const category = article.meta.category;
 

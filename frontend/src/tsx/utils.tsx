@@ -134,8 +134,32 @@ function useScrollState(): {
 	};
 }
 
+function useMainScroll(): {
+	useMainScrollToBottom: (handler: () => void) => void
+	} {
+	function useMainScrollToBottom(handler: () => void): void {
+		React.useLayoutEffect(() => {
+			let listener = (): void => {
+				if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+					handler();
+				}
+			};
+			window.addEventListener('scroll', listener);
+			window.addEventListener('resize', listener);
+			return () => {
+				window.removeEventListener('scroll', listener);
+				window.removeEventListener('resize', listener);
+			};
+		}, [handler]);
+	}
+	return {
+		useMainScrollToBottom
+	};
+}
+
 export {
 	useInputValue,
 	useScrollBottom,
 	useScrollState,
+	useMainScroll,
 };

@@ -21,7 +21,6 @@ import { SubscribedBoardsState } from '../global_state/subscribed_boards';
 import { BoardCacheState } from '../global_state/board_cache';
 import { AllChatState } from '../global_state/chat';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { MainScrollState } from '../global_state/main_scroll';
 import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { ResetPassword } from '../reset_password';
@@ -47,13 +46,11 @@ toast.configure({ position: 'bottom-right' });
 function App(): JSX.Element {
 
 	function MainBody(): JSX.Element {
-		let { setEmitter } = MainScrollState.useContainer();
 		let { footer_option } = FooterState.useContainer();
 		let show_main_scroll = footer_option == FooterOption.Home;
 
 		return <div className="mainBody"
-			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }}
-			ref={ref => setEmitter(ref)}>
+			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }} >
 			{
 				footer_option == FooterOption.Notification ?
 					<NotificationModal/> : null
@@ -107,9 +104,7 @@ function App(): JSX.Element {
 			<Header/>
 			<FooterState.Provider>
 				<div className="other" >
-					<MainScrollState.Provider>
-						<MainBody />
-					</MainScrollState.Provider>
+					<MainBody />
 				</div>
 				<Footer/>
 			</FooterState.Provider>

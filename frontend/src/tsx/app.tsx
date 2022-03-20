@@ -22,7 +22,6 @@ import { DraftState } from './global_state/draft';
 import { BoardCacheState } from './global_state/board_cache';
 import { AllChatState } from './global_state/chat';
 import { EditorPanelState } from './global_state/editor_panel';
-import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { SettingPage } from './setting_page';
@@ -49,8 +48,7 @@ toast.configure({ position: 'bottom-right' });
 
 function App(): JSX.Element {
 	function MainBody(): JSX.Element {
-		let { setEmitter } = MainScrollState.useContainer();
-		return <div className="mainBody" ref={ref => setEmitter(ref)}>
+		return <div className="mainBody">
 			<Routes>
 				<Route path="/app/signup/:token" element={<SignupPage />} />
 				<Route path="/app/reset_password/:token" element={<ResetPassword />} />
@@ -111,9 +109,7 @@ function App(): JSX.Element {
 			<Header />
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<MainScrollState.Provider>
-					<MainBody />
-				</MainScrollState.Provider>
+				<MainBody />
 				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;
