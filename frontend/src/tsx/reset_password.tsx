@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
-import { RouteComponentProps } from 'react-router';
 import { toastErr } from './utils';
 import style from '../css/reset_password.module.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
@@ -9,15 +8,16 @@ import { UserState } from './global_state/user';
 import { ConfigState } from './global_state/config';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from './components/invalid_message';
+import { useNavigate, useParams } from 'react-router';
 
-type Props = RouteComponentProps<{ token: string }>;
-
-export function ResetPassword(props: Props): JSX.Element {
+export function ResetPassword(): JSX.Element {
 	let [user_name, setUserName] = React.useState<null | string>(null);
 	let [err, setErr] = React.useState<Error | null>(null);
 	let { getLoginState } = UserState.useContainer();
-	let token = props.match.params.token;
 	let { server_config } = ConfigState.useContainer();
+	let params = useParams<{token: string}>();
+	let token = params.token!;
+	let navigate = useNavigate();
 	const {
 		register,
 		handleSubmit,
@@ -31,7 +31,7 @@ export function ResetPassword(props: Props): JSX.Element {
 	async function reset_password_request(password: string): Promise<void> {
 		try {
 			unwrap(await API_FETCHER.userQuery.resetPasswordByToken(password, token));
-			props.history.push('/app/');
+			navigate('/app/');
 			getLoginState();
 			toast('重設密碼成功，請再次登入');
 		} catch (err) {

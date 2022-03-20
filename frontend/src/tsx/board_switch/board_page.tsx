@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 
 import { MainScrollState } from '../global_state/main_scroll';
 import { ArticleCard } from '../article_card';
@@ -11,10 +10,6 @@ const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
 
 const PAGE_SIZE: number = 10;
-
-type Props = RouteComponentProps<{ board_name: string }> & {
-	board: Board
-};
 
 // TODO: Show fetching animation before data
 
@@ -35,7 +30,7 @@ async function fetchArticles(
 	return articles;
 }
 
-export function BoardPage(props: Props): JSX.Element {
+export function BoardPage(props: {board: Board}): JSX.Element {
 	let board_name = props.board.board_name;
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
