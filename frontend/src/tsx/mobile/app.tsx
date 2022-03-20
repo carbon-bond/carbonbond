@@ -71,7 +71,7 @@ function App(): JSX.Element {
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
-				<Route path="/app/b/:board_name" element={
+				<Route path="/app/b/:board_name/*" element={
 					<GeneralBoard hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />

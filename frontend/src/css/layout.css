@@ -2,10 +2,6 @@
 .app {
 }
 .appMobile {
-    width: 100vw;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: var(--header-height) minmax(0, 1fr) var(--footer-height);
 }
 .header {
     position: fixed;
