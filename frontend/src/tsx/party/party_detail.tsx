@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Navigate, Link, useParams } from 'react-router-dom';
+import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardCreator } from '../board_switch/board_creator';
@@ -29,6 +30,8 @@ export function PartyDetail(): JSX.Element {
 			toastErr(err);
 		});
 	}, [party_name]);
+
+	useTitle(`政黨 | ${party_name}`);
 
 	const { user_state } = UserState.useContainer();
 

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { useTitle } from 'react-use';
 
 import { UserState } from '../global_state/user';
 import style from '../../css/party/my_party_list.module.css';
@@ -26,6 +27,8 @@ export function MyPartyList(): JSX.Element {
 			setFetching(false);
 		}).catch(err => toastErr(err));
 	}, []);
+
+	useTitle('政黨');
 
 	if (!user_state.login && !user_state.fetching) {
 		return <Navigate to="/app" />;
