@@ -12,6 +12,7 @@ import { Board } from '../../ts/api/api_trait';
 
 import '../../css/layout.css';
 import { GraphView } from './graph_view';
+import KeepAlive from 'react-activation';
 
 function GraphPage(props: { hide_sidebar?: boolean }): JSX.Element {
 	return <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -31,7 +32,7 @@ function GraphPage(props: { hide_sidebar?: boolean }): JSX.Element {
 export function SwitchContent(props: { board: Board, hide_sidebar?: boolean }): JSX.Element {
 	return <Routes>
 		<Route path={'graph/:article_id'} element={<GraphPage />} />
-		<Route path="*" element={<SwitchContentInner board={props.board!} hide_sidebar={props.hide_sidebar} />} />
+		<Route path="*" element={ <SwitchContentInner board={props.board!} hide_sidebar={props.hide_sidebar} />} />
 	</Routes>;
 }
 
@@ -40,7 +41,7 @@ function SwitchContentInner(props: { board: Board, hide_sidebar?: boolean }): JS
 	return <div className="boardSwitchContent">
 		<div className="mainContent">
 			<Routes>
-				<Route path="" element={<BoardPage board={board} />} />
+				<Route path="" element={ <KeepAlive id={`${board.board_type}/${board.board_name}`} children={<BoardPage board={board} />} />} />
 				<Route path="a/:article_id" element={ <ArticlePage board={board} /> } />
 				<Route path="*" element={<Navigate to="/app" />} />
 			</Routes>
