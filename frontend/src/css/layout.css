@@ -24,7 +24,7 @@
         width: var(--menubar-width);
         height: calc(100vh - var(--header-height));
     }
-    & .sidebar {
+    & .panel {
         width: 300px;
         height: calc(100vh - var(--header-height));
     }

@@ -45,13 +45,13 @@
 
 
 @media only screen and (max-width: 1200px) {
-    .sidebar {
+    .panel {
         left: var(--menubar-width);
         position: absolute;
     }
 }
 
-.sidebar {
+.panel {
     background-color: var(--background-color);
     z-index: 100;
     height: calc(100vh - var(--header-height));

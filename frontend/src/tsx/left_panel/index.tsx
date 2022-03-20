@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ChatBar } from './chat_bar';
 import { BrowseBar } from './browse_bar';
 import { DraftBar } from './draft_bar';
-import style from '../../css/sidebar.module.css';
+import style from '../../css/left_panel/left_panel.module.css';
 import { NumberOver } from '../components/number_over';
 import { AllChatState } from '../global_state/chat';
 import { STORAGE_NAME } from '../../ts/constants';
@@ -17,18 +17,22 @@ enum Option {
 	None           = 'None'            // 側欄關閉
 }
 
+function PanelWrap(props: { children: JSX.Element }): JSX.Element {
+	return <div className="panel"><div className={style.panel}>{props.children}</div></div>;
+}
+
 function PanelMain(props: { option: Option }): JSX.Element {
 	switch (props.option) {
 		case Option.Browse:
-			return <div className="sidebar"><div className={style.sidebar}><BrowseBar /></div></div>;
+			return <PanelWrap><BrowseBar /></PanelWrap>;
 		case Option.Chat:
-			return <div className="sidebar"><div className={style.sidebar}><ChatBar /></div></div>;
+			return <PanelWrap><ChatBar /></PanelWrap>;
 		// case Option.DiscoverFriend:
-		// 	return <div className={style.sidebar}>交友</div>;
+			// return <PanelWrap><DiscoverFriendBar /></PanelWrap>;
 		case Option.Draft:
-			return <div className="sidebar"><div className={style.sidebar}><DraftBar /></div></div>;
+			return <PanelWrap><DraftBar /></PanelWrap>;
 		// case Option.PluginStore:
-		// 	return <div className={style.sidebar}>市集</div>;
+			// return <PanelWrap><PluginStoreBar /></PanelWrap>;
 		case Option.None:
 			return <></>;
 	}
