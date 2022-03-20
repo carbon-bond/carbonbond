@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTitle } from 'react-use';
 
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
@@ -7,7 +8,7 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
-import { useMainScroll, useDocumentTitle } from '../utils';
+import { useMainScroll } from '../utils';
 import { BoardSidebar } from './right_sidebar';
 
 const PAGE_SIZE: number = 10;
@@ -51,7 +52,7 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 		});
 	}, [board_name, setCurBoard]);
 
-	useDocumentTitle(board_name);
+	useTitle(`看版 | ${board_name}`);
 
 	const scrollHandler = React.useCallback((): void => {
 		// 第一次載入結束前 or 已經載到最早的文章了，不要動作

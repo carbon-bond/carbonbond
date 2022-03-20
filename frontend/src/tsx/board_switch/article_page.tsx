@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Navigate, useParams } from 'react-router';
+import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
@@ -8,7 +9,6 @@ import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
-import { useDocumentTitle } from '../utils';
 
 
 export function ShowText(props: { text: string }): JSX.Element {
@@ -106,7 +106,7 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 		});
 	}, [article_id, board_name]);
 
-	useDocumentTitle(`${article ? article.meta.board_name : ''}/${article ? article.meta.title : ''}`);
+	useTitle(`${article ? article.meta.title : ''}`);
 
 	if (fetching) {
 		return <></>;

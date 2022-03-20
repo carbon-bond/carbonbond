@@ -61,12 +61,6 @@ export function useBoard(board_id: number): Board | null {
 	return board;
 }
 
-export function useDocumentTitle(title: string): void {
-	React.useEffect(() => {
-		document.title = title;
-	}, [title]);
-}
-
 // 以返回的 value, onChange 綁定 input 的值
 function useInputValue(initialValue: string = '', onChange: (s: string) => void = () => { }): {
 	input_props: {

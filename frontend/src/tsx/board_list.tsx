@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { useTitle } from 'react-use';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';
-import {useDocumentTitle} from './utils';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
@@ -32,7 +32,7 @@ function BoardList(): JSX.Element {
 		});
 	}, []);
 
-	useDocumentTitle('所有看板');
+	useTitle('所有看板');
 
 	return <div className={style.boardList}>
 		<div className="mainContent">

@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
+import { useTitle } from 'react-use';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
 import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
-import { toastErr, useDocumentTitle, useInputValue } from '../utils';
+import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
@@ -726,7 +727,7 @@ function UserPage(): JSX.Element {
 		});
 	}, [profile_name, reload]);
 
-	useDocumentTitle(`個人卷宗/${profile_name}`);
+	useTitle(`卷宗 | ${profile_name}`);
 
 	if (!user) {
 		return <></>;
