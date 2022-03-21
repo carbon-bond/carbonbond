@@ -7,7 +7,7 @@ import {
 	Navigate,
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import KeepAlive, { AliveScope } from 'react-activation';
+import { AliveScope } from 'react-activation';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'normalize.css';
@@ -24,7 +24,7 @@ import { EditorPanelState } from '../global_state/editor_panel';
 import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { ResetPassword } from '../reset_password';
-import { UserPage } from '../profile/user_page';
+import { KeepAliveUserPage } from '../profile/user_page';
 import { MyPartyList } from '../party/my_party_list';
 import { PartyDetail } from '../party/party_detail';
 import { SignupInvitationPage } from '../signup_invitation_page';
@@ -65,7 +65,7 @@ function App(): JSX.Element {
 				<Route path="/app/party" element={<MyPartyList />} />
 				<Route path="/app/party/:party_name" element={<PartyDetail /> } />
 				<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
-				<Route path="/app/user/:profile_name" element={ <KeepAlive> <UserPage /> </KeepAlive> } />
+				<Route path="/app/user/:profile_name" element={ <KeepAliveUserPage />} />
 				<Route path="/app/user_board/:profile_name" element={
 					<PersonalBoard hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
