@@ -12,7 +12,7 @@ import { Board } from '../../ts/api/api_trait';
 
 import '../../css/layout.css';
 import { GraphView } from './graph_view';
-import KeepAlive from 'react-activation';
+import { KeepAlive } from 'react-activation';
 
 function GraphPage(props: { hide_sidebar?: boolean }): JSX.Element {
 	return <div style={{ display: 'flex', flexDirection: 'row' }}>

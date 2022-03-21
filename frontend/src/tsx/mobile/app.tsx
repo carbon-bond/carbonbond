@@ -7,7 +7,7 @@ import {
 	Navigate,
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import KeepAlive, { AliveScope } from 'react-activation';
+import { KeepAlive, AliveScope } from 'react-activation';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'normalize.css';
