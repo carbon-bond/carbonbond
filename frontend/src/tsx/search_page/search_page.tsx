@@ -1,6 +1,5 @@
 // TODO: 重寫搜尋頁面
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 import queryString from 'query-string';
 import { API_FETCHER, unwrap, map, map_or_else } from '../../ts/api/api';
 import { ArticleCard } from '../article_card';
@@ -12,24 +11,25 @@ import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
 import { BoardCacheState } from '../global_state/board_cache';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
-function getQueryOr(name: string, query: queryString.ParsedQuery, default_val: string): string {
+function getQueryOr(name: string, search_params: URLSearchParams, default_val: string): string {
 	try {
-		return getQuery(name, query);
+		return getQuery(name, search_params);
 	} catch (_) {
 		return default_val;
 	}
 }
 
-function getQueryOpt(name: string, query: queryString.ParsedQuery): string | null {
+function getQueryOpt(name: string, search_params: URLSearchParams): string | null {
 	try {
-		return getQuery(name, query);
+		return getQuery(name, search_params);
 	} catch (_) {
 		return null;
 	}
 }
-function getQuery(name: string, query: queryString.ParsedQuery): string {
-	let s = query[name];
+function getQuery(name: string, search_params: URLSearchParams): string {
+	let s = search_params.get(name);
 	if (typeof s == 'string') {
 		return s;
 	}
@@ -39,7 +39,7 @@ function getQuery(name: string, query: queryString.ParsedQuery): string {
 type CategoryEntry = { name: string, board_name: string, id: number };
 type SearchFields = { [name: string]: SearchField };
 
-export function SearchPage(props: RouteComponentProps): JSX.Element {
+export function SearchPage(): JSX.Element {
 	const { cur_board, setCurBoard } = BoardCacheState.useContainer();
 	let [cur_category, setCurCategory] = React.useState<number | null>(null);
 
@@ -57,6 +57,9 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 	let [articles, setArticles] = React.useState(new Array<ArticleMetaWithBonds>());
 	let [categories, setCategories] = React.useState(new Array<CategoryEntry>());
 
+	const [search_params] = useSearchParams();
+	const navigate = useNavigate();
+
 	function onSearchCategoryChange(category_id_str: string): void {
 		if (category_id_str !== '') {
 			let category_id = parseInt(category_id_str);
@@ -67,19 +70,18 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		let opt = queryString.parse(props.location.search);
 		let query = (() => {
 			try {
 				function toDatetime(s: string | null): string | null {
 					return s == null ? null : new Date(s) as unknown as string;
 				}
-				let title = getQuery('title', opt);
-				let board = getQueryOpt('board', opt);
-				let author = getQueryOpt('author', opt);
-				let start_time = toDatetime(getQueryOpt('start_time', opt));
-				let end_time = toDatetime(getQueryOpt('end_time', opt));
-				let category = map(getQueryOpt('category', opt), parseInt);
-				let fields: HashMap<string, SearchField> = map_or_else(getQueryOpt('fields', opt), s => {
+				let title = getQuery('title', search_params);
+				let board = getQueryOpt('board', search_params);
+				let author = getQueryOpt('author', search_params);
+				let start_time = toDatetime(getQueryOpt('start_time', search_params));
+				let end_time = toDatetime(getQueryOpt('end_time', search_params));
+				let category = map(getQueryOpt('category', search_params), parseInt);
+				let fields: HashMap<string, SearchField> = map_or_else(getQueryOpt('fields', search_params), s => {
 					let obj = JSON.parse(s);
 					if (typeof obj != 'object' || Array.isArray(obj)) {
 						throw `不合法的欄位值 ${s}`;
@@ -132,15 +134,14 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 				toastErr(e);
 			}
 		});
-	}, [setCurBoard, setSearchBoard, setSearchCategory, props.location.search]);
+	}, [search_params, setCurBoard, setSearchBoard, setSearchCategory]);
 
-	let opt = queryString.parse(props.location.search);
-	const author = useInputValue(getQueryOr('author', opt, '')).input_props;
-	const start_time = useInputValue(getQueryOr('start_time', opt, '')).input_props;
-	const end_time = useInputValue(getQueryOr('end_time', opt, '')).input_props;
+	const author = useInputValue(getQueryOr('author', search_params, '')).input_props;
+	const start_time = useInputValue(getQueryOr('start_time', search_params, '')).input_props;
+	const end_time = useInputValue(getQueryOr('end_time', search_params, '')).input_props;
 
 	function onSearch(): void {
-		let opt = queryString.parse(props.location.search);
+		let opt = queryString.parse(search_params.toString());
 		if (author.value.length > 0) {
 			opt.author = author.value;
 		} else {
@@ -173,7 +174,7 @@ export function SearchPage(props: RouteComponentProps): JSX.Element {
 		} else {
 			delete opt.fields;
 		}
-		props.history.push(`/app/search?${queryString.stringify(opt)}`);
+		navigate(`/app/search?${queryString.stringify(opt)}`);
 	}
 
 	return <div className="forumBody">

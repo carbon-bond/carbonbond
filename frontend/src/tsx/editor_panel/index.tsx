@@ -3,8 +3,6 @@ import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
-import { withRouter } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
 import { BoardName, BoardType, force } from '../../ts/api/api_trait';
@@ -20,6 +18,7 @@ import { toastErr } from '../utils';
 import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
 import { BondLine } from '../article_card';
+import { useNavigate } from 'react-router';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -210,7 +209,7 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 	return JSON.stringify(content);
 }
 
-function _EditorBody(props: RouteComponentProps): JSX.Element {
+function EditorBody(): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
@@ -228,6 +227,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 			.catch(err => console.log(err));
 	}, []);
 	const force = board.force;
+	const navigate = useNavigate();
 
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
 	let category = force.categories.find(c => c.name == editor_panel_data.category);
@@ -254,7 +254,7 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 				.then(id => {
 					toast('發文成功');
 					minimizeEditorPanel();
-					props.history.push(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
+					navigate(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
 					setEditorPanelData(null);
 					return API_FETCHER.articleQuery.queryDraft();
 				})
@@ -410,5 +410,4 @@ function _EditorBody(props: RouteComponentProps): JSX.Element {
 	</div>;
 }
 
-const EditorBody = withRouter(_EditorBody);
 export { EditorPanel };

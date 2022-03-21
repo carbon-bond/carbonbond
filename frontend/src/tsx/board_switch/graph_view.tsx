@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleMeta } from '../../ts/api/api_trait';
 import { ArticleCard } from '../article_card';
@@ -8,7 +8,6 @@ import * as d3 from 'd3';
 
 import style from '../../css/board_switch/graph_view.module.css';
 
-type Props = RouteComponentProps<{ article_id: string }>;
 enum RadiusMode {
 	Energy,
 	AbsEnergy,
@@ -20,15 +19,16 @@ type Panel = {
 	unlocate: () => void
 };
 
-export function GraphView(props: Props): JSX.Element {
-	let article_id = parseInt(props.match.params.article_id);
+export function GraphView(): JSX.Element {
+	let params = useParams<{article_id: string}>();
+	let article_id = parseInt(params.article_id!);
 	let [article_meta, setArticleMeta] = React.useState<ArticleMeta | null>(null);
 	let [radius_mode, setRadiusMode] = React.useState(RadiusMode.Energy);
 	let [locate, setLocate] = React.useState(false);
 	let unlocate = React.useCallback(() => setLocate(false), []);
 	React.useEffect(() => {
 		if (Number.isNaN(article_id)) {
-			toastErr(`${props.match.params.article_id} 不是合法的文章 id`);
+			toastErr(`${article_id} 不是合法的文章 id`);
 			return;
 		}
 		API_FETCHER.articleQuery.queryArticleMeta(article_id).then(res => {
@@ -38,7 +38,7 @@ export function GraphView(props: Props): JSX.Element {
 				setArticleMeta(res.Ok);
 			}
 		});
-	}, [article_id, props.match.params.article_id]);
+	}, [article_id]);
 
 	if (article_meta) {
 		let radios: [string, RadiusMode][] = [['鍵能', RadiusMode.Energy], ['鍵能絕對值', RadiusMode.AbsEnergy], ['留言數', RadiusMode.CommentNumber]];
@@ -62,7 +62,7 @@ export function GraphView(props: Props): JSX.Element {
 				<hr/>
 				<button onClick={() => setLocate(true)}>定位當前文章</button>
 			</div>
-			<GraphViewInner panel={{ radius_mode, locate, unlocate }} meta={article_meta} {...props} />
+			<GraphViewInner panel={{ radius_mode, locate, unlocate }} meta={article_meta} />
 		</div>;
 	} else {
 		return <></>;
@@ -171,7 +171,7 @@ function useRefD3<E extends d3.BaseType, D>(): React.MutableRefObject<
 	return React.useRef(null);
 }
 
-export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & RouteComponentProps ): JSX.Element {
+export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel }): JSX.Element {
 	let [graph, setGraph] = React.useState<Graph | null>(null);
 	let [cur_hovering, setCurHovering] = React.useState<null | NodeWithXY>(null);
 	let [offset_x, setOffsetX] = React.useState(0);
@@ -187,6 +187,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 	let node_ref = useRefD3<SVGCircleElement, Node>();
 	let link_ref = useRefD3<SVGPathElement, Edge>();
 	let text_ref = useRefD3<SVGTextElement, Node>();
+	const navigate = useNavigate();
 
 	function onHover(node: NodeWithXY): void {
 		setCurHovering(node);
@@ -334,7 +335,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			.attr('id', d => 'a' + d.id)
 			.attr('r', d => computeRadius(d.meta))
 			.on('mousedown', (_, d) => {
-				props.history.push(d.url);
+				navigate(d.url);
 			})
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
@@ -355,7 +356,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 				return d.name;
 			})
 			.on('mousedown', (_, d) => {
-				props.history.push(d.url);
+				navigate(d.url);
 			})
 			.on('mouseover', (_, d) => {
 				// @ts-ignore
@@ -379,7 +380,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel } & Rout
 			.force('center', d3.forceCenter(width / 2, height / 2))
 			.on('end', () => redraw(true));
 		simulation.tick(700);
-	}, [graph, props.meta.id, props.history, redraw, link_ref, node_ref, text_ref]);
+	}, [graph, props.meta.id, redraw, link_ref, node_ref, text_ref, navigate]);
 
 	React.useEffect(() => {
 		if (!props.panel.locate) {

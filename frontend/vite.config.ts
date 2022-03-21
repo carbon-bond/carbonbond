@@ -15,7 +15,7 @@ export default defineConfig({
 			},
 			output: {
 				manualChunks: {
-					react_family: ['react', 'react-dom', 'react-router', 'react-router-dom'],
+					react_family: ['react', 'react-dom', 'react-router-dom'],
 					emoji: ['emoji-mart'],
 					laws: ['src/md/law/服務條款.md', 'src/md/law/論壇守則.md'],
 				},

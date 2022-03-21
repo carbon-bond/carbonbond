@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
-import { RouteComponentProps } from 'react-router';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
@@ -17,6 +16,7 @@ import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
+import { useParams } from 'react-router-dom';
 
 let fake_id_counter = -1;
 
@@ -686,10 +686,9 @@ async function fetchMyPrivateHatings(): Promise<UserMini[]> {
 	return unwrap_or(await API_FETCHER.userQuery.queryMyPrivateHatingList(), []);
 }
 
-type Props = RouteComponentProps<{ profile_name: string }>;
-
-function UserPage(props: Props): JSX.Element {
-	const profile_name = props.match.params.profile_name;
+function UserPage(): JSX.Element {
+	let params = useParams<{profile_name: string}>();
+	const profile_name = params.profile_name!;
 	const { user_state } = UserState.useContainer();
 
 	const [user, setUser] = React.useState<User | null>(null);

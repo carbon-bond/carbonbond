@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
 	BrowserRouter as Router,
-	Switch,
+	Routes,
 	Route,
-	Redirect,
+	Navigate,
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import KeepAlive, { AliveScope } from 'react-activation';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'normalize.css';
@@ -20,12 +21,12 @@ import { SubscribedBoardsState } from '../global_state/subscribed_boards';
 import { BoardCacheState } from '../global_state/board_cache';
 import { AllChatState } from '../global_state/chat';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { MainScrollState } from '../global_state/main_scroll';
 import { BoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { ResetPassword } from '../reset_password';
 import { UserPage } from '../profile/user_page';
-import { PartySwitch } from '../party_switch';
+import { MyPartyList } from '../party/my_party_list';
+import { PartyDetail } from '../party/party_detail';
 import { SignupInvitationPage } from '../signup_invitation_page';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
@@ -45,57 +46,38 @@ toast.configure({ position: 'bottom-right' });
 function App(): JSX.Element {
 
 	function MainBody(): JSX.Element {
-		let { setEmitter } = MainScrollState.useContainer();
 		let { footer_option } = FooterState.useContainer();
 		let show_main_scroll = footer_option == FooterOption.Home;
 
 		return <div className="mainBody"
-			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }}
-			ref={ref => setEmitter(ref)}>
+			style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }} >
 			{
 				footer_option == FooterOption.Notification ?
 					<NotificationModal/> : null
 			}
 
-			<Switch>
-				<Route exact path="/app/signup/:token" render={props => (
-					<SignupPage {...props} />
-				)} />
-				<Route exact path="/app/reset_password/:token" render={props => (
-					<ResetPassword {...props} />
-				)} />
-				<Route exact path="/app" render={() => (
-					<BoardList></BoardList>
-				)} />
-				<Route exact path="/app/board_list" render={() => (
-					<BoardList></BoardList>
-				)} />
-				<Route exact path="/app/search" render={props => (
-					<SearchPage {...props} />
-				)} />
-				<Route path="/app/party" render={() =>
-					<PartySwitch />
-				} />
-				<Route path="/app/signup_invite" render={() =>
-					<SignupInvitationPage />
-				} />
-				<Route path="/app/user/:profile_name" render={props =>
-					<UserPage {...props} />
-				} />
-				<Route path="/app/user_board/:profile_name" render={props =>
-					<PersonalBoard {...props} hide_sidebar render_header={
+			<Routes>
+				<Route path="/app/signup/:token" element={<SignupPage />} />
+				<Route path="/app/reset_password/:token" element={<ResetPassword />} />
+				<Route path="/app" element={<BoardList />} />
+				<Route path="/app/board_list" element={<BoardList />} />
+				<Route path="/app/search" element={<SearchPage />} />
+				<Route path="/app/party" element={<MyPartyList />} />
+				<Route path="/app/party/:party_name" element={<PartyDetail /> } />
+				<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
+				<Route path="/app/user/:profile_name" element={ <KeepAlive> <UserPage /> </KeepAlive> } />
+				<Route path="/app/user_board/:profile_name" element={
+					<PersonalBoard hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
-				<Route path="/app/b/:board_name" render={props =>
-					<GeneralBoard {...props} hide_sidebar render_header={
+				<Route path="/app/b/:board_name/*" element={
+					<GeneralBoard hide_sidebar render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
-				<Route path="*" render={() =>
-					<Redirect to="/app" />
-				} />
-			</Switch>
+				<Route path="*" element={<Navigate to="/app" />} />
+			</Routes>
 		</div>;
 	}
 	function Content(): JSX.Element {
@@ -122,9 +104,7 @@ function App(): JSX.Element {
 			<Header/>
 			<FooterState.Provider>
 				<div className="other" >
-					<MainScrollState.Provider>
-						<MainBody />
-					</MainScrollState.Provider>
+					<MainBody />
 				</div>
 				<Footer/>
 			</FooterState.Provider>
@@ -161,4 +141,4 @@ function App(): JSX.Element {
 // import { ChatSocket } from '../ts/chat_socket';
 // window.chat_socket = new ChatSocket(1);
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<AliveScope><App /></AliveScope>, document.getElementById('root'));

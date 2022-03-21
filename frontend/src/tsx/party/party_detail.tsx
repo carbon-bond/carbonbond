@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
-import { Redirect, Link } from 'react-router-dom';
+import { Navigate, Link, useParams } from 'react-router-dom';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardCreator } from '../board_switch/board_creator';
@@ -10,18 +9,18 @@ import { UserState } from '../global_state/user';
 import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';
 
-type Props = RouteComponentProps<{ party_name?: string }>;
-
 async function fetchPartyDetail(party_name: string): Promise<Party> {
 	return unwrap(await API_FETCHER.partyQuery.queryParty(party_name));
 }
 
-export function PartyDetail(props: Props): JSX.Element {
+export function PartyDetail(): JSX.Element {
 	let [party, setParty] = React.useState<Party | null>(null);
 	let [fetching, setFetching] = React.useState(true);
+	let params = useParams();
 
-	let party_name = props.match.params.party_name!;
+	let party_name = params.party_name;
 	React.useEffect(() => {
+		if (!party_name) {return;}
 		fetchPartyDetail(party_name).then(p => {
 			setParty(p);
 			console.log(p);
@@ -33,7 +32,7 @@ export function PartyDetail(props: Props): JSX.Element {
 
 	const { user_state } = UserState.useContainer();
 
-	if (fetching) {
+	if (!party_name || fetching) {
 		return <div></div>;
 	} else if (party) {
 		return <div className={style.partyDetail}>
@@ -53,7 +52,7 @@ export function PartyDetail(props: Props): JSX.Element {
 			{
 				(() => {
 					if (!party.board_id && user_state.login) {
-						return <CreateBoardBlock party_id={party.id} rp={props} />;
+						return <CreateBoardBlock party_id={party.id} />;
 					} else {
 						return null;
 					}
@@ -61,15 +60,15 @@ export function PartyDetail(props: Props): JSX.Element {
 			}
 		</div>;
 	} else {
-		return <Redirect to="/app/party" />;
+		return <Navigate to="/app/party" />;
 	}
 }
 
-function CreateBoardBlock(props: { party_id: number, rp: Props }): JSX.Element {
+function CreateBoardBlock(props: { party_id: number }): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
 
 	return <div className={style.createBoardBlock}>
 		<div onClick={() => setExpand(!expand)} className={style.createButton}>🏂 創立看板</div>
-		<BoardCreator board_type={BoardType.General} party_id={props.party_id} visible={expand} setVisible={setExpand} history={props.rp.history} />
+		<BoardCreator board_type={BoardType.General} party_id={props.party_id} visible={expand} setVisible={setExpand} />
 	</div>;
 }

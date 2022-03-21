@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ChatBar } from './chat_bar';
 import { BrowseBar } from './browse_bar';
 import { DraftBar } from './draft_bar';
-import style from '../../css/sidebar.module.css';
+import style from '../../css/left_panel/left_panel.module.css';
 import { NumberOver } from '../components/number_over';
 import { AllChatState } from '../global_state/chat';
 import { STORAGE_NAME } from '../../ts/constants';
@@ -13,22 +13,26 @@ enum Option {
 	Chat           = 'Chat',
 	// DiscoverFriend = 'DiscoverFriend',
 	Draft          = 'Draft',
-	PluginStore    = 'PluginStore',
+	// PluginStore    = 'PluginStore',
 	None           = 'None'            // 側欄關閉
+}
+
+function PanelWrap(props: { children: JSX.Element }): JSX.Element {
+	return <div className="panel"><div className={style.panel}>{props.children}</div></div>;
 }
 
 function PanelMain(props: { option: Option }): JSX.Element {
 	switch (props.option) {
 		case Option.Browse:
-			return <div className={style.sidebar}><BrowseBar /></div>;
+			return <PanelWrap><BrowseBar /></PanelWrap>;
 		case Option.Chat:
-			return <div className={style.sidebar}><ChatBar /></div>;
+			return <PanelWrap><ChatBar /></PanelWrap>;
 		// case Option.DiscoverFriend:
-		// 	return <div className={style.sidebar}>交友</div>;
+			// return <PanelWrap><DiscoverFriendBar /></PanelWrap>;
 		case Option.Draft:
-			return <div className={style.sidebar}><DraftBar /></div>;
-		case Option.PluginStore:
-			return <div className={style.sidebar}>市集</div>;
+			return <PanelWrap><DraftBar /></PanelWrap>;
+		// case Option.PluginStore:
+			// return <PanelWrap><PluginStoreBar /></PanelWrap>;
 		case Option.None:
 			return <></>;
 	}
@@ -60,25 +64,27 @@ function LeftPanel(): JSX.Element {
 
 	return (
 		<>
-			<div className={style.menubar}>
-				<div className={style.topSet}>
-					{
-						user_state.login ?
-						<>
-							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-							<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
-								<div onClick={toggleOption(Option.Chat)}>🗨️</div>
-							</NumberOver>
-							{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
-							<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
-						</> :
-						<>
-							<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
-						</>
-					}
-				</div>
-				<div className={style.bottomSet}>
-					<div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div>
+			<div className="menubar">
+				<div className={style.menubarInner}>
+					<div className={style.topSet}>
+						{
+							user_state.login ?
+							<>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+								<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
+									<div onClick={toggleOption(Option.Chat)}>🗨️</div>
+								</NumberOver>
+								{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
+								<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
+							</> :
+							<>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+							</>
+						}
+					</div>
+					<div className={style.bottomSet}>
+						{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
+					</div>
 				</div>
 			</div>
 			<PanelMain option={option}/>

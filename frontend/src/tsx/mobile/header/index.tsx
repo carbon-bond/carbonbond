@@ -1,6 +1,4 @@
 import * as React from 'react';
-import { withRouter } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
 
 import style from '../../../css/header/index.module.css';
 
@@ -10,6 +8,7 @@ import { BoardCacheState } from '../../global_state/board_cache';
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
 import { SearchBar } from '../../header/search_bar';
+import { useNavigate } from 'react-router';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -23,10 +22,11 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 	</div>;
 }
 
-function _Header(props: RouteComponentProps): JSX.Element {
+function Header(): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const { cur_board } = BoardCacheState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
+	const navigate = useNavigate();
 
 	function UserBlock(): JSX.Element | null {
 		if (!user_state.login) {
@@ -60,11 +60,11 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		<div className={`header ${style.header}`}>
 			<div className={style.container}>
 				<div className={style.leftSet}>
-					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
+					<div className={style.carbonbond} onClick={() => navigate('/app')}>
 						<img src="/src/img/icon.png" alt="" />
 					</div>
 					<div className={style.location} style={{ fontSize: 14 }}>{title}</div>
-					<SearchBar history={props.history} cur_board={cur_board} hide_select_board/>
+					<SearchBar cur_board={cur_board} hide_select_board/>
 				</div>
 				<div className={style.rightSet}>
 					<UserStatus/>
@@ -73,7 +73,5 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		</div>
 	);
 }
-
-const Header = withRouter(_Header);
 
 export { Header };
