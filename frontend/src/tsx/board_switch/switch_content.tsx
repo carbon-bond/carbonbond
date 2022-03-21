@@ -13,6 +13,7 @@ import { Board } from '../../ts/api/api_trait';
 import '../../css/layout.css';
 import { GraphView } from './graph_view';
 import { KeepAlive } from 'react-activation';
+import { createBrowserHistory } from 'history';
 
 function GraphPage(props: { hide_sidebar?: boolean }): JSX.Element {
 	return <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -37,11 +38,12 @@ export function SwitchContent(props: { board: Board, hide_sidebar?: boolean }): 
 }
 
 function SwitchContentInner(props: { board: Board, hide_sidebar?: boolean }): JSX.Element {
+	let history = createBrowserHistory();
 	let board = props.board;
 	return <div className="boardSwitchContent">
 		<div className="mainContent">
 			<Routes>
-				<Route path="" element={ <KeepAlive id={`${board.board_type}/${board.board_name}`} children={<BoardPage board={board} />} />} />
+				<Route path="" element={ <KeepAlive id={history.location.key} children={<BoardPage board={board} />} />} />
 				<Route path="a/:article_id" element={ <ArticlePage board={board} /> } />
 				<Route path="*" element={<Navigate to="/app" />} />
 			</Routes>

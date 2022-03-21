@@ -11,12 +11,14 @@ import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 import { ShowText } from '../board_switch/article_page';
+import { createBrowserHistory } from 'history';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
 import { useParams } from 'react-router-dom';
+import { KeepAlive } from 'react-activation';
 
 let fake_id_counter = -1;
 
@@ -717,6 +719,13 @@ function UserPage(): JSX.Element {
 	</div>;
 }
 
+function KeepAliveUserPage(): JSX.Element {
+	let history = createBrowserHistory();
+	return <KeepAlive id={history.location.key}>
+		<UserPage />
+	</KeepAlive>;
+}
+
 export {
-	UserPage
+	KeepAliveUserPage
 };
