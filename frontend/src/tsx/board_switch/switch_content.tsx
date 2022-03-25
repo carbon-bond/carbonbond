@@ -43,7 +43,7 @@ function SwitchContentInner(props: { board: Board, hide_sidebar?: boolean }): JS
 	return <div className="boardSwitchContent">
 		<div className="mainContent">
 			<Routes>
-				<Route path="" element={ <KeepAlive id={history.location.key} children={<BoardPage board={board} />} />} />
+				<Route path="" element={ <KeepAlive name={history.location.key} id={history.location.key} children={<BoardPage board={board} />} />} />
 				<Route path="a/:article_id" element={ <ArticlePage board={board} /> } />
 				<Route path="*" element={<Navigate to="/app" />} />
 			</Routes>

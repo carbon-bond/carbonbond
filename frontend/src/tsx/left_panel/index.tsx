@@ -70,7 +70,7 @@ function LeftPanel(): JSX.Element {
 						{
 							user_state.login ?
 							<>
-								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>📑</div>
 								<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
 									<div onClick={toggleOption(Option.Chat)}>🗨️</div>
 								</NumberOver>
@@ -78,7 +78,7 @@ function LeftPanel(): JSX.Element {
 								<div className={style.icon} onClick={toggleOption(Option.Draft)}>稿</div>
 							</> :
 							<>
-								<div className={style.icon} onClick={toggleOption(Option.Browse)}>🗐</div>
+								<div className={style.icon} onClick={toggleOption(Option.Browse)}>📑</div>
 							</>
 						}
 					</div>

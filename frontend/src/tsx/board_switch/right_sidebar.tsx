@@ -52,7 +52,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 		{
 			user_state.login &&
 			<div className={style.rightSidebarItem}>
-				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>🖉 </b>發表文章</div>
+				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>✏️ </b>發表文章</div>
 				<SubscribeButton />
 			</div>
 		}
