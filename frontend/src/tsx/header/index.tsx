@@ -61,7 +61,7 @@ function Header(): JSX.Element {
 					<Row onClick={() => navigate(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
 					<Row onClick={() => navigate('/app/party')}>👥 我的政黨</Row>
 					<Row onClick={() => navigate('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
-					<Row onClick={() => navigate('/app/setting')}>⚙ 設定</Row>
+					<Row onClick={() => navigate('/app/setting')}>⚙️ 設定</Row>
 					<Row onClick={() => logout_request()}>🏳 登出</Row>
 				</div>
 			</div>;
