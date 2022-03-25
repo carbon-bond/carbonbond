@@ -8,6 +8,8 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr, useInputValue } from '../utils';
 import { ArticleContent, ShowText } from '../board_switch/article_page';
 import { BonderCards } from './bonder';
+import { toast } from 'react-toastify';
+import { copyToClipboard } from '../../ts/utils';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -130,6 +132,16 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 		}
 	}
 
+	// XXX: 個版會壞掉
+	function onShareClick(): void {
+		copyToClipboard(`${window.location.origin}/app/b/${props.article.board_name}/a/${props.article.id}`)
+			.then(() => {
+				toast('已複製網址到剪貼簿');
+			}).catch(err => {
+				toastErr(err);
+			});
+	}
+
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
 			<div className={style.articleBtnItem}>
@@ -153,13 +165,13 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 			}}>
 				➡️ <span className={style.num}>{props.article.stat.replies}</span>篇回文
 			</div>
-			<div className={style.articleBtnItem} onClick={() => onTrackingArticleClick()}>
+			<div className={style.articleBtnItem} onClick={onTrackingArticleClick}>
 				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
 			</div>
-			<div className={style.articleBtnItem} onClick={() => onFavoriteArticleClick()}>
+			<div className={style.articleBtnItem} onClick={onFavoriteArticleClick}>
 				{favorite ? '🌟 取消收藏' : <span><span className={style.articleBtnItemTracking}>🌟</span> 收藏</span>}
 			</div>
-			<div className={style.articleBtnItem}>
+			<div className={style.articleBtnItem} onClick={onShareClick}>
 				📎 分享
 			</div>
 		</div>

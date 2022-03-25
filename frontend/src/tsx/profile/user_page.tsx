@@ -721,7 +721,7 @@ function UserPage(): JSX.Element {
 
 function KeepAliveUserPage(): JSX.Element {
 	let history = createBrowserHistory();
-	return <KeepAlive id={history.location.key}>
+	return <KeepAlive name={history.location.key} id={history.location.key}>
 		<UserPage />
 	</KeepAlive>;
 }
