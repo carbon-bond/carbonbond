@@ -71,7 +71,7 @@ export function BrowseBar(): JSX.Element {
 						user_state.login ?
 							<Link to={'/app/subscribe_article'}>
 								<div>
-									<span className={style.specialBlock}> 📰 我的訂閱 </span>
+									<span className={style.specialBlock}> 📰 我的追蹤 </span>
 								</div>
 							</Link> :
 							<></>
