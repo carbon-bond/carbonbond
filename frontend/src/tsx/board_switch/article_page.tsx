@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { RouteComponentProps, Redirect } from 'react-router';
-import { MainScrollState } from '../global_state/main_scroll';
+import { Navigate, useParams } from 'react-router';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
-import { toastErr } from '../utils';
+import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 
 
@@ -66,9 +65,9 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 
 function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
 	let { article, board } = props;
-	let { useScrollToBottom } = MainScrollState.useContainer();
+	let { useMainScrollToBottom } = useMainScroll();
 	let scrollHandler = React.useCallback(() => { }, []);
-	useScrollToBottom(scrollHandler);
+	useMainScrollToBottom(scrollHandler);
 
 	const category = article.meta.category;
 
@@ -88,13 +87,10 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	</div>;
 }
 
-type Props = RouteComponentProps<{ article_id?: string, board_name?: string }> & {
-	board: Board
-};
-
-export function ArticlePage(props: Props): JSX.Element {
-	let article_id = parseInt(props.match.params.article_id!);
-	let board_name = props.match.params.board_name;
+export function ArticlePage(props: { board: Board }): JSX.Element {
+	let params = useParams();
+	let article_id = parseInt(params.article_id!);
+	let board_name = params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
 
@@ -106,7 +102,7 @@ export function ArticlePage(props: Props): JSX.Element {
 			toastErr(err);
 			setFetching(false);
 		});
-	}, [article_id, board_name, props.history]);
+	}, [article_id, board_name]);
 
 	if (fetching) {
 		return <></>;
@@ -114,7 +110,7 @@ export function ArticlePage(props: Props): JSX.Element {
 		if (board_name) {
 			return <ArticleDisplayPage article={article} board={props.board} />;
 		} else {
-			return <Redirect to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
+			return <Navigate to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
 		}
 	} else {
 		return <div>找不到文章QQ</div>;

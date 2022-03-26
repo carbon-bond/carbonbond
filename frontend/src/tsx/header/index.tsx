@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { withRouter } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useOnClickOutside from 'use-onclickoutside';
 
@@ -31,11 +30,12 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 	</div>;
 }
 
-function _Header(props: RouteComponentProps): JSX.Element {
+function Header(): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
 	const { cur_board } = BoardCacheState.useContainer();
+	const navigate = useNavigate();
 
 	let [expanding_user, setExpandingUser] = React.useState(false);
 	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
@@ -57,11 +57,11 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		if (user_state.login) {
 			return <div className={style.dropdown}>
 				<div className={style.features}>
-					<Row onClick={() => props.history.push(`/app/user_board/${user_state.user_name}`)}>🏯 我的個板</Row>
-					<Row onClick={() => props.history.push(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
-					<Row onClick={() => props.history.push('/app/party')}>👥 我的政黨</Row>
-					<Row onClick={() => props.history.push('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
-					<Row onClick={() => props.history.push('/app/setting')}>⚙ 設定</Row>
+					<Row onClick={() => navigate(`/app/user_board/${user_state.user_name}`)}>🏯 我的個板</Row>
+					<Row onClick={() => navigate(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
+					<Row onClick={() => navigate('/app/party')}>👥 我的政黨</Row>
+					<Row onClick={() => navigate('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
+					<Row onClick={() => navigate('/app/setting')}>⚙️ 設定</Row>
 					<Row onClick={() => logout_request()}>🏳 登出</Row>
 				</div>
 			</div>;
@@ -121,7 +121,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 			{signuping ? <SignupModal setSignuping={setSignuping}/> : null}
 			<div className={style.container}>
 				<div className={style.leftSet}>
-					<div className={style.carbonbond} onClick={() => props.history.push('/app')}>
+					<div className={style.carbonbond} onClick={() => navigate('/app')}>
 						{/* TODO: 修正 vite 路徑 */}
 						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 						<img className={style.imageText} src={carbonbondTextURL} alt="" />
@@ -129,7 +129,7 @@ function _Header(props: RouteComponentProps): JSX.Element {
 					<div className={style.location}>{title}</div>
 				</div>
 				<div className={style.middleSet}>
-					<SearchBar history={props.history} cur_board={cur_board} />
+					<SearchBar cur_board={cur_board} />
 				</div>
 				<div className={style.rightSet}>
 					{UserStatus()}
@@ -138,8 +138,6 @@ function _Header(props: RouteComponentProps): JSX.Element {
 		</div>
 	);
 }
-
-const Header = withRouter(_Header);
 
 function useNotification(login: boolean): Notification[] | null {
 	let [notifications, setNotifications] = React.useState<Notification[] | null>(null);

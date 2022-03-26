@@ -3,7 +3,6 @@ import { API_FETCHER } from '../../ts/api/api';
 import { BoardType } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
-import { History } from 'history';
 import { InvalidMessage } from '../components/invalid_message';
 
 import style from '../../css/board_switch/board_creator.module.css';
@@ -158,7 +157,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 	</div>;
 }
 
-export function BoardCreator(props: { board_type: string, party_id: number, visible: boolean, setVisible: Function, history: History }): JSX.Element {
+export function BoardCreator(props: { board_type: string, party_id: number, visible: boolean, setVisible: Function }): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const [forceValue, setForceValue] = React.useState<Force>({ categories: [], suggested_tags: [] });
 
@@ -204,7 +203,7 @@ export function BoardCreator(props: { board_type: string, party_id: number, visi
 				force: forceValueCopy,
 				...data
 			})
-				.then(() => props.history.go(0))
+				.then(() => location.reload()) // TODO: 應該跳轉至看板管理頁
 				.catch(err => toastErr(err));
 		} else {
 			toastErr('尚未登入');

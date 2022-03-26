@@ -1,20 +1,21 @@
 import * as React from 'react';
-import { History } from 'history';
+import { useNavigate } from 'react-router-dom';
 import style from '../../css/header/search_bar.module.css';
 
-export function SearchBar(props: { cur_board: string | null, hide_select_board?: boolean, history: History }): JSX.Element {
+export function SearchBar(props: { cur_board: string | null, hide_select_board?: boolean }): JSX.Element {
 	let [content, setContent] = React.useState('');
 	let [board, setBoard] = React.useState<string | null>(null);
+	const navigate = useNavigate();
 	function onSearch(board_name: string | null): void {
 		if (content.length == 0) {
 			return;
 		}
 		if (board_name) {
 			console.log(`於看板 ${board_name} 搜 ${content}`);
-			props.history.push(`/app/search?title=${content}&board=${board_name}`);
+			navigate(`/app/search?title=${content}&board=${board_name}`);
 		} else {
 			console.log(`全站搜 ${content}`);
-			props.history.push(`/app/search?title=${content}`);
+			navigate(`/app/search?title=${content}`);
 		}
 	}
 	function onChange(evt: React.ChangeEvent<HTMLInputElement>): void {

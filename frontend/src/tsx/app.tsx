@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
 	BrowserRouter as Router,
-	Switch,
+	Routes,
 	Route,
-	Redirect,
+	Navigate,
 } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { AliveScope } from 'react-activation';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'normalize.css';
@@ -21,15 +22,16 @@ import { DraftState } from './global_state/draft';
 import { BoardCacheState } from './global_state/board_cache';
 import { AllChatState } from './global_state/chat';
 import { EditorPanelState } from './global_state/editor_panel';
-import { MainScrollState } from './global_state/main_scroll';
 import { BoardList } from './board_list';
 import { SignupPage } from './signup_page';
 import { SettingPage } from './setting_page';
 import { PopArticlePage } from './pop_article_page';
 import { SubscribeArticlePage } from './subscribe_article_page';
 import { ResetPassword } from './reset_password';
-import { UserPage } from './profile/user_page';
-import { PartySwitch } from './party_switch';
+import { KeepAliveUserPage } from './profile/user_page';
+import { MyPartyList } from './party/my_party_list';
+import { PartyDetail } from './party/party_detail';
+
 import { SignupInvitationPage } from './signup_invitation_page';
 import { BoardHeader, GeneralBoard, PersonalBoard } from './board_switch';
 import { Header } from './header';
@@ -43,61 +45,36 @@ import { toastErr } from './utils';
 // 配置全域提醒
 toast.configure({ position: 'bottom-right' });
 
+
 function App(): JSX.Element {
 	function MainBody(): JSX.Element {
-		let { setEmitter } = MainScrollState.useContainer();
-		return <div className="mainBody" ref={ref => setEmitter(ref)}>
-			<Switch>
-				<Route exact path="/app/signup/:token" render={props => (
-					<SignupPage {...props} />
-				)} />
-				<Route exact path="/app/reset_password/:token" render={props => (
-					<ResetPassword {...props} />
-				)} />
-				<Route exact path="/app" render={() => (
-					<BoardList></BoardList>
-				)} />
-				<Route exact path="/app/board_list" render={() => (
-					<BoardList></BoardList>
-				)} />
-				<Route exact path="/app/search" render={props => (
-					<SearchPage {...props} />
-				)} />
-				<Route path="/app/party" render={() =>
-					<PartySwitch />
-				} />
-				<Route path="/app/signup_invite" render={() =>
-					<SignupInvitationPage />
-				} />
-				<Route path="/app/setting" render={() =>
-					<SettingPage />
-				} />
-				<Route path="/app/user/:profile_name" render={props =>
-					<UserPage {...props} />
-				} />
-				<Route path="/app/user_board/:profile_name" render={props =>
-					<PersonalBoard {...props} render_header={
+		return <div className="mainBody">
+			<Routes>
+				<Route path="/app/signup/:token" element={<SignupPage />} />
+				<Route path="/app/reset_password/:token" element={<ResetPassword />} />
+				<Route path="/app" element={<BoardList />} />
+				<Route path="/app/board_list" element={<BoardList />} />
+				<Route path="/app/search" element={<SearchPage />} />
+				<Route path="/app/party" element={<MyPartyList />} />
+				<Route path="/app/party/:party_name" element={<PartyDetail /> } />
+				<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
+				<Route path="/app/setting" element={<SettingPage />} />
+				<Route path="/app/user/:profile_name" element={ <KeepAliveUserPage />} />
+				<Route path="/app/user_board/:profile_name" element={
+					<PersonalBoard render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
-				<Route path="/app/b/:board_name" render={props =>
-					<GeneralBoard {...props} render_header={
+				<Route path="/app/b/:board_name/*" element={
+					<GeneralBoard render_header={
 						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
 					} />
 				} />
-				<Route path="/app/subscribe_article" render={() =>
-					<SubscribeArticlePage />
-				} />
-				<Route path="/app/pop_article" render={() =>
-					<PopArticlePage />
-				} />
-				<Route path="/app/law" render={() =>
-					<LawPage />
-				} />
-				<Route path="*" render={() =>
-					<Redirect to="/app" />
-				} />
-			</Switch>
+				<Route path="/app/subscribe_article" element={<SubscribeArticlePage />} />
+				<Route path="/app/pop_article" element={<PopArticlePage />} />
+				<Route path="/app/law/*" element={<LawPage />} />
+				<Route path="*" element={<Navigate to="/app" />} />
+			</Routes>
 		</div>;
 	}
 	function Content(): JSX.Element {
@@ -129,12 +106,10 @@ function App(): JSX.Element {
 		}, [all_chat_state]);
 
 		return <Router>
-			<Header></Header>
+			<Header />
 			<div className="other">
 				<LeftPanel></LeftPanel>
-				<MainScrollState.Provider>
-					<MainBody />
-				</MainScrollState.Provider>
+				<MainBody />
 				<BottomPanel></BottomPanel>
 			</div>
 		</Router>;
@@ -172,4 +147,4 @@ import { ConfigState } from './global_state/config';
 
 window.chat_socket = new ChatSocket();
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<AliveScope><App /></AliveScope>, document.getElementById('root'));

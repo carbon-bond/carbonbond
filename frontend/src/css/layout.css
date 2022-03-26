@@ -1,50 +1,45 @@
 /* NOTE: 不要在這裡寫 margin，會跟 CSS grid 產生難以預期的交互作用 */
 .app {
-    width: 100vw;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: var(--header-height) minmax(0, 1fr);
 }
 .appMobile {
-    width: 100vw;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: var(--header-height) minmax(0, 1fr) var(--footer-height);
 }
 .header {
-    grid-row-start: 1;
-    grid-row-end: 2;
+    position: fixed;
+    z-index: 1000;
 }
 .footer {
     grid-row-start: 3;
     grid-row-end: 4;
 }
 .other {
-    grid-row-start: 2;
-    grid-row-end: 3;
+    top: var(--header-height);
     display: flex;
     flex-direction: row;
     position: relative;
-    overflow-y: hidden;
+    & .menubar {
+        width: var(--menubar-width);
+        height: calc(100vh - var(--header-height));
+    }
+    & .panel {
+        width: 300px;
+        height: calc(100vh - var(--header-height));
+    }
     & .mainBody {
-        display: relative;
-        overflow-y: auto;
         height: 100%;
         flex: 1;
         & .forumBody {
             width: 100%;
             height: 100%;
 
-            & .switchHeader {
+            & .boardSwitchHeader {
                 height: 80px;
                 width: 100%;
                 background-color: var(--background-color);
             }
 
-            & .switchContent {
+            & .boardSwitchContent {
                 width: 100%;
                 display: flex;
-                /* flex-direction: row; */
                 justify-content: center;
             }
         }
@@ -57,5 +52,5 @@
 }
 .rightSideBar {
     padding: 10px 20px;
-    width: 335px; /* XXX: 為何寫死？ */
+    width: 335px;
 }

@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 
-import { MainScrollState } from '../global_state/main_scroll';
 import { ArticleCard } from '../article_card';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
@@ -9,12 +7,9 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
+import { useMainScroll } from '../utils';
 
 const PAGE_SIZE: number = 10;
-
-type Props = RouteComponentProps<{ board_name: string }> & {
-	board: Board
-};
 
 // TODO: Show fetching animation before data
 
@@ -35,13 +30,13 @@ async function fetchArticles(
 	return articles;
 }
 
-export function BoardPage(props: Props): JSX.Element {
+export function BoardPage(props: {board: Board}): JSX.Element {
 	let board_name = props.board.board_name;
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
 	const [is_end, setIsEnd] = React.useState<boolean>(false);
 	const min_article_id_ref = React.useRef<null | number>(0);
-	let { useScrollToBottom } = MainScrollState.useContainer();
+	let { useMainScrollToBottom } = useMainScroll();
 	min_article_id_ref.current = min_article_id;
 
 	const { setCurBoard } = BoardCacheState.useContainer();
@@ -71,7 +66,7 @@ export function BoardPage(props: Props): JSX.Element {
 		});
 	}, [articles, min_article_id_ref, is_end, board_name]);
 
-	useScrollToBottom(scrollHandler);
+	useMainScrollToBottom(scrollHandler);
 
 	return <>
 		{

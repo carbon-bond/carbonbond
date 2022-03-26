@@ -101,7 +101,9 @@ const MessageBlocks = React.memo((props: {messages: IMessage[], user_name: strin
 				let sender_name = (message.who == server_trigger.Sender.Myself ? props.user_name : props.room_name);
 				return <div key={Number(message.date)} className={style.messageBlock}>
 					<div className={style.leftSet}>
-						<img src={`/avatar/${sender_name}`} />
+						<Link to={`/app/user/${sender_name}`}>
+							<img src={`/avatar/${sender_name}`} />
+						</Link>
 					</div>
 					<div className={style.rightSet}>
 						<div className={style.meta}>
@@ -332,7 +334,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					setExtended(false);
 				}}></div>
 				<div className={rightSet}>
-					<div className={button}>⚙</div>
+					{/* <div className={button}>⚙</div> */}
 					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Simple)}>✗</div>
 				</div>
 			</div>

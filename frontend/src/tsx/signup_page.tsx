@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
-import { RouteComponentProps } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { toastErr } from './utils';
 import style from '../css/signup_page.module.css';
 import { API_FETCHER } from '../ts/api/api';
@@ -10,12 +10,12 @@ import { ConfigState } from './global_state/config';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from './components/invalid_message';
 
-type Props = RouteComponentProps<{ token: string }>;
-
-export function SignupPage(props: Props): JSX.Element {
+export function SignupPage(): JSX.Element {
 	let [email, setEmail] = React.useState<null | string>(null);
 	let [err, setErr] = React.useState<Error | null>(null);
-	let token = props.match.params.token;
+	let params = useParams<{token: string}>();
+	let token = params.token!;
+	let navigate = useNavigate();
 	let { getLoginState } = UserState.useContainer();
 	let { server_config } = ConfigState.useContainer();
 	const {
@@ -31,7 +31,7 @@ export function SignupPage(props: Props): JSX.Element {
 	async function signup_request(name: string, password: string): Promise<void> {
 		try {
 			await API_FETCHER.userQuery.signup(name, password, token);
-			props.history.push('/app/');
+			navigate('/app/');
 			getLoginState();
 			toast('註冊成功');
 		} catch (err) {

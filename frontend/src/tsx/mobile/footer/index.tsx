@@ -1,22 +1,20 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
 import { createContainer } from 'unstated-next';
-import { withRouter } from 'react-router';
 import queryString from 'query-string';
-import { RouteComponentProps } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 export enum FooterOption {
     Home,
     Notification,
 };
 
-function _Footer(props: RouteComponentProps): JSX.Element {
+export function Footer(): JSX.Element {
 	let { setFooterOption } = FooterState.useContainer();
 
-	let history = props.history;
-	let opt = queryString.parse(history.location.search);
+	let [search_params] = useSearchParams();
 	// @ts-ignore
-	let footer_option_str: string = opt.footer_option;
+	let footer_option_str: string = search_params.get('footer_option');
 
 	React.useEffect(() => {
 		let option: FooterOption = parseInt(footer_option_str) | 0;
@@ -24,23 +22,25 @@ function _Footer(props: RouteComponentProps): JSX.Element {
 	}, [footer_option_str, setFooterOption]);
 
 	return <div className={`footer ${style.footer}`}>
-		<IconBlock icon="🏠" option={FooterOption.Home} {...props} />
-		<IconBlock icon="🔔" option={FooterOption.Notification}  {...props} />
+		<IconBlock icon="🏠" option={FooterOption.Home} />
+		<IconBlock icon="🔔" option={FooterOption.Notification} />
 	</div>;
 }
 
-function IconBlock(props: { icon: string, option: FooterOption } & RouteComponentProps): JSX.Element {
+function IconBlock(props: { icon: string, option: FooterOption }): JSX.Element {
 	let { footer_option } = FooterState.useContainer();
-	let history = props.history;
+	let [search_params] = useSearchParams();
 	let is_cur = footer_option == props.option;
+	let navigate = useNavigate();
+	let location = useLocation();
 
 	function onClick(): void {
 		if (is_cur) {
 			return;
 		}
-		let opt = queryString.parse(history.location.search);
+		let opt = queryString.parse(search_params.toString());
 		opt.footer_option = props.option.toString();
-		history.push(`${history.location.pathname}?${queryString.stringify(opt)}`);
+		navigate(`${location.pathname}?${queryString.stringify(opt)}`);
 	}
 
 	return <div className={is_cur ? 'iconBlockSelected iconBlock' : 'iconBlock'}>
@@ -59,4 +59,3 @@ function useFooterState(): {
 }
 
 export const FooterState = createContainer(useFooterState);
-export const Footer = withRouter(_Footer);

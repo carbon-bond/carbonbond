@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { Redirect, Link } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 
 import { UserState } from '../global_state/user';
 import style from '../../css/party/my_party_list.module.css';
@@ -16,7 +15,7 @@ async function fetchPartyList(): Promise<Party[]> {
 }
 
 // TODO: 再發一個請求取得看板資訊
-export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
+export function MyPartyList(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [party_list, setPartyList] = React.useState<Party[]>([]);
 	let { user_state } = UserState.useContainer();
@@ -29,7 +28,7 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 	}, []);
 
 	if (!user_state.login && !user_state.fetching) {
-		return <Redirect to="/app" />;
+		return <Navigate to="/app" />;
 	} if (fetching) {
 		return <div></div>;
 	} else {
@@ -64,15 +63,16 @@ export function MyPartyList(props: RouteComponentProps<{}>): JSX.Element {
 					</div>;
 				})
 			}
-			<CreatePartyBlock {...props} />
+			<CreatePartyBlock />
 		</div>;
 	}
 }
 
-function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
+function CreatePartyBlock(): JSX.Element {
 	let [expand, setExpand] = React.useState(false);
 	let [party_name, setPartyName] = React.useState('');
 	let [board_name, setBoardName] = React.useState('');
+	let navigate = useNavigate();
 	return <>
 		<div onClick={() => setExpand(!expand)} className={style.createParty}> 👥 創建政黨 </div>
 		<div style={{ display: expand ? 'block' : 'none', textAlign: 'right' }}>
@@ -102,7 +102,7 @@ function CreatePartyBlock(props: RouteComponentProps<{}>): JSX.Element {
 				).then(res => {
 					unwrap(res);
 				}).then(() => {
-					props.history.push(`/app/party/${party_name}`);
+					navigate(`/app/party/${party_name}`);
 				}).catch(err => {
 					toastErr(err);
 				});

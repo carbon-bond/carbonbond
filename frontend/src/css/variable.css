@@ -1,6 +1,7 @@
 :root {
     --header-height: 60px;
     --footer-height: 60px;
+    --menubar-width: 56px;
 
     --deep-gray: #212429;
     --gray: #616569;

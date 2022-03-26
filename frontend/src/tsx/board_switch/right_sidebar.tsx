@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { Board, Party } from '../../ts/api/api_trait';
@@ -8,11 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import style from '../../css/board_switch/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 
-type Props = RouteComponentProps<{ board_name: string }> & {
-	board: Board
-};
-
-export function BoardSidebar(props: Props): JSX.Element {
+export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
 	let [ parties, setParties ] = React.useState(new Array<Party>());
 	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
@@ -57,7 +52,7 @@ export function BoardSidebar(props: Props): JSX.Element {
 		{
 			user_state.login &&
 			<div className={style.rightSidebarItem}>
-				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>🖉 </b>發表文章</div>
+				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>✏️ </b>發表文章</div>
 				<SubscribeButton />
 			</div>
 		}

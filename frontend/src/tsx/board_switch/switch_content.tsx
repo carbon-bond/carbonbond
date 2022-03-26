@@ -1,63 +1,60 @@
-
 import * as React from 'react';
 import {
-	Switch,
+	Routes,
 	Route,
-	Redirect,
+	Navigate,
 } from 'react-router-dom';
 
 import { BoardPage } from './board_page';
 import { ArticlePage } from './article_page';
 import { ArticleSidebar, BoardSidebar } from './right_sidebar';
-import { Board, BoardType } from '../../ts/api/api_trait';
+import { Board } from '../../ts/api/api_trait';
 
 import '../../css/layout.css';
 import { GraphView } from './graph_view';
+import { KeepAlive } from 'react-activation';
+import { createBrowserHistory } from 'history';
 
-export function SwitchContent(props: { board: Board, hide_sidebar?: boolean, board_type: string }): JSX.Element {
-	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
-	return <Switch>
-		<Route exact path={`/app/${cur_board_type}/:board_name/graph/:article_id`} render={x =>
-			<div style={{ display: 'flex', flexDirection: 'row' }}>
-				<div style={{ flex: 1 }}>
-					<GraphView {...x} />
+function GraphPage(props: { hide_sidebar?: boolean }): JSX.Element {
+	return <div style={{ display: 'flex', flexDirection: 'row' }}>
+		<div style={{ flex: 1 }}>
+			<GraphView />
+		</div>
+		{
+			props.hide_sidebar ?
+				<></> :
+				<div className="rightSideBar">
+					<ArticleSidebar />
 				</div>
-				{
-					props.hide_sidebar ? null : <div className="rightSideBar">
-						<ArticleSidebar />
-					</div>
-				}
-			</div>
-		} />
-		<Route render={() => <SwitchContentInner board={props.board!} hide_sidebar={props.hide_sidebar} board_type={props.board_type} />} />
-	</Switch>;
+		}
+	</div>;
 }
 
-function SwitchContentInner(props: { board: Board, hide_sidebar?: boolean, board_type: String }): JSX.Element {
+export function SwitchContent(props: { board: Board, hide_sidebar?: boolean }): JSX.Element {
+	return <Routes>
+		<Route path={'graph/:article_id'} element={<GraphPage />} />
+		<Route path="*" element={ <SwitchContentInner board={props.board!} hide_sidebar={props.hide_sidebar} />} />
+	</Routes>;
+}
+
+function SwitchContentInner(props: { board: Board, hide_sidebar?: boolean }): JSX.Element {
+	let history = createBrowserHistory();
 	let board = props.board;
-	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
-	return <div className="switchContent">
+	return <div className="boardSwitchContent">
 		<div className="mainContent">
-			<Switch>
-				<Route exact path={`/app/${cur_board_type}/:board_name`} render={props =>
-					<BoardPage {...props} board={board} />
-				} />
-				<Route exact path={`/app/${cur_board_type}/:board_name/a/:article_id`} render={props =>
-					<ArticlePage {...props} board={board} />
-				} />
-				<Redirect to="/app" />
-			</Switch>
+			<Routes>
+				<Route path="" element={ <KeepAlive name={history.location.key} id={history.location.key} children={<BoardPage board={board} />} />} />
+				<Route path="a/:article_id" element={ <ArticlePage board={board} /> } />
+				<Route path="*" element={<Navigate to="/app" />} />
+			</Routes>
 		</div>
 		{
 			props.hide_sidebar ? null : <div className="rightSideBar">
-				<Switch>
-					<Route exact path={`/app/${cur_board_type}/:board_name`} render={props =>
-						<BoardSidebar {...props} board={board} />
-					} />
-					<Route exact path={`/app/${cur_board_type}/:board_name/a/:article_id`} render={() =>
-						<ArticleSidebar />
-					} />
-				</Switch>
+				<Routes>
+					<Route path="" element={<BoardSidebar board={board} /> } />
+					<Route path="a/:article_id" element={<ArticleSidebar />} />
+					<Route path="*" element={<Navigate to="/app" />} />
+				</Routes>
 			</div>
 		}
 	</div>;
