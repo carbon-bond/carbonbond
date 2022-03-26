@@ -53,7 +53,8 @@ export class ChatSocket {
 		}
 	}
 	reset(): void {
-		const url = `ws://${window.location.hostname}:${window.location.port}/chat`;
+		const protocol = location.protocol == 'https:' ? 'wss' : 'ws';
+		const url = `${protocol}://${window.location.hostname}:${window.location.port}/chat`;
 		this.socket = new WebSocket(url);
 		this.socket.onopen = () => {
 			if (this.attempt_counter > 0) {
