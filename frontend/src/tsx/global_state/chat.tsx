@@ -196,24 +196,24 @@ function useAllChatState(): AllChatState {
 	function addDirectChat(id: number, chat: DirectChatData): void {
 		// TODO: 先去資料庫裏撈聊天室
 		// 可能有太舊的對話沒有被載入到客戶端
-		setAllChat(all_chat.addChat(id, chat));
+		setAllChat(all_chat => all_chat.addChat(id, chat));
 	}
 
 	function addMessage(id: number, message: Message): void {
-		setAllChat(all_chat.addMessage(id, message));
+		setAllChat(all_chat => all_chat.addMessage(id, message));
 	}
 
 	function addChannelMessage(id: number, channel_name: string, message: Message): void {
-		setAllChat(all_chat.addChannelMessage(id, channel_name, message));
+		setAllChat(all_chat => all_chat.addChannelMessage(id, channel_name, message));
 	}
 
 	// 只作用於雙人
 	function updateLastRead(id: number, time: Date): void {
-		setAllChat(all_chat.updateReadTime(id, time));
+		setAllChat(all_chat => all_chat.updateReadTime(id, time));
 	}
 
 	function updateLastReadChannel(id: number, channel_name: string, time: Date): void {
-		setAllChat(all_chat.updateChannelReadTime(id, channel_name, time));
+		setAllChat(all_chat => all_chat.updateChannelReadTime(id, channel_name, time));
 	}
 
 	return {
