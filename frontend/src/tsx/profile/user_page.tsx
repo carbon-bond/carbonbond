@@ -22,7 +22,7 @@ import { KeepAlive } from 'react-activation';
 
 let fake_id_counter = -1;
 
-function EditSentence(props: { sentence: string, setSentence: Function }): JSX.Element {
+function EditSentence(props: { sentence: string, setSentence: (sentence: string) => void }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue(props.sentence);
 	React.useEffect(() => {
@@ -60,7 +60,7 @@ function EditSentence(props: { sentence: string, setSentence: Function }): JSX.E
 	}
 }
 
-function Sentence(props: { is_me: boolean, sentence: string, setSentence: Function }): JSX.Element {
+function Sentence(props: { is_me: boolean, sentence: string, setSentence: (sentence: string) => void }): JSX.Element {
 	if (props.is_me) {
 		return <EditSentence sentence={props.sentence} setSentence={props.setSentence} />;
 	} else if (props.sentence == '') {
@@ -201,7 +201,8 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 
 type RelationKind = 'following' | 'hating' | 'follower' | 'hater';
 
-function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean, visible: boolean, setVisible: Function, reload: number }): JSX.Element {
+function RelationModal(props: { user: User, kind: RelationKind, is_myself: boolean,
+		visible: boolean, setVisible: React.Dispatch<React.SetStateAction<boolean>>, reload: number }): JSX.Element {
 	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
 	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
 	const [selectTab, setSelectTab] = React.useState<number>(0);
@@ -327,10 +328,10 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 }
 
 function RelationEditModal(props: {target_user_id: number,
-			relation_type: UserRelationKind, setRelationType: Function,
-			relation_public: boolean, setRelationPublic: Function,
-			visible: boolean, setVisible: Function
-			setReload: Function}) : JSX.Element {
+			relation_type: UserRelationKind, setRelationType: React.Dispatch<React.SetStateAction<UserRelationKind>>,
+			relation_public: boolean, setRelationPublic: React.Dispatch<React.SetStateAction<boolean>>,
+			visible: boolean, setVisible: React.Dispatch<React.SetStateAction<boolean>>,
+			setReload: React.Dispatch<React.SetStateAction<number>>}) : JSX.Element {
 	const [new_relation_type, setNewRelationType] = React.useState<UserRelationKind>(props.relation_type);
 	const [new_relation_public, setNewRelationPublic] = React.useState<boolean>(props.relation_public);
 
@@ -443,9 +444,9 @@ function RelationEditModal(props: {target_user_id: number,
 }
 
 function RelationEditComponent(props: {target_user_id: number,
-			relation_type: UserRelationKind, setRelationType: Function,
-			relation_public: boolean, setRelationPublic: Function
-			setReload: Function}) : JSX.Element {
+			relation_type: UserRelationKind, setRelationType: React.Dispatch<React.SetStateAction<UserRelationKind>>,
+			relation_public: boolean, setRelationPublic: React.Dispatch<React.SetStateAction<boolean>>,
+			setReload: React.Dispatch<React.SetStateAction<number>>}) : JSX.Element {
 	const [visible, setVisible] = React.useState<boolean>(false);
 	function getButtonText() : string {
 		if (props.relation_type === UserRelationKind.None) {
@@ -466,7 +467,9 @@ function RelationEditComponent(props: {target_user_id: number,
 	</div>;
 }
 
-function Profile(props: { profile_user: User, setProfileUser: Function, user_state: UserStateType, reload: number, setReload: Function }): JSX.Element {
+function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>>,
+		user_state: UserStateType,
+		reload: number, setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
 	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
