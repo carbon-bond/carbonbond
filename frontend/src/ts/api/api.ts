@@ -6,8 +6,7 @@ async function fetchResult(query: Object): Promise<string> {
 	if (info.length > 300) {
 		info = '太長，省略';
 	}
-	// TODO: 支援 https
-	const url = `http://${window.location.hostname}:${window.location.port}/api?query=${info}`;
+	const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/api?query=${info}`;
 
 	const response = await fetch(url, {
 		body: JSON.stringify(query),
