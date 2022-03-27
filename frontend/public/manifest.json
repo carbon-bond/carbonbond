@@ -1,0 +1,20 @@
+{
+    "name": "碳鍵",
+    "short_name": "碳鍵",
+    "start_url": "/app",
+    "theme_color": "#e51a30",
+    "background_color": "#fafafa",
+    "icons": [
+        {
+            "src": "icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "display": "standalone"
+}
