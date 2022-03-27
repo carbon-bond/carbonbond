@@ -7,6 +7,7 @@ import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
+import { ArticleSidebar } from './right_sidebar';
 
 
 export function ShowText(props: { text: string }): JSX.Element {
@@ -87,7 +88,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 	</div>;
 }
 
-export function ArticlePage(props: { board: Board }): JSX.Element {
+export function ArticlePage(props: { board: Board}): JSX.Element {
 	let params = useParams();
 	let article_id = parseInt(params.article_id!);
 	let board_name = params.board_name;
@@ -108,11 +109,16 @@ export function ArticlePage(props: { board: Board }): JSX.Element {
 		return <></>;
 	} else if (article) {
 		if (board_name) {
-			return <ArticleDisplayPage article={article} board={props.board} />;
+			return <>
+				<div className="mainContent">
+					<ArticleDisplayPage article={article} board={props.board} />
+				</div>
+				{window.is_mobile ? <></> : <ArticleSidebar author={article.meta.author}/>}
+			</>;
 		} else {
 			return <Navigate to={`/app/b/${article.meta.board_name}/a/${article.meta.id}`} />;
 		}
 	} else {
-		return <div>找不到文章QQ</div>;
+		return <div>{`文章代碼 ${article_id} ：不存在`}</div>;
 	}
 }

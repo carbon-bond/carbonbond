@@ -80,11 +80,20 @@
             & > * {
                 margin-bottom: 10px;
             }
-        }
-        & .relation {
-            width: 200px;
-            & button {
-                margin: 0px 10px 0px 0px;
+            & button:hover {
+                cursor: pointer;
+            }
+            & .personalBoard {
+                display: flex;
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                border: 1px solid var(--border-color);
+                padding: 2px;
+                border-radius: 3px;
+            }
+            & .personalBoard:hover {
+                background: var(--lightest-gray);
             }
         }
     }
@@ -124,74 +133,78 @@
             justify-content: center;
         }
     }
-    & .detail {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        & > div > div:not(:first-child) {
-            border-top: 1px solid var(--border-color);
-        }
-        & > div > div {
-            padding: 6px 0px;
-        }
-        width: 300px;
-        padding: 10px;
-        background: var(--background-color);
-        font-size: 14px;
-        & .editButton {
-           align-self: center; 
-           cursor: pointer;
-        }
-        & .introduction {
-            font-size: 20px;
-            display: flex;
-            flex-direction: row;
-            & .title {
-                flex-grow: 1;
-            }
-            & .editButton {}
-        }
-        & .info {
-            & .item {
-                margin: 10px 0px;
-                & .key{
-                    font-weight: bold;
-                }
-            }
-        }
-        & .titleLabel {
-            margin: 0px 5px 0px 0px;
-        }
-        & .titleCertificate {
-            & .item {
-                margin: 0px 0px 5px;
-            }
-            & .titleLawyer {
-                background-color: var(--lighter-gray);
-                border-radius: 3px;
-                display: inline-block;
-                padding: 2px 5px 2px 2px;
-                & .titleLawyerImage {
-                    background-image: url('/src/img/Q_lawyer.png');
-                    background-size: 16px;
-                    display: inline-block;
-                    width: 16px;
-                    height: 16px;
-                    vertical-align: middle;
-                }
-                & .titleLawyerText {
-                    vertical-align: middle;
-                }
-            }
-            & .titleUnknown {
-                background-color: var(--lighter-gray);
-                border-radius: 3px;
-                display: inline-block;
-                padding: 2px 5px 2px 2px;
-            }
-        }
-    
+}
+.profileDetailWrap {
+    margin-top: 20px;
+    width: 300px;
+}
+
+.detail {
+    display: flex;
+    flex-direction: column;
+    & > div > div:not(:first-child) {
+        border-top: 1px solid var(--border-color);
     }
+    & > div > div {
+        padding: 6px 0px;
+    }
+    /* width: 300px; */
+    padding: 10px;
+    background: var(--background-color);
+    font-size: 14px;
+    & .editButton {
+        align-self: center; 
+        cursor: pointer;
+    }
+    & .introduction {
+        font-size: 20px;
+        display: flex;
+        flex-direction: row;
+        & .title {
+            flex-grow: 1;
+        }
+        & .editButton {}
+    }
+    & .info {
+        & .item {
+            margin: 10px 0px;
+            & .key{
+                font-weight: bold;
+            }
+        }
+    }
+    & .titleLabel {
+        margin: 0px 5px 0px 0px;
+    }
+    & .titleCertificate {
+        & .item {
+            margin: 0px 0px 5px;
+        }
+        & .titleLawyer {
+            background-color: var(--lighter-gray);
+            border-radius: 3px;
+            display: inline-block;
+            padding: 2px 5px 2px 2px;
+            & .titleLawyerImage {
+                background-image: url('/src/img/Q_lawyer.png');
+                background-size: 16px;
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                vertical-align: middle;
+            }
+            & .titleLawyerText {
+                vertical-align: middle;
+            }
+        }
+        & .titleUnknown {
+            background-color: var(--lighter-gray);
+            border-radius: 3px;
+            display: inline-block;
+            padding: 2px 5px 2px 2px;
+        }
+    }
+
 }
 
 .editModal {
@@ -235,8 +248,9 @@
 }
 
 .relationEditComponent {
-    & span {
-        margin-right: 10px;
+    width: 100%;
+    & button {
+        width: 100%;
     }
 }
 

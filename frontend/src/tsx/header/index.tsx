@@ -17,6 +17,7 @@ import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
 import { SignupModal, LoginModal } from './login_modal';
+import { EditorPanelState } from '../global_state/editor_panel';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -35,6 +36,7 @@ function Header(): JSX.Element {
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
 	const { cur_board } = BoardCacheState.useContainer();
+	const { setEditorPanelData } = EditorPanelState.useContainer();
 	const navigate = useNavigate();
 
 	let [expanding_user, setExpandingUser] = React.useState(false);
@@ -46,6 +48,8 @@ function Header(): JSX.Element {
 			setLogout();
 			setExpandingUser(false);
 			setExpandingQuality(null);
+			// TODO: 詢問是否儲存草稿
+			setEditorPanelData(null);
 			toast('您已登出');
 		} catch (err) {
 			toastErr(err);

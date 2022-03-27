@@ -39,7 +39,6 @@
 
 .rightSidebarBlock {
     background-color: var(--background-color);
-    /* padding: 15px; */
     color: var(--font-color);
     border: 1px var(--lighter-gray) solid;
 
@@ -81,6 +80,32 @@
         & .mainPartyItem {
             color: var(--theme-color);
             font-weight: bold;
+        }
+    }
+}
+
+.advertisement {
+    font-size: 72px;
+}
+.userIntroduction {
+    & img {
+        width: 96px;
+        height: 96px;
+    }
+    & .userTop {
+        padding: 10px;
+        display: flex;
+        & .text {
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            & .name {
+                font-size: 32px;
+            }
+            & .sentence {
+                font-size: 14px;
+            }
         }
     }
 }

@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Board, Party } from '../../ts/api/api_trait';
+import { Author, Board, Party, User } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import style from '../../css/board_switch/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
+import { Link } from 'react-router-dom';
+import { ProfileDetail } from '../profile/user_page';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -47,8 +49,9 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			</div>;
 		}
 	}
+	console.log('board right side bar');
 
-	return <>
+	return <div className="rightSideBar">
 		{
 			user_state.login &&
 			<div className={style.rightSidebarItem}>
@@ -72,7 +75,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 				<PartyList parties={parties}/>
 			</div>
 		</div>
-	</>;
+	</div>;
 }
 
 function PartyList(props: {parties: Party[]}): JSX.Element {
@@ -111,14 +114,63 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 	</>;
 }
 
-export function ArticleSidebar(): JSX.Element {
-	return <>
+function UserIntroduction(props: {author: Author}): JSX.Element {
+	const [user, setUser] = React.useState<User | null>(null);
+
+	React.useEffect(() => {
+		if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+			return;
+		} else {
+			API_FETCHER.userQuery.queryUser(props.author.NamedAuthor.name).then((user) => {
+				try {
+					setUser(unwrap(user));
+				} catch (err) {
+					toastErr(err);
+				}
+			});
+		}
+	}, [props.author]);
+
+	if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+		return <></>;
+	} else {
+		const user_name = props.author.NamedAuthor.name;
+		return <div className={style.userIntroduction}>
+			<div className={style.userTop}>
+				<img src={`/avatar/${user_name}`} />
+				<div className={style.text}>
+					<div className={style.name}>
+						<Link to={`/app/user/${user_name}`}>{user_name}</Link>
+					</div>
+					{
+						user ?
+							<div className={style.sentence}> {user.sentence} </div>
+							: <></>
+					}
+				</div>
+			</div>
+			{
+				user ?
+					<ProfileDetail profile_user={user} />
+					: <></>
+			}
+		</div>;
+	}
+}
+
+export function ArticleSidebar(props: {author: Author}): JSX.Element {
+	return <div className="rightSideBar">
 		<div className={style.rightSidebarItem}>
-			<div className={style.rightSidebarBlock}> 關於作者 </div>
+			<div className={style.rightSidebarBlock}>
+				<UserIntroduction author={props.author} />
+			</div>
 		</div>
 
 		<div className={style.rightSidebarItem}>
-			<div className={style.rightSidebarBlock}> 廣告 </div>
+			<div className={style.rightSidebarBlock}>
+				<div className={style.advertisement}>廣告</div>
+				招租中，意者請洽 <a href="mailto:c.carbonbond.c@gmail.com">c.carbonbond.c@gmail.com</a>
+			</div>
 		</div>
-	</>;
+	</div>;
 }

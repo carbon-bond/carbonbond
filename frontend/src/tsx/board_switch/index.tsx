@@ -10,15 +10,12 @@ import { UserState } from '../global_state/user';
 import '../../css/layout.css';
 import style from '../../css/board_switch/board_page.module.css';
 
-type RenderHeader = { render_header: (board: Board, url: string, subscribe_count: number) => JSX.Element };
-
-function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_sidebar?: boolean } & RenderHeader): JSX.Element {
+function BoardSwitch(props: { board_name: string, board_type: BoardType }): JSX.Element {
 	let board_name = props.board_name;
 	let board_type = props.board_type;
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
-	let hide_sidebar = props.hide_sidebar;
 	React.useEffect(() => {
 		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
@@ -43,17 +40,19 @@ function BoardSwitch(props: { board_name: string, board_type: BoardType, hide_si
 	} else if (board == null) {
 		return <EmptyBoard board_name={props.board_name} board_type={props.board_type} />;
 	} else {
-		return <BoardBody board={board} hide_sidebar={hide_sidebar} subscribe_count={subscribe_count} board_type={props.board_type} render_header={props.render_header} />;
+		return <BoardBody board={board} subscribe_count={subscribe_count} board_type={props.board_type} />;
 	}
 }
 
-export function BoardHeader(props: { board: Board, url: string, subscribe_count: number }): JSX.Element {
+function BoardHeader(props: { board: Board, board_type: BoardType, subscribe_count: number }): JSX.Element {
+	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
+	const board_url = `/app/${cur_board_type}/${props.board.board_name}`;
 	return <div className="boardSwitchHeader">
 		<div className={style.boardHeader}>
 			<div>
 				<div className={style.headerLeft}>
 					<div className={style.boardTitle}>
-						<Link to={props.url}>{props.board.board_name}</Link>
+						<Link to={board_url}>{props.board.board_name}</Link>
 					</div>
 					<div className={style.boardSubTitle}>{props.board.title}</div>
 				</div>
@@ -77,31 +76,26 @@ export function BoardHeader(props: { board: Board, url: string, subscribe_count:
 	</div>;
 }
 
-function BoardBody(props: { board: Board | null, hide_sidebar?: boolean, board_type: BoardType, subscribe_count: number } & RenderHeader): JSX.Element {
-	const cur_board_type = props.board_type === BoardType.General ? 'b' : 'user_board';
+function BoardBody(props: { board: Board | null, board_type: BoardType, subscribe_count: number }): JSX.Element {
 	if (!props.board) {
 		return <></>;
 	}
 	return <div className="forumBody">
-		{
-			props.render_header(props.board, `/app/${cur_board_type}/${props.board.board_name}`, props.subscribe_count)
-		}
+		<BoardHeader board={props.board} board_type={props.board_type} subscribe_count={props.subscribe_count}/>
 		<SwitchContent {...props} board={props.board} />
 	</div>;
 }
 
-export function PersonalBoard(props: { hide_sidebar?: boolean} & RenderHeader): JSX.Element {
+export function PersonalBoard(): JSX.Element {
 	let params = useParams();
 	return <BoardSwitch board_name={params.profile_name!}
-		board_type={BoardType.Personal} hide_sidebar={props.hide_sidebar}
-		render_header={props.render_header} />;
+		board_type={BoardType.Personal} />;
 }
 
-export function GeneralBoard(props: { hide_sidebar?: boolean } & RenderHeader): JSX.Element {
+export function GeneralBoard(): JSX.Element {
 	let params = useParams();
 	return <BoardSwitch board_name={params.board_name!}
-		board_type={BoardType.General} hide_sidebar={props.hide_sidebar}
-		render_header={props.render_header} />;
+		board_type={BoardType.General} />;
 }
 
 export function EmptyBoard(props: { board_name: string, board_type: string }): JSX.Element {
