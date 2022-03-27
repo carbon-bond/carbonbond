@@ -88,8 +88,24 @@
     font-size: 72px;
 }
 .userIntroduction {
-    & > img {
-        width: 128px;
-        height: 128px;
+    & img {
+        width: 96px;
+        height: 96px;
+    }
+    & .userTop {
+        padding: 10px;
+        display: flex;
+        & .text {
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            & .name {
+                font-size: 32px;
+            }
+            & .sentence {
+                font-size: 14px;
+            }
+        }
     }
 }

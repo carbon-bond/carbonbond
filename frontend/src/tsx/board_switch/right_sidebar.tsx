@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Author, Board, Party } from '../../ts/api/api_trait';
+import { Author, Board, Party, User } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import style from '../../css/board_switch/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
+import { Link } from 'react-router-dom';
+import { ShowText } from './article_page';
+import { ProfileDetail } from '../profile/user_page';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -113,12 +116,45 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 }
 
 function UserIntroduction(props: {author: Author}): JSX.Element {
-	// TODO: queryUser
+	const [user, setUser] = React.useState<User | null>(null);
+
+	React.useEffect(() => {
+		if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+			return;
+		} else {
+			API_FETCHER.userQuery.queryUser(props.author.NamedAuthor.name).then((user) => {
+				try {
+					setUser(unwrap(user));
+				} catch (err) {
+					toastErr(err);
+				}
+			});
+		}
+	}, [props.author]);
+
 	if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
 		return <></>;
 	} else {
+		const user_name = props.author.NamedAuthor.name;
 		return <div className={style.userIntroduction}>
-			<img src={`/avatar/${props.author.NamedAuthor.name}`} />
+			<div className={style.userTop}>
+				<img src={`/avatar/${user_name}`} />
+				<div className={style.text}>
+					<div className={style.name}>
+						<Link to={`/app/user/${user_name}`}>{user_name}</Link>
+					</div>
+					{
+						user ?
+							<div className={style.sentence}> {user.sentence} </div>
+							: <></>
+					}
+				</div>
+			</div>
+			{
+				user ?
+					<ProfileDetail profile_user={user} />
+					: <></>
+			}
 		</div>;
 	}
 }

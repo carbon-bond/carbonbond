@@ -88,8 +88,9 @@ function CertificationItem(props: { title: string }) : JSX.Element {
 	</span>;
 }
 
-function ProfileDetail(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
+export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
+	let { user_state } = UserState.useContainer();
 	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
 	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
 	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
@@ -168,7 +169,7 @@ function ProfileDetail(props: { profile_user: User, user_state: UserStateType })
 		/>;
 	}
 
-	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
 	return <div className={style.detail}>
 		<div>
@@ -732,7 +733,9 @@ function UserPage(): JSX.Element {
 		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
-			<ProfileDetail profile_user={user} user_state={user_state} />
+			<div className={style.profileDetailWrap}>
+				<ProfileDetail profile_user={user} />
+			</div>
 		</div>
 	</div>;
 }
