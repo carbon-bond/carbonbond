@@ -12,7 +12,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { BoardCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/board_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
@@ -35,7 +35,7 @@ function Header(): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
-	const { cur_board } = BoardCacheState.useContainer();
+	const { cur_location } = LocationCacheState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
 	const navigate = useNavigate();
 
@@ -118,7 +118,13 @@ function Header(): JSX.Element {
 			</div>;
 		}
 	}
-	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
+	let title = cur_location ? cur_location.name : '所有看板';
+	function routeToBoard(): void {
+		if (cur_location && cur_location.is_board) {
+			navigate(`/app/b/${cur_location.name}`);
+		}
+	}
+
 	return (
 		<div className={`header ${style.header}`}>
 			{logining ? <LoginModal setLogining={setLogining} /> : null}
@@ -130,10 +136,10 @@ function Header(): JSX.Element {
 						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 						<img className={style.imageText} src={carbonbondTextURL} alt="" />
 					</div>
-					<div className={style.location}>{title}</div>
+					<div className={style.location} onClick={routeToBoard}>{title}</div>
 				</div>
 				<div className={style.middleSet}>
-					<SearchBar cur_board={cur_board} />
+					<SearchBar cur_board={cur_location ? cur_location.name : ''} />
 				</div>
 				<div className={style.rightSet}>
 					{UserStatus()}

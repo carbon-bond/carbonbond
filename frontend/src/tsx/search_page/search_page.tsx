@@ -10,7 +10,7 @@ import { produce } from 'immer';
 import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
-import { BoardCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/board_cache';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 function getQueryOr(name: string, search_params: URLSearchParams, default_val: string): string {
@@ -40,7 +40,7 @@ type CategoryEntry = { name: string, board_name: string, id: number };
 type SearchFields = { [name: string]: SearchField };
 
 export function SearchPage(): JSX.Element {
-	const { cur_board, setCurBoard } = BoardCacheState.useContainer();
+	const { cur_location, setCurLocation } = LocationCacheState.useContainer();
 	let [cur_category, setCurCategory] = React.useState<number | null>(null);
 
 	const used_board_value = useInputValue('');
@@ -93,7 +93,7 @@ export function SearchPage(): JSX.Element {
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
-					setCurBoard(board);
+					setCurLocation({name: board, is_board: true});
 				} else {
 					setUrlBoard('');
 					setSearchBoard('');
@@ -134,7 +134,7 @@ export function SearchPage(): JSX.Element {
 				toastErr(e);
 			}
 		});
-	}, [search_params, setCurBoard, setSearchBoard, setSearchCategory]);
+	}, [search_params, setCurLocation, setSearchBoard, setSearchCategory]);
 
 	const author = useInputValue(getQueryOr('author', search_params, '')).input_props;
 	const start_time = useInputValue(getQueryOr('start_time', search_params, '')).input_props;
@@ -199,8 +199,8 @@ export function SearchPage(): JSX.Element {
 					<option value="">全站搜尋</option>
 					{
 						(() => {
-							if (cur_board) {
-								return <option value={cur_board}>{cur_board}</option>;
+							if (cur_location) {
+								return <option value={cur_location.name}>{cur_location.name}</option>;
 							} else if (url_board) {
 								return <option value={url_board}>{url_board}</option>;
 							}

@@ -5,9 +5,14 @@ import style from '../css/setting_page.module.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
+import { LocationCacheState } from './global_state/board_cache';
 
 export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
+	const { setCurLocation } = LocationCacheState.useContainer();
+	React.useLayoutEffect(() => {
+		setCurLocation({name: '設定', is_board: false});
+	}, [setCurLocation]);
 	useTitle('設定');
 	async function reset_password_request(): Promise<void> {
 		try {

@@ -9,7 +9,7 @@ import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
-
+import { LocationCacheState } from '../global_state/board_cache';
 
 export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
@@ -95,6 +95,7 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 	let board_name = params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
+	const { setCurLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryArticle(article_id).then(data => {
@@ -106,6 +107,9 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 		});
 	}, [article_id, board_name]);
 
+	React.useLayoutEffect(() => {
+		setCurLocation(board_name ? {name: board_name, is_board: true} : null);
+	}, [setCurLocation, board_name]);
 	useTitle(`${article ? article.meta.title : ''}`);
 
 	if (fetching) {

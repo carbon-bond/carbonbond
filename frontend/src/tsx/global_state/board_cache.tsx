@@ -1,20 +1,21 @@
 import * as React from 'react';
 import { createContainer } from 'unstated-next';
 
-type SetBoard = (b: string | null) => void;
+type Location = {name: string, is_board: boolean};
+type SetLocation = (b: Location | null) => void;
 
-function useBoardCacheState(): {
-	cur_board: string | null,
-	setCurBoard: SetBoard
+function useLocationCacheState(): {
+	cur_location: Location | null,
+	setCurLocation: SetLocation
 	} {
-	let [cur_board, _setBoard] = React.useState<string | null>(null);
-	let setCurBoard = React.useCallback((board: string | null) => {
-		_setBoard(board);
+	let [cur_location, _setLocation] = React.useState<Location | null>(null);
+	let setCurLocation = React.useCallback((location: Location | null) => {
+		_setLocation(location);
 	}, []);
 	return {
-		cur_board,
-		setCurBoard
+		cur_location,
+		setCurLocation
 	};
 }
 
-export const BoardCacheState = createContainer(useBoardCacheState);
+export const LocationCacheState = createContainer(useLocationCacheState);

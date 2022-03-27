@@ -7,7 +7,7 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
-import { BoardCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/board_cache';
 import { useMainScroll } from '../utils';
 import { BoardSidebar } from './right_sidebar';
 
@@ -41,16 +41,16 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	let { useMainScrollToBottom } = useMainScroll();
 	min_article_id_ref.current = min_article_id;
 
-	const { setCurBoard } = BoardCacheState.useContainer();
+	const { setCurLocation } = LocationCacheState.useContainer();
 	React.useLayoutEffect(() => {
 		console.log(`開始載入 ${board_name}`);
-		setCurBoard(board_name);
+		setCurLocation({name: board_name, is_board: true});
 		setMinArticleID(null);
 		setIsEnd(false);
 		fetchArticles(board_name, PAGE_SIZE, null, setMinArticleID).then(more_articles => {
 			setArticles(more_articles);
 		});
-	}, [board_name, setCurBoard]);
+	}, [board_name, setCurLocation]);
 
 	useTitle(`看版 | ${board_name}`);
 

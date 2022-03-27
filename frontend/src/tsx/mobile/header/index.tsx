@@ -3,7 +3,7 @@ import * as React from 'react';
 import style from '../../../css/header/index.module.css';
 
 import { UserState } from '../../global_state/user';
-import { BoardCacheState } from '../../global_state/board_cache';
+import { LocationCacheState } from '../../global_state/board_cache';
 
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
@@ -24,7 +24,7 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 
 function Header(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { cur_board } = BoardCacheState.useContainer();
+	const { cur_location } = LocationCacheState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
 	const navigate = useNavigate();
 
@@ -55,7 +55,13 @@ function Header(): JSX.Element {
 			</div>
 		</>;
 	}
-	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
+	let title = cur_location ? cur_location.name : '所有看板';
+	function routeToBoard(): void {
+		if (cur_location && cur_location.is_board) {
+			navigate(`/app/b/${cur_location.name}`);
+		}
+	}
+
 	return (
 		<div className={`header ${style.header}`}>
 			<div className={style.container}>
@@ -63,8 +69,8 @@ function Header(): JSX.Element {
 					<div className={style.carbonbond} onClick={() => navigate('/app')}>
 						<img src="/src/img/icon.png" alt="" />
 					</div>
-					<div className={style.location} style={{ fontSize: 14 }}>{title}</div>
-					<SearchBar cur_board={cur_board} hide_select_board/>
+					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
+					<SearchBar cur_board={cur_location ? cur_location.name : ''} hide_select_board/>
 				</div>
 				<div className={style.rightSet}>
 					<UserStatus/>
