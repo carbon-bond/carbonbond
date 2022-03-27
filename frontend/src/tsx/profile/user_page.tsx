@@ -51,12 +51,12 @@ function EditSentence(props: { sentence: string, setSentence: (sentence: string)
 	} else if (props.sentence == '') {
 		return <div className={style.noSentence}>
 			尚未設置一句話介紹
-			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
 		</div>;
 	} else {
 		return <div className={style.sentence}>
 			{props.sentence}
-			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
 		</div>;
 	}
 }
@@ -162,7 +162,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 		buttons.push({ text: '取消', handler: () => setEditing(false) });
 
 		return <ModalWindow
-			title="🖉 編輯我的資料"
+			title="✏️ 編輯我的資料"
 			body={getBody()}
 			buttons={buttons}
 			visible={editing}
@@ -176,7 +176,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 		<div>
 			<div className={style.introduction}>
 				<div className={style.title}>自我介紹</div>
-				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>🖉</button>}
+				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
 			</div>
 			<div className={style.info}>
 				<ShowText text={introduction} />
