@@ -31,7 +31,6 @@ import { SignupInvitationPage } from '../signup_invitation_page';
 import { GeneralBoard, PersonalBoard } from '../board_switch';
 import { Header } from './header';
 import { Footer, FooterOption, FooterState } from './footer';
-import { BoardHeader } from './board_header';
 // import { LeftPanel } from '../left_panel';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { SearchPage } from '../search_page/search_page';

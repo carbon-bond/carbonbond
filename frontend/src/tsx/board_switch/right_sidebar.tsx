@@ -7,7 +7,6 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import style from '../../css/board_switch/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
-import { ShowText } from './article_page';
 import { ProfileDetail } from '../profile/user_page';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
