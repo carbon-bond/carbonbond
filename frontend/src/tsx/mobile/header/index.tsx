@@ -9,6 +9,7 @@ import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
 import { SearchBar } from '../../header/search_bar';
 import { useNavigate } from 'react-router';
+import carbonbondIconURL from '../../../img/icon-128x128.png';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -67,7 +68,7 @@ function Header(): JSX.Element {
 			<div className={style.container}>
 				<div className={style.leftSet}>
 					<div className={style.carbonbond} onClick={() => navigate('/app')}>
-						<img src="/src/img/icon.png" alt="" />
+						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 					</div>
 					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
 					<SearchBar cur_board={current_location ? current_location.name : ''} hide_select_board/>
