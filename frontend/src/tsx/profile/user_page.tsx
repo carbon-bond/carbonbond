@@ -17,7 +17,7 @@ import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import style from '../../css/user_page.module.css';
 import produce from 'immer';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { KeepAlive } from 'react-activation';
 
 let fake_id_counter = -1;
@@ -553,12 +553,16 @@ function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<Rea
 							relation_public={relation_public} setRelationPublic={setRelationPublic}
 							setReload={props.setReload}/>: <></>
 				}
-				<a href={`/app/user_board/${props.profile_user.user_name}`}>個板</a>
 				{
 					is_me ?
 						<></> :
-						<a onClick={onStartChat}>私訊</a>
+						<button onClick={onStartChat}>🗨️ 私訊</button>
 				}
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/user_board/${props.profile_user.user_name}`}>
+					<div className={style.personalBoard}>
+						🤠 個板
+					</div>
+				</Link>
 			</div>
 		</div>
 		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} reload={props.reload} />

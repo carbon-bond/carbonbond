@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Board, Party } from '../../ts/api/api_trait';
+import { Author, Board, Party } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import style from '../../css/board_switch/right_sidebar.module.css';
@@ -47,8 +47,9 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			</div>;
 		}
 	}
+	console.log('board right side bar');
 
-	return <>
+	return <div className="rightSideBar">
 		{
 			user_state.login &&
 			<div className={style.rightSidebarItem}>
@@ -72,7 +73,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 				<PartyList parties={parties}/>
 			</div>
 		</div>
-	</>;
+	</div>;
 }
 
 function PartyList(props: {parties: Party[]}): JSX.Element {
@@ -111,14 +112,30 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 	</>;
 }
 
-export function ArticleSidebar(): JSX.Element {
-	return <>
+function UserIntroduction(props: {author: Author}): JSX.Element {
+	// TODO: queryUser
+	if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+		return <></>;
+	} else {
+		return <div className={style.userIntroduction}>
+			<img src={`/avatar/${props.author.NamedAuthor.name}`} />
+		</div>;
+	}
+}
+
+export function ArticleSidebar(props: {author: Author}): JSX.Element {
+	return <div className="rightSideBar">
 		<div className={style.rightSidebarItem}>
-			<div className={style.rightSidebarBlock}> 關於作者 </div>
+			<div className={style.rightSidebarBlock}>
+				<UserIntroduction author={props.author} />
+			</div>
 		</div>
 
 		<div className={style.rightSidebarItem}>
-			<div className={style.rightSidebarBlock}> 廣告 </div>
+			<div className={style.rightSidebarBlock}>
+				<div className={style.advertisement}>廣告</div>
+				招租中，意者請洽 <a href="mailto:c.carbonbond.c@gmail.com">c.carbonbond.c@gmail.com</a>
+			</div>
 		</div>
-	</>;
+	</div>;
 }

@@ -8,6 +8,7 @@ import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
 import { BoardCacheState } from '../global_state/board_cache';
 import { useMainScroll } from '../utils';
+import { BoardSidebar } from './right_sidebar';
 
 const PAGE_SIZE: number = 10;
 
@@ -69,12 +70,15 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	useMainScrollToBottom(scrollHandler);
 
 	return <>
-		{
-			articles.map((article, pos) => (
-				<div className={articleWrapper} key={`${article.meta.id}-${pos}`}>
-					<ArticleCard article={article.meta} bonds={article.bonds} />
-				</div>
-			))
-		}
+		<div className="mainContent">
+			{
+				articles.map((article, pos) => (
+					<div className={articleWrapper} key={`${article.meta.id}-${pos}`}>
+						<ArticleCard article={article.meta} bonds={article.bonds} />
+					</div>
+				))
+			}
+		</div>
+		{window.is_mobile ? <></> : <BoardSidebar board={props.board} />}
 	</>;
 }

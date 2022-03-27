@@ -33,7 +33,7 @@ import { MyPartyList } from './party/my_party_list';
 import { PartyDetail } from './party/party_detail';
 
 import { SignupInvitationPage } from './signup_invitation_page';
-import { BoardHeader, GeneralBoard, PersonalBoard } from './board_switch';
+import { GeneralBoard, PersonalBoard } from './board_switch';
 import { Header } from './header';
 import { LeftPanel } from './left_panel';
 import { BottomPanel } from './bottom_panel';
@@ -60,16 +60,8 @@ function App(): JSX.Element {
 				<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
 				<Route path="/app/setting" element={<SettingPage />} />
 				<Route path="/app/user/:profile_name" element={ <KeepAliveUserPage />} />
-				<Route path="/app/user_board/:profile_name" element={
-					<PersonalBoard render_header={
-						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
-					} />
-				} />
-				<Route path="/app/b/:board_name/*" element={
-					<GeneralBoard render_header={
-						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
-					} />
-				} />
+				<Route path="/app/user_board/:profile_name" element={ <PersonalBoard /> } />
+				<Route path="/app/b/:board_name/*" element={ <GeneralBoard /> } />
 				<Route path="/app/subscribe_article" element={<SubscribeArticlePage />} />
 				<Route path="/app/pop_article" element={<PopArticlePage />} />
 				<Route path="/app/law/*" element={<LawPage />} />
@@ -139,12 +131,13 @@ function App(): JSX.Element {
 }
 
 declare global {
-    interface Window { chat_socket: ChatSocket; }
+    interface Window { chat_socket: ChatSocket, is_mobile: boolean; }
 }
 
 import { ChatSocket } from '../ts/chat_socket';
 import { ConfigState } from './global_state/config';
 
+window.is_mobile = false;
 window.chat_socket = new ChatSocket();
 
 ReactDOM.render(<AliveScope><App /></AliveScope>, document.getElementById('root'));

@@ -66,16 +66,8 @@ function App(): JSX.Element {
 				<Route path="/app/party/:party_name" element={<PartyDetail /> } />
 				<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
 				<Route path="/app/user/:profile_name" element={ <KeepAliveUserPage />} />
-				<Route path="/app/user_board/:profile_name" element={
-					<PersonalBoard hide_sidebar render_header={
-						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
-					} />
-				} />
-				<Route path="/app/b/:board_name/*" element={
-					<GeneralBoard hide_sidebar render_header={
-						(b, url, cnt) => <BoardHeader url={url} board={b} subscribe_count={cnt} />
-					} />
-				} />
+				<Route path="/app/user_board/:profile_name" element={ <PersonalBoard /> } />
+				<Route path="/app/b/:board_name/*" element={ <GeneralBoard /> } />
 				<Route path="*" element={<Navigate to="/app" />} />
 			</Routes>
 		</div>;
@@ -134,11 +126,12 @@ function App(): JSX.Element {
 	);
 }
 
-// declare global {
-//     interface Window { chat_socket: ChatSocket; }
-// }
+declare global {
+    interface Window { chat_socket: ChatSocket, is_mobile: boolean; }
+}
 
-// import { ChatSocket } from '../ts/chat_socket';
-// window.chat_socket = new ChatSocket(1);
+import { ChatSocket } from '../../ts/chat_socket';
+window.chat_socket = new ChatSocket();
+window.is_mobile = true;
 
 ReactDOM.render(<AliveScope><App /></AliveScope>, document.getElementById('root'));
