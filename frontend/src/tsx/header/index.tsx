@@ -13,7 +13,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';

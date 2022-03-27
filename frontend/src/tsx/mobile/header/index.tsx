@@ -3,7 +3,7 @@ import * as React from 'react';
 import style from '../../../css/header/index.module.css';
 
 import { UserState } from '../../global_state/user';
-import { LocationCacheState } from '../../global_state/board_cache';
+import { LocationCacheState } from '../../global_state/location_cache';
 
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
