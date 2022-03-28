@@ -35,7 +35,7 @@ function Header(): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
-	const { cur_location } = LocationCacheState.useContainer();
+	const { current_location } = LocationCacheState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
 	const navigate = useNavigate();
 
@@ -118,10 +118,10 @@ function Header(): JSX.Element {
 			</div>;
 		}
 	}
-	let title = cur_location ? cur_location.name : '所有看板';
+	let title = current_location ? current_location.name : '所有看板';
 	function routeToBoard(): void {
-		if (cur_location && cur_location.is_board) {
-			navigate(`/app/b/${cur_location.name}`);
+		if (current_location?.is_board) {
+			navigate(`/app/b/${current_location.name}`);
 		}
 	}
 
@@ -139,7 +139,7 @@ function Header(): JSX.Element {
 					<div className={style.location} onClick={routeToBoard}>{title}</div>
 				</div>
 				<div className={style.middleSet}>
-					<SearchBar cur_board={cur_location ? cur_location.name : ''} />
+					<SearchBar cur_board={current_location ? current_location.name : ''} />
 				</div>
 				<div className={style.rightSet}>
 					{UserStatus()}

@@ -5,15 +5,15 @@ type Location = {name: string, is_board: boolean};
 type SetLocation = (b: Location | null) => void;
 
 function useLocationCacheState(): {
-	cur_location: Location | null,
+	current_location: Location | null,
 	setCurLocation: SetLocation
 	} {
-	let [cur_location, _setLocation] = React.useState<Location | null>(null);
+	let [current_location, _setLocation] = React.useState<Location | null>(null);
 	let setCurLocation = React.useCallback((location: Location | null) => {
 		_setLocation(location);
 	}, []);
 	return {
-		cur_location,
+		current_location,
 		setCurLocation
 	};
 }

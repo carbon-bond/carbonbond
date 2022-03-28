@@ -24,7 +24,7 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 
 function Header(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { cur_location } = LocationCacheState.useContainer();
+	const { current_location } = LocationCacheState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
 	const navigate = useNavigate();
 
@@ -55,10 +55,10 @@ function Header(): JSX.Element {
 			</div>
 		</>;
 	}
-	let title = cur_location ? cur_location.name : '所有看板';
+	let title = current_location ? current_location.name : '所有看板';
 	function routeToBoard(): void {
-		if (cur_location && cur_location.is_board) {
-			navigate(`/app/b/${cur_location.name}`);
+		if (current_location?.is_board) {
+			navigate(`/app/b/${current_location.name}`);
 		}
 	}
 
@@ -70,7 +70,7 @@ function Header(): JSX.Element {
 						<img src="/src/img/icon.png" alt="" />
 					</div>
 					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
-					<SearchBar cur_board={cur_location ? cur_location.name : ''} hide_select_board/>
+					<SearchBar cur_board={current_location ? current_location.name : ''} hide_select_board/>
 				</div>
 				<div className={style.rightSet}>
 					<UserStatus/>

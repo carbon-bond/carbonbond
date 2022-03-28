@@ -40,7 +40,7 @@ type CategoryEntry = { name: string, board_name: string, id: number };
 type SearchFields = { [name: string]: SearchField };
 
 export function SearchPage(): JSX.Element {
-	const { cur_location, setCurLocation } = LocationCacheState.useContainer();
+	const { current_location, setCurLocation } = LocationCacheState.useContainer();
 	let [cur_category, setCurCategory] = React.useState<number | null>(null);
 
 	const used_board_value = useInputValue('');
@@ -199,8 +199,8 @@ export function SearchPage(): JSX.Element {
 					<option value="">全站搜尋</option>
 					{
 						(() => {
-							if (cur_location) {
-								return <option value={cur_location.name}>{cur_location.name}</option>;
+							if (current_location) {
+								return <option value={current_location.name}>{current_location.name}</option>;
 							} else if (url_board) {
 								return <option value={url_board}>{url_board}</option>;
 							}
