@@ -40,7 +40,7 @@ type CategoryEntry = { name: string, board_name: string, id: number };
 type SearchFields = { [name: string]: SearchField };
 
 export function SearchPage(): JSX.Element {
-	const { current_location, setCurLocation } = LocationCacheState.useContainer();
+	const { current_location, setCurrentLocation } = LocationCacheState.useContainer();
 	let [cur_category, setCurCategory] = React.useState<number | null>(null);
 
 	const used_board_value = useInputValue('');
@@ -93,7 +93,7 @@ export function SearchPage(): JSX.Element {
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
-					setCurLocation({name: board, is_board: true});
+					setCurrentLocation({name: board, is_board: true});
 				} else {
 					setUrlBoard('');
 					setSearchBoard('');
@@ -134,7 +134,7 @@ export function SearchPage(): JSX.Element {
 				toastErr(e);
 			}
 		});
-	}, [search_params, setCurLocation, setSearchBoard, setSearchCategory]);
+	}, [search_params, setCurrentLocation, setSearchBoard, setSearchCategory]);
 
 	const author = useInputValue(getQueryOr('author', search_params, '')).input_props;
 	const start_time = useInputValue(getQueryOr('start_time', search_params, '')).input_props;

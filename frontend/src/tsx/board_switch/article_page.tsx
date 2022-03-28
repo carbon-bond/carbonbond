@@ -95,7 +95,7 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 	let board_name = params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryArticle(article_id).then(data => {
@@ -108,8 +108,8 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 	}, [article_id, board_name]);
 
 	React.useEffect(() => {
-		setCurLocation(board_name ? {name: board_name, is_board: true} : null);
-	}, [setCurLocation, board_name]);
+		setCurrentLocation(board_name ? {name: board_name, is_board: true} : null);
+	}, [setCurrentLocation, board_name]);
 	useTitle(article?.meta.title || '');
 
 	if (fetching) {

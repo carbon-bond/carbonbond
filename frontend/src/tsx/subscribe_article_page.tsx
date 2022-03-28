@@ -13,7 +13,7 @@ import '../css/layout.css';
 export function SubscribeArticlePage(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const { user_state } = UserState.useContainer();
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		fetchSubscribeArticles().then(more_articles => {
@@ -26,8 +26,8 @@ export function SubscribeArticlePage(): JSX.Element {
 	}, [user_state.login]);
 
 	React.useEffect(() => {
-		setCurLocation({name: '我的追蹤', is_board: false});
-	}, [user_state.login, setCurLocation]);
+		setCurrentLocation({name: '我的追蹤', is_board: false});
+	}, [user_state.login, setCurrentLocation]);
 	useTitle('我的追蹤');
 
 	return <div className={style.switchContent}>

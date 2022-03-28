@@ -11,7 +11,7 @@ import '../css/layout.css';
 
 export function PopArticlePage(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		fetchPopArticles().then(more_articles => {
@@ -27,8 +27,8 @@ export function PopArticlePage(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurLocation({name: '熱門看版', is_board: false});
-	}, [setCurLocation]);
+		setCurrentLocation({name: '熱門看版', is_board: false});
+	}, [setCurrentLocation]);
 	useTitle('熱門看版');
 
 	return <div className={style.switchContent}>

@@ -41,7 +41,7 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	let { useMainScrollToBottom } = useMainScroll();
 	min_article_id_ref.current = min_article_id;
 
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	React.useLayoutEffect(() => {
 		console.log(`開始載入 ${board_name}`);
 		setMinArticleID(null);
@@ -52,8 +52,8 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	}, [board_name]);
 
 	React.useEffect(() => {
-		setCurLocation({name: board_name, is_board: true});
-	}, [setCurLocation, board_name]);
+		setCurrentLocation({name: board_name, is_board: true});
+	}, [setCurrentLocation, board_name]);
 	useTitle(`看版 | ${board_name}`);
 
 	const scrollHandler = React.useCallback((): void => {

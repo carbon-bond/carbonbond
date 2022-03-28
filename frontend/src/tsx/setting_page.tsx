@@ -9,10 +9,10 @@ import { LocationCacheState } from './global_state/board_cache';
 
 export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	React.useEffect(() => {
-		setCurLocation({name: '設定', is_board: false});
-	}, [setCurLocation]);
+		setCurrentLocation({name: '設定', is_board: false});
+	}, [setCurrentLocation]);
 	useTitle('設定');
 	async function reset_password_request(): Promise<void> {
 		try {

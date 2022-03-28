@@ -21,7 +21,7 @@ export function MyPartyList(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [party_list, setPartyList] = React.useState<Party[]>([]);
 	let { user_state } = UserState.useContainer();
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		fetchPartyList().then(tree => {
@@ -31,8 +31,8 @@ export function MyPartyList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurLocation({name: '我的政黨', is_board: false});
-	}, [setCurLocation]);
+		setCurrentLocation({name: '我的政黨', is_board: false});
+	}, [setCurrentLocation]);
 	useTitle('我的政黨');
 
 	if (!user_state.login && !user_state.fetching) {

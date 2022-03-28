@@ -18,7 +18,7 @@ async function fetchPartyDetail(party_name: string): Promise<Party> {
 export function PartyDetail(): JSX.Element {
 	let [party, setParty] = React.useState<Party | null>(null);
 	let [fetching, setFetching] = React.useState(true);
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	let params = useParams();
 
 	let party_name = params.party_name;
@@ -34,8 +34,8 @@ export function PartyDetail(): JSX.Element {
 	}, [party_name]);
 
 	React.useEffect(() => {
-		setCurLocation(party_name ? {name: party_name, is_board: false} : null);
-	}, [setCurLocation, party_name]);
+		setCurrentLocation(party_name ? {name: party_name, is_board: false} : null);
+	}, [setCurrentLocation, party_name]);
 	useTitle(`政黨 | ${party_name ? party_name : ''}`);
 
 	const { user_state } = UserState.useContainer();

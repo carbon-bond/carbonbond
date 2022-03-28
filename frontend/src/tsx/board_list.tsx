@@ -27,7 +27,7 @@ function BoardBlock(props: { board: { board_name: string, board_type: string, ti
 
 function BoardList(): JSX.Element {
 	let [board_list, setBoardList] = React.useState<Board[]>([]);
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	React.useEffect(() => {
 		fetchBoardList().then(board_list => {
 			setBoardList(board_list);
@@ -35,8 +35,8 @@ function BoardList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurLocation({name: '所有看板', is_board: false});
-	}, [setCurLocation]);
+		setCurrentLocation({name: '所有看板', is_board: false});
+	}, [setCurrentLocation]);
 	useTitle('所有看板');
 
 	return <div className={style.boardList}>

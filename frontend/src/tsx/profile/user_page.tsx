@@ -715,7 +715,7 @@ function UserPage(): JSX.Element {
 	const [reload, setReload] = React.useState<number>(Date.now());
 
 	const [user, setUser] = React.useState<User | null>(null);
-	const { setCurLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		Promise.all([
@@ -730,8 +730,8 @@ function UserPage(): JSX.Element {
 	}, [profile_name, reload]);
 
 	React.useEffect(() => {
-		setCurLocation({name: profile_name, is_board: false});
-	}, [setCurLocation, profile_name]);
+		setCurrentLocation({name: profile_name, is_board: false});
+	}, [setCurrentLocation, profile_name]);
 	useTitle(`卷宗 | ${profile_name}`);
 
 	if (!user) {

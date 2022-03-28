@@ -6,15 +6,15 @@ type SetLocation = (b: Location | null) => void;
 
 function useLocationCacheState(): {
 	current_location: Location | null,
-	setCurLocation: SetLocation
+	setCurrentLocation: SetLocation
 	} {
 	let [current_location, _setLocation] = React.useState<Location | null>(null);
-	let setCurLocation = React.useCallback((location: Location | null) => {
+	let setCurrentLocation = React.useCallback((location: Location | null) => {
 		_setLocation(location);
 	}, []);
 	return {
 		current_location,
-		setCurLocation
+		setCurrentLocation
 	};
 }
 
