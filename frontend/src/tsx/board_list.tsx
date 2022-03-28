@@ -34,7 +34,7 @@ function BoardList(): JSX.Element {
 		});
 	}, []);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation({name: '所有看板', is_board: false});
 	}, [setCurLocation]);
 	useTitle('所有看板');

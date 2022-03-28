@@ -729,7 +729,7 @@ function UserPage(): JSX.Element {
 		});
 	}, [profile_name, reload]);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation({name: profile_name, is_board: false});
 	}, [setCurLocation, profile_name]);
 	useTitle(`卷宗 | ${profile_name}`);

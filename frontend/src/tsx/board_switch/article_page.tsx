@@ -107,10 +107,10 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 		});
 	}, [article_id, board_name]);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation(board_name ? {name: board_name, is_board: true} : null);
 	}, [setCurLocation, board_name]);
-	useTitle(`${article ? article.meta.title : ''}`);
+	useTitle(article?.meta.title || '');
 
 	if (fetching) {
 		return <></>;

@@ -44,14 +44,16 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	const { setCurLocation } = LocationCacheState.useContainer();
 	React.useLayoutEffect(() => {
 		console.log(`開始載入 ${board_name}`);
-		setCurLocation({name: board_name, is_board: true});
 		setMinArticleID(null);
 		setIsEnd(false);
 		fetchArticles(board_name, PAGE_SIZE, null, setMinArticleID).then(more_articles => {
 			setArticles(more_articles);
 		});
-	}, [board_name, setCurLocation]);
+	}, [board_name]);
 
+	React.useEffect(() => {
+		setCurLocation({name: board_name, is_board: true});
+	}, [setCurLocation, board_name]);
 	useTitle(`看版 | ${board_name}`);
 
 	const scrollHandler = React.useCallback((): void => {

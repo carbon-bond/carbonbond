@@ -30,7 +30,7 @@ export function MyPartyList(): JSX.Element {
 		}).catch(err => toastErr(err));
 	}, []);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation({name: '我的政黨', is_board: false});
 	}, [setCurLocation]);
 	useTitle('我的政黨');

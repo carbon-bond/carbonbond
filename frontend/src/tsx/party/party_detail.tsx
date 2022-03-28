@@ -33,7 +33,7 @@ export function PartyDetail(): JSX.Element {
 		});
 	}, [party_name]);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation(party_name ? {name: party_name, is_board: false} : null);
 	}, [setCurLocation, party_name]);
 	useTitle(`政黨 | ${party_name ? party_name : ''}`);

@@ -10,7 +10,7 @@ import { LocationCacheState } from './global_state/board_cache';
 export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const { setCurLocation } = LocationCacheState.useContainer();
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
 		setCurLocation({name: '設定', is_board: false});
 	}, [setCurLocation]);
 	useTitle('設定');
