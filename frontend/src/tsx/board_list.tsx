@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { useTitle } from 'react-use';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
+import { LocationCacheState } from './global_state/board_cache';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';
@@ -25,11 +27,17 @@ function BoardBlock(props: { board: { board_name: string, board_type: string, ti
 
 function BoardList(): JSX.Element {
 	let [board_list, setBoardList] = React.useState<Board[]>([]);
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	React.useEffect(() => {
 		fetchBoardList().then(board_list => {
 			setBoardList(board_list);
 		});
 	}, []);
+
+	React.useEffect(() => {
+		setCurrentLocation({name: '所有看板', is_article_page: false});
+	}, [setCurrentLocation]);
+	useTitle('所有看板');
 
 	return <div className={style.boardList}>
 		<div className="mainContent">

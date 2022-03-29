@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Navigate, useParams } from 'react-router';
+import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
 import style from '../../css/board_switch/article_page.module.css';
@@ -8,7 +9,7 @@ import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
-
+import { LocationCacheState } from '../global_state/board_cache';
 
 export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
@@ -94,6 +95,7 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 	let board_name = params.board_name;
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryArticle(article_id).then(data => {
@@ -104,6 +106,11 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 			setFetching(false);
 		});
 	}, [article_id, board_name]);
+
+	React.useEffect(() => {
+		setCurrentLocation(board_name ? {name: board_name, is_article_page: true} : null);
+	}, [setCurrentLocation, board_name]);
+	useTitle(article?.meta.title || '');
 
 	if (fetching) {
 		return <></>;

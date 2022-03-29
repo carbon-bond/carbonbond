@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { Navigate, Link, useParams } from 'react-router-dom';
+import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardCreator } from '../board_switch/board_creator';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
+import { LocationCacheState } from '../global_state/board_cache';
 
 import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';
@@ -16,6 +18,7 @@ async function fetchPartyDetail(party_name: string): Promise<Party> {
 export function PartyDetail(): JSX.Element {
 	let [party, setParty] = React.useState<Party | null>(null);
 	let [fetching, setFetching] = React.useState(true);
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 	let params = useParams();
 
 	let party_name = params.party_name;
@@ -29,6 +32,11 @@ export function PartyDetail(): JSX.Element {
 			toastErr(err);
 		});
 	}, [party_name]);
+
+	React.useEffect(() => {
+		setCurrentLocation(party_name ? {name: party_name, is_article_page: false} : null);
+	}, [setCurrentLocation, party_name]);
+	useTitle(`政黨 | ${party_name ? party_name : ''}`);
 
 	const { user_state } = UserState.useContainer();
 

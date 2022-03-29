@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
+import { useTitle } from 'react-use';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
 import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
+import { LocationCacheState } from '../global_state/board_cache';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
@@ -50,12 +52,12 @@ function EditSentence(props: { sentence: string, setSentence: (sentence: string)
 	} else if (props.sentence == '') {
 		return <div className={style.noSentence}>
 			尚未設置一句話介紹
-			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
 		</div>;
 	} else {
 		return <div className={style.sentence}>
 			{props.sentence}
-			<button onClick={() => setIsEditing(true)}>🖉 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
 		</div>;
 	}
 }
@@ -161,7 +163,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 		buttons.push({ text: '取消', handler: () => setEditing(false) });
 
 		return <ModalWindow
-			title="🖉 編輯我的資料"
+			title="✏️ 編輯我的資料"
 			body={getBody()}
 			buttons={buttons}
 			visible={editing}
@@ -175,7 +177,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 		<div>
 			<div className={style.introduction}>
 				<div className={style.title}>自我介紹</div>
-				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>🖉</button>}
+				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
 			</div>
 			<div className={style.info}>
 				<ShowText text={introduction} />
@@ -713,6 +715,7 @@ function UserPage(): JSX.Element {
 	const [reload, setReload] = React.useState<number>(Date.now());
 
 	const [user, setUser] = React.useState<User | null>(null);
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		Promise.all([
@@ -725,6 +728,11 @@ function UserPage(): JSX.Element {
 			}
 		});
 	}, [profile_name, reload]);
+
+	React.useEffect(() => {
+		setCurrentLocation({name: profile_name, is_article_page: false});
+	}, [setCurrentLocation, profile_name]);
+	useTitle(`卷宗 | ${profile_name}`);
 
 	if (!user) {
 		return <></>;

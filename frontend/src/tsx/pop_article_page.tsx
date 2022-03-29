@@ -1,14 +1,17 @@
 import * as React from 'react';
+import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { ArticleCard } from './article_card';
 import { ArticleMetaWithBonds } from '../ts/api/api_trait';
 import { toastErr } from './utils';
+import { LocationCacheState } from './global_state/board_cache';
 
 import style from '../css/pop_article_page.module.css';
 import '../css/layout.css';
 
 export function PopArticlePage(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
+	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
 		fetchPopArticles().then(more_articles => {
@@ -22,6 +25,11 @@ export function PopArticlePage(): JSX.Element {
 			}
 		});
 	}, []);
+
+	React.useEffect(() => {
+		setCurrentLocation({name: '熱門看版', is_article_page: false});
+	}, [setCurrentLocation]);
+	useTitle('熱門看版');
 
 	return <div className={style.switchContent}>
 		<div className="mainContent">

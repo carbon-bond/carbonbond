@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import useOnClickOutside from 'use-onclickoutside';
 
 import style from '../../css/header/index.module.css';
@@ -12,7 +13,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { BoardCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/board_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
@@ -35,7 +36,7 @@ function Header(): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
-	const { cur_board } = BoardCacheState.useContainer();
+	const { current_location } = LocationCacheState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
 	const navigate = useNavigate();
 
@@ -118,7 +119,14 @@ function Header(): JSX.Element {
 			</div>;
 		}
 	}
-	let title = cur_board ? cur_board : '全站熱門'; // XXX: 全站熱門以外的？
+	let title = current_location ? current_location.name : '所有看板';
+	function RouteToBoard(): string {
+		if (current_location?.is_article_page) {
+			return window.location.pathname.split('/').slice(0, -2).join('/');
+		}
+		return window.location.pathname;
+	}
+
 	return (
 		<div className={`header ${style.header}`}>
 			{logining ? <LoginModal setLogining={setLogining} /> : null}
@@ -130,10 +138,12 @@ function Header(): JSX.Element {
 						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 						<img className={style.imageText} src={carbonbondTextURL} alt="" />
 					</div>
-					<div className={style.location}>{title}</div>
+					<Link to={RouteToBoard()}>
+						<div className={style.location}>{title}</div>
+					</Link>
 				</div>
 				<div className={style.middleSet}>
-					<SearchBar cur_board={cur_board} />
+					<SearchBar cur_board={current_location ? current_location.name : ''} />
 				</div>
 				<div className={style.rightSet}>
 					{UserStatus()}
