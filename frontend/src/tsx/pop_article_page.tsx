@@ -27,9 +27,9 @@ export function PopArticlePage(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '熱門看版', is_article_page: false});
+		setCurrentLocation({name: '全站熱門', is_article_page: false});
 	}, [setCurrentLocation]);
-	useTitle('熱門看版');
+	useTitle('全站熱門');
 
 	return <div className={style.switchContent}>
 		<div className="mainContent">
