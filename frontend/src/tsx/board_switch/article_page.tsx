@@ -108,7 +108,7 @@ export function ArticlePage(props: { board: Board}): JSX.Element {
 	}, [article_id, board_name]);
 
 	React.useEffect(() => {
-		setCurrentLocation(board_name ? {name: board_name, is_board: true} : null);
+		setCurrentLocation(board_name ? {name: board_name, is_article_page: true} : null);
 	}, [setCurrentLocation, board_name]);
 	useTitle(article?.meta.title || '');
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createContainer } from 'unstated-next';
 
-type Location = {name: string, is_board: boolean};
+type Location = {name: string, is_article_page: boolean};
 type SetLocation = (b: Location | null) => void;
 
 function useLocationCacheState(): {

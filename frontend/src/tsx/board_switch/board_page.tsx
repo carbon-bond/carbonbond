@@ -52,7 +52,7 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 	}, [board_name]);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: board_name, is_board: true});
+		setCurrentLocation({name: board_name, is_article_page: false});
 	}, [setCurrentLocation, board_name]);
 	useTitle(`看版 | ${board_name}`);
 

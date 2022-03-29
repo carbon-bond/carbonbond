@@ -11,7 +11,7 @@ export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const { setCurrentLocation } = LocationCacheState.useContainer();
 	React.useEffect(() => {
-		setCurrentLocation({name: '設定', is_board: false});
+		setCurrentLocation({name: '設定', is_article_page: false});
 	}, [setCurrentLocation]);
 	useTitle('設定');
 	async function reset_password_request(): Promise<void> {

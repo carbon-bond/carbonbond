@@ -34,7 +34,7 @@ export function PartyDetail(): JSX.Element {
 	}, [party_name]);
 
 	React.useEffect(() => {
-		setCurrentLocation(party_name ? {name: party_name, is_board: false} : null);
+		setCurrentLocation(party_name ? {name: party_name, is_article_page: false} : null);
 	}, [setCurrentLocation, party_name]);
 	useTitle(`政黨 | ${party_name ? party_name : ''}`);
 

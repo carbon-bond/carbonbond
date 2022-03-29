@@ -57,7 +57,7 @@ function Header(): JSX.Element {
 	}
 	let title = current_location ? current_location.name : '所有看板';
 	function routeToBoard(): void {
-		if (current_location?.is_board) {
+		if (current_location?.is_article_page) {
 			navigate(`/app/b/${current_location.name}`);
 		}
 	}

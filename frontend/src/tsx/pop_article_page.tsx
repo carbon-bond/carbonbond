@@ -27,7 +27,7 @@ export function PopArticlePage(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '熱門看版', is_board: false});
+		setCurrentLocation({name: '熱門看版', is_article_page: false});
 	}, [setCurrentLocation]);
 	useTitle('熱門看版');
 

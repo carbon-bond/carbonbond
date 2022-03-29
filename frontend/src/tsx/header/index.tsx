@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import useOnClickOutside from 'use-onclickoutside';
 
 import style from '../../css/header/index.module.css';
@@ -119,10 +120,11 @@ function Header(): JSX.Element {
 		}
 	}
 	let title = current_location ? current_location.name : '所有看板';
-	function routeToBoard(): void {
-		if (current_location?.is_board) {
-			navigate(`/app/b/${current_location.name}`);
+	function RouteToBoard(): string {
+		if (current_location?.is_article_page) {
+			return window.location.pathname.split('/').slice(0, -2).join('/');
 		}
+		return window.location.pathname;
 	}
 
 	return (
@@ -136,7 +138,9 @@ function Header(): JSX.Element {
 						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 						<img className={style.imageText} src={carbonbondTextURL} alt="" />
 					</div>
-					<div className={style.location} onClick={routeToBoard}>{title}</div>
+					<Link to={RouteToBoard()}>
+						<div className={style.location}>{title}</div>
+					</Link>
 				</div>
 				<div className={style.middleSet}>
 					<SearchBar cur_board={current_location ? current_location.name : ''} />

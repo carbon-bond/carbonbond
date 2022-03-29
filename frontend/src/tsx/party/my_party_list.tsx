@@ -31,7 +31,7 @@ export function MyPartyList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '我的政黨', is_board: false});
+		setCurrentLocation({name: '我的政黨', is_article_page: false});
 	}, [setCurrentLocation]);
 	useTitle('我的政黨');
 

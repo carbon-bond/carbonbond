@@ -730,7 +730,7 @@ function UserPage(): JSX.Element {
 	}, [profile_name, reload]);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: profile_name, is_board: false});
+		setCurrentLocation({name: profile_name, is_article_page: false});
 	}, [setCurrentLocation, profile_name]);
 	useTitle(`卷宗 | ${profile_name}`);
 

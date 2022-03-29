@@ -93,7 +93,7 @@ export function SearchPage(): JSX.Element {
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
-					setCurrentLocation({name: board, is_board: true});
+					setCurrentLocation({name: board, is_article_page: false});
 				} else {
 					setUrlBoard('');
 					setSearchBoard('');

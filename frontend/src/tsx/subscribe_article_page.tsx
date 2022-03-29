@@ -26,7 +26,7 @@ export function SubscribeArticlePage(): JSX.Element {
 	}, [user_state.login]);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '我的追蹤', is_board: false});
+		setCurrentLocation({name: '我的追蹤', is_article_page: false});
 	}, [user_state.login, setCurrentLocation]);
 	useTitle('我的追蹤');
 

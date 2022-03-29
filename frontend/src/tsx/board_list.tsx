@@ -35,7 +35,7 @@ function BoardList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '所有看板', is_board: false});
+		setCurrentLocation({name: '所有看板', is_article_page: false});
 	}, [setCurrentLocation]);
 	useTitle('所有看板');
 
