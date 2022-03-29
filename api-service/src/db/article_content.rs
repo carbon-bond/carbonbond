@@ -307,20 +307,18 @@ impl Digest {
         }
     }
     fn add(&mut self, field_name: &str, value: &Value, is_block: bool) {
-        self.char_count += field_name.len();
+        self.char_count += field_name.chars().count();
         match value {
             Value::Number(n) => {
-                self.char_count += format!("{}", &n).len();
+                self.char_count += format!("{}", &n).chars().count();
                 self.non_block_fields
                     .insert(field_name.to_string(), value.clone());
             }
             Value::String(s) => {
-                self.char_count += s.len();
-                let truncated_value = if s.len() > MAX_LEN {
-                    let end = s.char_indices().map(|(i, _)| i).nth(MAX_LEN).unwrap();
-                    Value::String(s[0..end].to_owned())
-                } else {
-                    value.clone()
+                self.char_count += s.chars().count();
+                let truncated_value = match s.char_indices().map(|(i, _)| i).nth(MAX_LEN) {
+                    Some(end) => Value::String(s[0..end].to_owned()), // 字數大於 MAX_LEN ，截斷
+                    None => value.clone(),
                 };
                 if is_block {
                     self.block_fields
@@ -336,7 +334,7 @@ impl Digest {
         }
     }
     fn is_truncated(&self) -> bool {
-        self.char_count > 300
+        self.char_count > MAX_LEN
     }
     fn to_json(&self) -> Fallible<String> {
         if self.is_truncated() {
