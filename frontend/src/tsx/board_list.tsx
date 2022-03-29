@@ -4,7 +4,7 @@ import { useTitle } from 'react-use';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
-import { LocationCacheState } from './global_state/board_cache';
+import { LocationCacheState } from './global_state/location_cache';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';

@@ -7,7 +7,7 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 import { useMainScroll } from '../utils';
 import { BoardSidebar } from './right_sidebar';
 

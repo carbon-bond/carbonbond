@@ -10,7 +10,7 @@ import { produce } from 'immer';
 import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 function getQueryOr(name: string, search_params: URLSearchParams, default_val: string): string {

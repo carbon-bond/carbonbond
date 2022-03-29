@@ -49,7 +49,6 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			</div>;
 		}
 	}
-	console.log('board right side bar');
 
 	return <div className="rightSideBar">
 		{

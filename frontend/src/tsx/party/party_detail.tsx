@@ -6,7 +6,7 @@ import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardCreator } from '../board_switch/board_creator';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 
 import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';

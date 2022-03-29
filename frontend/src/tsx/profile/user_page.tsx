@@ -6,7 +6,7 @@ import { Avatar } from './avatar';
 import { UserCard } from './user_card';
 import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';

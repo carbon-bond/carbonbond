@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
+		"preview": "vite preview",
 		"lint": "eslint --cache --ignore-path .gitignore --ext .js --ext .ts --ext .tsx .",
 		"check-ts": "tsc --skipLibCheck",
 		"check-css": "stylelint '**/*.css'",

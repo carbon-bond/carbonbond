@@ -7,13 +7,13 @@ import useOnClickOutside from 'use-onclickoutside';
 import style from '../../css/header/index.module.css';
 
 import carbonbondTextURL from '../../img/text.png';
-import carbonbondIconURL from '../../img/icon.png';
+import carbonbondIconURL from '../../img/icon-128x128.png';
 
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { LocationCacheState } from '../global_state/board_cache';
+import { LocationCacheState } from '../global_state/location_cache';
 import { NotificationIcon, NotificationQuality } from './notification';
 import { Notification } from '../../ts/api/api_trait';
 import { DropDown } from '../components/drop_down';
