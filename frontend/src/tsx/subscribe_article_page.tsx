@@ -5,7 +5,7 @@ import { ArticleCard } from './article_card';
 import { ArticleMetaWithBonds } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
-import { LocationCacheState } from './global_state/board_cache';
+import { LocationCacheState } from './global_state/location_cache';
 
 import style from '../css/pop_article_page.module.css';
 import '../css/layout.css';

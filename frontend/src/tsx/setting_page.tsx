@@ -5,7 +5,7 @@ import style from '../css/setting_page.module.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
-import { LocationCacheState } from './global_state/board_cache';
+import { LocationCacheState } from './global_state/location_cache';
 
 export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
