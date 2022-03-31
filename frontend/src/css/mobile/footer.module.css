@@ -1,14 +1,13 @@
 .footer {
     display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
     border-top: 1px var(--lightest-gray) solid;
+    background: var(--background-color);
     & .iconBlock {
-        position: relative;
-        flex: 1;
         & .icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            font-size: 32px;
         }
     }
     & .iconBlock:not(.iconBlockSelected) {

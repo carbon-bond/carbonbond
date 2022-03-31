@@ -45,11 +45,11 @@ function Content(): JSX.Element {
 function App(): JSX.Element {
 	return (
 		<div className="appMobile">
-			<Providers>
-				<FooterState.Provider>
+			<FooterState.Provider>
+				<Providers>
 					<Content />
-				</FooterState.Provider>
-			</Providers>
+				</Providers>
+			</FooterState.Provider>
 		</div>
 	);
 }

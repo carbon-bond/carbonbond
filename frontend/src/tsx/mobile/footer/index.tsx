@@ -7,6 +7,9 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 export enum FooterOption {
     Home,
     Notification,
+	Editor,
+	Chat,
+	Setting,
 };
 
 export function Footer(): JSX.Element {
@@ -24,6 +27,9 @@ export function Footer(): JSX.Element {
 	return <div className={`footer ${style.footer}`}>
 		<IconBlock icon="🏠" option={FooterOption.Home} />
 		<IconBlock icon="🔔" option={FooterOption.Notification} />
+		<IconBlock icon="✏️" option={FooterOption.Editor} />
+		<IconBlock icon="🗨️" option={FooterOption.Chat} />
+		<IconBlock icon="⚙️" option={FooterOption.Setting} />
 	</div>;
 }
 
@@ -43,7 +49,7 @@ function IconBlock(props: { icon: string, option: FooterOption }): JSX.Element {
 		navigate(`${location.pathname}?${queryString.stringify(opt)}`);
 	}
 
-	return <div className={is_cur ? 'iconBlockSelected iconBlock' : 'iconBlock'}>
+	return <div className={is_cur ? `${style.iconBlockSelected} ${style.iconBlock}` : style.iconBlock}>
 		<div className={style.icon} onClick={onClick}>
 			{props.icon}
 		</div>
