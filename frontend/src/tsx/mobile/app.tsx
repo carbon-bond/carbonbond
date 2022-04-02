@@ -11,11 +11,12 @@ import '../../css/layout.css';
 import '../../css/global.css';
 
 import { Header } from './header';
-import { Footer, FooterOption, FooterState } from './footer';
+import { Footer, FooterOption } from './footer';
 import { NotificationModal } from './notification';
 import { MainRoutes } from '../app/main_routes';
 import { init, useInit } from '../app/init';
 import { Providers } from '../app/providers';
+import { FooterState } from '../global_state/footer';
 
 function MainBody(): JSX.Element {
 	let { footer_option } = FooterState.useContainer();

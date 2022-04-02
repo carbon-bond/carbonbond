@@ -1,8 +1,8 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { createContainer } from 'unstated-next';
 import queryString from 'query-string';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { FooterState } from '../../global_state/footer';
 
 export enum FooterOption {
     Home,
@@ -55,13 +55,3 @@ function IconBlock(props: { icon: string, option: FooterOption }): JSX.Element {
 		</div>
 	</div>;
 }
-
-function useFooterState(): {
-    footer_option: FooterOption,
-    setFooterOption: (option: FooterOption) => void,
-    } {
-	let [footer_option, setFooterOption] = React.useState(FooterOption.Home);
-	return { footer_option, setFooterOption };
-}
-
-export const FooterState = createContainer(useFooterState);
