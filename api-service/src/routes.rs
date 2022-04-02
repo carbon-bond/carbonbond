@@ -131,7 +131,8 @@ pub fn get_routes(
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())
         .and(_users)
-        .and_then(handle_api);
+        .and_then(handle_api)
+        .with(warp::filters::compression::gzip());
 
     let gets = warp::get().and(avatar.or(chat));
 
