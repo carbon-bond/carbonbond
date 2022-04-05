@@ -1,56 +1,61 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import queryString from 'query-string';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { FooterState } from '../../global_state/footer';
+import { useSearchParams } from 'react-router-dom';
 
 export enum FooterOption {
-    Home,
-    Notification,
-	Editor,
-	Chat,
-	Setting,
+    Home = '',
+    Notification = 'notification',
+	Editor = 'editor',
+	Chat = 'chat',
+	Account = 'account',
 };
 
+export function useCurrentFooter(): FooterOption {
+	let [search_params, _] = useSearchParams();
+	let footer = search_params.get('footer');
+	if (footer == 'editor') {
+		return FooterOption.Editor;
+	} else if (footer == 'notification') {
+		return FooterOption.Notification;
+	} else if (footer == 'chat') {
+		return FooterOption.Chat;
+	} else if (footer == 'account') {
+		return FooterOption.Account;
+	}
+	return FooterOption.Home;
+}
+
 export function Footer(): JSX.Element {
-	let { setFooterOption } = FooterState.useContainer();
-
-	let [search_params] = useSearchParams();
-	// @ts-ignore
-	let footer_option_str: string = search_params.get('footer_option');
-
-	React.useEffect(() => {
-		let option: FooterOption = parseInt(footer_option_str) | 0;
-		setFooterOption(option);
-	}, [footer_option_str, setFooterOption]);
-
 	return <div className={`footer ${style.footer}`}>
-		<IconBlock icon="🏠" option={FooterOption.Home} />
-		<IconBlock icon="🔔" option={FooterOption.Notification} />
-		<IconBlock icon="✏️" option={FooterOption.Editor} />
-		<IconBlock icon="🗨️" option={FooterOption.Chat} />
-		<IconBlock icon="⚙️" option={FooterOption.Setting} />
+		<IconBlock icon="🏠" current_option={FooterOption.Home} />
+		<IconBlock icon="🔔" current_option={FooterOption.Notification} />
+		<IconBlock icon="✏️" current_option={FooterOption.Editor} />
+		<IconBlock icon="🗨️" current_option={FooterOption.Chat} />
+		<IconBlock icon="🐷" current_option={FooterOption.Account} />
 	</div>;
 }
 
-function IconBlock(props: { icon: string, option: FooterOption }): JSX.Element {
-	let { footer_option } = FooterState.useContainer();
-	let [search_params] = useSearchParams();
-	let is_cur = footer_option == props.option;
-	let navigate = useNavigate();
-	let location = useLocation();
+function IconBlock(props: { icon: string, current_option: FooterOption }): JSX.Element {
+	const footer_option = useCurrentFooter();
+	let [search_params, setSearchParams] = useSearchParams();
+	let is_current = footer_option == props.current_option;
 
 	function onClick(): void {
-		if (is_cur) {
+		if (is_current) {
 			return;
 		}
-		let opt = queryString.parse(search_params.toString());
-		opt.footer_option = props.option.toString();
-		navigate(`${location.pathname}?${queryString.stringify(opt)}`);
+		if (props.current_option == FooterOption.Home) {
+			search_params.delete('footer');
+		} else {
+			search_params.set('footer', props.current_option);
+		}
+		setSearchParams(search_params);
 	}
 
-	return <div className={is_cur ? `${style.iconBlockSelected} ${style.iconBlock}` : style.iconBlock}>
-		<div className={style.icon} onClick={onClick}>
+	return <div
+		className={is_current ? `${style.iconBlockSelected} ${style.iconBlock}` : style.iconBlock}
+		onClick={onClick}>
+		<div className={style.icon}>
 			{props.icon}
 		</div>
 	</div>;

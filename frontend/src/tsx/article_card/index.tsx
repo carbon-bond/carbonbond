@@ -367,14 +367,13 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 	}
 
 	function ShowMoreButton(): JSX.Element | null {
-		return <>
-			<br />
+		return <div className={style.readMore}>
 			{
 				article == null ?
 					<a onClick={() => expand()}>...閱讀更多</a> :
 					shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
 			}
-		</>;
+		</div>;
 	}
 
 	if (article) {

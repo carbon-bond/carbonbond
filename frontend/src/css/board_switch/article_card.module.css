@@ -218,3 +218,9 @@
         padding: 10px;
     }
 }
+
+.readMore {
+    margin-top: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
