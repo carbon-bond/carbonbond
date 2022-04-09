@@ -3,6 +3,7 @@ import {
 	Routes,
 	Route,
 	Navigate,
+	Outlet,
 } from 'react-router-dom';
 
 import { BoardList } from '../board_list';
@@ -12,12 +13,14 @@ import { KeepAliveUserPage } from '../profile/user_page';
 import { MyPartyList } from '../party/my_party_list';
 import { PartyDetail } from '../party/party_detail';
 import { SignupInvitationPage } from '../signup_invitation_page';
-import { GeneralBoard, PersonalBoard } from '../board_switch';
+import { KeepAliveBoardPage } from '../board';
 import { SearchPage } from '../search_page/search_page';
 import { SettingPage } from '../setting_page';
 import { SubscribeArticlePage } from '../subscribe_article_page';
 import { PopArticlePage } from '../pop_article_page';
 import { LawPage } from '../law_page';
+import { GraphPage } from '../board/graph_view';
+import { ArticlePage } from '../board/article_page';
 
 export function MainRoutes(): JSX.Element {
 	return <Routes>
@@ -30,9 +33,12 @@ export function MainRoutes(): JSX.Element {
 		<Route path="/app/party/:party_name" element={<PartyDetail />} />
 		<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
 		<Route path="/app/setting" element={<SettingPage />} />
-		<Route path="/app/user/:profile_name" element={<KeepAliveUserPage />} />
-		<Route path="/app/user_board/:profile_name" element={<PersonalBoard />} />
-		<Route path="/app/b/:board_name/*" element={<GeneralBoard />} />
+		<Route path="/app/user/:user_name" element={<KeepAliveUserPage />} />
+		<Route path="/app/b/:board_type/:board_name" element={<Outlet />}>
+			<Route path="article/:article_id" element={<ArticlePage />} />
+			<Route path="graph/:article_id" element={<GraphPage />} />
+			<Route path="" element={<KeepAliveBoardPage />} />
+		</Route>
 		<Route path="/app/subscribe_article" element={<SubscribeArticlePage />} />
 		<Route path="/app/pop_article" element={<PopArticlePage />} />
 		<Route path="/app/law/*" element={<LawPage />} />

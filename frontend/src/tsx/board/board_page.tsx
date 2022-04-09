@@ -32,7 +32,7 @@ async function fetchArticles(
 	return articles;
 }
 
-export function BoardPage(props: {board: Board}): JSX.Element {
+export function BoardBody(props: {board: Board}): JSX.Element {
 	let board_name = props.board.board_name;
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const [min_article_id, setMinArticleID] = React.useState<number | null>(null);
@@ -74,7 +74,7 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 
 	useMainScrollToBottom(scrollHandler);
 
-	return <>
+	return <div className="content">
 		<div className="mainContent">
 			{
 				articles.map((article, pos) => (
@@ -85,5 +85,5 @@ export function BoardPage(props: {board: Board}): JSX.Element {
 			}
 		</div>
 		{window.is_mobile ? <></> : <BoardSidebar board={props.board} />}
-	</>;
+	</div>;
 }

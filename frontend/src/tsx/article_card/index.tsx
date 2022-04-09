@@ -1,15 +1,16 @@
 import * as React from 'react';
-import style from '../../css/board_switch/article_card.module.css';
+import style from '../../css/board/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr, useInputValue } from '../utils';
-import { ArticleContent, ShowText } from '../board_switch/article_page';
+import { ArticleContent, ShowText } from '../board/article_page';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
+import { board_info_to_url, getBoardInfo } from '../board';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -25,27 +26,28 @@ function ShowAuthor(props: {author: Author}): JSX.Element {
 	}
 }
 
-export function ArticleHeader(props: { author: Author, board_name: string, date: Date }): JSX.Element {
+export function ArticleHeader(props: { author: Author, board_info: {board_name: string, board_type: string}, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
+	const board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleHeader}>
 		<ShowAuthor author={props.author} />
 		發佈於
-		<Link to={`/app/b/${props.board_name}`}>
-			<div className={style.articleBoard}>{props.board_name}</div>
+		<Link to={board_info_to_url(board_info)}>
+			<div className={style.articleBoard}>{props.board_info.board_name}</div>
 		</Link>
 		<div className={style.seperationDot}>•</div>
 		<div className={style.articleTime}>{date_string}</div>
 	</div>;
 }
 
-export function ArticleLine(props: { category: string, title: string, id: number, board_name: string }): JSX.Element {
-
+export function ArticleLine(props: { category: string, title: string, id: number, board_info: {board_name: string, board_type: string} }): JSX.Element {
+	let board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
-		<Link to={`/app/b/${props.board_name}/a/${props.id}`} className="styleless">
+		<Link to={`${board_info_to_url(board_info)}/article/${props.id}`} className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
 		</Link>
-		<Link className={style.articleGraphViewIcon} to={`/app/b/${props.board_name}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link className={style.articleGraphViewIcon} to={`${board_info_to_url(board_info)}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -103,6 +105,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
 	const [hit, setHit] = React.useState<Hit>(props.hit ?? Hit.None);
+	const board_info = getBoardInfo(props.article);
 
 	async function onFavoriteArticleClick(): Promise<void> {
 		try {
@@ -134,7 +137,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 
 	// XXX: 個版會壞掉
 	function onShareClick(): void {
-		copyToClipboard(`${window.location.origin}/app/b/${props.article.board_name}/a/${props.article.id}`)
+		copyToClipboard(`${window.location.origin}${board_info_to_url(board_info)}/article/${props.article.id}`)
 			.then(() => {
 				toast('已複製網址到剪貼簿');
 			}).catch(err => {
@@ -195,10 +198,11 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 }
 
 export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.ReactNode }): JSX.Element {
+	const board_info = getBoardInfo(props.mini_meta);
 	return <div className={style.bondLine}>
 		<div className={style.leftSet}>
 			{props.children}
-			<Link to={`/app/b/${props.mini_meta.board_name}/a/${props.mini_meta.id}`}>
+			<Link to={`${board_info_to_url(board_info)}/article/${props.mini_meta.id}`}>
 				<span className={style.border}>{props.mini_meta.category}</span>
 				<span>{props.mini_meta.title}</span>
 			</Link>
@@ -229,11 +233,11 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 				})
 			}
 			<div className={style.articleContainer}>
-				<ArticleHeader author={author} board_name={props.article.board_name} date={date} />
+				<ArticleHeader author={author} board_info={props.article} date={date} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
 						<ArticleLine
-							board_name={props.article.board_name}
+							board_info={props.article}
 							category={category}
 							title={props.article.title}
 							id={props.article.id} />
@@ -260,17 +264,18 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 
 function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
-	const url = `/app/b/${meta.board_name}/a/${meta.id}`;
+	const board_info = getBoardInfo(props.meta);
+	const url = `${board_info_to_url(board_info)}/article/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
 		<div key={meta.title} className={style.leftSet}>
 			<ArticleLine
-				board_name={meta.board_name}
+				board_info={meta}
 				title={meta.title}
 				id={meta.id}
 				category={meta.category} />
 			<ArticleHeader
+				board_info={meta}
 				author={meta.author}
-				board_name={meta.board_name}
 				date={new Date(meta.create_time)} />
 		</div>
 		<div className={style.rightSet}>

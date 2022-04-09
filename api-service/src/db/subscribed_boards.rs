@@ -34,7 +34,7 @@ pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>>
     let boards = sqlx::query_as!(
         BoardOverview,
         r#"
-    SELECT boards.board_name, boards.title, boards.id, 0::bigint as "popularity!" FROM subscribed_boards
+    SELECT boards.board_name, boards.board_type, boards.title, boards.id, 0::bigint as "popularity!" FROM subscribed_boards
     LEFT JOIN boards on boards.id = subscribed_boards.board_id
     WHERE subscribed_boards.user_id = $1
     "#,

@@ -178,7 +178,7 @@ export function SearchPage(): JSX.Element {
 	}
 
 	return <div className="forumBody">
-		<div className="switchContent">
+		<div className="content">
 			<div className="mainContent">
                 <>
                     {

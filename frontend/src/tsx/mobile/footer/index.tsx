@@ -22,6 +22,7 @@ export function useCurrentFooter(): FooterOption {
 	} else if (footer == 'account') {
 		return FooterOption.Account;
 	}
+	document.body.style.overflow = 'auto';
 	return FooterOption.Home;
 }
 
@@ -46,8 +47,10 @@ function IconBlock(props: { icon: string, current_option: FooterOption }): JSX.E
 		}
 		if (props.current_option == FooterOption.Home) {
 			search_params.delete('footer');
+			document.body.style.overflow = 'auto';
 		} else {
 			search_params.set('footer', props.current_option);
+			document.body.style.overflow = 'hidden';
 		}
 		setSearchParams(search_params);
 	}

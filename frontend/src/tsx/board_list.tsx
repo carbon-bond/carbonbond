@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { useTitle } from 'react-use';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { Board, BoardType } from '../ts/api/api_trait';
+import { Board } from '../ts/api/api_trait';
 import { LocationCacheState } from './global_state/location_cache';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';
+import { board_info_to_url, getBoardInfo } from './board';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
 }
 
-function BoardBlock(props: { board: { board_name: string, board_type: string, title: string } }): JSX.Element {
+function BoardBlock(props: { board: Board }): JSX.Element {
 	const name = props.board.board_name;
-	const type = props.board.board_type;
+	const board_info = getBoardInfo(props.board);
 	const title = props.board.title;
-	return <Link to={`/app/${type === BoardType.General ? 'b' : 'user_board'}/${name}`}>
+	return <Link to={board_info_to_url(board_info)}>
 		<div>
 			<div className={style.name}>{name}</div>
 			<div className={style.title}>{title}</div>

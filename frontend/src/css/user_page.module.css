@@ -125,7 +125,7 @@
                 border-bottom: 2px solid var(--blue);
             }
         }
-        & .switchContent {
+        & .content {
             width: 600px;
             margin: 0 auto;
             display: flex;
@@ -290,7 +290,7 @@
             border-bottom: 1px solid var(--border-color);
         }
     }
-    & .switchContent {
+    & .content {
         margin: 0 auto;
         display: flex;
         flex-direction: column;

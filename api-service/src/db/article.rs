@@ -5,13 +5,10 @@ use crate::api::model::forum::{
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
 use chrono::{DateTime, Utc};
-use lazy_static::lazy_static;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::Arc;
-use std::sync::RwLock;
 
 // XXX: 密切關注 sqlx user defined macro
 macro_rules! metas {
@@ -21,7 +18,8 @@ macro_rules! metas {
             "WITH metas AS (SELECT
                 articles.*,
                 users.user_name AS author_name,
-                boards.board_name
+                boards.board_name,
+                boards.board_type
             FROM
                 articles
                 INNER JOIN users ON articles.author_id = users.id
@@ -34,6 +32,7 @@ macro_rules! metas {
                 fields,
                 board_id,
                 board_name,
+                board_type,
                 category,
                 title,
                 author_id,
@@ -55,6 +54,7 @@ macro_rules! to_meta {
             energy: $data.energy,
             board_id: $data.board_id,
             board_name: $data.board_name,
+            board_type: $data.board_type,
             category: $data.category,
             title: $data.title,
             fields: serde_json::from_str(&$data.fields).unwrap(),
