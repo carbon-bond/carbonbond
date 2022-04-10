@@ -94,7 +94,7 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
         		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.boardQuery.queryHotBoards()} />
         		{
         			!user_state.login ? null : <>
-                        <Row to={`/app/user_board/${user_state.user_name}`}>我的個板</Row>
+                        <Row to={`/app/b/personal/${user_state.user_name}`}>我的個板</Row>
                     </>
         		}
         	</div>

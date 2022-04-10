@@ -8,7 +8,7 @@ import { LocationCacheState } from './global_state/location_cache';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';
-import { board_info_to_url, getBoardInfo } from './board';
+import { getBoardInfo } from './board';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
@@ -18,7 +18,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	const name = props.board.board_name;
 	const board_info = getBoardInfo(props.board);
 	const title = props.board.title;
-	return <Link to={board_info_to_url(board_info)}>
+	return <Link to={board_info.to_url()}>
 		<div>
 			<div className={style.name}>{name}</div>
 			<div className={style.title}>{title}</div>

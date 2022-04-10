@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
 
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{Board, BoardName, BoardOverview, NewBoard};
+use crate::api::model::forum::{Board, BoardName, BoardOverview, BoardType, NewBoard};
 use crate::custom_error::{DataType, Error, Fallible};
+use std::str::FromStr;
 
 impl DBObject for DBBoard {
     const TYPE: DataType = DataType::Board;
@@ -27,18 +28,18 @@ struct DBBoard {
 }
 
 impl DBBoard {
-    fn to_board(self) -> Board {
-        Board {
+    fn to_board(self) -> Fallible<Board> {
+        Ok(Board {
             id: self.id,
             board_name: self.board_name,
-            board_type: self.board_type,
+            board_type: BoardType::from_str(&self.board_type)?,
             create_time: self.create_time,
             title: self.title,
             detail: self.detail,
             force: serde_json::from_str(&self.force).unwrap(),
             ruling_party_id: self.ruling_party_id,
             popularity: self.popularity,
-        }
+        })
     }
 }
 
@@ -52,7 +53,7 @@ pub async fn get_by_id(id: i64) -> Fallible<Board> {
     .fetch_one(pool)
     .await
     .to_fallible(id)?;
-    Ok(board.to_board())
+    board.to_board()
 }
 
 pub async fn get_by_name(name: &str, style: &str) -> Fallible<Board> {
@@ -66,7 +67,7 @@ pub async fn get_by_name(name: &str, style: &str) -> Fallible<Board> {
     .fetch_one(pool)
     .await
     .to_fallible(name)?;
-    Ok(board.to_board())
+    board.to_board()
 }
 
 pub async fn get_all() -> Fallible<Vec<Board>> {
@@ -77,7 +78,11 @@ pub async fn get_all() -> Fallible<Vec<Board>> {
     )
     .fetch_all(pool)
     .await?;
-    Ok(boards.into_iter().map(|b| b.to_board()).collect())
+    let mut ret = Vec::new();
+    for board in boards {
+        ret.push(board.to_board()?);
+    }
+    Ok(ret)
 }
 
 pub async fn get_all_board_names() -> Fallible<Vec<BoardName>> {
@@ -87,16 +92,33 @@ pub async fn get_all_board_names() -> Fallible<Vec<BoardName>> {
         .await?;
     Ok(boards)
 }
+struct DBBoardOverview {
+    pub id: i64,
+    pub board_name: String,
+    pub board_type: String,
+    pub title: String,
+    pub popularity: i64,
+}
 pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(
-        BoardOverview,
+        DBBoardOverview,
         r#"SELECT board_name, board_type, id, title, 0::bigint as "popularity!" FROM boards WHERE id = ANY($1)"#,
         board_ids
     )
     .fetch_all(pool)
     .await?;
-    Ok(boards)
+    let mut ret = Vec::new();
+    for board in boards {
+        ret.push(BoardOverview {
+            board_type: BoardType::from_str(&board.board_type)?,
+            id: board.id,
+            board_name: board.board_name,
+            title: board.title,
+            popularity: board.popularity,
+        });
+    }
+    Ok(ret)
 }
 
 pub async fn create(board: &NewBoard) -> Fallible<i64> {
@@ -104,18 +126,21 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     board.force.check_semantic()?;
 
     let mut conn = get_pool().begin().await?;
-    let prev_board_id = sqlx::query!(
-        "SELECT board_id FROM parties where id = $1",
-        board.ruling_party_id
-    )
-    .fetch_one(&mut conn)
-    .await?;
 
-    if let Some(prev_board_id) = prev_board_id.board_id {
-        return Err(Error::new_internal(format!(
-            "政黨 {} 已擁有看板 {}",
-            board.ruling_party_id, prev_board_id
-        )));
+    if board.ruling_party_id != -1 {
+        let prev_board_id = sqlx::query!(
+            "SELECT board_id FROM parties where id = $1",
+            board.ruling_party_id
+        )
+        .fetch_one(&mut conn)
+        .await?;
+
+        if let Some(prev_board_id) = prev_board_id.board_id {
+            return Err(Error::new_internal(format!(
+                "政黨 {} 已擁有看板 {}",
+                board.ruling_party_id, prev_board_id
+            )));
+        }
     }
 
     let board_id = sqlx::query!(
@@ -125,7 +150,7 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
         RETURNING id
         ",
         board.board_name,
-        board.board_type,
+        board.board_type.to_string(),
         board.detail,
         board.title,
         serde_json::to_string(&board.force).unwrap(),

@@ -9,6 +9,7 @@ use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 // XXX: 密切關注 sqlx user defined macro
 macro_rules! metas {
@@ -54,7 +55,7 @@ macro_rules! to_meta {
             energy: $data.energy,
             board_id: $data.board_id,
             board_name: $data.board_name,
-            board_type: $data.board_type,
+            board_type: crate::api::model::forum::BoardType::from_str(&$data.board_type).unwrap(),
             category: $data.category,
             title: $data.title,
             fields: serde_json::from_str(&$data.fields).unwrap(),

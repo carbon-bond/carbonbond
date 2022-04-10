@@ -157,7 +157,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 	</div>;
 }
 
-export function BoardCreator(props: { board_type: string, party_id: number, visible: boolean, setVisible: Function }): JSX.Element {
+export function BoardCreator(props: { board_type: BoardType, party_id: number, visible: boolean, setVisible: Function }): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const [forceValue, setForceValue] = React.useState<Force>({ categories: [], suggested_tags: [] });
 

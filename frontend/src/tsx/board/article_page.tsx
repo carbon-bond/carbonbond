@@ -10,7 +10,7 @@ import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
 import { LocationCacheState } from '../global_state/location_cache';
-import { board_info_to_url, useBoardInfo } from '.';
+import { useBoardInfo } from '.';
 
 export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
@@ -127,7 +127,7 @@ export function ArticlePage(): JSX.Element {
 				{window.is_mobile ? <></> : <ArticleSidebar author={article.meta.author}/>}
 			</div>;
 		} else {
-			return <Navigate to={`${board_info_to_url(board_info)}/article/${article.meta.id}`} />;
+			return <Navigate to={`${board_info.to_url()}/article/${article.meta.id}`} />;
 		}
 	} else {
 		return <div>{`文章代碼 ${article_id} ：不存在`}</div>;

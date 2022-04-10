@@ -65,52 +65,52 @@ export function EmptyBoard(): JSX.Element {
 	function handleClick(): void {
 		setExpand(!expand);
 	}
-
-	return <div className="content">
-		<div>查無此看板</div>
-		{
-			(user_state.login &&
-				board_info.type == BoardType.Personal &&
-				board_info.name == user_state.user_name) ?
-				<button onClick={() => handleClick()}>🔨 創建個人看板</button>
-				: <></>
-		}
-		<BoardCreator board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
-	</div>;
-}
-
-export type BoardInfo = {
-	name: string,
-	type: BoardType
-};
-
-export function getBoardInfo(data: { board_name: string, board_type: string }): BoardInfo {
-	return {
-		name: data.board_name,
-		type: toBoardType(data.board_type),
-	};
-}
-
-export function board_info_to_url(info: BoardInfo): string {
-	let type = info.type == BoardType.General ? 'general' : 'personal';
-	return `/app/b/${type}/${info.name}`;
-}
-
-function toBoardType(str: string): BoardType {
-	if (str == 'personal' || str == 'Personal') {
-		return BoardType.Personal;
-	} else if (str == 'general' || str == 'General') {
-		return BoardType.General;
+	if (user_state.login &&
+		board_info.type == BoardType.Personal &&
+		board_info.name == user_state.user_name) {
+		return <div className={style.emptyBoard}>
+			<div>查無此看板</div>
+			<button onClick={() => handleClick()}>🔨 創建個人看板</button>
+			<BoardCreator board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
+		</div>;
+	} else if (board_info.type == BoardType.Personal) {
+		return <div className={style.emptyBoard}>
+			<div>{board_info.name} 尚未創建個版</div>
+		</div>;
+	} else {
+		return <div className={style.emptyBoard}>
+			<div>查無此看板</div>
+		</div>;
 	}
-	throw new Error(`未知的看板類型：${str}`);
+}
+
+export class BoardInfo {
+	name: string;
+	type: BoardType;
+	constructor(name: string, type: BoardType) {
+		this.name = name;
+		this.type = type;
+	}
+	to_url(): string {
+		return `/app/b/${this.type.toLowerCase()}/${this.name}`;
+	}
+}
+
+export function getBoardInfo(data: { board_name: string, board_type: BoardType }): BoardInfo {
+	return new BoardInfo(data.board_name, data.board_type);
 }
 
 export function useBoardInfo(): BoardInfo {
+	function toBoardType(str: string): BoardType {
+		if (str == 'personal') {
+			return BoardType.Personal;
+		} else if (str == 'general') {
+			return BoardType.General;
+		}
+		throw new Error(`未知的看板類型：${str}`);
+	}
 	let params = useParams();
-	return {
-		name: params.board_name!,
-		type: toBoardType(params.board_type!)
-	};
+	return new BoardInfo(params.board_name!, toBoardType(params.board_type!));
 }
 
 export function KeepAliveBoardPage(): JSX.Element {

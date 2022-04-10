@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, BoardType, force } from '../../ts/api/api_trait';
+import { BoardName, force } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -19,6 +19,7 @@ import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
 import { BondLine } from '../article_card';
 import { useNavigate } from 'react-router';
+import { getBoardInfo } from '../board';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -220,6 +221,7 @@ function EditorBody(): JSX.Element {
 		id: board.id,
 		board_name: board.board_name,
 	}]);
+	const board_info = getBoardInfo(board);
 	useEffect(() => {
 		API_FETCHER.boardQuery.queryBoardNameList()
 			.then(data => unwrap(data))
@@ -254,7 +256,7 @@ function EditorBody(): JSX.Element {
 				.then(id => {
 					toast('發文成功');
 					minimizeEditorPanel();
-					navigate(`/app/${board.board_type === BoardType.General ? 'b' : 'user_board'}/${board.board_name}/a/${id}`);
+					navigate(`${board_info.to_url()}/article/${id}`);
 					setEditorPanelData(null);
 					return API_FETCHER.articleQuery.queryDraft();
 				})

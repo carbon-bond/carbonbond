@@ -1,11 +1,12 @@
 use super::{get_pool, DBObject};
-use crate::api::model::forum::{Author, BondInfo, MiniArticleMeta};
+use crate::api::model::forum::{Author, BoardType, BondInfo, MiniArticleMeta};
 use crate::custom_error::{DataType, Fallible};
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 #[derive(Debug, Default)]
 pub struct ArticleIntField {
@@ -186,7 +187,7 @@ pub async fn get_bonds_by_article_ids(
                     }
                 },
                 board_name: info.board_name.unwrap(),
-                board_type: info.board_type.unwrap(),
+                board_type: BoardType::from_str(&info.board_type.unwrap())?,
             },
             tag: info.bond_tag.unwrap(),
             energy: 0,

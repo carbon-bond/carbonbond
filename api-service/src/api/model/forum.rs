@@ -65,16 +65,16 @@ pub mod forum_model_root {
         Serialize, Deserialize, TypeScriptify, Clone, Copy, EnumString, strum::ToString, Debug,
     )]
     pub enum BoardType {
-        #[strum(serialize = "general")]
+        #[strum(serialize = "General")]
         General,
-        #[strum(serialize = "personal")]
+        #[strum(serialize = "Personal")]
         Personal,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Board {
         pub id: i64,
         pub board_name: String,
-        pub board_type: String,
+        pub board_type: BoardType,
         pub create_time: DateTime<Utc>,
         pub title: String,
         pub detail: String,
@@ -91,7 +91,7 @@ pub mod forum_model_root {
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct NewBoard {
         pub board_name: String,
-        pub board_type: String,
+        pub board_type: BoardType,
         pub title: String,
         pub detail: String,
         #[ts(ts_type = "force.Force")]
@@ -177,7 +177,7 @@ pub mod forum_model_root {
         pub energy: i32,
         pub board_id: i64,
         pub board_name: String,
-        pub board_type: String,
+        pub board_type: BoardType,
         pub category: String,
         pub title: String,
         pub author: Author,
@@ -218,7 +218,7 @@ pub mod forum_model_root {
     pub struct MiniArticleMeta {
         pub category: String,
         pub board_name: String,
-        pub board_type: String,
+        pub board_type: BoardType,
         pub author: Author,
         pub id: i64,
         pub title: String,
@@ -260,7 +260,7 @@ pub mod forum_model_root {
     pub struct BoardOverview {
         pub id: i64,
         pub board_name: String,
-        pub board_type: String,
+        pub board_type: BoardType,
         pub title: String,
         pub popularity: i64,
     }
