@@ -62,7 +62,7 @@ function Header(): JSX.Element {
 		if (user_state.login) {
 			return <div className={style.dropdown}>
 				<div className={style.features}>
-					<Row onClick={() => navigate(`/app/user_board/${user_state.user_name}`)}>🏯 我的個板</Row>
+					<Row onClick={() => navigate(`/app/b/personal/${user_state.user_name}`)}>🏯 我的個板</Row>
 					<Row onClick={() => navigate(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
 					<Row onClick={() => navigate('/app/party')}>👥 我的政黨</Row>
 					<Row onClick={() => navigate('/app/signup_invite')}>🎟️ 我的邀請碼</Row>

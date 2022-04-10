@@ -65,18 +65,23 @@ export function EmptyBoard(): JSX.Element {
 	function handleClick(): void {
 		setExpand(!expand);
 	}
-
-	return <div className="content">
-		<div>查無此看板</div>
-		{
-			(user_state.login &&
-				board_info.type == BoardType.Personal &&
-				board_info.name == user_state.user_name) ?
-				<button onClick={() => handleClick()}>🔨 創建個人看板</button>
-				: <></>
-		}
-		<BoardCreator board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
-	</div>;
+	if (user_state.login &&
+		board_info.type == BoardType.Personal &&
+		board_info.name == user_state.user_name) {
+		return <div className={style.emptyBoard}>
+			<div>查無此看板</div>
+			<button onClick={() => handleClick()}>🔨 創建個人看板</button>
+			<BoardCreator board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
+		</div>;
+	} else if (board_info.type == BoardType.Personal) {
+		return <div className={style.emptyBoard}>
+			<div>{board_info.name} 尚未創建個版</div>
+		</div>;
+	} else {
+		return <div className={style.emptyBoard}>
+			<div>查無此看板</div>
+		</div>;
+	}
 }
 
 export type BoardInfo = {

@@ -561,7 +561,7 @@ function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<Rea
 						<></> :
 						<button onClick={onStartChat}>🗨️ 私訊</button>
 				}
-				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/user_board/${props.profile_user.user_name}`}>
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
 					<div className={style.personalBoard}>
 						🤠 個板
 					</div>

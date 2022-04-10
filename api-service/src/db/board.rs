@@ -104,18 +104,21 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     board.force.check_semantic()?;
 
     let mut conn = get_pool().begin().await?;
-    let prev_board_id = sqlx::query!(
-        "SELECT board_id FROM parties where id = $1",
-        board.ruling_party_id
-    )
-    .fetch_one(&mut conn)
-    .await?;
 
-    if let Some(prev_board_id) = prev_board_id.board_id {
-        return Err(Error::new_internal(format!(
-            "政黨 {} 已擁有看板 {}",
-            board.ruling_party_id, prev_board_id
-        )));
+    if board.ruling_party_id != -1 {
+        let prev_board_id = sqlx::query!(
+            "SELECT board_id FROM parties where id = $1",
+            board.ruling_party_id
+        )
+        .fetch_one(&mut conn)
+        .await?;
+
+        if let Some(prev_board_id) = prev_board_id.board_id {
+            return Err(Error::new_internal(format!(
+                "政黨 {} 已擁有看板 {}",
+                board.ruling_party_id, prev_board_id
+            )));
+        }
     }
 
     let board_id = sqlx::query!(
