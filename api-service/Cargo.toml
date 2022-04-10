@@ -35,7 +35,7 @@ lazy_static = "1.4.0"
 strum = { version = "0.19", features = ["derive"] }
 base64 = "0.13.0"
 percent-encoding = "2.1.0"
-warp = "0.3.0"
+warp = {version = "0.3.2", features = ["compression-gzip"]}
 futures = "0.3.13"
 urlencoding = "2.1.0"
 
