@@ -12,7 +12,7 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
-import { ShowText } from '../board_switch/article_page';
+import { ShowText } from '../board/article_page';
 import { createBrowserHistory } from 'history';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
@@ -273,7 +273,7 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
 					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
 			</div>
-			<div className={style.switchContent}>
+			<div className={style.content}>
 				{selectTab == 0 && <div>
 					{public_users.length == 0 ? (
 						<div className={style.emptyContainer}>
@@ -623,7 +623,7 @@ function ProfileWorks(props: { profile_user: User, user_state: UserStateType }):
 			{/* <div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>留言</div> */}
 			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
 		</div>
-		<div className={style.switchContent}>
+		<div className={style.content}>
 			{selectTab == 0 && <Articles articles={articles} />}
 			{/* {selectTab == 1 && <Comments />} */}
 			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
@@ -709,8 +709,8 @@ async function fetchMyPrivateHatings(): Promise<UserMini[]> {
 }
 
 function UserPage(): JSX.Element {
-	let params = useParams<{profile_name: string}>();
-	const profile_name = params.profile_name!;
+	let params = useParams<{user_name: string}>();
+	const user_name = params.user_name!;
 	const { user_state } = UserState.useContainer();
 	const [reload, setReload] = React.useState<number>(Date.now());
 
@@ -719,7 +719,7 @@ function UserPage(): JSX.Element {
 
 	React.useEffect(() => {
 		Promise.all([
-			API_FETCHER.userQuery.queryUser(profile_name),
+			API_FETCHER.userQuery.queryUser(user_name),
 		]).then(([user]) => {
 			try {
 				setUser(unwrap(user));
@@ -727,12 +727,12 @@ function UserPage(): JSX.Element {
 				toastErr(err);
 			}
 		});
-	}, [profile_name, reload]);
+	}, [user_name, reload]);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: profile_name, is_article_page: false});
-	}, [setCurrentLocation, profile_name]);
-	useTitle(`卷宗 | ${profile_name}`);
+		setCurrentLocation({name: user_name, is_article_page: false});
+	}, [setCurrentLocation, user_name]);
+	useTitle(`卷宗 | ${user_name}`);
 
 	if (!user) {
 		return <></>;

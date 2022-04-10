@@ -28,7 +28,7 @@ pub mod forum_model_root {
         pub birth_year: i32,
         pub job: String,
         pub city: String,
-        pub titles: Option<String>
+        pub titles: Option<String>,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct UserMini {
@@ -117,6 +117,7 @@ pub mod forum_model_root {
                 pub energy: i32,
                 pub board_id: i64,
                 pub board_name: String,
+                pub board_type: String,
                 pub category: String,
                 pub title: String,
                 pub author_id: i64,
@@ -176,6 +177,7 @@ pub mod forum_model_root {
         pub energy: i32,
         pub board_id: i64,
         pub board_name: String,
+        pub board_type: String,
         pub category: String,
         pub title: String,
         pub author: Author,
@@ -216,6 +218,7 @@ pub mod forum_model_root {
     pub struct MiniArticleMeta {
         pub category: String,
         pub board_name: String,
+        pub board_type: String,
         pub author: Author,
         pub id: i64,
         pub title: String,
@@ -257,6 +260,7 @@ pub mod forum_model_root {
     pub struct BoardOverview {
         pub id: i64,
         pub board_name: String,
+        pub board_type: String,
         pub title: String,
         pub popularity: i64,
     }

@@ -4,7 +4,7 @@ import { EditorPanelState } from '../global_state/editor_panel';
 import { Author, Board, Party, User } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
-import style from '../../css/board_switch/right_sidebar.module.css';
+import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileDetail } from '../profile/user_page';

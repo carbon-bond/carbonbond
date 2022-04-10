@@ -8,6 +8,7 @@ import { BoardOverview } from '../../ts/api/api_trait';
 
 import style from '../../css/left_panel/browse_bar.module.css';
 import { SubscribedBoardsState } from '../global_state/subscribed_boards';
+import { board_info_to_url, getBoardInfo } from '../board';
 
 async function fetchHotBoards(): Promise<BoardOverview[]> {
 	let boards = unwrap_or(await API_FETCHER.boardQuery.queryHotBoards(), []);
@@ -117,13 +118,13 @@ export function BrowseBar(): JSX.Element {
 }
 
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
-	let board = props.board;
-	return <Link to={`/app/b/${board.board_name}`}>
+	let board_info = getBoardInfo(props.board);
+	return <Link to={board_info_to_url(board_info)}>
 		<div className={style.boardBlock}>
 			<div>
-				<div className={style.boardName}>😈 {board.board_name}</div>
-				<div className={style.boardHeat}>🔥 {board.popularity}</div>
-				<div className={style.boardTitle}>{board.title}</div>
+				<div className={style.boardName}>😈 {props.board.board_name}</div>
+				<div className={style.boardHeat}>🔥 {props.board.popularity}</div>
+				<div className={style.boardTitle}>{props.board.title}</div>
 			</div>
 		</div>
 	</Link>;

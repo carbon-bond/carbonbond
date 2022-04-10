@@ -18,10 +18,3 @@ a:not(.styleless):hover {
     color: var(--theme-color);
     text-decoration: underline;
 }
-
-.mobileFullContent {
-    width: 100%;
-    height: calc(100% - var(--header-height) - var(--footer-height));
-    position: absolute;
-    top: var(--header-height);
-}

@@ -154,7 +154,8 @@ pub async fn get_bonds_by_article_ids(
             articles.id,
             articles.create_time,
             articles.anonymous,
-            boards.board_name
+            boards.board_name,
+            boards.board_type
         FROM article_bonds
             INNER JOIN articles ON articles.id = article_bonds.to_id
             INNER JOIN users ON articles.author_id = users.id
@@ -185,6 +186,7 @@ pub async fn get_bonds_by_article_ids(
                     }
                 },
                 board_name: info.board_name.unwrap(),
+                board_type: info.board_type.unwrap(),
             },
             tag: info.bond_tag.unwrap(),
             energy: 0,

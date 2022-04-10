@@ -3,7 +3,7 @@ import { Navigate, Link, useParams } from 'react-router-dom';
 import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
-import { BoardCreator } from '../board_switch/board_creator';
+import { BoardCreator } from '../board/board_creator';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 import { LocationCacheState } from '../global_state/location_cache';
@@ -48,7 +48,7 @@ export function PartyDetail(): JSX.Element {
 				<span className={style.partyName}>{party.party_name}</span>
 				{(() => {
 					if (party.board_name) {
-						let href = `/app/b/${party.board_name}`;
+						let href = `/app/b/general/${party.board_name}`;
 						return <Link to={href} className={style.boardName}>
 							<span>- b/{party.board_name}</span>
 						</Link>;

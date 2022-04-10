@@ -30,7 +30,7 @@ export function SubscribeArticlePage(): JSX.Element {
 	}, [user_state.login, setCurrentLocation]);
 	useTitle('我的追蹤');
 
-	return <div className={style.switchContent}>
+	return <div className="content">
 		<div className="mainContent">
 			<Articles articles={articles}/>
 		</div>
