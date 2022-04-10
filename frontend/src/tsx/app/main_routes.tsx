@@ -42,6 +42,7 @@ export function MainRoutes(): JSX.Element {
 		<Route path="/app/subscribe_article" element={<SubscribeArticlePage />} />
 		<Route path="/app/pop_article" element={<PopArticlePage />} />
 		<Route path="/app/law/*" element={<LawPage />} />
-		<Route path="*" element={<Navigate to="/app" />} />
+		{/* <Route path="*" element={<Navigate to="/app" />} /> */}
+		<Route path="*" element={<div>404</div>} />
 	</Routes>;
 }

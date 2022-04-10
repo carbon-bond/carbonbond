@@ -327,7 +327,14 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			let height = content_div.offsetHeight;
 			let line_height =
 				parseInt(window.getComputedStyle(content_div, null).getPropertyValue('line-height'));
+			if (isNaN(line_height)) {
+				return;
+			}
 			let lines = Math.floor(height / line_height);
+			console.log(props.article.id);
+			console.log(`height: ${height}`);
+			console.log(`line_height: ${line_height}`);
+			console.log(`lines: ${lines}`);
 			if (lines > MAX_BRIEF_LINE) {
 				setShrinkable(true);
 				setReady(true);
