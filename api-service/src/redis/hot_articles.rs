@@ -5,18 +5,14 @@ use std::cmp;
 use std::f32;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const KEY_ARTICLE_ENERGY: &'static str = "article_energy";
 const KEY_HOT_ARTICLE: &'static str = "hot_articles";
-const TOP_N: isize = 50; // 只保留前 50 名
+const TOP_N: isize = 30; // 只保留前 30 名
 
-pub async fn modify_article_energy(article_id: i64, energy_diff: i16) -> Fallible {
+pub async fn modify_article_energy(article_id: i64, energy_old: i16, energy_diff: i16) -> Fallible {
     let mut conn = get_conn().await?;
 
     // update energy
-    let energy_old: i16 = conn.hget(KEY_ARTICLE_ENERGY, article_id).await.unwrap_or(0);
     let energy_new = energy_old + energy_diff;
-    conn.hset(KEY_ARTICLE_ENERGY, article_id, energy_new)
-        .await?;
     log::info!(
         "更新文章鍵能：article={}, energy_diff={}, energy_old={}, energy_new={}",
         article_id,
@@ -49,7 +45,7 @@ pub async fn modify_article_energy(article_id: i64, energy_diff: i16) -> Fallibl
     );
 
     conn.zadd(KEY_HOT_ARTICLE, article_id, score_new).await?;
-    // conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
     Ok(())
 }
 
@@ -72,7 +68,7 @@ pub async fn set_hot_article_score(article_id: i64) -> Fallible {
 
     let mut conn = get_conn().await?;
     conn.zadd(KEY_HOT_ARTICLE, article_id, score).await?;
-    // conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
     Ok(())
 }
 

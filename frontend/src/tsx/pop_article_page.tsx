@@ -15,9 +15,6 @@ export function PopArticlePage(): JSX.Element {
 
 	React.useEffect(() => {
 		fetchPopArticles().then(more_articles => {
-			more_articles.forEach(article_id => {
-				console.log('PopArticlePage get ' + article_id);
-			});
 			try {
 				setArticles(more_articles);
 			} catch (err) {
@@ -40,7 +37,7 @@ export function PopArticlePage(): JSX.Element {
 
 function Articles(props: {articles: ArticleMetaWithBonds[]}): JSX.Element {
 	return <div>
-		{props.articles.map((article, idx) => (
+		{props.articles.length == 0 ? <div>暫無熱門文章</div> : props.articles.map((article, idx) => (
 			<div className={style.articleWrapper} key={`article-${idx}`}>
 				<ArticleCard article={article.meta} bonds={article.bonds} />
 			</div>
@@ -49,5 +46,5 @@ function Articles(props: {articles: ArticleMetaWithBonds[]}): JSX.Element {
 }
 
 async function fetchPopArticles(): Promise<ArticleMetaWithBonds[]> {
-	return unwrap_or(await API_FETCHER.articleQuery.searchPopArticle(10), []);
+	return unwrap_or(await API_FETCHER.articleQuery.searchPopArticle(30), []);
 }
