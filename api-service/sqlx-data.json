@@ -332,118 +332,6 @@
     },
     "query": "\n    SELECT count(*) FROM subscribed_boards\n    WHERE subscribed_boards.board_id = $1\n    "
   },
-  "296ad24a0508a61e62dd39d5ed2ed1235a88caa19dd9a333bcbeb32003e9769e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "user_id",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "user2_id",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "board_id",
-          "ordinal": 3,
-          "type_info": "Int8"
-        },
-        {
-          "name": "article1_id",
-          "ordinal": 4,
-          "type_info": "Int8"
-        },
-        {
-          "name": "article2_id",
-          "ordinal": 5,
-          "type_info": "Int8"
-        },
-        {
-          "name": "kind",
-          "ordinal": 6,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "follow",
-                  "hate",
-                  "article_replied",
-                  "article_bad_replied",
-                  "article_good_replied"
-                ]
-              },
-              "name": "notification_kind"
-            }
-          }
-        },
-        {
-          "name": "quality",
-          "ordinal": 7,
-          "type_info": "Bool"
-        },
-        {
-          "name": "read",
-          "ordinal": 8,
-          "type_info": "Bool"
-        },
-        {
-          "name": "create_time",
-          "ordinal": 9,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "user2_name",
-          "ordinal": 10,
-          "type_info": "Text"
-        },
-        {
-          "name": "board_name",
-          "ordinal": 11,
-          "type_info": "Text"
-        },
-        {
-          "name": "article1_title",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "article2_title",
-          "ordinal": 13,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        true,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Bool"
-        ]
-      }
-    },
-    "query": "\n        SELECT n.*, users.user_name as user2_name, boards.board_name, a1.title as article1_title, a2.title as article2_title\n        FROM notifications n\n        LEFT JOIN users on n.user2_id = users.id\n        LEFT JOIN boards on n.board_id = boards.id\n        LEFT JOIN articles a1 on n.article1_id = a1.id\n        LEFT JOIN articles a2 on n.article2_id = a2.id\n        WHERE user_id = $1 AND ($2 OR NOT n.read)\n        "
-  },
   "29e275a7248d92596c03596eb571e3e7aed48fa6103063cde9ba26f834dc4c03": {
     "describe": {
       "columns": [
@@ -1496,6 +1384,125 @@
       }
     },
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n    INNER JOIN party_members ON parties.id = party_members.party_id\n    WHERE user_id = $1\n        "
+  },
+  "62ea3603425efd81fdd145f32a900158bb64522cc9e91388af6dbaf79f8760ee": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user2_id",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "board_id",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "article1_id",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "article2_id",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "kind",
+          "ordinal": 6,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "follow",
+                  "hate",
+                  "article_replied",
+                  "article_bad_replied",
+                  "article_good_replied",
+                  "comment_replied"
+                ]
+              },
+              "name": "notification_kind"
+            }
+          }
+        },
+        {
+          "name": "quality",
+          "ordinal": 7,
+          "type_info": "Bool"
+        },
+        {
+          "name": "read",
+          "ordinal": 8,
+          "type_info": "Bool"
+        },
+        {
+          "name": "create_time",
+          "ordinal": 9,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "user2_name",
+          "ordinal": 10,
+          "type_info": "Text"
+        },
+        {
+          "name": "board_name",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "board_type",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "article1_title",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "article2_title",
+          "ordinal": 14,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n        SELECT n.*, users.user_name as user2_name, boards.board_name, boards.board_type, a1.title as article1_title, a2.title as article2_title\n        FROM notifications n\n        LEFT JOIN users on n.user2_id = users.id\n        LEFT JOIN boards on n.board_id = boards.id\n        LEFT JOIN articles a1 on n.article1_id = a1.id\n        LEFT JOIN articles a2 on n.article2_id = a2.id\n        WHERE user_id = $1 AND ($2 OR NOT n.read)\n        ORDER BY n.create_time DESC\n        "
   },
   "6465e582bd36f6c4c3d9aa068e1ab7dcd8174789552d729921fc00d5a385912b": {
     "describe": {

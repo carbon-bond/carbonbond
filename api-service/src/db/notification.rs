@@ -1,5 +1,5 @@
 use super::{get_pool, DBObject};
-use crate::api::model::forum::{Notification, NotificationKind};
+use crate::api::model::forum::{BoardType, Notification, NotificationKind};
 use crate::custom_error::{DataType, Fallible};
 use std::str::FromStr;
 
@@ -49,6 +49,7 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
         pub quality: Option<bool>,
         pub create_time: DateTime<Utc>,
         pub board_name: Option<String>,
+        pub board_type: Option<String>,
         pub board_id: Option<i64>,
         pub user2_name: Option<String>,
         pub user2_id: Option<i64>,
@@ -60,13 +61,14 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
     let notifications = sqlx::query_as_unchecked!(
         DBNotification,
         "
-        SELECT n.*, users.user_name as user2_name, boards.board_name, a1.title as article1_title, a2.title as article2_title
+        SELECT n.*, users.user_name as user2_name, boards.board_name, boards.board_type, a1.title as article1_title, a2.title as article2_title
         FROM notifications n
         LEFT JOIN users on n.user2_id = users.id
         LEFT JOIN boards on n.board_id = boards.id
         LEFT JOIN articles a1 on n.article1_id = a1.id
         LEFT JOIN articles a2 on n.article2_id = a2.id
         WHERE user_id = $1 AND ($2 OR NOT n.read)
+        ORDER BY n.create_time DESC
         ",
         user_id,
         all,
@@ -84,6 +86,11 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
                 quality: n.quality,
                 create_time: n.create_time,
                 board_name: n.board_name,
+                board_type: if n.board_type == None {
+                    None
+                } else {
+                    Some(BoardType::from_str(&n.board_type.unwrap())?)
+                },
                 board_id: n.board_id,
                 user2_name: n.user2_name,
                 user2_id: n.user2_id,
