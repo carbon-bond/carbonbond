@@ -59,7 +59,7 @@ async fn handle_reply(
         kind,
         if anonymous { None } else { Some(author_id) },
         Some(board_id),
-        Some(target_author),
+        Some(original_article_id),
         reply_id,
     )
     .await?;
