@@ -1,7 +1,7 @@
 .chatPanel {
     margin-left: 10px;
     & .panelContent {
-        overflow-ancher: none;
+        overflow-anchor: none;
         display: flex;
         flex-direction: row;
         & .channels {

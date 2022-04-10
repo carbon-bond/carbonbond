@@ -10,7 +10,7 @@ import { UserState } from '../global_state/user';
 import '../../css/layout.css';
 import style from '../../css/board/board_page.module.css';
 import { BoardBody } from './board_page';
-import KeepAlive from 'react-activation';
+import { KeepAlive } from 'react-activation';
 
 function BoardHeader(props: { board: Board}): JSX.Element {
 	let [subscribe_count, setSubscribeCount] = React.useState(0);
