@@ -331,16 +331,16 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 				return;
 			}
 			let lines = Math.floor(height / line_height);
-			console.log(props.article.id);
-			console.log(`height: ${height}`);
-			console.log(`line_height: ${line_height}`);
-			console.log(`lines: ${lines}`);
+			// console.log(props.article.id);
+			// console.log(`height: ${height}`);
+			// console.log(`line_height: ${line_height}`);
+			// console.log(`lines: ${lines}`);
 			if (lines > MAX_BRIEF_LINE) {
 				setShrinkable(true);
 				setReady(true);
 				wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
 			} else if (!truncated) {
-				console.log(`${props.article.id}摘要完整且行數短，直接展開`);
+				// console.log(`${props.article.id}摘要完整且行數短，直接展開`);
 				expand();
 			}
 		}
