@@ -128,6 +128,9 @@
     overflow-y: auto;
     overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
     max-height: calc(0.9 * (100vh - var(--header-height)));
+    & .tag {
+        color: var(--sub-theme-color)
+    }
     & .notificationSep {
         border: none;
         border-top: 1px solid var(--light-gray);

@@ -9,6 +9,7 @@ import { DropDown } from '../components/drop_down';
 import produce from 'immer';
 import { toastErr } from '../utils';
 import { relativeDate } from '../../ts/date';
+import { getBoardInfo } from '../board';
 
 export enum NotificationQuality { Good, Bad, Neutral };
 
@@ -144,25 +145,49 @@ function replier_name(name: string | null): JSX.Element {
 
 export function NotificationBlock(props: { notification: Notification }): JSX.Element {
 	let n = props.notification;
-	function NotiConcreteRow<T>(props: { children: T }): JSX.Element {
+	function NotificationConcreteRow<T>(props: { children: T }): JSX.Element {
 		return <NotiRow time={new Date(n.create_time)}>
 			{props.children}
 		</NotiRow>;
 	}
 
-	function ReplyNoti(props: { txt: string }): JSX.Element {
-		return <NotiConcreteRow>{replier_name(n.user2_name)} {props.txt}了你在 <Link to={`/app/b/${n.board_name!}`}>{n.board_name!}</Link> 的文章 <Link to={`/app/b/${n.board_name!}/a/${n.article1_id!}`}>{n.article1_title}</Link> </NotiConcreteRow>;
+	function ReplyNotification(props: { txt: string }): JSX.Element {
+		if (n.board_name && n.board_type) {
+			let board_info = getBoardInfo({ board_name: n.board_name, board_type: n.board_type });
+			return <NotificationConcreteRow>
+				{replier_name(n.user2_name)} 發文 <span className={style.tag}>{props.txt}</span> 了你在
+				<Link to={board_info.to_url()}>{n.board_name}</Link>的文章
+				<Link to={`${board_info.to_url()}/article/${n.article1_id!}`}>{n.article1_title}</Link>
+			</NotificationConcreteRow>;
+		} else {
+			return <NotificationConcreteRow> 伺服器錯誤，回文通知不含有看板資訊，無法正確顯示通知 </NotificationConcreteRow>;
+		}
+	}
+	function CommentNotification(): JSX.Element {
+		if (n.board_name && n.board_type) {
+			let board_info = getBoardInfo({ board_name: n.board_name, board_type: n.board_type });
+			return <NotificationConcreteRow>
+				{replier_name(n.user2_name)} 在
+				<Link to={board_info.to_url()}>{n.board_name}</Link> 的文章
+				<Link to={`${board_info.to_url()}/article/${n.article1_id!}`}>{n.article1_title}</Link>
+				發佈了留言
+			</NotificationConcreteRow>;
+		} else {
+			return <NotificationConcreteRow> 伺服器錯誤，留言通知不含有看板資訊，無法正確顯示通知 </NotificationConcreteRow>;
+		}
 	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
-			return <NotiConcreteRow>{replier_name(n.user2_name)} 喜歡了你</NotiConcreteRow>;
+			return <NotificationConcreteRow>{replier_name(n.user2_name)} 喜歡了你</NotificationConcreteRow>;
 		case NotificationKind.Hate:
-			return <NotiConcreteRow>{replier_name(n.user2_name)} 仇視了你</NotiConcreteRow>;
+			return <NotificationConcreteRow>{replier_name(n.user2_name)} 仇視了你</NotificationConcreteRow>;
 		case NotificationKind.ArticleBadReplied:
-			return <ReplyNoti txt="戰" />;
+			return <ReplyNotification txt="戰" />;
 		case NotificationKind.ArticleGoodReplied:
-			return <ReplyNoti txt="挺" />;
+			return <ReplyNotification txt="挺" />;
 		case NotificationKind.ArticleReplied:
-			return <ReplyNoti txt="回" />;
+			return <ReplyNotification txt="回應" />;
+		case NotificationKind.CommentReplied:
+			return <CommentNotification />;
 	}
 }

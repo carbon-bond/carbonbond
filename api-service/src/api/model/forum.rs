@@ -305,6 +305,8 @@ pub mod forum_model_root {
         ArticleGoodReplied,
         #[strum(serialize = "article_bad_replied")]
         ArticleBadReplied,
+        #[strum(serialize = "comment_replied")]
+        CommentReplied,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Notification {
@@ -316,6 +318,7 @@ pub mod forum_model_root {
         pub quality: Option<bool>,
         pub create_time: DateTime<Utc>,
         pub board_name: Option<String>,
+        pub board_type: Option<BoardType>,
         pub board_id: Option<i64>,
         pub user2_name: Option<String>,
         pub user2_id: Option<i64>,

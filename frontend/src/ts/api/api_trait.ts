@@ -40,8 +40,8 @@ export type Draft = {     id: number; author_id: number; board_id: number; board
 export type BoardOverview = {     id: number; board_name: string; board_type: BoardType; title:     string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
 export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
-export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied" };
-export type Notification = {     id: number; kind: NotificationKind; user_id: number; read: boolean; quality: boolean | null; create_time: string; board_name:     string | null; board_id: number | null; user2_name: string | null;     user2_id: number | null; article1_title: string | null; article2_title: string | null; article1_id: number | null; article2_id: number |     null };
+export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied", CommentReplied = "CommentReplied" };
+export type Notification = {     id: number; kind: NotificationKind; user_id: number; read: boolean; quality: boolean | null; create_time: string; board_name:     string | null; board_type: BoardType | null; board_id: number | null;     user2_name: string | null; user2_id: number | null; article1_title:     string | null; article2_title: string | null; article1_id: number |     null; article2_id: number | null };
 export type SearchField = 
  | { String: string } 
  | { Range: [number, number] };

@@ -2,6 +2,7 @@ use crate::api::model::forum::force::Bond;
 use crate::api::model::forum::NotificationKind;
 use crate::custom_error::Fallible;
 use crate::db;
+use crate::db::article::get_meta_by_id;
 
 fn quality(kind: NotificationKind) -> Option<bool> {
     match kind {
@@ -10,6 +11,7 @@ fn quality(kind: NotificationKind) -> Option<bool> {
         NotificationKind::ArticleReplied => None,
         NotificationKind::ArticleGoodReplied => Some(true),
         NotificationKind::ArticleBadReplied => Some(false),
+        NotificationKind::CommentReplied => None,
     }
 }
 
@@ -33,20 +35,20 @@ pub async fn create(
     .await
 }
 
-async fn handle_bond(
+async fn handle_reply(
     author_id: i64,
     board_id: i64,
-    reply_id: i64,
-    bond: &Bond,
+    reply_id: Option<i64>,    // 回文 id
+    original_article_id: i64, // 原文 id
     anonymous: bool,
+    kind: NotificationKind,
 ) -> Fallible {
-    let target_author = db::article::get_author_by_id(bond.to).await?;
+    let target_author = db::article::get_author_by_id(original_article_id).await?;
     if target_author == author_id {
         log::debug!(
-            "同作者 {} 的文章 {} -> {} 不發通知",
+            "回應同作者 {} 的文章 {} 不發通知",
             author_id,
-            reply_id,
-            target_author
+            original_article_id
         );
         return Ok(());
     }
@@ -54,11 +56,11 @@ async fn handle_bond(
     // TODO: 記錄鍵結的標籤，讓前端可以顯示
     create(
         target_author,
-        NotificationKind::ArticleReplied,
+        kind,
         if anonymous { None } else { Some(author_id) },
         Some(board_id),
         Some(target_author),
-        Some(reply_id),
+        reply_id,
     )
     .await?;
     Ok(())
@@ -71,8 +73,29 @@ pub async fn handle_article(
     anonymous: bool,
 ) -> Fallible {
     for bond in bonds {
-        handle_bond(author_id, board_id, reply_id, bond, anonymous).await?;
+        handle_reply(
+            author_id,
+            board_id,
+            Some(reply_id),
+            bond.to,
+            anonymous,
+            NotificationKind::ArticleReplied,
+        )
+        .await?;
     }
 
     Ok(())
+}
+
+pub async fn handle_comment(author_id: i64, article_id: i64) -> Fallible {
+    let board_id = get_meta_by_id(article_id, None).await?.board_id;
+    handle_reply(
+        author_id,
+        board_id,
+        None,
+        article_id,
+        false, // TODO: 支援匿名留言
+        NotificationKind::CommentReplied,
+    )
+    .await
 }
