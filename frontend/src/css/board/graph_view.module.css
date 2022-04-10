@@ -6,6 +6,7 @@
     /* z-index: -99; */
     width: 100%;
     position: relative;
+    height: 100vh;
 
     & .panel {
         opacity: 0.8;

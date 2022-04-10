@@ -91,7 +91,7 @@ pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(
         BoardOverview,
-        r#"SELECT board_name, id, title, 0::bigint as "popularity!" FROM boards WHERE id = ANY($1)"#,
+        r#"SELECT board_name, board_type, id, title, 0::bigint as "popularity!" FROM boards WHERE id = ANY($1)"#,
         board_ids
     )
     .fetch_all(pool)

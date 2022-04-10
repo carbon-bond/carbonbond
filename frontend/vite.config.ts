@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
+import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import mobilePlugin from './vite_plugins/mobile';
 import mdPlugin from 'vite-plugin-markdown';
@@ -7,7 +7,9 @@ import { Mode as mdMode } from 'vite-plugin-markdown';
 
 export default defineConfig({
 	plugins: [
-		reactRefresh(),
+		react({
+			jsxRuntime: 'classic'
+		}),
 		mobilePlugin(),
 		mdPlugin({mode: [mdMode.REACT]}),
 	],

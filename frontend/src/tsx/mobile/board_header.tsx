@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Board } from '../../ts/api/api_trait';
 import { useSubscribeBoard } from '../utils';
 
-import style from '../../css/board_switch/board_page.module.css';
+import style from '../../css/board/board_page.module.css';
 import '../../css/layout.css';
 import { UserState } from '../global_state/user';
 

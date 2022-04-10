@@ -11,22 +11,14 @@ import '../../css/layout.css';
 import '../../css/global.css';
 
 import { Header } from './header';
-import { Footer, FooterOption, FooterState } from './footer';
-import { NotificationModal } from './notification';
+import { Footer } from './footer';
 import { MainRoutes } from '../app/main_routes';
 import { init, useInit } from '../app/init';
 import { Providers } from '../app/providers';
+import { Panel } from './panel';
 
 function MainBody(): JSX.Element {
-	let { footer_option } = FooterState.useContainer();
-	let show_main_scroll = footer_option == FooterOption.Home;
-
-	return <div className="mainBody"
-		style={{ overflowY: show_main_scroll ? 'auto' : 'hidden' }} >
-		{
-			footer_option == FooterOption.Notification ?
-				<NotificationModal/> : null
-		}
+	return <div className="mainBody" >
 		<MainRoutes />
 	</div>;
 }
@@ -35,6 +27,7 @@ function Content(): JSX.Element {
 	useInit();
 	return <Router>
 		<Header />
+		<Panel />
 		<div className="other" >
 			<MainBody />
 		</div>
@@ -46,9 +39,7 @@ function App(): JSX.Element {
 	return (
 		<div className="appMobile">
 			<Providers>
-				<FooterState.Provider>
-					<Content />
-				</FooterState.Provider>
+				<Content />
 			</Providers>
 		</div>
 	);

@@ -6,7 +6,8 @@ import { ArticleCard } from '../article_card';
 import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
-import style from '../../css/board_switch/graph_view.module.css';
+import style from '../../css/board/graph_view.module.css';
+import { board_info_to_url, getBoardInfo } from '.';
 
 enum RadiusMode {
 	Energy,
@@ -19,7 +20,17 @@ type Panel = {
 	unlocate: () => void
 };
 
-export function GraphView(): JSX.Element {
+export function GraphPage(): JSX.Element {
+	return <div className="forumBody">
+		<div style={{ display: 'flex', flexDirection: 'row' }}>
+			<div style={{ flex: 1 }}>
+				<GraphView />
+			</div>
+		</div>
+	</div>;
+}
+
+function GraphView(): JSX.Element {
 	let params = useParams<{article_id: string}>();
 	let article_id = parseInt(params.article_id!);
 	let [article_meta, setArticleMeta] = React.useState<ArticleMeta | null>(null);
@@ -204,7 +215,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel }): JSX.
 			let nodes = g.nodes.map(n => {
 				return {
 					id: n.id,
-					url: `/app/b/${n.board_name}/a/${n.id}`,
+					url: `${board_info_to_url(getBoardInfo(n))}/article/${n.id}`,
 					name: `[${n.category}] ${n.title}`,
 					meta: n,
 				};

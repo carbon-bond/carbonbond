@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { SimpleArticleCard, BondCard } from './index';
 import { ArticleMeta, Edge, Board } from '../../ts/api/api_trait';
-import style from '../../css/board_switch/bonder.module.css';
+import style from '../../css/board/bonder.module.css';
 import { toastErr } from '../utils';
 import produce from 'immer';
 import { EditorPanelState } from '../global_state/editor_panel';

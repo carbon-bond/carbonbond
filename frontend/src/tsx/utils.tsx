@@ -33,6 +33,7 @@ export function useSubscribeBoard(board: Board): { has_subscribed: boolean, togg
 			subscribe({
 				id: board.id,
 				board_name: board.board_name,
+				board_type: board.board_type,
 				title: board.title,
 				popularity: 0
 			});

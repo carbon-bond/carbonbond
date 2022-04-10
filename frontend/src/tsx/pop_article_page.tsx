@@ -31,7 +31,7 @@ export function PopArticlePage(): JSX.Element {
 	}, [setCurrentLocation]);
 	useTitle('全站熱門');
 
-	return <div className={style.switchContent}>
+	return <div className="content">
 		<div className="mainContent">
 			<Articles articles={articles}/>
 		</div>
