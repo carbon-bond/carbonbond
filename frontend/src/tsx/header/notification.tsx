@@ -156,7 +156,7 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 			let board_info = getBoardInfo({ board_name: n.board_name, board_type: n.board_type });
 			return <NotificationConcreteRow>
 				{replier_name(n.user2_name)} 發文 <span className={style.tag}>{props.txt}</span> 了你在
-				<Link to={board_info.to_url()}>{n.board_name}</Link>的文章
+				<Link to={board_info.to_url()}>{n.board_name}版</Link>的文章
 				<Link to={`${board_info.to_url()}/article/${n.article1_id!}`}>{n.article1_title}</Link>
 			</NotificationConcreteRow>;
 		} else {
@@ -167,8 +167,8 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 		if (n.board_name && n.board_type) {
 			let board_info = getBoardInfo({ board_name: n.board_name, board_type: n.board_type });
 			return <NotificationConcreteRow>
-				{replier_name(n.user2_name)} 在
-				<Link to={board_info.to_url()}>{n.board_name}</Link> 的文章
+				{replier_name(n.user2_name)} 在你
+				<Link to={board_info.to_url()}>{n.board_name}版</Link>的文章
 				<Link to={`${board_info.to_url()}/article/${n.article1_id!}`}>{n.article1_title}</Link>
 				發佈了留言
 			</NotificationConcreteRow>;
