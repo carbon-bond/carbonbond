@@ -2,7 +2,6 @@ import React from 'react';
 import {
 	Routes,
 	Route,
-	Navigate,
 	Outlet,
 } from 'react-router-dom';
 
