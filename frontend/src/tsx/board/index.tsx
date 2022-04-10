@@ -84,38 +84,33 @@ export function EmptyBoard(): JSX.Element {
 	}
 }
 
-export type BoardInfo = {
-	name: string,
-	type: BoardType
-};
-
-export function getBoardInfo(data: { board_name: string, board_type: string }): BoardInfo {
-	return {
-		name: data.board_name,
-		type: toBoardType(data.board_type),
-	};
-}
-
-export function board_info_to_url(info: BoardInfo): string {
-	let type = info.type == BoardType.General ? 'general' : 'personal';
-	return `/app/b/${type}/${info.name}`;
-}
-
-function toBoardType(str: string): BoardType {
-	if (str == 'personal' || str == 'Personal') {
-		return BoardType.Personal;
-	} else if (str == 'general' || str == 'General') {
-		return BoardType.General;
+export class BoardInfo {
+	name: string;
+	type: BoardType;
+	constructor(name: string, type: BoardType) {
+		this.name = name;
+		this.type = type;
 	}
-	throw new Error(`未知的看板類型：${str}`);
+	to_url(): string {
+		return `/app/b/${this.type.toLowerCase()}/${this.name}`;
+	}
+}
+
+export function getBoardInfo(data: { board_name: string, board_type: BoardType }): BoardInfo {
+	return new BoardInfo(data.board_name, data.board_type);
 }
 
 export function useBoardInfo(): BoardInfo {
+	function toBoardType(str: string): BoardType {
+		if (str == 'personal') {
+			return BoardType.Personal;
+		} else if (str == 'general') {
+			return BoardType.General;
+		}
+		throw new Error(`未知的看板類型：${str}`);
+	}
 	let params = useParams();
-	return {
-		name: params.board_name!,
-		type: toBoardType(params.board_type!)
-	};
+	return new BoardInfo(params.board_name!, toBoardType(params.board_type!));
 }
 
 export function KeepAliveBoardPage(): JSX.Element {

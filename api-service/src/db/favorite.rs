@@ -1,5 +1,6 @@
 use super::get_pool;
 use crate::{api::model::forum::ArticleMeta, custom_error::Fallible};
+use std::str::FromStr;
 
 pub async fn get_by_user_id(id: i64) -> Fallible<Vec<ArticleMeta>> {
     let pool = get_pool();

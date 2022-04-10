@@ -17,9 +17,9 @@ export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; id_no: string; now_lic_no: string;     birthsday: number; email: string };
 export type Party = {     id: number; party_name: string; board_id: number | null; board_name: string | null; energy: number; ruling: boolean; create_time:     string};
 export enum BoardType { General = "General", Personal = "Personal" };
-export type Board = {     id: number; board_name: string; board_type: string; create_time:     string; title: string; detail: string; force: force.Force; ruling_party_id: number; popularity: number };
+export type Board = {     id: number; board_name: string; board_type: BoardType; create_time:     string; title: string; detail: string; force: force.Force; ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
-export type NewBoard = {     board_name: string; board_type: string; title: string; detail:     string; force: force.Force; ruling_party_id: number };
+export type NewBoard = {     board_name: string; board_type: BoardType; title: string; detail:     string; force: force.Force; ruling_party_id: number };
 export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type Author = 
@@ -27,17 +27,17 @@ export type Author =
  | "MyAnonymous" 
  | "Anonymous";
 export type NewArticle = {     board_id: number; category_name: string; title: string; content:     string; bonds: force.Bond []; draft_id: number | null; anonymous:     boolean };
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     board_type: string; category: string; title: string; author: Author; digest: ArticleDigest; create_time: string; fields:     force.Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     board_type: BoardType; category: string; title: string; author:     Author; digest: ArticleDigest; create_time: string; fields: force.Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type ArticleStatistics = { replies: number; comments: number };
 export type BondInfo = { article_meta: MiniArticleMeta; energy: number; tag: string };
-export type MiniArticleMeta = {     category: string; board_name: string; board_type: string; author:     Author; id: number; title: string; create_time: string};
+export type MiniArticleMeta = {     category: string; board_name: string; board_type: BoardType; author: Author; id: number; title: string; create_time: string};
 export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: BondInfo [] };
 export type Article = { meta: ArticleMeta; bonds: BondInfo []; content: string };
 export type Comment = {     id: number; author: Author; create_time: string; content:     string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; title: string; content: string; bonds:     string; create_time: string; edit_time: string;     anonymous: boolean };
-export type BoardOverview = {     id: number; board_name: string; board_type: string; title: string;     popularity: number };
+export type BoardOverview = {     id: number; board_name: string; board_type: BoardType; title:     string; popularity: number };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
 export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
 export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied" };

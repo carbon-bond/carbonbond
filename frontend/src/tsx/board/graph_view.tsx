@@ -7,7 +7,7 @@ import { toastErr } from '../utils';
 import * as d3 from 'd3';
 
 import style from '../../css/board/graph_view.module.css';
-import { board_info_to_url, getBoardInfo } from '.';
+import { getBoardInfo } from '.';
 
 enum RadiusMode {
 	Energy,
@@ -215,7 +215,7 @@ export function GraphViewInner(props: { meta: ArticleMeta, panel: Panel }): JSX.
 			let nodes = g.nodes.map(n => {
 				return {
 					id: n.id,
-					url: `${board_info_to_url(getBoardInfo(n))}/article/${n.id}`,
+					url: `${getBoardInfo(n).to_url()}/article/${n.id}`,
 					name: `[${n.category}] ${n.title}`,
 					meta: n,
 				};

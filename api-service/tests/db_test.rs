@@ -74,7 +74,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
     };
     let board_id = db::board::create(&model::forum::NewBoard {
         board_name: "測試板".to_string(),
-        board_type: "general".to_string(),
+        board_type: model::forum::BoardType::General,
         title: "整合測試測起來！".to_string(),
         detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
         force: force.to_owned(),
@@ -84,7 +84,7 @@ async fn board_test(ruling_party_id: i64) -> Fallible<i64> {
 
     db::board::create(&model::forum::NewBoard {
         board_name: "測試板2".to_string(),
-        board_type: "general".to_string(),
+        board_type: model::forum::BoardType::General,
         title: "整合測試測起來！".to_string(),
         detail: "用整合測試確保軟體品質，用戶才能在碳鍵快意論戰，嘴爆笨蛋".to_string(),
         force: force.to_owned(),

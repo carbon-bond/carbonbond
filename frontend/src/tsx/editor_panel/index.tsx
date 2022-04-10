@@ -19,7 +19,7 @@ import { new_content, show_datatype } from '../../ts/force_util';
 import { UserState } from '../global_state/user';
 import { BondLine } from '../article_card';
 import { useNavigate } from 'react-router';
-import { board_info_to_url, getBoardInfo } from '../board';
+import { getBoardInfo } from '../board';
 
 function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
@@ -256,7 +256,7 @@ function EditorBody(): JSX.Element {
 				.then(id => {
 					toast('發文成功');
 					minimizeEditorPanel();
-					navigate(`${board_info_to_url(board_info)}/article/${id}`);
+					navigate(`${board_info.to_url()}/article/${id}`);
 					setEditorPanelData(null);
 					return API_FETCHER.articleQuery.queryDraft();
 				})

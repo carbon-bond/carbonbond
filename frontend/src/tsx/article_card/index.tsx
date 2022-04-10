@@ -3,14 +3,14 @@ import style from '../../css/board/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta } from '../../ts/api/api_trait';
+import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr, useInputValue } from '../utils';
 import { ArticleContent, ShowText } from '../board/article_page';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
-import { board_info_to_url, getBoardInfo } from '../board';
+import { getBoardInfo } from '../board';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -26,13 +26,13 @@ function ShowAuthor(props: {author: Author}): JSX.Element {
 	}
 }
 
-export function ArticleHeader(props: { author: Author, board_info: {board_name: string, board_type: string}, date: Date }): JSX.Element {
+export function ArticleHeader(props: { author: Author, board_info: {board_name: string, board_type: BoardType}, date: Date }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	const board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleHeader}>
 		<ShowAuthor author={props.author} />
 		發佈於
-		<Link to={board_info_to_url(board_info)}>
+		<Link to={board_info.to_url()}>
 			<div className={style.articleBoard}>{props.board_info.board_name}</div>
 		</Link>
 		<div className={style.seperationDot}>•</div>
@@ -40,14 +40,14 @@ export function ArticleHeader(props: { author: Author, board_info: {board_name: 
 	</div>;
 }
 
-export function ArticleLine(props: { category: string, title: string, id: number, board_info: {board_name: string, board_type: string} }): JSX.Element {
+export function ArticleLine(props: { category: string, title: string, id: number, board_info: {board_name: string, board_type: BoardType} }): JSX.Element {
 	let board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory} ${style.border}`}>{props.category}</span>
-		<Link to={`${board_info_to_url(board_info)}/article/${props.id}`} className="styleless">
+		<Link to={`${board_info.to_url()}/article/${props.id}`} className="styleless">
 			<span className={style.articleTitle}>{props.title}</span>
 		</Link>
-		<Link className={style.articleGraphViewIcon} to={`${board_info_to_url(board_info)}/graph/${props.id}`}><span> 🗺</span></Link>
+		<Link className={style.articleGraphViewIcon} to={`${board_info.to_url()}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
 }
 
@@ -137,7 +137,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 
 	// XXX: 個版會壞掉
 	function onShareClick(): void {
-		copyToClipboard(`${window.location.origin}${board_info_to_url(board_info)}/article/${props.article.id}`)
+		copyToClipboard(`${window.location.origin}${board_info.to_url()}/article/${props.article.id}`)
 			.then(() => {
 				toast('已複製網址到剪貼簿');
 			}).catch(err => {
@@ -202,7 +202,7 @@ export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.Re
 	return <div className={style.bondLine}>
 		<div className={style.leftSet}>
 			{props.children}
-			<Link to={`${board_info_to_url(board_info)}/article/${props.mini_meta.id}`}>
+			<Link to={`${board_info.to_url()}/article/${props.mini_meta.id}`}>
 				<span className={style.border}>{props.mini_meta.category}</span>
 				<span>{props.mini_meta.title}</span>
 			</Link>
@@ -265,7 +265,7 @@ function BondCard(props: { bond: Edge }): JSX.Element {
 function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMeta }): JSX.Element {
 	const { meta } = props;
 	const board_info = getBoardInfo(props.meta);
-	const url = `${board_info_to_url(board_info)}/article/${meta.id}`;
+	const url = `${board_info.to_url()}/article/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
 		<div key={meta.title} className={style.leftSet}>
 			<ArticleLine

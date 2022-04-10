@@ -1,6 +1,7 @@
 use super::{get_pool, DBObject};
-use crate::api::model::forum::BoardOverview;
+use crate::api::model::forum::{BoardOverview, BoardType};
 use crate::custom_error::{DataType, ErrorCode, Fallible};
+use std::str::FromStr;
 
 impl DBObject for BoardOverview {
     const TYPE: DataType = DataType::Board;
@@ -28,11 +29,18 @@ pub async fn subscribe(user_id: i64, board_id: i64) -> Fallible<()> {
     .await?;
     Ok(())
 }
+struct DBBoardOverview {
+    pub id: i64,
+    pub board_name: String,
+    pub board_type: String,
+    pub title: String,
+    pub popularity: i64,
+}
 
 pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(
-        BoardOverview,
+        DBBoardOverview,
         r#"
     SELECT boards.board_name, boards.board_type, boards.title, boards.id, 0::bigint as "popularity!" FROM subscribed_boards
     LEFT JOIN boards on boards.id = subscribed_boards.board_id
@@ -42,7 +50,17 @@ pub async fn get_subscribed_boards(user_id: i64) -> Fallible<Vec<BoardOverview>>
     )
     .fetch_all(pool)
     .await?;
-    Ok(boards)
+    let mut ret = Vec::new();
+    for board in boards {
+        ret.push(BoardOverview {
+            board_type: BoardType::from_str(&board.board_type)?,
+            id: board.id,
+            board_name: board.board_name,
+            title: board.title,
+            popularity: board.popularity,
+        });
+    }
+    Ok(ret)
 }
 
 pub async fn get_subscribed_user_count(board_id: i64) -> Fallible<usize> {
