@@ -65,10 +65,11 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 
 export function CommentCards(props: { article_id: number }): JSX.Element {
 	let [comments, setComments] = React.useState<Comment[]>([]);
+	let [anonymous, setAnonymous] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue('');
 	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
 		if (e.key == 'Enter' && !e.shiftKey && input_props.value.length > 0) {
-			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value).then(_id => {
+			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value, anonymous).then(_id => {
 				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
 			}).then(data => {
 				setComments(unwrap(data));
@@ -93,6 +94,12 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 				return <CommentCard comment={comment} key={comment.id} />;
 			})
 		}
+		<label>
+			<input type="checkbox"
+				checked={anonymous}
+				onChange={(evt) => setAnonymous(evt.target.checked)} />
+			匿名
+		</label>
 		<textarea {...input_props} onKeyDown={onKeyDown} placeholder="我來留言" />
 	</div>;
 }
