@@ -624,28 +624,6 @@
     },
     "query": "\n\t\tSELECT chat.direct_chats.id,\n            u1.user_name as name_1,\n            u2.user_name as name_2,\n            user_id_1,\n            user_id_2,\n            read_time_1,\n            read_time_2,\n            m.create_time as time,\n            m.id as msg_id,\n            m.content as text,\n            m.sender_id as sender_id\n        FROM chat.direct_chats\n        JOIN users u1\n        ON chat.direct_chats.user_id_1 = u1.id\n        JOIN users u2\n        ON chat.direct_chats.user_id_2 = u2.id\n        JOIN chat.direct_messages m\n        on chat.direct_chats.last_message = m.id\n        WHERE (user_id_1 = $1 OR user_id_2 = $1)\n\t\t"
   },
-  "3274af579c6f2f5b8fc6b1ceb5e9f94e6ff2ae7d66bd02f7b69eed77537d0284": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Text"
-        ]
-      }
-    },
-    "query": "\n        INSERT INTO comments (author_id, article_id, content)\n        VALUES ($1, $2, $3)\n        RETURNING id\n        "
-  },
   "333369cc0e6a43adc007f8ccd6afd2b9cf5b687e3b350981d3ebb7e6484af0e3": {
     "describe": {
       "columns": [
@@ -842,6 +820,29 @@
     },
     "query": "INSERT INTO subscribed_boards (user_id, board_id) VALUES ($1, $2)"
   },
+  "4f3eced25b9959a0f1f7f2864aa55559371abd6bf41b01be3a589d9b86ca5592": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO comments (author_id, article_id, content, anonymous)\n        VALUES ($1, $2, $3, $4)\n        RETURNING id\n        "
+  },
   "500479668dc0ee82365cfddf9196fed393a662bad3a48e702ab3597351276885": {
     "describe": {
       "columns": [
@@ -879,6 +880,56 @@
       }
     },
     "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'hate' AND user_relations.is_public = true;"
+  },
+  "50a1aa5e76e99f1c4c11e412903b8eff72b053fb9bd1f6f3e2c52e214bb8f3bb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "create_time",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "content",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "anonymous",
+          "ordinal": 5,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT\n            comments.id, comments.author_id, users.user_name, comments.create_time, comments.content, comments.anonymous\n        FROM\n            comments JOIN users on comments.author_id = users.id\n        WHERE\n            comments.article_id = $1\n        ORDER BY comments.create_time\n        "
   },
   "50a32f9f8e8fe35ce70d23c04cdae33e5d851fd3940ac39604918e2cb96cdae6": {
     "describe": {
@@ -3273,50 +3324,6 @@
       }
     },
     "query": "SELECT user_name FROM reset_password\n         JOIN users on reset_password.user_id = users.id\n         WHERE token = $1 AND is_used = false"
-  },
-  "ef4df8cf050bb524ee77396572460243c2c29db9fbbdc5222aff21506b935ed5": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "user_name",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "create_time",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "content",
-          "ordinal": 4,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n        SELECT\n            comments.id, comments.author_id, users.user_name, comments.create_time, comments.content\n        FROM\n            comments JOIN users on comments.author_id = users.id\n        WHERE\n            comments.article_id = $1\n        ORDER BY comments.create_time\n        "
   },
   "efcc8d6a4a163098470561a44aca4645615d5baef864130b6694dbc52df44117": {
     "describe": {

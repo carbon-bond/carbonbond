@@ -240,19 +240,21 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     }
     async fn query_comment_list(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         article_id: i64,
     ) -> Fallible<Vec<super::model::forum::Comment>> {
-        db::comment::get_by_article_id(article_id).await
+        let viewer_id = context.get_id().await;
+        db::comment::get_by_article_id(article_id, viewer_id).await
     }
     async fn create_comment(
         &self,
         context: &mut crate::Ctx,
         article_id: i64,
         content: String,
+        anonymous: bool,
     ) -> Fallible<i64> {
         let author_id = context.get_id_strict().await?;
-        let comment_id = db::comment::create(author_id, article_id, content).await?;
+        let comment_id = db::comment::create(author_id, article_id, content, anonymous).await?;
         service::notification::handle_comment(author_id, article_id).await?;
         Ok(comment_id)
     }
