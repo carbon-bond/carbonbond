@@ -11,10 +11,10 @@ function dateDistance(date: Date): string {
 		return `${minutes} 分鐘`;
 	}
 	const hours = Math.floor(minutes / 60);
-	if (hours < 60) {
+	if (hours < 24) {
 		return `${hours} 小時`;
 	}
-	const days = Math.floor(minutes / 24);
+	const days = Math.floor(hours / 24);
 	if (days <= 10) {
 		return `${days} 天`;
 	}
