@@ -131,6 +131,10 @@ pub async fn get_by_article_ids(ids: Vec<i64>) -> Fallible<Vec<String>> {
     }
     Ok(ret)
 }
+pub async fn get_bonds_by_article_id(id: i64, viewer_id: Option<i64>) -> Fallible<Vec<BondInfo>> {
+    let mut bonds_list = get_bonds_by_article_ids(vec![id], viewer_id).await?;
+    Ok(std::mem::replace(&mut bonds_list[0], vec![]))
+}
 
 // ids[i] 的分類為 categories[i]
 pub async fn get_bonds_by_article_ids(
