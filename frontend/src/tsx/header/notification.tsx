@@ -92,7 +92,7 @@ export function NotificationIcon(props: Props): JSX.Element {
 		}
 	/>;
 }
-function NotiRow<T>(props: { children: T, time?: Date }): JSX.Element {
+function NotificationRow<T>(props: { children: T, time?: Date }): JSX.Element {
 	return <div className={style.row}>
 		{
 			props.time ? <>
@@ -116,17 +116,16 @@ export function NotificationDropDown(props: { notifications: Notification[] }): 
 				{
 					(() => {
 						if (props.notifications.length == 0) {
-							return <NotiRow>暫無通知</NotiRow>;
+							return <NotificationRow>暫無通知</NotificationRow>;
+						} else {
+							return props.notifications.map((n, i) => {
+								return <React.Fragment key={n.id}>
+									{i == 0 ? null : <hr className={style.notificationSep} />}
+									<NotificationBlock notification={n} />
+								</React.Fragment>;
+							});
 						}
 					})()
-				}
-				{
-					props.notifications.map((n, i) => {
-						return <React.Fragment key={n.id}>
-							{ i == 0 ? null : <hr className={style.notificationSep} /> }
-							<NotificationBlock notification={n} />
-						</React.Fragment>;
-					})
 				}
 			</div>
 		</div>
@@ -146,9 +145,9 @@ function replier_name(name: string | null): JSX.Element {
 export function NotificationBlock(props: { notification: Notification }): JSX.Element {
 	let n = props.notification;
 	function NotificationConcreteRow<T>(props: { children: T }): JSX.Element {
-		return <NotiRow time={new Date(n.create_time)}>
+		return <NotificationRow time={new Date(n.create_time)}>
 			{props.children}
-		</NotiRow>;
+		</NotificationRow>;
 	}
 
 	function ReplyNotification(props: { txt: string }): JSX.Element {
