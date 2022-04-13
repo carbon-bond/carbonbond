@@ -65,12 +65,16 @@
     position: relative;
     bottom: 1px;
     border: 1px solid;
-    padding: 1px 3px;
+    padding: 0px 3px;
+}
+
+.articleLineWrap {
+    margin: 6px 0px;
 }
 
 .articleLine {
     color: black;
-    margin: 10px 0px;
+    /* margin: 10px 0px; */
     & .articleCategory {
         font-weight: bold;
         margin-right: 8px;

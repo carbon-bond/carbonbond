@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Navigate, useParams } from 'react-router';
 import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
-import { ArticleHeader, ArticleLine, ArticleFooter, Hit } from '../article_card';
+import { ArticleHeader, ArticleLine, ArticleFooter, Hit, NormalBondLines } from '../article_card';
 import style from '../../css/board/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
 import { isImageLink, isLink } from '../../ts/regex_util';
@@ -79,11 +79,14 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			author={article.meta.author}
 			board_info={props.board}
 			date={new Date(article.meta.create_time)} />
-		<ArticleLine
-			board_info={props.board}
-			id={article.meta.id}
-			category={category}
-			title={article.meta.title} />
+		<div className={style.articleLineWrap}>
+			<ArticleLine
+				board_info={props.board}
+				id={article.meta.id}
+				category={category}
+				title={article.meta.title} />
+			<NormalBondLines bonds={props.article.bonds} />
+		</div>
 		<ReplyButtons article={article.meta} board={board} />
 		<ArticleContent article={article} />
 		<ArticleFooter article={article.meta} hit={Hit.Comment} />

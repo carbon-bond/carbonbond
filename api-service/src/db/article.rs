@@ -261,10 +261,11 @@ pub async fn get_meta_by_ids(ids: &Vec<i64>, viewer_id: Option<i64>) -> Fallible
 pub async fn get_by_id(id: i64, viewer_id: Option<i64>) -> Fallible<Article> {
     let meta = get_meta_by_id(id, viewer_id).await?;
     let content = article_content::get_by_article_id(meta.id).await?;
+    let bonds = article_content::get_bonds_by_article_id(meta.id, viewer_id).await?;
     Ok(Article {
         meta,
         content,
-        bonds: vec![],
+        bonds,
     })
 }
 

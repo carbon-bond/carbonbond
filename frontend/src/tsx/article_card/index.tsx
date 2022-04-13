@@ -222,6 +222,21 @@ export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.Re
 	</div>;
 }
 
+export function NormalBondLines(props: { bonds: Array<BondInfo> }): JSX.Element {
+	return <>
+		{
+			props.bonds.map(bond => {
+				return <BondLine
+					mini_meta={bond.article_meta}
+					key={`${bond.article_meta.id}#${bond.tag}`}>
+		➥
+					<span className={style.bondTag}>{bond.tag}</span>
+				</BondLine>;
+			})
+		}
+	</>;
+}
+
 function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): JSX.Element {
 	const date = new Date(props.article.create_time);
 
@@ -230,24 +245,18 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 
 	return (
 		<div>
-			{
-				props.bonds.map(bond => {
-					return <BondLine
-						mini_meta={bond.article_meta}
-						key={`${bond.article_meta.id}#${bond.tag}`}>
-						<span className={style.bondTag}>{bond.tag}</span>
-					</BondLine>;
-				})
-			}
 			<div className={style.articleContainer}>
 				<ArticleHeader author={author} board_info={props.article} date={date} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
-						<ArticleLine
-							board_info={props.article}
-							category={category}
-							title={props.article.title}
-							id={props.article.id} />
+						<div className={style.articleLineWrap}>
+							<ArticleLine
+								board_info={props.article}
+								category={category}
+								title={props.article.title}
+								id={props.article.id} />
+							<NormalBondLines bonds={props.bonds} />
+						</div>
 						<ArticleContentShrinkable article={props.article}/>
 					</div>
 				</div>
@@ -275,11 +284,13 @@ function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMet
 	const url = `${board_info.to_url()}/article/${meta.id}`;
 	return <div className={style.simpleArticleCard}>
 		<div key={meta.title} className={style.leftSet}>
-			<ArticleLine
-				board_info={meta}
-				title={meta.title}
-				id={meta.id}
-				category={meta.category} />
+			<div className={style.articleLineWrap}>
+				<ArticleLine
+					board_info={meta}
+					title={meta.title}
+					id={meta.id}
+					category={meta.category} />
+			</div>
 			<ArticleHeader
 				board_info={meta}
 				author={meta.author}

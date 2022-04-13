@@ -13,6 +13,9 @@
         color: var(--disabled-color);
     }
 }
+.articleLineWrap {
+    margin: 12px 0px;
+}
 .articleContent {
     margin: 20px 0px 20px 0px;
     line-height: 1.5;
