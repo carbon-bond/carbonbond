@@ -45,7 +45,7 @@ export function NotificationList(props: { notifications: Notification[] }): JSX.
 					} else {
 						return props.notifications.map((n, i) => {
 							return <React.Fragment key={n.id}>
-								{i == 0 ? null : <hr className={style.notificationSep} />}
+								{i == 0 ? null : <hr className={style.notificationSeparater} />}
 								<NotificationBlock notification={n} />
 							</React.Fragment>;
 						});

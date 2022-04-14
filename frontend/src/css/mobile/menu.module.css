@@ -4,9 +4,9 @@
     & .menu {
         background: var(--background-color);
         width: 100vw;
+        height: calc(100vh - var(--header-height));
         position: absolute;
-        right: -15px;
-        border: 1px var(--lighter-gray) solid;
+        right: -55px;
         border-top-style: none;
         & .row {
             margin: 10px 0;
@@ -21,6 +21,6 @@
         position: absolute;
         width: 100vw;
         height: calc(100vh - var(--header-height));
-        right: -15px;
+        /* right: -15px; */
     }
 }

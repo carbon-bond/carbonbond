@@ -1,14 +1,13 @@
 .tag {
     color: var(--sub-theme-color)
 }
-.notificationSep {
+.notificationSeparater {
     border: none;
     border-top: 1px solid var(--light-gray);
     width: 80%;
     margin: 0 auto;
 }
 .notificationRow {
-    width: 400px;
     font-size: 14px;
     & .notificationSpace {
         min-width: 20px;

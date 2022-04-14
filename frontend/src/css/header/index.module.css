@@ -145,6 +145,7 @@
 }
 .notificationDropdown {
     right: -100px;
+    width: 400px;
     position: absolute;
     overflow-y: auto;
     overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */

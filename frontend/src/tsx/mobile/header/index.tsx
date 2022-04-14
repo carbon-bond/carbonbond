@@ -10,6 +10,7 @@ import { DropDown } from '../../components/drop_down';
 import { SearchBar } from '../../header/search_bar';
 import { useNavigate } from 'react-router';
 import carbonbondIconURL from '../../../img/icon-128x128.png';
+import { LoginModal } from '../../header/login_modal';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -27,6 +28,7 @@ function Header(): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const { current_location } = LocationCacheState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
+	let [logining, setLogining] = React.useState(false);
 	const navigate = useNavigate();
 
 	function UserBlock(): JSX.Element | null {
@@ -47,9 +49,12 @@ function Header(): JSX.Element {
 					forced_expanded={expanding_menu}
 					button={<div className={style.icon} onClick={() => setExpandingMenu(p => !p)}> ☰ </div>}
 					body={<Menu
+						setLogining={setLogining}
+						logining={logining}
 						userBlock={<UserBlock/>}
-						onCoverClicked={() => setExpandingMenu(false)}/>}
+						setExpandingMenu={setExpandingMenu}/>}
 				/>
+				{ logining ? <LoginModal setLogining={setLogining}/> : null }
 			</div>
 		</>;
 	}
