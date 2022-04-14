@@ -1,0 +1,32 @@
+.tag {
+    color: var(--sub-theme-color)
+}
+.notificationSep {
+    border: none;
+    border-top: 1px solid var(--light-gray);
+    width: 80%;
+    margin: 0 auto;
+}
+.notificationRow {
+    width: 400px;
+    font-size: 14px;
+    & .notificationSpace {
+        min-width: 20px;
+    }
+}
+.notificationMessage {
+    margin: 10px 0;
+    flex: 1;
+}
+.time {
+    color: var(--lighter-gray);
+}
+.row:hover {
+    background-color: var(--hover-background-color);
+}
+.row {
+    padding: 5px 0px;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+}

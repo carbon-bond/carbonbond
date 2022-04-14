@@ -23,12 +23,12 @@ export function DropDown(props: {
 		}}>
 			{props.button}
 		</div>
-		<div className={style.body}>
+		<div className={style.dropDown}>
 			{
 				should_expand
 					? <>
 						{props.hide_triangle ? null : <div className={style.triangle}></div>}
-						<div style={{position: 'relative'}}> {props.body} </div>
+						<div className={style.body}> {props.body} </div>
 					</>
 					: null
 			}

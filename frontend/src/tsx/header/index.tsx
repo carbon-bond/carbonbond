@@ -14,11 +14,11 @@ import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
 import { LocationCacheState } from '../global_state/location_cache';
-import { NotificationIcon, NotificationQuality } from './notification';
-import { Notification } from '../../ts/api/api_trait';
+import { NotificationIcon } from './notification';
 import { DropDown } from '../components/drop_down';
 import { SignupModal, LoginModal } from './login_modal';
 import { EditorPanelState } from '../global_state/editor_panel';
+import { NotificationQuality, useNotification } from '../notification';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -151,23 +151,6 @@ function Header(): JSX.Element {
 			</div>
 		</div>
 	);
-}
-
-function useNotification(login: boolean): Notification[] | null {
-	let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
-	React.useEffect(() => {
-		if (!login) {
-			return;
-		}
-		API_FETCHER.notificationQuery.queryNotificationByUser(true).then((res) => {
-			if ('Err' in res) {
-				toastErr(res.Err);
-				return;
-			}
-			setNotifications(res.Ok);
-		});
-	}, [login]);
-	return notifications;
 }
 
 export { Header };

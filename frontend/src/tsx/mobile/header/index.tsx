@@ -41,9 +41,6 @@ function Header(): JSX.Element {
 	}
 	function UserStatus(): JSX.Element {
 		return <>
-			{
-				// user_state.login ? <div className={style.icon}>🔔</div> : null
-			}
 			<div className={style.wrap}>
 				<DropDown
 					hide_triangle
