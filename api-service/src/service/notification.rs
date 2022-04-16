@@ -87,14 +87,14 @@ pub async fn handle_article(
     Ok(())
 }
 
-pub async fn handle_comment(author_id: i64, article_id: i64) -> Fallible {
+pub async fn handle_comment(author_id: i64, article_id: i64, anonymous: bool) -> Fallible {
     let board_id = get_meta_by_id(article_id, None).await?.board_id;
     handle_reply(
         author_id,
         board_id,
         None,
         article_id,
-        false, // TODO: 支援匿名留言
+        anonymous,
         NotificationKind::CommentReplied,
     )
     .await
