@@ -18,7 +18,7 @@ import { NotificationIcon } from './notification';
 import { DropDown } from '../components/drop_down';
 import { SignupModal, LoginModal } from './login_modal';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { NotificationQuality, useNotification } from '../notification';
+import { NotificationQuality } from '../global_state/notification';
 
 export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Element {
 	return <div className={style.row} onClick={() => {
@@ -76,7 +76,6 @@ function Header(): JSX.Element {
 	}
 
 	function UserStatus(): JSX.Element {
-		let notifications = useNotification(user_state.login);
 		let ref_noti = React.useRef(null);
 		let ref_user = React.useRef(null);
 		useOnClickOutside(ref_noti, () => {
@@ -90,13 +89,13 @@ function Header(): JSX.Element {
 				<div ref={ref_noti} className={style.wrap}>
 					<NotificationIcon icon={'🤍'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Good}
-						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
+						setExpandingQuality={q => setExpandingQuality(q)} />
 					<NotificationIcon icon={'🗞️'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Neutral}
-						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
+						setExpandingQuality={q => setExpandingQuality(q)} />
 					<NotificationIcon icon={'☠️'}
 						expanding_quality={expanding_quality} quality={NotificationQuality.Bad}
-						notifications={notifications} setExpandingQuality={q => setExpandingQuality(q)} />
+						setExpandingQuality={q => setExpandingQuality(q)} />
 				</div>
 				<div className={style.space} />
 				<div ref={ref_user} className={style.wrap}>

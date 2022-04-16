@@ -3,21 +3,10 @@ import { Link } from 'react-router-dom';
 
 import style from '../css/notification.module.css';
 
-import { API_FETCHER } from '../ts/api/api';
 import { Notification, NotificationKind } from '../ts/api/api_trait';
-import { toastErr } from './utils';
 import { relativeDate } from '../ts/date';
 import { getBoardInfo } from './board';
 
-export enum NotificationQuality { Good, Bad, Neutral };
-
-export function mapQuality(b: boolean | null): NotificationQuality {
-	if (typeof b === 'boolean') {
-		return b ? NotificationQuality.Good : NotificationQuality.Bad;
-	} else {
-		return NotificationQuality.Neutral;
-	}
-}
 function NotificationRow<T>(props: { children: T, time?: Date }): JSX.Element {
 	return <div className={style.row}>
 		{
@@ -35,6 +24,7 @@ function NotificationRow<T>(props: { children: T, time?: Date }): JSX.Element {
 		<div className={style.notificationSpace} />
 	</div>;
 }
+
 export function NotificationList(props: { notifications: Notification[] }): JSX.Element {
 	return <div className={style.features}>
 		<div className={style.notificationRow}>
@@ -113,21 +103,4 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 		case NotificationKind.CommentReplied:
 			return <CommentNotification />;
 	}
-}
-
-export function useNotification(login: boolean): Notification[] | null {
-	let [notifications, setNotifications] = React.useState<Notification[] | null>(null);
-	React.useEffect(() => {
-		if (!login) {
-			return;
-		}
-		API_FETCHER.notificationQuery.queryNotificationByUser(true).then((res) => {
-			if ('Err' in res) {
-				toastErr(res.Err);
-				return;
-			}
-			setNotifications(res.Ok);
-		});
-	}, [login]);
-	return notifications;
 }
