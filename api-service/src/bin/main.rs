@@ -44,7 +44,6 @@ async fn main() -> Fallible<()> {
 
     tokio::select! {
         _ = web_service => {},
-        res = hot_boards::start() => { res?; },
     };
 
     Ok(())
