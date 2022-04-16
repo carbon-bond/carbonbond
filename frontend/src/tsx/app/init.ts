@@ -6,10 +6,12 @@ import { SubscribedBoardsState } from '../global_state/subscribed_boards';
 import { AllChatState } from '../global_state/chat';
 import { toast } from 'react-toastify';
 import { ChatSocket } from '../../ts/chat_socket';
+import { NotificationState } from '../global_state/notification';
 
 export function useInit(): void {
 	const { user_state, getLoginState } = UserState.useContainer();
 	const { load, unload } = SubscribedBoardsState.useContainer();
+	const { setNotifications } = NotificationState.useContainer();
 	const all_chat_state = AllChatState.useContainer();
 	React.useEffect(() => {
 		getLoginState();
@@ -30,6 +32,20 @@ export function useInit(): void {
 			}
 		})();
 	}, [load, unload, user_state.login]);
+	React.useEffect(() => {
+		(async () => {
+			if (user_state.login) {
+				try {
+					let result = await API_FETCHER.notificationQuery.queryNotificationByUser(true);
+					setNotifications(unwrap(result));
+				} catch (err) {
+					toastErr(err);
+				}
+			} else {
+				setNotifications([]);
+			}
+		})();
+	}, [setNotifications, user_state.login]);
 	React.useEffect(() => {
 		window.chat_socket.set_all_chat(all_chat_state);
 	}, [all_chat_state]);

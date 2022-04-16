@@ -8,6 +8,7 @@ import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileDetail } from '../profile/user_page';
+import { ShowText } from './article_page';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -62,7 +63,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			<div className={style.rightSidebarBlock}>
 				<div className={style.header}>看板簡介</div>
 				<div className={style.content}>
-					{props.board.detail}
+					<ShowText text={props.board.detail} />
 				</div>
 				{/* <div className={style.rightSidebarButton trackBoardButton}>訂閱此看板</div> */}
 			</div>

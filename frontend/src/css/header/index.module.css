@@ -90,8 +90,6 @@
                 border: var(--border-color) solid 1px;
                 box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
                 & .features {
-                    /* flex-direction: column;
-                    align-items: center; */
                     background-color: var(--background-color);
                     font-size: 18px;
                     & .row:hover {
@@ -122,36 +120,6 @@
 }
 
 
-.notificationDropdown {
-    right: -100px;
-    position: absolute;
-    overflow-y: auto;
-    overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
-    max-height: calc(0.9 * (100vh - var(--header-height)));
-    & .tag {
-        color: var(--sub-theme-color)
-    }
-    & .notificationSep {
-        border: none;
-        border-top: 1px solid var(--light-gray);
-        width: 80%;
-        margin: 0 auto;
-    }
-    & .notificationRow {
-        width: 400px;
-        font-size: 14px;
-        & .notificationSpace {
-            min-width: 20px;
-        }
-    }
-    & .notificationMessage {
-        margin: 10px 0;
-        flex: 1;
-    }
-    & .time {
-        color: var(--lighter-gray);
-    }
-}
 .icon {
     height: 100%;
     cursor: pointer;
@@ -174,4 +142,13 @@
     text-align: center;
     top: 35px;
     left: 15;
+}
+.notificationDropdown {
+    right: -100px;
+    width: 400px;
+    position: absolute;
+    overflow-y: auto;
+    overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
+    max-height: calc(0.9 * (100vh - var(--header-height)));
+    background-color: var(--background-color);
 }

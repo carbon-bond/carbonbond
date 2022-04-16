@@ -6,22 +6,24 @@ import style from '../../../css/mobile/menu.module.css';
 import { API_FETCHER, unwrap } from '../../../ts/api/api';
 import type { BoardOverview, Result, Error } from '../../../ts/api/api_trait';
 import { BoardBlock } from '../../left_panel/browse_bar';
-import { LoginModal } from '../../header/login_modal';
 import { UserState } from '../../global_state/user';
 import { toastErr } from '../../utils';
 
 type RowProps<T> = { children: T } & ({ to: string } | { onClick: () => void } | {});
 
-export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element }): JSX.Element {
-	let [logining, setLogining] = React.useState(false);
-	function onCoverClicked(): void {
-		if (!logining) {
-			props.onCoverClicked();
-		}
-	}
-
+export function Menu(props: {
+	logining: boolean,
+	setLogining: (boolean: boolean) => void,
+	setExpandingMenu: (expanding: boolean) => void,
+	userBlock: JSX.Element
+}): JSX.Element {
 	const { user_state, setLogout } = UserState.useContainer();
 
+	function onCoverClicked(): void {
+		if (!props.logining) {
+			props.setExpandingMenu(false);
+		}
+	}
 	function Row<T>(props: RowProps<T>): JSX.Element {
 		if ('to' in props) {
 			return <Link to={props.to} onClick={onCoverClicked}>
@@ -89,7 +91,7 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
                     </>
         		}
         		{
-        			user_state.login ? null : <Row onClick={() => setLogining(true)}>登入</Row>
+        			user_state.login ? null : <Row onClick={() => {props.setLogining(true); props.setExpandingMenu(false);}}>登入</Row>
         		}
         		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.boardQuery.queryHotBoards()} />
         		{
@@ -99,6 +101,5 @@ export function Menu(props: { onCoverClicked: () => void, userBlock: JSX.Element
         		}
         	</div>
         </div>
-		{ logining ? <LoginModal setLogining={setLogining}/> : null }
     </>;
 }

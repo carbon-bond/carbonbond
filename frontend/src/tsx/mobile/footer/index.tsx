@@ -1,6 +1,8 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
 import { useSearchParams } from 'react-router-dom';
+import { NotificationState } from '../../global_state/notification';
+import { NumberOver } from '../../components/number_over';
 
 export enum FooterOption {
     Home = '',
@@ -27,16 +29,19 @@ export function useCurrentFooter(): FooterOption {
 }
 
 export function Footer(): JSX.Element {
+	let {getNotificationNumber} = NotificationState.useContainer();
 	return <div className={`footer ${style.footer}`}>
-		<IconBlock icon="🏠" current_option={FooterOption.Home} />
-		<IconBlock icon="🔔" current_option={FooterOption.Notification} />
-		<IconBlock icon="✏️" current_option={FooterOption.Editor} />
-		<IconBlock icon="🗨️" current_option={FooterOption.Chat} />
-		<IconBlock icon="🐷" current_option={FooterOption.Account} />
+		<IconBlock icon={<>🏠</>} current_option={FooterOption.Home} />
+		<IconBlock
+			icon={<NumberOver number={getNotificationNumber(null)}>🔔</NumberOver>}
+			current_option={FooterOption.Notification} />
+		<IconBlock icon={<>✏️</>} current_option={FooterOption.Editor} />
+		<IconBlock icon={<>🗨️</>} current_option={FooterOption.Chat} />
+		<IconBlock icon={<>🐷</>} current_option={FooterOption.Account} />
 	</div>;
 }
 
-function IconBlock(props: { icon: string, current_option: FooterOption }): JSX.Element {
+function IconBlock(props: { icon: JSX.Element, current_option: FooterOption }): JSX.Element {
 	const footer_option = useCurrentFooter();
 	let [search_params, setSearchParams] = useSearchParams();
 	let is_current = footer_option == props.current_option;

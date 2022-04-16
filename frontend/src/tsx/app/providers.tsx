@@ -8,6 +8,7 @@ import { EditorPanelState } from '../global_state/editor_panel';
 import { DraftState } from '../global_state/draft';
 import { ConfigState } from '../global_state/config';
 import { AliveScope } from 'react-activation';
+import { NotificationState } from '../global_state/notification';
 
 export function Providers(props: { children: JSX.Element }): JSX.Element {
 	return <ConfigState.Provider>
@@ -18,9 +19,11 @@ export function Providers(props: { children: JSX.Element }): JSX.Element {
 						<SubscribedBoardsState.Provider>
 							<EditorPanelState.Provider>
 								<LocationCacheState.Provider>
-									<AliveScope>
-										{props.children}
-									</AliveScope>
+									<NotificationState.Provider>
+										<AliveScope>
+											{props.children}
+										</AliveScope>
+									</NotificationState.Provider>
 								</LocationCacheState.Provider>
 							</EditorPanelState.Provider>
 						</SubscribedBoardsState.Provider>

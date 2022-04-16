@@ -4,7 +4,7 @@
         height: 100%;
         cursor: pointer;
     }
-    & .body {
+    & .dropDown {
         position: absolute;
         left: 0px;
         right: 0px;
@@ -16,12 +16,13 @@
             align-self: center;
             width: 0;
             height: 0;
-            border-style: solid;
-            border-width: 0 15 15 15;
-            border-color: transparent transparent var(--third-theme-color) transparent;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 15px solid var(--third-theme-color);
         }
-        & div {
+        & .body {
             align-self: center;
+            position: relative;
         }
     }
 }
