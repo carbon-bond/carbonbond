@@ -12,6 +12,20 @@ import { ArticleSidebar } from './right_sidebar';
 import { LocationCacheState } from '../global_state/location_cache';
 import { useBoardInfo } from '.';
 
+export function ShowLine(props: {line: string}): JSX.Element {
+	let key = 0;
+	let elements: JSX.Element[] = [];
+	props.line.split(' ').forEach(word => {
+		if (isLink(word)) {
+			elements.push(<a key={key++} target="_blank" href={word}>{word}</a>);
+		} else {
+			elements.push(<React.Fragment key={key++}>{word}</React.Fragment>);
+		}
+		elements.push(<React.Fragment key={key++}> </React.Fragment>);
+	});
+	return <>{elements}</>;
+}
+
 export function ShowText(props: { text: string }): JSX.Element {
 	let key = 0;
 	return <>{
@@ -33,7 +47,9 @@ export function ShowText(props: { text: string }): JSX.Element {
 					<a target="_blank" href={line}>{line}</a>
 				</p>;
 			} else {
-				return <p key={key++}>{line}</p>;
+				return <p key={key++}>
+					<ShowLine line={line} />
+				</p>;
 			}
 		})
 	}
