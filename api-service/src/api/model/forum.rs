@@ -46,7 +46,6 @@ pub mod forum_model_root {
     pub struct LawyerbcResult {
         pub name: String,
         pub sex: String,
-        pub id_no: String,
         pub now_lic_no: String,
         pub birthsday: i64,
         pub email: String,
