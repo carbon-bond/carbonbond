@@ -30,10 +30,6 @@ export function ShowText(props: { text: string; }): JSX.Element {
 					</a>
 				</p>
 			</>;
-		} else if (isLink(line.trim())) {
-			return <p key={key++}>
-				<a target="_blank" href={line}>{line}</a>
-			</p>;
 		} else {
 			return <p key={key++}>
 				<ShowLine line={line} />

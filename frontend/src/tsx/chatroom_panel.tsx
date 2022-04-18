@@ -19,7 +19,7 @@ import {
 	isChannelRoomData,
 	RoomKind
 } from './global_state/bottom_panel';
-import { isEmojis, isLink, isImageLink } from '../ts/regex_util';
+import { isEmojis, isImageLink } from '../ts/regex_util';
 import 'emoji-mart/css/emoji-mart.css';
 import * as EmojiMart from 'emoji-mart';
 import { UserState } from './global_state/user';
@@ -29,6 +29,7 @@ import { Link } from 'react-router-dom';
 import { server_trigger } from '../ts/api/api_trait';
 import { useScroll } from 'react-use';
 import ReactDOM from 'react-dom';
+import { ShowLine } from './display/show_text';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')
@@ -83,12 +84,8 @@ function MessageShow(props: { content: string }): JSX.Element {
 			<div className={style.normal}><a href={props.content} target="_blank">{props.content}</a></div>
 			<div className={style.image}><img src={props.content} /></div>
 		</div>;
-	} else if (isLink(props.content)) {
-		return <div className={style.normal}>
-			<a href={props.content} target="_blank">{props.content}</a>
-		</div>;
 	} else {
-		return <div className={style.normal}>{props.content}</div>;
+		return <div className={style.normal}><ShowLine line={props.content} /></div>;
 	}
 }
 
