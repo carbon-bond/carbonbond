@@ -8,7 +8,7 @@ import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileDetail } from '../profile/user_page';
-import { ShowText } from './article_page';
+import { ShowText } from '../display/show_text';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
