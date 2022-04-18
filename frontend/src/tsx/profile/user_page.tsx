@@ -12,7 +12,7 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
-import { ShowText } from '../board/article_page';
+import { ShowText } from '../display/show_text';
 import { createBrowserHistory } from 'history';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';

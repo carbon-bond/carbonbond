@@ -5,41 +5,12 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit, NormalBondLines } from '../article_card';
 import style from '../../css/board/article_page.module.css';
 import { Article, Board, force } from '../../ts/api/api_trait';
-import { isImageLink, isLink } from '../../ts/regex_util';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
 import { LocationCacheState } from '../global_state/location_cache';
 import { useBoardInfo } from '.';
-
-export function ShowText(props: { text: string }): JSX.Element {
-	let key = 0;
-	return <>{
-		props.text.split('\n').map(line => {
-			if (/^\s*$/.test(line)) {
-				// 若整行都是空的，換行
-				return <br key={key++} />;
-			} else if (isImageLink(line.trim())) {
-				return <>
-					<p key={key++}>
-						<a target="_blank" href={line}>
-							{line}
-							<img key={key++} src={line.trim()} width="100%" alt="圖片" />
-						</a>
-					</p>
-				</>;
-			} else if (isLink(line.trim())) {
-				return <p key={key++}>
-					<a target="_blank" href={line}>{line}</a>
-				</p>;
-			} else {
-				return <p key={key++}>{line}</p>;
-			}
-		})
-	}
-	</>;
-}
-
+import { ShowText } from '../display/show_text';
 
 export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;

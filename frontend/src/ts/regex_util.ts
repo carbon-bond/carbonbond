@@ -15,7 +15,7 @@ export function isEmail(s: string): boolean {
 }
 
 export function isLink(s: string): boolean {
-	const pattern = new RegExp('https?:\\/\\/');
+	const pattern = new RegExp('^https?:\\/\\/');
 	return !!pattern.test(s);
 }
 
