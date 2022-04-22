@@ -12,6 +12,7 @@ import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
 import { getBoardInfo } from '../board';
+import { UserState } from '../global_state/user';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -27,17 +28,36 @@ function ShowAuthor(props: {author: Author}): JSX.Element {
 	}
 }
 
-export function ArticleHeader(props: { author: Author, board_info: {board_name: string, board_type: BoardType}, date: Date }): JSX.Element {
+function EditArticle(props: {author: Author, article_meta: ArticleMeta}): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	if (props.author == 'MyAnonymous' || (props.author != 'Anonymous' && user_state.login && user_state.id == props.author.NamedAuthor.id)) {
+		// NOTE: 爲了讓 TypeScript 排除掉 'Anonymous'，才增加 != 'Anonymous' 的判斷
+		// 若升級 TypeScript 後無需手動提示，可簡化以上判斷式
+		return <div className={style.edit}>✏️編輯</div>;
+	} else {
+		return <></>;
+	}
+}
+
+export function ArticleHeader(props: {
+	author: Author,
+	board_info: { board_name: string, board_type: BoardType },
+	date: Date,
+	article_meta: ArticleMeta
+}): JSX.Element {
 	const date_string = relativeDate(props.date);
 	const board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleHeader}>
-		<ShowAuthor author={props.author} />
-		發佈於
-		<Link to={board_info.to_url()}>
-			<div className={style.articleBoard}>{props.board_info.board_name}</div>
-		</Link>
-		<div className={style.seperationDot}>•</div>
-		<div className={style.articleTime}>{date_string}</div>
+		<div className={style.basicInfo}>
+			<ShowAuthor author={props.author} />
+			發佈於
+			<Link to={board_info.to_url()}>
+				<div className={style.articleBoard}>{props.board_info.board_name}</div>
+			</Link>
+			<div className={style.seperationDot}>•</div>
+			<div className={style.articleTime}>{date_string}</div>
+		</div>
+		<EditArticle author={props.author} article_meta={props.article_meta} />
 	</div>;
 }
 
@@ -247,7 +267,7 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 	return (
 		<div>
 			<div className={style.articleContainer}>
-				<ArticleHeader author={author} board_info={props.article} date={date} />
+				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
 						<div className={style.articleLineWrap}>
@@ -295,6 +315,7 @@ function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMet
 			<ArticleHeader
 				board_info={meta}
 				author={meta.author}
+				article_meta={props.meta}
 				date={new Date(meta.create_time)} />
 		</div>
 		<div className={style.rightSet}>

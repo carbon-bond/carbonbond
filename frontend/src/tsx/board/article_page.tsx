@@ -49,6 +49,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleHeader
 			author={article.meta.author}
 			board_info={props.board}
+			article_meta={props.article.meta}
 			date={new Date(article.meta.create_time)} />
 		<div className={style.articleLineWrap}>
 			<ArticleLine
