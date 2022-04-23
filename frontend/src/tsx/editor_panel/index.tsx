@@ -247,7 +247,7 @@ function EditorBody(): JSX.Element {
 				category_name: category.name,
 				title: editor_panel_data.title,
 				content: generate_submit_content(category.fields, editor_panel_data.content),
-				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article.id, tag: bond.tag};}),
+				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
 				draft_id: editor_panel_data.draft_id ?? null,
 				anonymous: editor_panel_data.anonymous
 
@@ -355,8 +355,8 @@ function EditorBody(): JSX.Element {
 			></input>
 			{
 				editor_panel_data.bonds.map((bond, index) => {
-					return <div className={style.bond} key={`${bond.article.id}#${bond.tag}`}>
-						<BondLine mini_meta={bond.article}>
+					return <div className={style.bond} key={`${bond.article_meta.id}#${bond.tag}`}>
+						<BondLine mini_meta={bond.article_meta}>
 							<button onClick={() => {
 								setEditorPanelData(produce(editor_panel_data, (data) => {
 									data.bonds.splice(index, 1);
