@@ -2,6 +2,7 @@ use super::get_pool;
 use crate::api::model::forum::ArticleMeta;
 use crate::custom_error::Fallible;
 use std::collections::HashMap;
+use chrono::{Utc, Duration};
 
 struct Entry {
     id: i64,
@@ -73,4 +74,16 @@ pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallibl
         }
     }
     Ok(())
+}
+
+pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
+    let pool = get_pool();
+    let articles_in_24h = sqlx::query!(
+        "SELECT board_id, create_time FROM articles
+        WHERE create_time > $1",
+        Utc::now() - Duration::days(1),
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(articles_in_24h.iter().map(|a| (a.board_id, a.create_time.timestamp() as u64)).collect())
 }

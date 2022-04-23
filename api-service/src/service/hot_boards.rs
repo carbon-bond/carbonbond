@@ -1,5 +1,6 @@
 use crate::custom_error::{Fallible};
 use state::Storage;
+use crate::db::article_statistics;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -13,16 +14,20 @@ const ARTICLE_NUMBER_LIFETIME: u64 = 86400; // 只保留一天內的文章數
 
 pub async fn init() -> Fallible<()> {
     log::debug!("初始化熱門看板統計資料");
-    // FIXME: load article in past 24h from database
-    let initial_map = HashMap::new();
+    let articles_in_24h = article_statistics::get_all_articles_in_24h().await?;
+    let mut initial_map = HashMap::new();
+    let mut initial_deque = VecDeque::new();
+    for (board_id, timestamp) in articles_in_24h {
+        *initial_map.entry(board_id).or_insert(0) += 1;
+        initial_deque.push_back((board_id, timestamp));
+    }
     assert!(BOARD_ARTICLE_NUMBER_IN_24H.set(Mutex::new(initial_map)), "初始化熱門看板 hashMap 錯誤",);
-    let initial_deque = VecDeque::new();
     assert!(ARTICLE_RECORD_IN_24H.set(Mutex::new(initial_deque)), "初始化熱門看板 VecDeque 錯誤",);
     log::debug!("初始化熱門看板統計資料完畢");
     Ok(())
 }
 
-fn get_current_timestamp() -> u64{
+fn get_current_timestamp() -> u64 {
     let start = SystemTime::now();
     let since_the_epoch = start
         .duration_since(UNIX_EPOCH)
