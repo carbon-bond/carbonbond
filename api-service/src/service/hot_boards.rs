@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::{NaiveDateTime, DateTime, Utc};
 
 static BOARD_ARTICLE_NUMBER_IN_24H: Storage<Mutex<HashMap<i64, i64>>> = Storage::new();
 static ARTICLE_RECORD_IN_24H: Storage<Mutex<VecDeque<(i64, u64)>>> = Storage::new();
@@ -48,7 +49,7 @@ pub async fn get_board_pop(board_id: i64) -> Fallible<i64> {
     log::trace!("查詢 #{} 看板人氣", board_id);
     let mut board_article_number = BOARD_ARTICLE_NUMBER_IN_24H.get().lock().unwrap();
     board_article_number.entry(board_id).or_insert(0);
-    let pop: i64 = *board_article_number.get(&board_id).unwrap();
+    let pop: i64 = *board_article_number.get(&board_id).unwrap_or(&0);
     Ok(pop)
 }
 
@@ -58,8 +59,14 @@ pub async fn get_hot_boards() -> Fallible<Vec<i64>> {
     let mut article_record = ARTICLE_RECORD_IN_24H.get().lock().unwrap();
     let current_timestamp = get_current_timestamp();
     while !article_record.is_empty() {
-        let (board_id, timestamp) = article_record.get(0).unwrap();
+        let (board_id, timestamp) = article_record.get(0).unwrap_or(&(-1, 0));
+        if *board_id == -1 {
+            log::debug!("獲取 deque 中文章非預期失敗");
+            break;
+        }
         if timestamp > &(current_timestamp - ARTICLE_NUMBER_LIFETIME) {
+            let naive_datetime = NaiveDateTime::from_timestamp((current_timestamp - ARTICLE_NUMBER_LIFETIME) as i64, 0);
+            log::debug!("已清除看板文章數中早於 {} 之文章數量統計", DateTime::<Utc>::from_utc(naive_datetime, Utc));
             break;
         }
         if let Some(article_number) = board_article_number.get_mut(&board_id) {
