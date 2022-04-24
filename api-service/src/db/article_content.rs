@@ -295,6 +295,37 @@ async fn insert_bond(
     Ok(())
 }
 
+pub async fn delete_all_contents(conn: &mut PgConnection, article_id: i64) -> Fallible<()> {
+    sqlx::query!(
+        "
+        DELETE FROM article_bonds
+        WHERE from_id = $1
+        ",
+        article_id
+    )
+    .execute(&mut *conn)
+    .await?;
+    sqlx::query!(
+        "
+        DELETE FROM article_string_fields
+        WHERE article_id = $1
+        ",
+        article_id
+    )
+    .execute(&mut *conn)
+    .await?;
+    sqlx::query!(
+        "
+        DELETE FROM article_int_fields
+        WHERE article_id = $1
+        ",
+        article_id
+    )
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 // block 代表文章欄位中佔用空間較大的
 // 目前僅有 multiline 屬於 block
 struct Digest {
