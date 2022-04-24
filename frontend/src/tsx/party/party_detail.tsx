@@ -3,7 +3,7 @@ import { Navigate, Link, useParams } from 'react-router-dom';
 import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
-import { BoardCreator } from '../board/board_creator';
+import { BoardEditor } from '../board/board_creator';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 import { LocationCacheState } from '../global_state/location_cache';
@@ -77,6 +77,6 @@ function CreateBoardBlock(props: { party_id: number }): JSX.Element {
 
 	return <div className={style.createBoardBlock}>
 		<div onClick={() => setExpand(!expand)} className={style.createButton}>🏂 創立看板</div>
-		<BoardCreator board_type={BoardType.General} party_id={props.party_id} visible={expand} setVisible={setExpand} />
+		<BoardEditor board_type={BoardType.General} party_id={props.party_id} visible={expand} setVisible={setExpand} />
 	</div>;
 }

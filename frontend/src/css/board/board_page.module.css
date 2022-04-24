@@ -13,6 +13,10 @@
         & .boardTitle {
             padding: 5px;
             font-size: 24px;
+            & .editButton {
+                margin-left: 20px;
+                font-size: 16px;
+            }
         }
         & .boardSubTitle {
             padding: 5px;

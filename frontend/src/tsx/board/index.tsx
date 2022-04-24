@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 
-import { BoardCreator } from './board_creator';
+import { BoardEditor } from './board_creator';
 import { Board, BoardType } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { UserState } from '../global_state/user';
@@ -13,17 +13,33 @@ import { BoardBody } from './board_page';
 import { KeepAlive } from 'react-activation';
 
 function BoardHeader(props: { board: Board}): JSX.Element {
-	let [subscribe_count, setSubscribeCount] = React.useState(0);
-	API_FETCHER.boardQuery.querySubscribedUserCount(props.board.id)
-	.then(count => {
-		setSubscribeCount(unwrap(count));
-	});
+	const { user_state } = UserState.useContainer();
+	let [subscribe_count, setSubscribeCount] = React.useState<number>(0);
+	let [editable, setEditable] = React.useState<boolean>(false);
+	React.useEffect(() => {
+		API_FETCHER.boardQuery.querySubscribedUserCount(props.board.id)
+		.then(count => {
+			setSubscribeCount(unwrap(count));
+		});
+		if (user_state.login) {
+			if (props.board.board_type == BoardType.Personal && props.board.board_name == user_state.user_name) {
+				setEditable(true);
+			} else if (props.board.board_type == BoardType.General) {
+				API_FETCHER.boardQuery.queryEditableForMe(props.board.id)
+				.then(response => {
+					setEditable(unwrap(response));
+				});
+			}
+		}
+		// @ts-ignore
+	}, [props.board.board_name, props.board.board_type, props.board.id, user_state.login, user_state.user_name]);
 	return <div className="boardHeader">
 		<div className={style.boardHeader}>
 			<div>
 				<div className={style.headerLeft}>
 					<div className={style.boardTitle}>
 						<Link to="#">{props.board.board_name}</Link>
+						{editable ? <span className={style.editButton}><button>編輯看板</button></span> : <></>}
 					</div>
 					<div className={style.boardSubTitle}>{props.board.title}</div>
 				</div>
@@ -71,7 +87,7 @@ export function EmptyBoard(): JSX.Element {
 		return <div className={style.emptyBoard}>
 			<div>查無此看板</div>
 			<button onClick={() => handleClick()}>🔨 創建個人看板</button>
-			<BoardCreator board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
+			<BoardEditor board_type={BoardType.Personal} party_id={-1} visible={expand} setVisible={setExpand} />
 		</div>;
 	} else if (board_info.type == BoardType.Personal) {
 		return <div className={style.emptyBoard}>

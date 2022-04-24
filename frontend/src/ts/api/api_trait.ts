@@ -346,6 +346,9 @@ export class BoardQuery {
     async queryHotBoards(): Promise<Result<Array<BoardOverview>, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryHotBoards": {  } } }));
     }
+    async queryEditableForMe(id: number): Promise<Result<boolean, Error>> {
+        return JSON.parse(await this.fetchResult({ "Board": { "QueryEditableForMe": { id } } }));
+    }
 }
 
 export class NotificationQuery {

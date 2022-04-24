@@ -423,6 +423,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         _context: &mut crate::Ctx,
         new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
+        // TODO: 檢查請求者是否爲政黨成員
         Ok(db::board::create(&new_board).await?)
     }
     async fn query_subscribed_user_count(
@@ -441,6 +442,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
             .await?
             .assign_props()
             .await
+    }
+    async fn query_editable_for_me(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<bool, crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        db::board::is_editable(id, user_id).await
     }
 }
 

@@ -251,6 +251,8 @@ pub enum BoardQuery {
     },
     #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
     QueryHotBoards {},
+    #[chitin(leaf, response = "bool")]
+    QueryEditableForMe { id: i64 },
 }
 
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
