@@ -336,6 +336,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             new_article.anonymous,
         )
         .await?;
+        service::hot_boards::add_hot_board_article_number(new_article.board_id, id).await?;
         Ok(id)
     }
     async fn query_graph(
@@ -407,9 +408,6 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         style: String,
     ) -> Fallible<model::forum::Board> {
         let board = db::board::get_by_name(&name, &style).await?;
-        if let Some(user_id) = context.get_id().await {
-            service::hot_boards::set_board_pop(user_id, board.id).await?;
-        }
         board.assign_props().await
     }
     async fn query_board_by_id(
@@ -418,9 +416,6 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         id: i64,
     ) -> Fallible<model::forum::Board> {
         let board = db::board::get_by_id(id).await?;
-        if let Some(user_id) = context.get_id().await {
-            service::hot_boards::set_board_pop(user_id, board.id).await?;
-        }
         board.assign_props().await
     }
     async fn create_board(

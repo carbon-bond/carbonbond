@@ -34,6 +34,10 @@ async fn main() -> Fallible<()> {
     log::info!("初始化 redis 客戶端");
     redis::init().await.unwrap();
 
+    // 初始化熱門看板統計資料
+    log::info!("初始化熱門看板統計資料");
+    hot_boards::init().await.unwrap();
+
     // 啓動伺服器
     let addr: std::net::SocketAddr =
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
@@ -44,7 +48,6 @@ async fn main() -> Fallible<()> {
 
     tokio::select! {
         _ = web_service => {},
-        res = hot_boards::start() => { res?; },
     };
 
     Ok(())
