@@ -45,12 +45,12 @@ pub async fn add_hot_board_article_number(board_id: i64, article_id: i64) -> Fal
     Ok(())
 }
 
-pub async fn get_board_pop(board_id: i64) -> Fallible<i64> {
+pub async fn get_board_popularity(board_id: i64) -> Fallible<i64> {
     log::trace!("查詢 #{} 看板人氣", board_id);
     let mut board_article_number = BOARD_ARTICLE_NUMBER_IN_24H.get().lock().unwrap();
     board_article_number.entry(board_id).or_insert(0);
-    let pop: i64 = *board_article_number.get(&board_id).unwrap_or(&0);
-    Ok(pop)
+    let popularity: i64 = *board_article_number.get(&board_id).unwrap_or(&0);
+    Ok(popularity)
 }
 
 pub async fn get_hot_boards() -> Fallible<Vec<i64>> {

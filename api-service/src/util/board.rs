@@ -20,8 +20,8 @@ pub trait BoardKind {
 #[async_trait]
 impl<T: BoardKind + Sync + Send + Sized> HasBoardProps for T {
     async fn assign_props_in_place(&mut self) -> Fallible {
-        let pop = service::hot_boards::get_board_pop(self.id()).await?;
-        *self.popularity() = pop;
+        let popularity = service::hot_boards::get_board_popularity(self.id()).await?;
+        *self.popularity() = popularity;
         Ok(())
     }
 }

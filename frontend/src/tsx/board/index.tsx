@@ -37,7 +37,7 @@ function BoardHeader(props: { board: Board}): JSX.Element {
 							</div>
 							<div className={style.dataBoxItem}>
 								<div className={style.number}>{props.board.popularity}</div>
-								<div className={style.text}>在線人數</div>
+								<div className={style.text}>本日文章數</div>
 							</div>
 						</div>
 					}
