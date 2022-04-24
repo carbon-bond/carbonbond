@@ -1594,6 +1594,23 @@
     },
     "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.to_user\n\t\tWHERE user_relations.from_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = $2;"
   },
+  "6733f09f3956726b9fc1e94029d0ead34eb3d4d3241bb6d52f28fc22cdb07e8f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Text",
+          "Bool",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE articles\n        SET\n        board_id = $1,\n        title = $2,\n        anonymous = $3,\n        category = $4,\n        fields = $5\n        WHERE id = $6\n        "
+  },
   "68424e1315dc62a4f2334eabd9b385a62f0adba65ef291c26dc615b725709929": {
     "describe": {
       "columns": [],
@@ -2127,6 +2144,18 @@
     },
     "query": "\n        INSERT INTO boards (board_name, board_type, detail, title, force, ruling_party_id)\n        VALUES ($1, $2, $3, $4, $5, $6)\n        RETURNING id\n        "
   },
+  "91f83dbc842d49d7b9966d252ae9008624fb9cfcc1899b3d228a86e50cecdbdb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM article_bonds\n        WHERE from_id = $1\n        "
+  },
   "93105e45ed9adc9e15eb7ec5a030966a4f8d4fab032ab7f76464c48b82244148": {
     "describe": {
       "columns": [
@@ -2640,6 +2669,18 @@
       }
     },
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                boards.board_type\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                )\n            SELECT  metas.id,\n                metas.energy,\n                fields,\n                board_id,\n                board_name,\n                board_type,\n                category,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                metas.create_time,\n                anonymous FROM metas \n        WHERE board_name = $1 AND ($3 OR id < $4)\n        ORDER BY create_time DESC\n        LIMIT $2\n        "
+  },
+  "b3f9abb99369ec5a1654894bb4b070d3ce4a9440a743f02aa3def1eecc6dc70b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM article_int_fields\n        WHERE article_id = $1\n        "
   },
   "b831f004b2cab32d33c603035cfe074c4e11cfa60f87e0b4b893b129e582cc1b": {
     "describe": {
@@ -3659,6 +3700,18 @@
       }
     },
     "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category as \"category?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time,\n        drafts.anonymous,\n        drafts.bonds\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        WHERE drafts.author_id = $1\n        ORDER BY create_time DESC\n        "
+  },
+  "f8eef5c4a7a6b71ce3554dd0fc9f878df3058618d9e8f91e2c42d4b4886f7e43": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM article_string_fields\n        WHERE article_id = $1\n        "
   },
   "ffb298750f0e662348623f8e6d8819e65b6018baed303c50a9b58eb150590510": {
     "describe": {

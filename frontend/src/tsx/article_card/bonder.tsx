@@ -62,7 +62,7 @@ function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta })
 				editor_panel_data;
 			data = produce(data, nxt => {
 				nxt.bonds.push({
-					article,
+					article_meta: article,
 					tag,
 					energy: 0,
 				});

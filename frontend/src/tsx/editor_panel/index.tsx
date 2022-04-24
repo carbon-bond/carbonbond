@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, force } from '../../ts/api/api_trait';
+import { BoardName, force, NewArticle } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -211,7 +211,7 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 }
 
 function EditorBody(): JSX.Element {
-	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
 	const [validate_info, set_info] = useState<{ [index: string]: string | undefined }>({});
@@ -242,19 +242,26 @@ function EditorBody(): JSX.Element {
 			toastErr('尚未完全符合格式');
 			return;
 		} else {
-			API_FETCHER.articleQuery.createArticle({
+			let article: NewArticle = {
 				board_id: board.id,
 				category_name: category.name,
 				title: editor_panel_data.title,
 				content: generate_submit_content(category.fields, editor_panel_data.content),
-				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article.id, tag: bond.tag};}),
+				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
 				draft_id: editor_panel_data.draft_id ?? null,
 				anonymous: editor_panel_data.anonymous
-
-			})
+			};
+			let request = editor_panel_data.id ?
+				API_FETCHER.articleQuery.updateArticle(article, editor_panel_data.id) :
+				API_FETCHER.articleQuery.createArticle(article);
+			let info = editor_panel_data.id ?  '更新文章成功' : '發文成功';
+			request
 				.then(data => unwrap(data))
 				.then(id => {
-					toast('發文成功');
+					toast(info);
+					if (editor_panel_data.id) {
+						setUpdatedArticleId(id);
+					}
 					minimizeEditorPanel();
 					navigate(`${board_info.to_url()}/article/${id}`);
 					setEditorPanelData(null);
@@ -355,8 +362,8 @@ function EditorBody(): JSX.Element {
 			></input>
 			{
 				editor_panel_data.bonds.map((bond, index) => {
-					return <div className={style.bond} key={`${bond.article.id}#${bond.tag}`}>
-						<BondLine mini_meta={bond.article}>
+					return <div className={style.bond} key={`${bond.article_meta.id}#${bond.tag}`}>
+						<BondLine mini_meta={bond.article_meta}>
 							<button onClick={() => {
 								setEditorPanelData(produce(editor_panel_data, (data) => {
 									data.bonds.splice(index, 1);
