@@ -211,7 +211,7 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 }
 
 function EditorBody(): JSX.Element {
-	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
 	const [validate_info, set_info] = useState<{ [index: string]: string | undefined }>({});
@@ -259,6 +259,9 @@ function EditorBody(): JSX.Element {
 				.then(data => unwrap(data))
 				.then(id => {
 					toast(info);
+					if (editor_panel_data.id) {
+						setUpdatedArticleId(id);
+					}
 					minimizeEditorPanel();
 					navigate(`${board_info.to_url()}/article/${id}`);
 					setEditorPanelData(null);

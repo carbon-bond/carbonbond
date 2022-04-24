@@ -27,9 +27,12 @@ function useEditorPanelState(): {
 	minimizeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: (data: EditorPanelData | null) => void,
+	updated_article_id: number | null,
+	setUpdatedArticleId: (data: number | null) => void,
 	} {
 	let [data, setData] = useState<EditorPanelData | null>(null);
 	let [window_state, setWindowState] = useState(WindowState.Minimize);
+	let [updated_article_id, setUpdatedArticleId] = useState<number | null>(null);
 
 	function expandEditorPanel(): void {
 		setWindowState(WindowState.Expanded);
@@ -50,6 +53,8 @@ function useEditorPanelState(): {
 		minimizeEditorPanel,
 		editor_panel_data: data,
 		setEditorPanelData,
+		updated_article_id,
+		setUpdatedArticleId
 	};
 }
 
