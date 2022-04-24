@@ -11,6 +11,7 @@ import { ArticleSidebar } from './right_sidebar';
 import { LocationCacheState } from '../global_state/location_cache';
 import { useBoardInfo } from '.';
 import { ShowText } from '../display/show_text';
+import { EditorPanelState } from '../global_state/editor_panel';
 
 export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
@@ -49,6 +50,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleHeader
 			author={article.meta.author}
 			board_info={props.board}
+			article_meta={props.article.meta}
 			date={new Date(article.meta.create_time)} />
 		<div className={style.articleLineWrap}>
 			<ArticleLine
@@ -72,6 +74,7 @@ export function ArticlePage(): JSX.Element {
 	let [article, setArticle] = React.useState<Article | null>(null);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const {setUpdatedArticleId, updated_article_id } = EditorPanelState.useContainer();
 
 	React.useEffect(() => {
 		Promise.all([API_FETCHER.boardQuery.queryBoard(board_info.name, board_info.type), API_FETCHER.articleQuery.queryArticle(article_id)])
@@ -84,6 +87,19 @@ export function ArticlePage(): JSX.Element {
 			setFetching(false);
 		});
 	}, [article_id, board_info.name, board_info.type]);
+
+	// 更新文章完成時，重新取得文章資料
+	React.useEffect(() => {
+		if (article && updated_article_id == article_id) {
+			API_FETCHER.articleQuery.queryArticle(article_id)
+			.then((article) => {
+				setArticle(unwrap(article));
+			}).catch(err => {
+				toastErr(err);
+			});
+		}
+		setUpdatedArticleId(null);
+	}, [updated_article_id, article_id, article, setUpdatedArticleId]);
 
 	React.useEffect(() => {
 		setCurrentLocation(board_info.name ? {name: board_info.name, is_article_page: true} : null);

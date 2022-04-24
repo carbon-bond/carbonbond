@@ -1,23 +1,17 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { ArticleMeta, Board } from '../../ts/api/api_trait';
-
-type Bond = {
-	tag: string,
-	article: ArticleMeta,
-	energy: number,
-};
+import { Board, BondInfo } from '../../ts/api/api_trait';
 
 export type EditorPanelData = {
-	// FIXME: 只記名字的話，可能發生奇怪的錯誤，例如發文到一半看板改名字了
 	draft_id?: number,
+	id?: number, // 文章 id ，文章已經存在，更新文章時會用到
 	board: Board,
 	category?: string,
 	title: string,
 	anonymous: boolean,
 	content: { [index: string]: string },
-	bonds: Bond[],
+	bonds: BondInfo[],
 };
 
 export enum WindowState {
@@ -33,9 +27,12 @@ function useEditorPanelState(): {
 	minimizeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: (data: EditorPanelData | null) => void,
+	updated_article_id: number | null,
+	setUpdatedArticleId: (data: number | null) => void,
 	} {
 	let [data, setData] = useState<EditorPanelData | null>(null);
 	let [window_state, setWindowState] = useState(WindowState.Minimize);
+	let [updated_article_id, setUpdatedArticleId] = useState<number | null>(null);
 
 	function expandEditorPanel(): void {
 		setWindowState(WindowState.Expanded);
@@ -56,6 +53,8 @@ function useEditorPanelState(): {
 		minimizeEditorPanel,
 		editor_panel_data: data,
 		setEditorPanelData,
+		updated_article_id,
+		setUpdatedArticleId
 	};
 }
 

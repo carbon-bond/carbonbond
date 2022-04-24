@@ -12,6 +12,8 @@ import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
 import { getBoardInfo } from '../board';
+import { UserState } from '../global_state/user';
+import { EditorPanelState } from '../global_state/editor_panel';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -27,17 +29,66 @@ function ShowAuthor(props: {author: Author}): JSX.Element {
 	}
 }
 
-export function ArticleHeader(props: { author: Author, board_info: {board_name: string, board_type: BoardType}, date: Date }): JSX.Element {
+function EditArticle(props: {author: Author, article_meta: ArticleMeta}): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	const { editor_panel_data, openEditorPanel, setEditorPanelData } = EditorPanelState.useContainer();
+	if (props.author == 'MyAnonymous' || (props.author != 'Anonymous' && user_state.login && user_state.id == props.author.NamedAuthor.id)) {
+		// NOTE: 爲了讓 TypeScript 排除掉 'Anonymous'，才增加 != 'Anonymous' 的判斷
+		// 若升級 TypeScript 後無需手動提示，可簡化以上判斷式
+		return <div className={style.edit}
+			onClick={() => {
+				if (editor_panel_data) {
+					toastErr('尚在編輯其他文章，請關閉後再點擊');
+				}
+				Promise.all([
+					API_FETCHER.boardQuery.queryBoardById(props.article_meta.board_id),
+					API_FETCHER.articleQuery.queryArticle(props.article_meta.id)
+				])
+				.then(data => {
+					const board = unwrap(data[0]);
+					const article = unwrap(data[1]);
+					return {board, article};
+				})
+				.then(({board, article}) => {
+					setEditorPanelData({
+						id: article.meta.id,
+						board: board,
+						anonymous: article.meta.author == 'MyAnonymous',
+						title: article.meta.title,
+						category: article.meta.category,
+						content: JSON.parse(article.content),
+						bonds: article.bonds
+					});
+					openEditorPanel();
+				})
+				.catch(err => console.error(err));
+			}} >
+			✏️編輯
+		</div>;
+	} else {
+		return <></>;
+	}
+}
+
+export function ArticleHeader(props: {
+	author: Author,
+	board_info: { board_name: string, board_type: BoardType },
+	date: Date,
+	article_meta: ArticleMeta
+}): JSX.Element {
 	const date_string = relativeDate(props.date);
 	const board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleHeader}>
-		<ShowAuthor author={props.author} />
-		發佈於
-		<Link to={board_info.to_url()}>
-			<div className={style.articleBoard}>{props.board_info.board_name}</div>
-		</Link>
-		<div className={style.seperationDot}>•</div>
-		<div className={style.articleTime}>{date_string}</div>
+		<div className={style.basicInfo}>
+			<ShowAuthor author={props.author} />
+			發佈於
+			<Link to={board_info.to_url()}>
+				<div className={style.articleBoard}>{props.board_info.board_name}</div>
+			</Link>
+			<div className={style.seperationDot}>•</div>
+			<div className={style.articleTime}>{date_string}</div>
+		</div>
+		<EditArticle author={props.author} article_meta={props.article_meta} />
 	</div>;
 }
 
@@ -247,7 +298,7 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 	return (
 		<div>
 			<div className={style.articleContainer}>
-				<ArticleHeader author={author} board_info={props.article} date={date} />
+				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
 						<div className={style.articleLineWrap}>
@@ -295,6 +346,7 @@ function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMet
 			<ArticleHeader
 				board_info={meta}
 				author={meta.author}
+				article_meta={props.meta}
 				date={new Date(meta.create_time)} />
 		</div>
 		<div className={style.rightSet}>

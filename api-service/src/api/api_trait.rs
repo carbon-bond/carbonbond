@@ -286,6 +286,7 @@ pub trait ArticleQueryRouter {
     async fn query_comment_list(&self, context: &mut crate::Ctx, article_id: i64) -> Result<Vec<super::model::forum::Comment>, crate::custom_error::Error>;
     async fn create_comment(&self, context: &mut crate::Ctx, article_id: i64, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn create_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle) -> Result<i64, crate::custom_error::Error>;
+    async fn update_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle, article_id: i64) -> Result<i64, crate::custom_error::Error>;
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, bonds: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
@@ -332,6 +333,11 @@ pub trait ArticleQueryRouter {
             }
              ArticleQuery::CreateArticle { new_article } => {
                  let resp = self.create_article(context, new_article).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::UpdateArticle { new_article, article_id } => {
+                 let resp = self.update_article(context, new_article, article_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

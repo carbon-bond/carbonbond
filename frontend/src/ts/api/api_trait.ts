@@ -294,6 +294,9 @@ export class ArticleQuery {
     async createArticle(new_article: NewArticle): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "CreateArticle": { new_article } } }));
     }
+    async updateArticle(new_article: NewArticle, article_id: number): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "UpdateArticle": { new_article, article_id } } }));
+    }
     async saveDraft(draft_id: Option<number>, board_id: number, category_name: Option<string>, title: string, content: string, bonds: string, anonymous: boolean): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "SaveDraft": { draft_id, board_id, category_name, title, content, bonds, anonymous } } }));
     }

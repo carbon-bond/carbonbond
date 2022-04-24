@@ -189,9 +189,15 @@ pub enum ArticleQuery {
         content: String,
         anonymous: bool,
     },
+    // 創建、更新文章都使用 CreateArticle
     #[chitin(leaf, response = "i64")]
     CreateArticle {
         new_article: super::model::forum::NewArticle,
+    },
+    #[chitin(leaf, response = "i64")]
+    UpdateArticle {
+        new_article: super::model::forum::NewArticle,
+        article_id: i64,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {

@@ -1,6 +1,7 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
-    Article, ArticleMeta, ArticleMetaWithBonds, BondArticleMeta, Edge, NewArticle, SearchField,
+    Article, ArticleMeta, ArticleMetaWithBonds, Author, BondArticleMeta, Edge, NewArticle,
+    SearchField,
 };
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
@@ -420,6 +421,83 @@ pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::forc
     Err(ErrorCode::NotFound(DataType::Category, category.to_string()).into())
 }
 
+pub async fn update(new_article: &NewArticle, article_id: i64, author_id: i64) -> Fallible<i64> {
+    // 校驗作者並更新文章訊息
+    // NOTE: get_meta_by_id 不在 transaction 之內，若未來文章作者可能變換，可能有同步問題
+    let meta = get_meta_by_id(article_id, Some(author_id)).await?;
+    let has_permission = match meta.author {
+        Author::Anonymous => false,
+        Author::MyAnonymous => true,
+        Author::NamedAuthor { id: aid, name: _ } => aid == author_id,
+    };
+    if !has_permission {
+        return Err(ErrorCode::PermissionDenied.into());
+    }
+
+    // 檢查文章內容是否符合分類限制
+    let content: Value = serde_json::from_str(&new_article.content).map_err(|err| {
+        ErrorCode::ParsingJson
+            .context("文章內容反序列化失敗")
+            .context(err)
+    })?;
+    let category = get_category(new_article.board_id, &new_article.category_name).await?;
+    category.validate_json(&content)?;
+
+    // TODO: 檢查 fields 合法性
+
+    let mut conn = get_pool().begin().await?;
+    sqlx::query!(
+        "
+        UPDATE articles
+        SET
+        board_id = $1,
+        title = $2,
+        anonymous = $3,
+        category = $4,
+        fields = $5
+        WHERE id = $6
+        ",
+        new_article.board_id,
+        new_article.title,
+        new_article.anonymous,
+        new_article.category_name,
+        serde_json::to_string(&category.fields).unwrap(),
+        article_id
+    )
+    .execute(&mut conn)
+    .await?;
+    log::debug!("更新文章元資料");
+
+    // 若存在草稿，刪除之
+    if let Some(draft_id) = new_article.draft_id {
+        sqlx::query!(
+            "
+        DELETE FROM drafts
+        WHERE id = $1
+        ",
+            draft_id
+        )
+        .execute(&mut conn)
+        .await?;
+    }
+
+    // 刪除曾經的 bonds, fields
+    article_content::delete_all_contents(&mut conn, article_id).await?;
+
+    // 重建 bonds, fields
+    article_content::create(
+        &mut conn,
+        article_id,
+        Cow::Borrowed(&content),
+        &new_article.bonds,
+        &category,
+    )
+    .await?;
+    conn.commit().await?;
+
+    Ok(article_id)
+}
+
 pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     let content: Value = serde_json::from_str(&new_article.content).map_err(|err| {
         ErrorCode::ParsingJson
@@ -430,6 +508,8 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     let category = get_category(new_article.board_id, &new_article.category_name).await?;
 
     category.validate_json(&content)?;
+
+    // TODO: 驗證 fields 合法性
 
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(
@@ -447,7 +527,7 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     .fetch_one(&mut conn)
     .await?
     .id;
-    log::debug!("成功創建文章元資料");
+    log::debug!("創建文章元資料");
 
     if let Some(draft_id) = new_article.draft_id {
         sqlx::query!(

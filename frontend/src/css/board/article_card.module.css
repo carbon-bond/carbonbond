@@ -1,38 +1,42 @@
 .articleHeader {
     color: var(--light-font-color);
     display: flex;
-    align-items: center;
     width: 100%;
     font-size: 14px;
-    & .authorId {
-        position: relative;
-        z-index: 10;
-        color: var(--light-font-color);
-        margin-right: 6px;
-        text-decoration: underline;
+    justify-content: space-between;
+    & .basicInfo {
+        display: flex;
+        & .authorId {
+            position: relative;
+            z-index: 10;
+            color: var(--light-font-color);
+            margin-right: 6px;
+            text-decoration: underline;
+        }
+        & .anonymous {
+            text-decoration: none;
+        }
+        & .articleBoard {
+            position: relative;
+            z-index: 10;
+            color: var(--light-font-color);
+            margin-left: 6px;
+            text-decoration: underline;
+        }
+        & .authorId:hover {
+            cursor: pointer;
+            color: var(--link-color);
+        }
+        & .articleBoard:hover {
+            cursor: pointer;
+            color: var(--link-color);
+        }
+        & .seperationDot {
+            margin: 0px 4px;
+        }
+        & .articleTime { }
+
     }
-    & .anonymous {
-        text-decoration: none;
-    }
-    & .articleBoard {
-        position: relative;
-        z-index: 10;
-        color: var(--light-font-color);
-        margin-left: 6px;
-        text-decoration: underline;
-    }
-    & .authorId:hover {
-        cursor: pointer;
-        color: var(--link-color);
-    }
-    & .articleBoard:hover {
-        cursor: pointer;
-        color: var(--link-color);
-    }
-    & .seperationDot {
-        margin: 0px 4px;
-    }
-    & .articleTime { }
 }
 
 .bondLine {
@@ -226,5 +230,10 @@
 .readMore {
     margin-top: 6px;
     font-size: 16px;
+    cursor: pointer;
+}
+
+.edit {
+    color: var(--blue);
     cursor: pointer;
 }
