@@ -77,11 +77,11 @@ pub async fn get_hot_boards() -> Fallible<Vec<i64>> {
     let mut board_article_numbers: Vec<(&i64, &i64)> = board_article_number.iter().collect();
     board_article_numbers.sort_by(|lhs, rhs| { rhs.1.cmp(lhs.1)});
     let mut hot_boards = Vec::new();
-    for board_article_number in board_article_numbers.iter().rev() {
-        hot_boards.push(board_article_number.0.clone());
-        if hot_boards.len() >= MAX_HOT_BOARDS {
+    for (&board_id, &number) in board_article_numbers.iter() {
+        if hot_boards.len() >= MAX_HOT_BOARDS || number == 0 {
             break;
         }
+        hot_boards.push(board_id);
     }
     log::debug!("結束更新看板文章數統計資料");
     Ok(hot_boards)
