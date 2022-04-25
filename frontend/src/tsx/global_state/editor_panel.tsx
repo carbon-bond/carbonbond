@@ -1,11 +1,12 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { Board, BondInfo } from '../../ts/api/api_trait';
+import { Board, BondInfo, force } from '../../ts/api/api_trait';
 
 export type EditorPanelData = {
 	draft_id?: number,
-	id?: number, // 文章 id ，文章已經存在，更新文章時會用到
+	id?: number,                   // 文章 id ，文章已經存在，更新文章時會用到
+	legacy_fields?: force.Field[], // 文章原本的欄位定義，在板被修改之後，可能已經不在目前的看板定義中了
 	board: Board,
 	category?: string,
 	title: string,

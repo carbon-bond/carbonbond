@@ -1,4 +1,4 @@
-use super::model::forum::NewArticle;
+use super::model::forum::{NewArticle, UpdatedArticle};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
@@ -299,18 +299,16 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn update_article(
         &self,
         context: &mut crate::Ctx,
-        new_article: NewArticle,
-        article_id: i64,
+        updated_article: UpdatedArticle,
     ) -> Result<i64, crate::custom_error::Error> {
         log::trace!(
-            "更新文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
-            new_article.board_id,
-            new_article.category_name,
-            new_article.title,
-            new_article.content
+            "更新文章： 分類 {}, 標題 {}, 內容 {}",
+            updated_article.category_name,
+            updated_article.title,
+            updated_article.content
         );
         let author_id = context.get_id_strict().await?;
-        let id = db::article::update(&new_article, article_id, author_id).await?;
+        let id = db::article::update(&updated_article, author_id).await?;
         // TODO: 討論是否同時更新文章熱度、發送通知
         Ok(id)
     }

@@ -177,6 +177,18 @@ pub mod forum_model_root {
         pub draft_id: Option<i64>,
         pub anonymous: bool,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UpdatedArticle {
+        pub article_id: i64,
+        pub category_name: String,
+        pub use_legazy_fields: bool,
+        pub title: String,
+        pub content: String,
+        #[ts(ts_type = "force.Bond[]")]
+        pub bonds: Vec<force::Bond>,
+        pub draft_id: Option<i64>,
+        pub anonymous: bool,
+    }
 
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleMeta {

@@ -196,8 +196,7 @@ pub enum ArticleQuery {
     },
     #[chitin(leaf, response = "i64")]
     UpdateArticle {
-        new_article: super::model::forum::NewArticle,
-        article_id: i64,
+        updated_article: super::model::forum::UpdatedArticle,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {

@@ -695,6 +695,22 @@
     },
     "query": "SELECT board_name, id FROM boards"
   },
+  "35f6b27e789ffcc4196657be29965129407045a67ccd469e18bef2a825d2ffc6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bool",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE articles\n        SET\n        title = $1,\n        anonymous = $2,\n        category = $3,\n        fields = $4\n        WHERE id = $5\n        "
+  },
   "3b5c02518cd4b2ffafdf2159c5c4e4118f3db6e5551579dbc9afdb8012c2d58b": {
     "describe": {
       "columns": [
@@ -1230,6 +1246,26 @@
     },
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                boards.board_type\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                )\n            SELECT \n        DISTINCT ab.from_id, ab.to_id,\n        ab.energy as bond_energy, ab.id as bond_id, ab.tag as bond_tag, \n         metas.id,\n                metas.energy,\n                fields,\n                board_id,\n                board_name,\n                board_type,\n                category,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                metas.create_time,\n                anonymous FROM metas \n        INNER JOIN article_bonds ab on metas.id = ab.to_id\n        WHERE ab.from_id = $1\n        AND ($2 OR category = ANY($3))\n        ORDER BY create_time DESC\n        "
   },
+  "5714e8ab28a8c939b66a4b542cf3631afb09bc08829a357d3c4740711edc4842": {
+    "describe": {
+      "columns": [
+        {
+          "name": "fields",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT fields FROM\n        articles\n        WHERE articles.id = $1\n        "
+  },
   "572ae4c8e843e40f3d8d46539190a654f2e52e3ec6276a522129a56e7e123091": {
     "describe": {
       "columns": [
@@ -1599,23 +1635,6 @@
       }
     },
     "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.to_user\n\t\tWHERE user_relations.from_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = $2;"
-  },
-  "6733f09f3956726b9fc1e94029d0ead34eb3d4d3241bb6d52f28fc22cdb07e8f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Text",
-          "Bool",
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n        UPDATE articles\n        SET\n        board_id = $1,\n        title = $2,\n        anonymous = $3,\n        category = $4,\n        fields = $5\n        WHERE id = $6\n        "
   },
   "68424e1315dc62a4f2334eabd9b385a62f0adba65ef291c26dc615b725709929": {
     "describe": {
@@ -2107,6 +2126,26 @@
       }
     },
     "query": "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)"
+  },
+  "85851b6cf5341b23bcb2ecba9637eacf4a79902bf6f2734d2270572baaf465ed": {
+    "describe": {
+      "columns": [
+        {
+          "name": "force",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT force FROM\n        boards JOIN articles\n        ON\n        boards.id = articles.board_id\n        WHERE articles.id = $1\n        "
   },
   "870acec27692e6a724b9c061fe2323f9f2486ec964e451f05e442296cf8c099d": {
     "describe": {

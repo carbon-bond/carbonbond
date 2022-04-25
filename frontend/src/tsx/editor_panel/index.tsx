@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, force, NewArticle } from '../../ts/api/api_trait';
+import { BoardName, force, NewArticle, UpdatedArticle } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -210,6 +210,18 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 	return JSON.stringify(content);
 }
 
+// function equal_fields(x: force.Field[], y: force.Field[]): boolean {
+// 	if (x.length != y.length) {
+// 		return false;
+// 	}
+// 	for (let i = 0; i < x.length; i++) {
+// 		if (x[i].kind != y[i].kind || x[i].name != y[i].name) {
+// 			return false;
+// 		}
+// 	}
+// 	return true;
+// }
+
 function EditorBody(): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
@@ -234,6 +246,19 @@ function EditorBody(): JSX.Element {
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
 	let category = force.categories.find(c => c.name == editor_panel_data.category);
 
+	// let categories: force.Category[] = structuredClone(force.categories);
+	// let category_name = editor_panel_data.category;
+	// if (editor_panel_data.legacy_fields && editor_panel_data.category != '') {
+	// 	if (category == undefined || !equal_fields(category.fields, editor_panel_data.legacy_fields)) {
+	// 		// TODO: 限制所有分類名不得含有空白
+	// 		category_name = `${editor_panel_data.category} （已過時）`;
+	// 		categories.push({
+	// 			name: category_name,
+	// 			fields: editor_panel_data.legacy_fields!
+	// 		});
+	// 	}
+	// }
+
 	const onSubmit = (): void => {
 		if (category == undefined) {
 			toastErr('請先選擇分類！');
@@ -242,18 +267,31 @@ function EditorBody(): JSX.Element {
 			toastErr('尚未完全符合格式');
 			return;
 		} else {
-			let article: NewArticle = {
-				board_id: board.id,
-				category_name: category.name,
-				title: editor_panel_data.title,
-				content: generate_submit_content(category.fields, editor_panel_data.content),
-				bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
-				draft_id: editor_panel_data.draft_id ?? null,
-				anonymous: editor_panel_data.anonymous
-			};
-			let request = editor_panel_data.id ?
-				API_FETCHER.articleQuery.updateArticle(article, editor_panel_data.id) :
-				API_FETCHER.articleQuery.createArticle(article);
+			let request;
+			if (editor_panel_data.id) {
+				let article: UpdatedArticle = {
+					article_id: editor_panel_data.id,
+					category_name: category.name,
+					use_legazy_fields: false, // TODO: 視情況決定
+					title: editor_panel_data.title,
+					content: generate_submit_content(category.fields, editor_panel_data.content),
+					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
+					draft_id: editor_panel_data.draft_id ?? null,
+					anonymous: editor_panel_data.anonymous
+				};
+				request = API_FETCHER.articleQuery.updateArticle(article);
+			} else {
+				let article: NewArticle = {
+					board_id: board.id,
+					category_name: category.name,
+					title: editor_panel_data.title,
+					content: generate_submit_content(category.fields, editor_panel_data.content),
+					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
+					draft_id: editor_panel_data.draft_id ?? null,
+					anonymous: editor_panel_data.anonymous
+				};
+				request = API_FETCHER.articleQuery.createArticle(article);
+			}
 			let info = editor_panel_data.id ?  '更新文章成功' : '發文成功';
 			request
 				.then(data => unwrap(data))
@@ -310,10 +348,11 @@ function EditorBody(): JSX.Element {
 				<select required
 					className={style.board}
 					value={board.id}
+					disabled={editor_panel_data.id != undefined}
 					onChange={(evt) => {
 						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
 							.then(data => unwrap(data))
-							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '' }))
+							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '', legacy_fields: undefined }))
 							.catch(err => console.error(err));
 					}}
 				>
@@ -334,7 +373,7 @@ function EditorBody(): JSX.Element {
 					onChange={(evt) => {
 						let category = force.categories.find(category => category.name == evt.target.value)!;
 						let content = new_content(category);
-						setEditorPanelData({ ...editor_panel_data, category: category.name, content });
+						setEditorPanelData({ ...editor_panel_data, category: category.name, content, legacy_fields: undefined });
 					}}
 				>
 					<option value="" disabled hidden>文章分類</option>
