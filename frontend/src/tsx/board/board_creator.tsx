@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { API_FETCHER } from '../../ts/api/api';
-import { BoardType } from '../../ts/api/api_trait';
+import { Board, BoardType } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from '../components/invalid_message';
@@ -157,14 +157,29 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 	</div>;
 }
 
-export function BoardEditor(props: {
-	board_type: BoardType,
+export enum BoardEditorKind {
+	Create, Edit
+}
+
+export type BoardEditorData = {
+	kind: BoardEditorKind.Create,
 	party_id: number,
-	visible: boolean,
+} | {
+	kind: BoardEditorKind.Edit,
+	board: Board
+};
+
+export function BoardEditor(props: {
+	editor_data: BoardEditorData,
+	board_type: BoardType,
 	setVisible: Function
 }): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const [forceValue, setForceValue] = React.useState<Force>({ categories: [], suggested_tags: [] });
+	const [forceValue, setForceValue] = React.useState<Force>(
+		props.editor_data.kind == BoardEditorKind.Create ?
+			{ categories: [], suggested_tags: [] } :
+			props.editor_data.board.force
+	);
 
 	const user_name: string = (user_state.login ? user_state.user_name : '');
 
@@ -202,55 +217,79 @@ export function BoardEditor(props: {
 				}
 			}
 
-			API_FETCHER.boardQuery.createBoard({
-				board_type: props.board_type,
-				ruling_party_id: props.party_id,
-				force: forceValueCopy,
-				...data
-			})
-				.then(() => location.reload()) // TODO: 應該跳轉至看板管理頁
-				.catch(err => toastErr(err));
+			if (props.editor_data.kind == BoardEditorKind.Create) {
+				API_FETCHER.boardQuery.createBoard({
+					board_type: props.board_type,
+					ruling_party_id: props.editor_data.party_id,
+					force: forceValueCopy,
+					...data
+				})
+					.then(() => location.reload()) // TODO: 應該跳轉至看板管理頁
+					.catch(err => toastErr(err));
+			} else if (props.editor_data.kind == BoardEditorKind.Edit) {
+
+			} else {
+				toastErr('Bug: 未窮盡 BoardEditorKind');
+			}
 		} else {
 			toastErr('尚未登入');
 		}
 	}
 
-	if (props.visible) {
-		return <div className={style.boardEditor}>
-			<form>
-				<div>看板名稱</div>
-				<input name="board_name" placeholder="看板名稱" defaultValue={props.board_type == BoardType.Personal ? user_name : ''} disabled={props.board_type == BoardType.Personal} ref={register({ required: true })} autoFocus />
-				{errors.board_name && <InvalidMessage msg="必填" />}
-				<div>版主的話</div>
-				<input name="title" placeholder="版主的話" ref={register} />
-				<div>看板介紹</div>
-				<textarea name="detail" placeholder="看板介紹" ref={register} />
-			</form>
-			<div className={style.forceEditor}>
-				<div className={style.forceEditorLeft}>
-					<div>看板定義</div>
-					<ForceEditor value={forceValue} setValue={setForceValue}/>
-				</div>
-				<div className={style.forceEditorRight}>
-					<div>範本</div>
-					<div className={style.forceExampleList}>
-						{
-							forceExamples.map(example => (
-								<div className={style.forceExample} key={example.name} onClick={() => setForceValue(example.force)}>
-									{example.name}
-								</div>
-							))
-						}
-					</div>
+	let name = '';
+	let name_disabled = false;
+	let title = '';
+	let detail = '';
+	if (props.board_type == BoardType.Personal) {
+		name = user_name;
+		name_disabled = true;
+	} else if (props.editor_data.kind == BoardEditorKind.Edit) {
+		name = props.editor_data.board.board_name;
+		name_disabled = true;
+		title = props.editor_data.board.title;
+		detail = props.editor_data.board.detail;
+	}
+
+	return <div className={style.boardEditor}>
+		<form>
+			<div className={style.label}>看板名稱</div>
+			<input name="board_name" placeholder="看板名稱"
+				defaultValue={name}
+				disabled={name_disabled}
+				ref={register({ required: true })}
+				autoFocus />
+			{errors.board_name && <InvalidMessage msg="必填" />}
+			<div className={style.label}>版主的話</div>
+			<input name="title" placeholder="版主的話"
+				defaultValue={title}
+				ref={register} />
+			<div className={style.label}>看板介紹</div>
+			<textarea name="detail" placeholder="看板介紹"
+				defaultValue={detail}
+				ref={register} />
+		</form>
+		<div className={style.forceEditor}>
+			<div className={style.forceEditorLeft}>
+				<div>看板定義</div>
+				<ForceEditor value={forceValue} setValue={setForceValue} />
+			</div>
+			<div className={style.forceEditorRight}>
+				<div>範本</div>
+				<div className={style.forceExampleList}>
+					{
+						forceExamples.map(example => (
+							<div className={style.forceExample} key={example.name} onClick={() => setForceValue(example.force)}>
+								{example.name}
+							</div>
+						))
+					}
 				</div>
 			</div>
-			<hr />
-			<input type="submit" value="送出" onClick={handleSubmit(onSubmit)} />
-			<button onClick={() => props.setVisible(false)}>取消</button>
-		</div>;
-	} else {
-		return <></>;
-	}
+		</div>
+		<hr />
+		<input type="submit" value="送出" onClick={handleSubmit(onSubmit)} />
+		<button onClick={() => props.setVisible(false)}>取消</button>
+	</div>;
 }
 
 type ForceExamples = {
