@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 
-import { BoardEditor, BoardEditorKind } from './board_creator';
+import { BoardEditor, BoardEditorKind } from './board_editor';
 import { Board, BoardType } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { UserState } from '../global_state/user';

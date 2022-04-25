@@ -3,7 +3,7 @@ import { Navigate, Link, useParams } from 'react-router-dom';
 import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
-import { BoardEditor, BoardEditorKind } from '../board/board_creator';
+import { BoardEditor, BoardEditorKind } from '../board/board_editor';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
 import { LocationCacheState } from '../global_state/location_cache';

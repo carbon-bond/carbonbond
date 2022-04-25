@@ -5,7 +5,7 @@ import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from '../components/invalid_message';
 
-import style from '../../css/board/board_creator.module.css';
+import style from '../../css/board/board_editor.module.css';
 import { toastErr, useInputValue } from '../utils';
 import produce from 'immer';
 
