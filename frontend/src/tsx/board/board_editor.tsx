@@ -16,7 +16,6 @@ import { ScalableInput } from '../components/scalable_input';
 const FieldKind = force.FieldKind;
 type Force = force.Force;
 
-// TODO: 編輯
 export function ForceEditor(props: { value: Force, setValue: React.Dispatch<React.SetStateAction<Force>> }): JSX.Element {
 	const tag = useInputValue('');
 	function onAddCategory(): void {
@@ -224,10 +223,17 @@ export function BoardEditor(props: {
 					force: forceValueCopy,
 					...data
 				})
-					.then(() => location.reload()) // TODO: 應該跳轉至看板管理頁
+					.then(() => location.reload())
 					.catch(err => toastErr(err));
 			} else if (props.editor_data.kind == BoardEditorKind.Edit) {
-
+				API_FETCHER.boardQuery.updateBoard({
+					force: forceValueCopy,
+					title: data.title,
+					detail: data.detail,
+					id: props.editor_data.board.id
+				})
+					.then(() => location.reload())
+					.catch(err => toastErr(err));
 			} else {
 				toastErr('Bug: 未窮盡 BoardEditorKind');
 			}

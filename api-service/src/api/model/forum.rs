@@ -97,6 +97,14 @@ pub mod forum_model_root {
         pub force: force::Force,
         pub ruling_party_id: i64,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UpdatedBoard {
+        pub id: i64,
+        pub title: String,
+        pub detail: String,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticlePersonalMeta {
         pub is_favorite: bool,

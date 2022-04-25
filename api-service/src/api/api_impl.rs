@@ -1,11 +1,11 @@
 use super::model::forum::NewArticle;
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
-use crate::chat;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::service;
 use crate::util::{HasArticleStats, HasBoardProps};
+use crate::{chat, custom_error};
 use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -420,11 +420,27 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn create_board(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
-        // TODO: 檢查請求者是否爲政黨成員
-        Ok(db::board::create(&new_board).await?)
+        let user_id = context.get_id_strict().await?;
+        if db::party::is_pary_member(new_board.ruling_party_id, user_id).await? {
+            Ok(db::board::create(&new_board).await?)
+        } else {
+            Err(custom_error::ErrorCode::PermissionDenied.into())
+        }
+    }
+    async fn update_board(
+        &self,
+        context: &mut crate::Ctx,
+        updated_board: model::forum::UpdatedBoard,
+    ) -> Fallible<i64> {
+        let user_id = context.get_id_strict().await?;
+        if db::board::is_editable(updated_board.id, user_id).await? {
+            Ok(db::board::update(&updated_board).await?)
+        } else {
+            Err(custom_error::ErrorCode::PermissionDenied.into())
+        }
     }
     async fn query_subscribed_user_count(
         &self,

@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{Board, BoardName, BoardOverview, BoardType, NewBoard};
+use crate::api::model::forum::{
+    Board, BoardName, BoardOverview, BoardType, NewBoard, UpdatedBoard,
+};
 use crate::custom_error::{DataType, Error, Fallible};
 use std::str::FromStr;
 
@@ -181,4 +183,28 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     super::party::change_board(&mut conn, board.ruling_party_id, board_id).await?;
     conn.commit().await?;
     Ok(board_id)
+}
+
+pub async fn update(board: &UpdatedBoard) -> Fallible<i64> {
+    // 檢查力語言語義
+    board.force.check_semantic()?;
+    let mut conn = get_pool().begin().await?;
+    sqlx::query!(
+        "
+        UPDATE boards
+        SET
+        title = $1,
+        detail = $2,
+        force = $3
+        WHERE id = $4
+        ",
+        board.title,
+        board.detail,
+        serde_json::to_string(&board.force).unwrap(),
+        board.id
+    )
+    .execute(&mut conn)
+    .await?;
+    conn.commit().await?;
+    Ok(board.id)
 }

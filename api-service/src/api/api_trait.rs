@@ -387,6 +387,7 @@ pub trait BoardQueryRouter {
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Board, crate::custom_error::Error>;
     async fn query_subscribed_user_count(&self, context: &mut crate::Ctx, id: i64) -> Result<usize, crate::custom_error::Error>;
     async fn create_board(&self, context: &mut crate::Ctx, new_board: super::model::forum::NewBoard) -> Result<i64, crate::custom_error::Error>;
+    async fn update_board(&self, context: &mut crate::Ctx, update_board: super::model::forum::UpdatedBoard) -> Result<i64, crate::custom_error::Error>;
     async fn query_hot_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
     async fn query_editable_for_me(&self, context: &mut crate::Ctx, id: i64) -> Result<bool, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: BoardQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
@@ -418,6 +419,11 @@ pub trait BoardQueryRouter {
             }
              BoardQuery::CreateBoard { new_board } => {
                  let resp = self.create_board(context, new_board).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             BoardQuery::UpdateBoard { update_board } => {
+                 let resp = self.update_board(context, update_board).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

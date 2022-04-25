@@ -20,6 +20,7 @@ export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: BoardType; create_time:     string; title: string; detail: string; force: force.Force; ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; board_type: BoardType; title: string; detail:     string; force: force.Force; ruling_party_id: number };
+export type UpdatedBoard = { id: number; title: string; detail: string; force: force.Force };
 export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type Author = 
@@ -342,6 +343,9 @@ export class BoardQuery {
     }
     async createBoard(new_board: NewBoard): Promise<Result<number, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "CreateBoard": { new_board } } }));
+    }
+    async updateBoard(update_board: UpdatedBoard): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Board": { "UpdateBoard": { update_board } } }));
     }
     async queryHotBoards(): Promise<Result<Array<BoardOverview>, Error>> {
         return JSON.parse(await this.fetchResult({ "Board": { "QueryHotBoards": {  } } }));

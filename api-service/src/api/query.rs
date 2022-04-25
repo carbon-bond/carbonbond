@@ -249,6 +249,10 @@ pub enum BoardQuery {
     CreateBoard {
         new_board: super::model::forum::NewBoard,
     },
+    #[chitin(leaf, response = "i64")]
+    UpdateBoard {
+        update_board: super::model::forum::UpdatedBoard,
+    },
     #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
     QueryHotBoards {},
     #[chitin(leaf, response = "bool")]

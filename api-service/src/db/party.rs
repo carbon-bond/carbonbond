@@ -33,14 +33,30 @@ pub async fn get_by_member_id(id: i64) -> Fallible<Vec<Party>> {
     let pool = get_pool();
     let parties = parties!(
         "
-    INNER JOIN party_members ON parties.id = party_members.party_id
-    WHERE user_id = $1
+        INNER JOIN party_members ON parties.id = party_members.party_id
+        WHERE user_id = $1
         ",
         id
     )
     .fetch_all(pool)
     .await?;
     Ok(parties)
+}
+
+pub async fn is_pary_member(party_id: i64, user_id: i64) -> Fallible<bool> {
+    let pool = get_pool();
+    let exist = sqlx::query!(
+        "
+        select party_id
+        from party_members
+        where party_members.party_id = $1 and user_id = $2;
+        ",
+        party_id,
+        user_id,
+    )
+    .fetch_optional(pool)
+    .await?;
+    Ok(exist.is_some())
 }
 
 pub async fn create(
