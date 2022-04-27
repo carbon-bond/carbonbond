@@ -15,7 +15,7 @@ import bottom_panel_style from '../../css/bottom_panel/bottom_panel.module.css';
 const { roomTitle, leftSet, middleSet, rightSet, button } = bottom_panel_style;
 import style from '../../css/bottom_panel/editor.module.css';
 import { toastErr } from '../utils';
-import { new_content, show_datatype } from '../../ts/force_util';
+import * as force_util from '../../ts/force_util';
 import { UserState } from '../global_state/user';
 import { BondLine } from '../article_card';
 import { useNavigate } from 'react-router';
@@ -192,7 +192,7 @@ const Field = (props: FieldProps): JSX.Element => {
 					<></> :
 					<span className={style.fieldName}>{field.name}</span>
 			}
-			<span className={style.dataType}>{`${show_datatype(field.kind)}`}</span>
+			<span className={style.dataType}>{`${force_util.show_datatype(field.kind)}`}</span>
 		</label>
 		<SingleField {...props} />
 	</div>;
@@ -371,9 +371,30 @@ function EditorBody(): JSX.Element {
 					className={style.category}
 					value={editor_panel_data.category}
 					onChange={(evt) => {
-						let category = force.categories.find(category => category.name == evt.target.value)!;
-						let content = new_content(category);
-						setEditorPanelData({ ...editor_panel_data, category: category.name, content, legacy_fields: undefined });
+						let new_category = force.categories.find(category => category.name == evt.target.value)!;
+						if (category) {
+							let result = force_util.translate(category.fields, new_category.fields, editor_panel_data.content);
+							console.log(JSON.stringify(result));
+							let ok = true;
+							if (result.strategy.kind == force_util.TranslateKind.NotFit) {
+								ok = confirm(`分類 ${category.name} 中的 ${result.strategy.not_fit_fields.map(f => f.name)} 欄位` +
+									`，無法對應到分類 ${new_category.name} 欄位`);
+							} else if (result.strategy.kind == force_util.TranslateKind.Shrink) {
+								ok = confirm(`分類 ${category.name} 中的 ${result.strategy.from_fields.map(f => force_util.get_field_name(f))} 欄位，` +
+									`將被塞入 ${new_category.name} 中的 ${force_util.get_field_name(result.strategy.to_field)} 欄位`);
+							}
+							if (ok) {
+								setEditorPanelData({
+									...editor_panel_data,
+									category: new_category.name,
+									content: result.content,
+									legacy_fields: undefined
+								});
+							}
+						} else {
+							let content = force_util.create_new_content(new_category.fields);
+							setEditorPanelData({ ...editor_panel_data, category: new_category.name, content, legacy_fields: undefined });
+						}
 					}}
 				>
 					<option value="" disabled hidden>文章分類</option>
