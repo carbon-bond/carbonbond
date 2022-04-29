@@ -56,7 +56,10 @@ function EditArticle(props: {author: Author, article_meta: ArticleMeta}): JSX.El
 						anonymous: article.meta.author == 'MyAnonymous',
 						title: article.meta.title,
 						category: article.meta.category,
-						content: JSON.parse(article.content),
+						value: {
+							content: JSON.parse(article.content),
+							fields: article.meta.fields,
+						},
 						bonds: article.bonds
 					});
 					openEditorPanel();

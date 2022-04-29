@@ -56,7 +56,10 @@ function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta })
 					category: '',
 					anonymous: false,
 					title: '',
-					content: {},
+					value: {
+						content: {},
+						fields: [],
+					},
 					bonds: [],
 				} :
 				editor_panel_data;

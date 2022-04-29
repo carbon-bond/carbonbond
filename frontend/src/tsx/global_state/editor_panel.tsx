@@ -6,13 +6,16 @@ import { Board, BondInfo, force } from '../../ts/api/api_trait';
 export type EditorPanelData = {
 	draft_id?: number,
 	id?: number,                   // 文章 id ，文章已經存在，更新文章時會用到
-	legacy_fields?: force.Field[], // 文章原本的欄位定義，在板被修改之後，可能已經不在目前的看板定義中了
 	board: Board,
 	category?: string,
 	title: string,
 	anonymous: boolean,
-	content: { [index: string]: string },
+	value: {
+		content: { [index: string]: string },
+		fields: force.Field[],
+	},
 	bonds: BondInfo[],
+	// is_dirty: boolean              // 若與草稿完全一致， is_dirty 爲真 ，否則爲假
 };
 
 export enum WindowState {

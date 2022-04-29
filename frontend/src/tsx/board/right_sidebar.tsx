@@ -31,7 +31,10 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 				anonymous: false,
 				category: '',
 				title: '',
-				content: {},
+				value: {
+					content: {},
+					fields: [],
+				},
 				bonds: [],
 			});
 			openEditorPanel();

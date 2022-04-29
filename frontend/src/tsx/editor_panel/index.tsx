@@ -128,7 +128,7 @@ const SingleField = (props: FieldProps): JSX.Element => {
 	const { setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
 
 	const validate_info = props.validate_info;
-	let content = editor_panel_data!.content;
+	let content = editor_panel_data!.value.content;
 
 	if (editor_panel_data == null) { return <></>; }
 
@@ -148,9 +148,12 @@ const SingleField = (props: FieldProps): JSX.Element => {
 			}
 			setEditorPanelData({
 				...editor_panel_data,
-				content: {
-					...editor_panel_data.content,
-					[field.name]: evt.target.value
+				value: {
+					...editor_panel_data.value,
+					content: {
+						...editor_panel_data.value.content,
+						[field.name]: evt.target.value
+					}
 				}
 			});
 		}
@@ -274,7 +277,7 @@ function EditorBody(): JSX.Element {
 					category_name: category.name,
 					use_legazy_fields: false, // TODO: 視情況決定
 					title: editor_panel_data.title,
-					content: generate_submit_content(category.fields, editor_panel_data.content),
+					content: generate_submit_content(editor_panel_data.value.fields, editor_panel_data.value.content),
 					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
 					draft_id: editor_panel_data.draft_id ?? null,
 					anonymous: editor_panel_data.anonymous
@@ -285,7 +288,7 @@ function EditorBody(): JSX.Element {
 					board_id: board.id,
 					category_name: category.name,
 					title: editor_panel_data.title,
-					content: generate_submit_content(category.fields, editor_panel_data.content),
+					content: generate_submit_content(editor_panel_data.value.fields, editor_panel_data.value.content),
 					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
 					draft_id: editor_panel_data.draft_id ?? null,
 					anonymous: editor_panel_data.anonymous
@@ -319,7 +322,7 @@ function EditorBody(): JSX.Element {
 			editor_panel_data.board.id,
 			editor_panel_data.category ?? null,
 			editor_panel_data.title,
-			JSON.stringify(editor_panel_data.content),
+			JSON.stringify(editor_panel_data.value.content),
 			// XXX: 文章標題可能會改變，草稿中顯示的仍然會是舊標題
 			JSON.stringify(editor_panel_data.bonds),
 			editor_panel_data.anonymous)
@@ -352,7 +355,7 @@ function EditorBody(): JSX.Element {
 					onChange={(evt) => {
 						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
 							.then(data => unwrap(data))
-							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '', legacy_fields: undefined }))
+							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '' }))
 							.catch(err => console.error(err));
 					}}
 				>
@@ -372,28 +375,39 @@ function EditorBody(): JSX.Element {
 					value={editor_panel_data.category}
 					onChange={(evt) => {
 						let new_category = force.categories.find(category => category.name == evt.target.value)!;
-						if (category) {
-							let result = force_util.translate(category.fields, new_category.fields, editor_panel_data.content);
-							console.log(JSON.stringify(result));
+						if (editor_panel_data.value.fields.length > 0) {
+							let result = force_util.translate(editor_panel_data.value.fields, new_category.fields, editor_panel_data.value.content);
 							let ok = true;
 							if (result.strategy.kind == force_util.TranslateKind.NotFit) {
-								ok = confirm(`分類 ${category.name} 中的 ${result.strategy.not_fit_fields.map(f => f.name)} 欄位` +
-									`，無法對應到分類 ${new_category.name} 欄位`);
+								ok = confirm(
+									'警告！' +
+									`原文中的${result.strategy.not_fit_fields.map(f => f.name)}欄位` +
+									`，無法對應到${new_category.name}分類中的任何欄位，將被丟棄，` +
+									'若您仍需要這些欄位的文本，請先儲存草稿再認');
 							} else if (result.strategy.kind == force_util.TranslateKind.Shrink) {
-								ok = confirm(`分類 ${category.name} 中的 ${result.strategy.from_fields.map(f => force_util.get_field_name(f))} 欄位，` +
-									`將被塞入 ${new_category.name} 中的 ${force_util.get_field_name(result.strategy.to_field)} 欄位`);
+								ok = confirm(`原文中的${result.strategy.from_fields.map(f => force_util.get_field_name(f))}欄位，` +
+									`將被塞入${new_category.name}分類中的${force_util.get_field_name(result.strategy.to_field)}欄位`);
 							}
 							if (ok) {
 								setEditorPanelData({
 									...editor_panel_data,
 									category: new_category.name,
-									content: result.content,
-									legacy_fields: undefined
+									value: {
+										content: result.content,
+										fields: new_category.fields,
+									},
 								});
 							}
 						} else {
 							let content = force_util.create_new_content(new_category.fields);
-							setEditorPanelData({ ...editor_panel_data, category: new_category.name, content, legacy_fields: undefined });
+							setEditorPanelData({
+								...editor_panel_data,
+								category: new_category.name,
+								value: {
+									content,
+									fields: new_category.fields
+								},
+							});
 						}
 					}}
 				>
@@ -448,13 +462,14 @@ function EditorBody(): JSX.Element {
 			}
 			{
 				(() => {
-					if (editor_panel_data.category == undefined || editor_panel_data.category == '') {
-						return <></>;
+					if (editor_panel_data.category == undefined || editor_panel_data.category == '' || category == undefined) {
+						return <div>
+							<div>請選擇分類</div>
+							<div>以下是您編輯到一半的文章內容：</div>
+							<ShowContent {...editor_panel_data.value} />
+						</div>;
 					}
 					let input_fields = [];
-					if (category == undefined) {
-						return <></>;
-					}
 					for (let field of category.fields) {
 						input_fields.push(
 							<Field
@@ -476,6 +491,19 @@ function EditorBody(): JSX.Element {
 				<button className={style.save} onClick={saveDraft}>存稿</button>
 			</div>
 		</div>
+	</div>;
+}
+
+function ShowContent(props: {fields: force.Field[], content: force_util.Content} ): JSX.Element {
+	return <div>
+		{
+			props.fields.map(field => {
+				return <div className={style.field} key={field.name}>
+					<div>{field.name}:</div>
+					{props.content[field.name]}
+				</div>;
+			})
+		}
 	</div>;
 }
 
