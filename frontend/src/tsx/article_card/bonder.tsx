@@ -48,12 +48,12 @@ function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta })
 		// 若原本編輯器沒資料或是沒設定分類
 		// 先設定分類並根據分類初始化編輯器資料
 		if (editor_panel_data && editor_panel_data.board.id != board.id) {
-			toastErr('尚在編輯其他文章，請關閉後再點擊');
+			toastErr('尚在編輯其他文章，請關閉當前編輯器後再重新點擊');
 		} else {
 			let data = editor_panel_data == null ?
 				{
 					board: props.board,
-					category: '',
+					category_name: '',
 					anonymous: false,
 					title: '',
 					value: {

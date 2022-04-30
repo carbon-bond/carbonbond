@@ -225,6 +225,18 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 // 	return true;
 // }
 
+// 由於看板被編輯後，分類的欄位名稱、型別可能改變、甚至整個分類被刪除
+// 但草稿跟以前的文章的欄位並不會跟着改變
+// 當載入到編輯器時，可能會找不到能夠匹配的分類
+// 處理方式可分爲以下幾種方式：
+// 1. 載入草稿，分類仍然存在，但欄位已經改變
+// => 顯示唯讀文本，要求選擇分類。提示一個按鈕可切換到同名分類
+// 2. 載入草稿，分類已經不存在
+// => 顯示唯讀文本，要求選擇分類
+// 3. 編輯文章，分類仍然存在，但欄位已經改變
+// => 提示一個按鈕可切換到同名分類
+// 4. 編輯文章，分類已經不存在
+// => 提示一個按鈕可切換到同名分類
 function EditorBody(): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
@@ -247,7 +259,7 @@ function EditorBody(): JSX.Element {
 	const navigate = useNavigate();
 
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
-	let category = force.categories.find(c => c.name == editor_panel_data.category);
+	let category = force.categories.find(c => c.name == editor_panel_data.category_name);
 
 	// let categories: force.Category[] = structuredClone(force.categories);
 	// let category_name = editor_panel_data.category;
@@ -320,7 +332,7 @@ function EditorBody(): JSX.Element {
 		API_FETCHER.articleQuery.saveDraft(
 			editor_panel_data.draft_id ?? null,
 			editor_panel_data.board.id,
-			editor_panel_data.category ?? null,
+			editor_panel_data.category_name ?? null,
 			editor_panel_data.title,
 			JSON.stringify(editor_panel_data.value.content),
 			// XXX: 文章標題可能會改變，草稿中顯示的仍然會是舊標題
@@ -355,7 +367,7 @@ function EditorBody(): JSX.Element {
 					onChange={(evt) => {
 						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
 							.then(data => unwrap(data))
-							.then(board => setEditorPanelData({ ...editor_panel_data, board, category: '' }))
+							.then(board => setEditorPanelData({ ...editor_panel_data, board, category_name: '' }))
 							.catch(err => console.error(err));
 					}}
 				>
@@ -372,7 +384,7 @@ function EditorBody(): JSX.Element {
 				</select>
 				<select required
 					className={style.category}
-					value={editor_panel_data.category}
+					value={editor_panel_data.category_name}
 					onChange={(evt) => {
 						let new_category = force.categories.find(category => category.name == evt.target.value)!;
 						if (editor_panel_data.value.fields.length > 0) {
@@ -391,7 +403,7 @@ function EditorBody(): JSX.Element {
 							if (ok) {
 								setEditorPanelData({
 									...editor_panel_data,
-									category: new_category.name,
+									category_name: new_category.name,
 									value: {
 										content: result.content,
 										fields: new_category.fields,
@@ -402,7 +414,7 @@ function EditorBody(): JSX.Element {
 							let content = force_util.create_new_content(new_category.fields);
 							setEditorPanelData({
 								...editor_panel_data,
-								category: new_category.name,
+								category_name: new_category.name,
 								value: {
 									content,
 									fields: new_category.fields
@@ -462,7 +474,7 @@ function EditorBody(): JSX.Element {
 			}
 			{
 				(() => {
-					if (editor_panel_data.category == undefined || editor_panel_data.category == '' || category == undefined) {
+					if (editor_panel_data.category_name == undefined || editor_panel_data.category_name == '' || category == undefined) {
 						return <div>
 							<div>請選擇分類</div>
 							<div>以下是您編輯到一半的文章內容：</div>

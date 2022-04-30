@@ -7,7 +7,7 @@ export type EditorPanelData = {
 	draft_id?: number,
 	id?: number,                   // 文章 id ，文章已經存在，更新文章時會用到
 	board: Board,
-	category?: string,
+	category_name?: string,
 	title: string,
 	anonymous: boolean,
 	value: {
@@ -15,6 +15,7 @@ export type EditorPanelData = {
 		fields: force.Field[],
 	},
 	bonds: BondInfo[],
+	// is_legacy: boolean,             // 是否使用原文的欄位，僅在編輯文章時可用
 	// is_dirty: boolean              // 若與草稿完全一致， is_dirty 爲真 ，否則爲假
 };
 

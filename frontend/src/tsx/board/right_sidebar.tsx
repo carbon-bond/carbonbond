@@ -29,7 +29,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			setEditorPanelData({
 				board: props.board,
 				anonymous: false,
-				category: '',
+				category_name: '',
 				title: '',
 				value: {
 					content: {},

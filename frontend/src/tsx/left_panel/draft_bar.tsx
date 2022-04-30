@@ -37,7 +37,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						board: board,
 						anonymous: props.draft.anonymous,
 						title: props.draft.title,
-						category: props.draft.category ?? '',
+						category_name: props.draft.category ?? '',
 						value: {
 							content: JSON.parse(props.draft.content),
 							fields: [], // XXX: 加上欄位訊息
