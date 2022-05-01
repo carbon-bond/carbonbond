@@ -544,7 +544,7 @@ export function ProfileRelation(props: {profile_user: User,
 	</div>;
 }
 
-function ProfileAction(props: {profile_user: User,
+export function ProfileAction(props: {profile_user: User,
 	user_state: UserStateType,
 	reload: number, setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
@@ -751,9 +751,7 @@ function UserPage(): JSX.Element {
 	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
-		Promise.all([
-			API_FETCHER.userQuery.queryUser(user_name),
-		]).then(([user]) => {
+		API_FETCHER.userQuery.queryUser(user_name).then((user) => {
 			try {
 				setUser(unwrap(user));
 			} catch (err) {
@@ -775,7 +773,9 @@ function UserPage(): JSX.Element {
 			<div className={style.profileOverviewWrap}>
 				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload}/>
 			</div>
-			<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+			<div className={style.profileActionWrap}>
+				<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+			</div>
 		</div>
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
