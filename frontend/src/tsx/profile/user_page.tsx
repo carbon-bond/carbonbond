@@ -527,15 +527,15 @@ export function ProfileRelation(props: {profile_user: User,
 		</div>
 		<div className={style.follow}>
 			<span className={style.icon}>❤️</span>
-			<span className={style.relationLink} onClick={() => setVisibleFollower(true)}>{total_follower} 被喜歡</span>
+			<span className={style.relationLink} onClick={() => setVisibleFollower(true)}>被 {total_follower} 人喜歡</span>
 			<span> · </span>
-			<span className={style.relationLink} onClick={() => setVisibleFollowing(true)}>{total_following} 喜歡</span>
+			<span className={style.relationLink} onClick={() => setVisibleFollowing(true)}>喜歡 {total_following} 人</span>
 		</div>
 		<div className={style.hate}>
 			<span className={style.icon}>💢</span>
-			<span className={style.relationLink} onClick={() => setVisibleHater(true)}>{total_hater} 被仇視</span>
+			<span className={style.relationLink} onClick={() => setVisibleHater(true)}>被 {total_hater} 人仇視</span>
 			<span> · </span>
-			<span className={style.relationLink} onClick={() => setVisibleHating(true)}>{total_hating} 仇視</span>
+			<span className={style.relationLink} onClick={() => setVisibleHating(true)}>仇視 {total_hating} 人</span>
 		</div>
 		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} reload={props.reload} />
 		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} reload={props.reload} />
