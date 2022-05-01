@@ -7,7 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
-import { ProfileDetail } from '../profile/user_page';
+import { ProfileRelation, ProfileDetail } from '../profile/user_page';
 import { ShowText } from '../display/show_text';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
@@ -116,6 +116,8 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 
 function UserIntroduction(props: {author: Author}): JSX.Element {
 	const [user, setUser] = React.useState<User | null>(null);
+	const { user_state } = UserState.useContainer();
+	const [reload, ] = React.useState<number>(Date.now());
 
 	React.useEffect(() => {
 		if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
@@ -145,6 +147,11 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 					{
 						user ?
 							<div className={style.sentence}> {user.sentence} </div>
+							: <></>
+					}
+					{
+						user ?
+							<ProfileRelation profile_user={user} user_state={user_state} reload={reload}/>
 							: <></>
 					}
 				</div>
