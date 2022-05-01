@@ -7,7 +7,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
-import { ProfileDetail } from '../profile/user_page';
+import { ProfileRelation, ProfileAction, ProfileDetail } from '../profile/user_page';
 import { ShowText } from '../display/show_text';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
@@ -116,6 +116,8 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 
 function UserIntroduction(props: {author: Author}): JSX.Element {
 	const [user, setUser] = React.useState<User | null>(null);
+	const { user_state } = UserState.useContainer();
+	const [reload, setReload] = React.useState<number>(Date.now());
 
 	React.useEffect(() => {
 		if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
@@ -129,7 +131,7 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 				}
 			});
 		}
-	}, [props.author]);
+	}, [props.author, reload]);
 
 	if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
 		return <></>;
@@ -137,21 +139,37 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 		const user_name = props.author.NamedAuthor.name;
 		return <div className={style.userIntroduction}>
 			<div className={style.userTop}>
-				<img src={`/avatar/${user_name}`} />
-				<div className={style.text}>
-					<div className={style.name}>
-						<Link to={`/app/user/${user_name}`}>{user_name}</Link>
-					</div>
-					{
-						user ?
-							<div className={style.sentence}> {user.sentence} </div>
-							: <></>
-					}
+				<div className={style.avatar}>
+					<img src={`/avatar/${user_name}`} />
 				</div>
+				{
+					user ?
+						<div className={style.action}>
+							<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+						</div>
+						: <></>
+				}
+			</div>
+			<div className={style.text}>
+				<div className={style.name}>
+					<Link to={`/app/user/${user_name}`}>{user_name}</Link>
+				</div>
+				{
+					user ?
+						<div className={style.sentence}> {user.sentence} </div>
+						: <></>
+				}
+				{
+					user ?
+						<ProfileRelation profile_user={user} user_state={user_state} reload={reload}/>
+						: <></>
+				}
 			</div>
 			{
 				user ?
-					<ProfileDetail profile_user={user} />
+					<div className={style.information}>
+						<ProfileDetail profile_user={user} />
+					</div>
 					: <></>
 			}
 		</div>;
