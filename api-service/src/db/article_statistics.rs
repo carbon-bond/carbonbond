@@ -1,8 +1,8 @@
 use super::get_pool;
-use crate::api::model::forum::ArticleMeta;
+use crate::api::model::forum::{ArticleMeta, Attitude};
 use crate::custom_error::Fallible;
+use chrono::{Duration, Utc};
 use std::collections::HashMap;
-use chrono::{Utc, Duration};
 
 struct Entry {
     id: i64,
@@ -62,6 +62,14 @@ pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallibl
     )
     .fetch_all(pool)
     .await?;
+    let personal_attitudes = sqlx::query!(
+        "SELECT article_id, attitude FROM attitude_to_articles
+        WHERE user_id = $1 AND article_id = ANY($2)",
+        user_id,
+        &ids,
+    )
+    .fetch_all(pool)
+    .await?;
     let mut map: HashMap<_, _> = metas.into_iter().map(|meta| (meta.id, meta)).collect();
     for p in personal_favorites.into_iter() {
         if let Some(a) = map.get_mut(&p.article_id) {
@@ -71,6 +79,15 @@ pub async fn get_personal(metas: Vec<&mut ArticleMeta>, user_id: i64) -> Fallibl
     for p in personal_trackings.into_iter() {
         if let Some(a) = map.get_mut(&p.article_id) {
             a.personal_meta.is_tracking = true;
+        }
+    }
+    for p in personal_attitudes.into_iter() {
+        if let Some(a) = map.get_mut(&p.article_id) {
+            a.personal_meta.attitude = if p.attitude {
+                Attitude::Good
+            } else {
+                Attitude::Bad
+            };
         }
     }
     Ok(())
@@ -85,5 +102,8 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
     )
     .fetch_all(pool)
     .await?;
-    Ok(articles_in_24h.iter().map(|a| (a.board_id, a.create_time.timestamp() as u64)).collect())
+    Ok(articles_in_24h
+        .iter()
+        .map(|a| (a.board_id, a.create_time.timestamp() as u64))
+        .collect())
 }

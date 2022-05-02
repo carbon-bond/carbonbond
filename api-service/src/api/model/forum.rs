@@ -101,6 +101,7 @@ pub mod forum_model_root {
     pub struct ArticlePersonalMeta {
         pub is_favorite: bool,
         pub is_tracking: bool,
+        pub attitude: Attitude,
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct ArticleDigest {
@@ -113,6 +114,8 @@ pub mod forum_model_root {
             #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
             pub struct $name {
                 pub id: i64,
+                pub good: i64,
+                pub bad: i64,
                 pub energy: i32,
                 pub board_id: i64,
                 pub board_name: String,
@@ -174,6 +177,8 @@ pub mod forum_model_root {
     pub struct ArticleMeta {
         pub id: i64,
         pub energy: i32,
+        pub good: i64,
+        pub bad: i64,
         pub board_id: i64,
         pub board_name: String,
         pub board_type: BoardType,
@@ -262,6 +267,27 @@ pub mod forum_model_root {
         pub board_type: BoardType,
         pub title: String,
         pub popularity: i64,
+    }
+    #[derive(
+        Serialize,
+        Deserialize,
+        TypeScriptify,
+        Clone,
+        Copy,
+        EnumString,
+        strum::ToString,
+        Debug,
+        PartialEq,
+    )]
+    pub enum Attitude {
+        Good,
+        Bad,
+        None,
+    }
+    impl Default for Attitude {
+        fn default() -> Self {
+            Attitude::None
+        }
     }
     #[derive(
         Serialize, Deserialize, TypeScriptify, Clone, Copy, EnumString, strum::ToString, Debug,

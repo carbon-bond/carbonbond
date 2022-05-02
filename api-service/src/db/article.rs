@@ -31,6 +31,8 @@ macro_rules! metas {
                 + $select
                 + " metas.id,
                 metas.energy,
+                metas.good,
+                metas.bad,
                 fields,
                 board_id,
                 board_name,
@@ -54,6 +56,8 @@ macro_rules! to_meta {
         ArticleMeta {
             id: $data.id,
             energy: $data.energy,
+            good: $data.good,
+            bad: $data.bad,
             board_id: $data.board_id,
             board_name: $data.board_name,
             board_type: crate::api::model::forum::BoardType::from_str(&$data.board_type).unwrap(),
@@ -555,7 +559,7 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     Ok(article_id)
 }
 
-pub(super) async fn update_energy(conn: &mut PgConnection, id: i64, energy: i16) -> Fallible {
+pub(super) async fn update_energy(conn: &mut PgConnection, id: i64, energy: i64) -> Fallible {
     sqlx::query!(
         "UPDATE articles SET energy = energy + $1 WHERE id = $2",
         energy as i32,
