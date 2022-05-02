@@ -294,6 +294,7 @@ pub trait ArticleQueryRouter {
     async fn search_pop_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn get_subscribe_article(&self, context: &mut crate::Ctx, count: usize) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
     async fn query_graph(&self, context: &mut crate::Ctx, article_id: i64, category_set: Option<Vec<String>>) -> Result<super::model::forum::Graph, crate::custom_error::Error>;
+    async fn set_attitude(&self, context: &mut crate::Ctx, article_id: i64, attitude: super::model::forum::Attitude) -> Result<(i64, i64), crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: ArticleQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              ArticleQuery::QueryArticleList { count, max_id, author_name, board_name } => {
@@ -373,6 +374,11 @@ pub trait ArticleQueryRouter {
             }
              ArticleQuery::QueryGraph { article_id, category_set } => {
                  let resp = self.query_graph(context, article_id, category_set).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             ArticleQuery::SetAttitude { article_id, attitude } => {
+                 let resp = self.set_attitude(context, article_id, attitude).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

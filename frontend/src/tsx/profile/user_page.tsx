@@ -62,8 +62,8 @@ function EditSentence(props: { sentence: string, setSentence: (sentence: string)
 	}
 }
 
-function Sentence(props: { is_me: boolean, sentence: string, setSentence: (sentence: string) => void }): JSX.Element {
-	if (props.is_me) {
+function Sentence(props: { is_me: boolean, sentence: string, setSentence: ((sentence: string) => void) | null}): JSX.Element {
+	if (props.is_me && props.setSentence) {
 		return <EditSentence sentence={props.sentence} setSentence={props.setSentence} />;
 	} else if (props.sentence == '') {
 		return <div className={style.noSentence}>
@@ -470,17 +470,9 @@ function RelationEditComponent(props: {target_user_id: number,
 	</div>;
 }
 
-function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>>,
+function ProfileOverview(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null,
 		user_state: UserStateType,
-		reload: number, setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
-	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
-	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
-	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
-	const [visible_hater, setVisibleHater] = React.useState<boolean>(false);
-	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
-	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
-	const { addRoom } = BottomPanelState.useContainer();
-	const { all_chat, addDirectChat } = AllChatState.useContainer();
+		reload: number}): JSX.Element {
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -488,20 +480,79 @@ function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<Rea
 				nxt.sentence = sentence;
 			}
 		});
-		props.setProfileUser(new_state);
-	}
-
-	function onStartChat(): void {
-		const user_name = props.profile_user.user_name;
-		let chat = Object.values(all_chat.direct).find(chat => chat.name == user_name);
-		if (chat != undefined) {
-			addRoom(chat.id);
-		} else {
-			addDirectChat(fake_id_counter, new DirectChatData(user_name, fake_id_counter, props.profile_user.id, [], new Date(), false));
-			addRoom(fake_id_counter);
-			fake_id_counter--;
+		if (props.setProfileUser) {
+			props.setProfileUser(new_state);
 		}
 	}
+
+	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+
+	return <div className={style.account}>
+		<div className={style.avatarContainer}>
+			<Avatar is_me={is_me} name={props.profile_user.user_name} />
+		</div>
+		<div className={style.abstract}>
+			<div className={style.username}>{props.profile_user.user_name}</div>
+			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={props.setProfileUser ? setSentence : null} />
+			<ProfileRelation {...props}/>
+		</div>
+	</div>;
+}
+
+export function ProfileRelation(props: {profile_user: User,
+		user_state: UserStateType,
+		reload: number}): JSX.Element {
+	const [visible_follower, setVisibleFollower] = React.useState<boolean>(false);
+	const [visible_hater, setVisibleHater] = React.useState<boolean>(false);
+	const [visible_following, setVisibleFollowing] = React.useState<boolean>(false);
+	const [visible_hating, setVisibleHating] = React.useState<boolean>(false);
+
+	React.useEffect(() => {
+		setVisibleFollower(false);
+		setVisibleHater(false);
+		setVisibleFollowing(false);
+		setVisibleHating(false);
+	}, [props.profile_user, props.user_state.login, props.reload]);
+
+	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+	const total_follower = props.profile_user.follower_count_public + props.profile_user.follower_count_private;
+	const total_following = props.profile_user.following_count_public + props.profile_user.following_count_private;
+	const total_hater = props.profile_user.hater_count_public + props.profile_user.hater_count_private;
+	const total_hating = props.profile_user.hating_count_public + props.profile_user.hating_count_private;
+
+	return <div className={style.relationdata}>
+		<div className={style.energy}>
+			<span className={style.icon}>☘️</span>
+			<span>{props.profile_user.energy} 鍵能</span>
+		</div>
+		<div className={style.follow}>
+			<span className={style.icon}>❤️</span>
+			<span className={style.relationLink} onClick={() => setVisibleFollower(true)}>被 {total_follower} 人喜歡</span>
+			<span> · </span>
+			<span className={style.relationLink} onClick={() => setVisibleFollowing(true)}>喜歡 {total_following} 人</span>
+		</div>
+		<div className={style.hate}>
+			<span className={style.icon}>💢</span>
+			<span className={style.relationLink} onClick={() => setVisibleHater(true)}>被 {total_hater} 人仇視</span>
+			<span> · </span>
+			<span className={style.relationLink} onClick={() => setVisibleHating(true)}>仇視 {total_hating} 人</span>
+		</div>
+		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} reload={props.reload} />
+		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} reload={props.reload} />
+	</div>;
+}
+
+export function ProfileAction(props: {profile_user: User,
+	user_state: UserStateType,
+	reload: number, setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
+	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
+	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
+	const { addRoom } = BottomPanelState.useContainer();
+	const { all_chat, addDirectChat } = AllChatState.useContainer();
+
+	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
 	React.useEffect(() => {
 		async function queryUserRelation(): Promise<{}> {
@@ -520,58 +571,40 @@ function Profile(props: { profile_user: User, setProfileUser: React.Dispatch<Rea
 		if (props.profile_user && props.user_state.login) {
 			queryUserRelation();
 		}
-		setVisibleFollower(false);
-		setVisibleHater(false);
-		setVisibleFollowing(false);
-		setVisibleHating(false);
 	}, [props.profile_user, props.user_state.login, props.reload]);
 
-	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
+	function onStartChat(): void {
+		const user_name = props.profile_user.user_name;
+		let chat = Object.values(all_chat.direct).find(chat => chat.name == user_name);
+		if (chat != undefined) {
+			addRoom(chat.id);
+		} else {
+			addDirectChat(fake_id_counter, new DirectChatData(user_name, fake_id_counter, props.profile_user.id, [], new Date(), false));
+			addRoom(fake_id_counter);
+			fake_id_counter--;
+		}
+	}
 
-	return <div className={style.up}>
-		<div className={style.avatarContainer}>
-			<Avatar is_me={is_me} name={props.profile_user.user_name} />
-		</div>
-		<div className={style.abstract}>
-			<div className={style.username}>{props.profile_user.user_name}</div>
-			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={setSentence} />
-			<div className={style.data}>
-				<div className={style.energy}>{props.profile_user.energy} 鍵能</div>
-				<div className={style.trace}>
-					<div onClick={() => setVisibleFollower(true)}>❤️ 被 {props.profile_user.follower_count_public + props.profile_user.follower_count_private} 人喜歡</div>
-					<div onClick={() => setVisibleFollowing(true)}>❤️ 喜歡 {props.profile_user.following_count_public + props.profile_user.following_count_private} 人</div>
-				</div>
-				<div className={style.hate}>
-					<div onClick={() => setVisibleHater(true)}>⚔ 被 {props.profile_user.hater_count_public + props.profile_user.hater_count_private} 人仇視</div>
-					<div onClick={() => setVisibleHating(true)}>⚔ 仇視 {props.profile_user.hating_count_public + props.profile_user.hating_count_private} 人</div>
-				</div>
-			</div>
-		</div>
-		<div className={style.operation}>
-			<div className={style.links}>
-				{
-					props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-						<RelationEditComponent target_user_id={props.profile_user.id}
-							relation_type={relation_type} setRelationType={setRelationType}
-							relation_public={relation_public} setRelationPublic={setRelationPublic}
-							setReload={props.setReload}/>: <></>
-				}
-				{
-					is_me ?
+	return <div className={style.operation}>
+		<div className={style.links}>
+			{
+				props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
+					<RelationEditComponent target_user_id={props.profile_user.id}
+						relation_type={relation_type} setRelationType={setRelationType}
+						relation_public={relation_public} setRelationPublic={setRelationPublic}
+						setReload={props.setReload}/>: <></>
+			}
+			{
+				is_me ?
 						<></> :
-						<button onClick={onStartChat}>🗨️ 私訊</button>
-				}
-				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-					<div className={style.personalBoard}>
+					<button onClick={onStartChat}>🗨️ 私訊</button>
+			}
+			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+				<div className={style.personalBoard}>
 						🤠 個板
-					</div>
-				</Link>
-			</div>
+				</div>
+			</Link>
 		</div>
-		<RelationModal user={props.profile_user} kind="follower"  is_myself={false} visible={visible_follower} setVisible={setVisibleFollower} reload={props.reload} />
-		<RelationModal user={props.profile_user} kind="hater"     is_myself={false} visible={visible_hater} setVisible={setVisibleHater} reload={props.reload} />
-		<RelationModal user={props.profile_user} kind="following" is_myself={is_me} visible={visible_following} setVisible={setVisibleFollowing} reload={props.reload} />
-		<RelationModal user={props.profile_user} kind="hating"    is_myself={is_me} visible={visible_hating} setVisible={setVisibleHating} reload={props.reload} />
 	</div>;
 }
 
@@ -718,9 +751,7 @@ function UserPage(): JSX.Element {
 	const { setCurrentLocation } = LocationCacheState.useContainer();
 
 	React.useEffect(() => {
-		Promise.all([
-			API_FETCHER.userQuery.queryUser(user_name),
-		]).then(([user]) => {
+		API_FETCHER.userQuery.queryUser(user_name).then((user) => {
 			try {
 				setUser(unwrap(user));
 			} catch (err) {
@@ -738,7 +769,14 @@ function UserPage(): JSX.Element {
 		return <></>;
 	}
 	return <div>
-		<Profile profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
+		<div className={style.up}>
+			<div className={style.profileOverviewWrap}>
+				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload}/>
+			</div>
+			<div className={style.profileActionWrap}>
+				<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+			</div>
+		</div>
 		<div className={style.down}>
 			<ProfileWorks profile_user={user} user_state={user_state} />
 			<div className={style.profileDetailWrap}>
