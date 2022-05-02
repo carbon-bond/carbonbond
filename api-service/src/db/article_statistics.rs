@@ -1,8 +1,8 @@
 use super::get_pool;
 use crate::api::model::forum::ArticleMeta;
 use crate::custom_error::Fallible;
+use chrono::{Duration, Utc};
 use std::collections::HashMap;
-use chrono::{Utc, Duration};
 
 struct Entry {
     id: i64,
@@ -85,5 +85,8 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
     )
     .fetch_all(pool)
     .await?;
-    Ok(articles_in_24h.iter().map(|a| (a.board_id, a.create_time.timestamp() as u64)).collect())
+    Ok(articles_in_24h
+        .iter()
+        .map(|a| (a.board_id, a.create_time.timestamp() as u64))
+        .collect())
 }

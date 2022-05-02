@@ -37,6 +37,7 @@ let { API_FETCHER, doLogin} = (() => {
 					url: URL,
 					jar,
 					method: 'POST',
+					gzip: true,
 					json: query,
 				},
 				(err, resp, body) => {

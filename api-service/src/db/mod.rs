@@ -7,6 +7,7 @@ use state::Storage;
 pub mod article;
 pub mod article_content;
 pub mod article_statistics;
+pub mod attitude;
 pub mod avatar;
 pub mod board;
 pub mod comment;

@@ -232,6 +232,11 @@ pub enum ArticleQuery {
         article_id: i64,
         category_set: Option<Vec<String>>,
     },
+    #[chitin(leaf, response = "(i64, i64)")]
+    SetAttitude {
+        article_id: i64,
+        attitude: super::model::forum::Attitude,
+    },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum BoardQuery {

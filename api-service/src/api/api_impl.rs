@@ -1,4 +1,4 @@
-use super::model::forum::NewArticle;
+use super::model::forum::{Attitude, NewArticle};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::chat;
@@ -350,6 +350,15 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
             service::graph_view::query_graph(viewer_id, 10, article_id, opt_slice(&category_set))
                 .await?;
         complete_article(graph, context).await
+    }
+    async fn set_attitude(
+        &self,
+        context: &mut crate::Ctx,
+        article_id: i64,
+        attitude: Attitude,
+    ) -> Result<(i64, i64), crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        db::attitude::set_attitude(user_id, article_id, attitude).await
     }
 }
 

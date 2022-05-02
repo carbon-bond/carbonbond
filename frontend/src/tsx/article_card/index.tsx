@@ -3,7 +3,7 @@ import style from '../../css/board/article_card.module.css';
 import '../../css/global.css';
 import { dateDistance, relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
-import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType } from '../../ts/api/api_trait';
+import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType, Attitude } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr, useInputValue } from '../utils';
 import { ArticleContent } from '../board/article_page';
@@ -164,6 +164,9 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
 	const [hit, setHit] = React.useState<Hit>(props.hit ?? Hit.None);
+	const [attitude, setAttitude] = React.useState<Attitude>(Attitude.None);
+	const [good_count, setGoodCount] = React.useState<number>(props.article.good);
+	const [bad_count, setBadCount] = React.useState<number>(props.article.bad);
 	const board_info = getBoardInfo(props.article);
 
 	async function onFavoriteArticleClick(): Promise<void> {
@@ -205,11 +208,31 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
-			<div className={`${style.articleBtnItem} ${style.good} ${style.chosenGood}`}>
-				▲ 頂 <span className={style.num}>123</span>
+			<div className={`${style.articleBtnItem} ${style.good} ${attitude == Attitude.Good ? style.chosenGood : ''}`} onClick={() => {
+				let next_attitude = attitude == Attitude.Good ? Attitude.None : Attitude.Good;
+				setAttitude(next_attitude);
+				API_FETCHER.articleQuery.setAttitude(props.article.id, Attitude.Good)
+				.then(data => {
+					let [good, bad] = unwrap(data);
+					setGoodCount(good);
+					setBadCount(bad);
+				})
+				.catch(err => {toastErr(err);});
+			}}>
+				▲ 頂 <span className={style.num}>{good_count}</span>
 			</div>
-			<div className={`${style.articleBtnItem} ${style.bad} ${style.chosenBad}`}>
-				▼ 踩 <span className={style.num}>93</span>
+			<div className={`${style.articleBtnItem} ${style.bad} ${attitude == Attitude.Bad ? style.chosenBad : ''}`} onClick={() => {
+				let next_attitude = attitude == Attitude.Bad ? Attitude.None : Attitude.Bad;
+				setAttitude(next_attitude);
+				API_FETCHER.articleQuery.setAttitude(props.article.id, next_attitude)
+				.then(data => {
+					let [good, bad] = unwrap(data);
+					setGoodCount(good);
+					setBadCount(bad);
+				})
+				.catch(err => {toastErr(err);});
+			}}>
+				▼ 踩 <span className={style.num}>{bad_count}</span>
 			</div>
 			<div className={`${style.articleBtnItem} ${hit == Hit.Comment ? style.hit : ''}`} onClick={() => {
 				if (hit == Hit.Comment) {

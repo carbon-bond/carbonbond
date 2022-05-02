@@ -130,7 +130,7 @@
         & .chosenBad {
             background-color: var(--light-red);
         }
-        & .articleBtnItem:not(.hit):hover {
+        & .articleBtnItem:not(.hit,.good,.bad):hover {
             background-color: var(--hover-background-color);
         }
         & .articleBtnItemTracking {

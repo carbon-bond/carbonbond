@@ -27,7 +27,7 @@ export type Author =
  | "MyAnonymous" 
  | "Anonymous";
 export type NewArticle = {     board_id: number; category_name: string; title: string; content:     string; bonds: force.Bond []; draft_id: number | null; anonymous:     boolean };
-export type ArticleMeta = {     id: number; energy: number; board_id: number; board_name: string;     board_type: BoardType; category: string; title: string; author:     Author; digest: ArticleDigest; create_time: string; fields: force.Field []; stat: ArticleStatistics; personal_meta:     ArticlePersonalMeta };
+export type ArticleMeta = {     id: number; energy: number; good: number; bad: number; board_id:     number; board_name: string; board_type: BoardType; category: string; title: string; author: Author; digest: ArticleDigest; create_time: string; fields: force.Field []; stat: ArticleStatistics;     personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
 export type ArticleStatistics = { replies: number; comments: number };
@@ -38,6 +38,7 @@ export type Article = { meta: ArticleMeta; bonds: BondInfo []; content: string }
 export type Comment = {     id: number; author: Author; create_time: string; content:     string };
 export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; title: string; content: string; bonds:     string; create_time: string; edit_time: string;     anonymous: boolean };
 export type BoardOverview = {     id: number; board_name: string; board_type: BoardType; title:     string; popularity: number };
+export enum Attitude { Good = "Good", Bad = "Bad", None = "None" };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
 export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
 export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied", CommentReplied = "CommentReplied" };
@@ -317,6 +318,9 @@ export class ArticleQuery {
     }
     async queryGraph(article_id: number, category_set: Option<Array<string>>): Promise<Result<Graph, Error>> {
         return JSON.parse(await this.fetchResult({ "Article": { "QueryGraph": { article_id, category_set } } }));
+    }
+    async setAttitude(article_id: number, attitude: Attitude): Promise<Result<[number, number], Error>> {
+        return JSON.parse(await this.fetchResult({ "Article": { "SetAttitude": { article_id, attitude } } }));
     }
 }
 
