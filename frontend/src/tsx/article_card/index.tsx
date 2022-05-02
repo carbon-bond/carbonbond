@@ -194,7 +194,6 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 		}
 	}
 
-	// XXX: 個版會壞掉
 	function onShareClick(): void {
 		copyToClipboard(`${window.location.origin}${board_info.to_url()}/article/${props.article.id}`)
 			.then(() => {
@@ -206,8 +205,11 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
-			<div className={style.articleBtnItem}>
-				☘️ <span className={style.num}>{props.article.energy}</span>鍵能
+			<div className={`${style.articleBtnItem} ${style.good} ${style.chosenGood}`}>
+				▲ 頂 <span className={style.num}>123</span>
+			</div>
+			<div className={`${style.articleBtnItem} ${style.bad} ${style.chosenBad}`}>
+				▼ 踩 <span className={style.num}>93</span>
 			</div>
 			<div className={`${style.articleBtnItem} ${hit == Hit.Comment ? style.hit : ''}`} onClick={() => {
 				if (hit == Hit.Comment) {

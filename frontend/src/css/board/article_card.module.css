@@ -117,6 +117,19 @@
                 margin-right: 4px;
             }
         }
+        & .good {
+            color: var(--green);
+            margin-right: 0px;
+        }
+        & .bad {
+            color: var(--red);
+        }
+        & .chosenGood {
+            background-color: var(--light-green);
+        }
+        & .chosenBad {
+            background-color: var(--light-red);
+        }
         & .articleBtnItem:not(.hit):hover {
             background-color: var(--hover-background-color);
         }
