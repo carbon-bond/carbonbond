@@ -559,7 +559,7 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     Ok(article_id)
 }
 
-pub(super) async fn update_energy(conn: &mut PgConnection, id: i64, energy: i16) -> Fallible {
+pub(super) async fn update_energy(conn: &mut PgConnection, id: i64, energy: i64) -> Fallible {
     sqlx::query!(
         "UPDATE articles SET energy = energy + $1 WHERE id = $2",
         energy as i32,

@@ -73,8 +73,10 @@ pub async fn set_attitude(
                 .await?;
                 if bool_attitude {
                     increase_good(&mut conn, article_id, 1).await?;
+                    super::article::update_energy(&mut conn, article_id, 1).await?;
                 } else {
                     increase_bad(&mut conn, article_id, 1).await?;
+                    super::article::update_energy(&mut conn, article_id, -1).await?;
                 }
             }
         }
@@ -92,6 +94,7 @@ pub async fn set_attitude(
                 .await?;
                 increase_good(&mut conn, article_id, 1).await?;
                 increase_bad(&mut conn, article_id, -1).await?;
+                super::article::update_energy(&mut conn, article_id, 2).await?;
             } else if attitude == Attitude::Bad && a.attitude == true {
                 sqlx::query!(
                     "
@@ -105,6 +108,7 @@ pub async fn set_attitude(
                 .await?;
                 increase_good(&mut conn, article_id, -1).await?;
                 increase_bad(&mut conn, article_id, 1).await?;
+                super::article::update_energy(&mut conn, article_id, -2).await?;
             } else {
                 sqlx::query!(
                     "
@@ -117,8 +121,10 @@ pub async fn set_attitude(
                 .await?;
                 if a.attitude {
                     increase_good(&mut conn, article_id, -1).await?;
+                    super::article::update_energy(&mut conn, article_id, -1).await?;
                 } else {
                     increase_bad(&mut conn, article_id, -1).await?;
+                    super::article::update_energy(&mut conn, article_id, 1).await?;
                 }
             }
         }

@@ -20,7 +20,7 @@ export enum BoardType { General = "General", Personal = "Personal" };
 export type Board = {     id: number; board_name: string; board_type: BoardType; create_time:     string; title: string; detail: string; force: force.Force; ruling_party_id: number; popularity: number };
 export type BoardName = { id: number; board_name: string };
 export type NewBoard = {     board_name: string; board_type: BoardType; title: string; detail:     string; force: force.Force; ruling_party_id: number };
-export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean };
+export type ArticlePersonalMeta = { is_favorite: boolean; is_tracking: boolean; attitude: Attitude };
 export type ArticleDigest = { content: string; truncated: boolean };
 export type Author = 
  | { NamedAuthor: { id: number; name: string } } 

@@ -164,7 +164,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 	const [favorite, setFavorite] = React.useState<boolean>(props.article.personal_meta.is_favorite);
 	const [tracking, setTracking] = React.useState<boolean>(props.article.personal_meta.is_tracking);
 	const [hit, setHit] = React.useState<Hit>(props.hit ?? Hit.None);
-	const [attitude, setAttitude] = React.useState<Attitude>(Attitude.None);
+	const [attitude, setAttitude] = React.useState<Attitude>(props.article.personal_meta.attitude);
 	const [good_count, setGoodCount] = React.useState<number>(props.article.good);
 	const [bad_count, setBadCount] = React.useState<number>(props.article.bad);
 	const board_info = getBoardInfo(props.article);
