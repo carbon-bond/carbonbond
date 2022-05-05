@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import useOnClickOutside from 'use-onclickoutside';
@@ -38,7 +37,6 @@ function Header(): JSX.Element {
 	const { user_state, setLogout } = UserState.useContainer();
 	const { current_location } = LocationCacheState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
-	const navigate = useNavigate();
 
 	let [expanding_user, setExpandingUser] = React.useState(false);
 	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
@@ -62,11 +60,11 @@ function Header(): JSX.Element {
 		if (user_state.login) {
 			return <div className={style.dropdown}>
 				<div className={style.features}>
-					<Row onClick={() => navigate(`/app/b/personal/${user_state.user_name}`)}>🏯 我的個板</Row>
-					<Row onClick={() => navigate(`/app/user/${user_state.user_name}`)}>📜 我的卷宗</Row>
-					<Row onClick={() => navigate('/app/party')}>👥 我的政黨</Row>
-					<Row onClick={() => navigate('/app/signup_invite')}>🎟️ 我的邀請碼</Row>
-					<Row onClick={() => navigate('/app/setting')}>⚙️ 設定</Row>
+					<Link to={`/app/b/personal/${user_state.user_name}`}> <Row>🏯 我的個板</Row> </Link>
+					<Link to={`/app/user/${user_state.user_name}`}> <Row>📜 我的卷宗</Row> </Link>
+					<Link to={'/app/party'}> <Row>👥 我的政黨</Row> </Link>
+					<Link to={'/app/signup_invite'}> <Row>🎟️ 我的邀請碼</Row> </Link>
+					<Link to={'/app/setting'}> <Row>️⚙️  設定</Row> </Link>
 					<Row onClick={() => logout_request()}>🏳 登出</Row>
 				</div>
 			</div>;
@@ -132,11 +130,12 @@ function Header(): JSX.Element {
 			{signuping ? <SignupModal setSignuping={setSignuping}/> : null}
 			<div className={style.container}>
 				<div className={style.leftSet}>
-					<div className={style.carbonbond} onClick={() => navigate('/app')}>
-						{/* TODO: 修正 vite 路徑 */}
-						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
-						<img className={style.imageText} src={carbonbondTextURL} alt="" />
-					</div>
+					<Link to="/app">
+						<div className={style.carbonbond}>
+							<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
+							<img className={style.imageText} src={carbonbondTextURL} alt="" />
+						</div>
+					</Link>
 					<Link to={RouteToBoard()}>
 						<div className={style.location}>{title}</div>
 					</Link>
