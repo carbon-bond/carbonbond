@@ -22,12 +22,15 @@ pub mod service;
 #[cfg(not(feature = "prepare"))]
 pub mod util;
 
+// TODO: 設置到 config.toml
+static EXPIRE_SECONDS: usize = 60 * 60 * 24 * 7; // 一週
+
 #[cfg(not(feature = "prepare"))]
 mod product {
     pub const MAX_ARTICLE_FIELD: usize = 15;
 
-    use crate::chat;
     use crate::custom_error::{ErrorCode, Fallible};
+    use crate::{chat, EXPIRE_SECONDS};
 
     use async_trait::async_trait;
     use cookie::Cookie;
@@ -113,12 +116,19 @@ mod product {
             let key = redis_login_token_key(&token);
             // NOTE: 不知道第三個泛型參數什麼作用
             conn.set::<&str, i64, ()>(&key, id).await?;
-            // TODO: 設置到 config.toml
-            conn.expire(&key, 60 * 60 * 24 * 7).await?;
+            conn.expire(&key, EXPIRE_SECONDS).await?;
             self.set_session("token", token)
         }
 
         async fn forget_id(&mut self) -> Fallible<()> {
+            match self.get_session::<String>("token") {
+                Some(ref token) => {
+                    let mut conn = crate::redis::get_conn().await?;
+                    let key = redis_login_token_key(token);
+                    conn.del(&key).await?;
+                }
+                None => {}
+            }
             self.forget_session("token")
         }
 
@@ -129,7 +139,7 @@ mod product {
                         let key = redis_login_token_key(token);
                         match conn.get::<&str, i64>(&key).await.ok() {
                             Some(id) => {
-                                conn.expire::<&str, ()>(&key, 60 * 60 * 24 * 7).await?;
+                                conn.expire::<&str, ()>(&key, EXPIRE_SECONDS).await?;
                                 Ok(Some(id))
                             }
                             None => {
