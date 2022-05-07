@@ -41,10 +41,10 @@ mod product {
     pub trait Context {
         async fn remember_id(&mut self, id: i64) -> Fallible<()>;
         async fn forget_id(&mut self) -> Fallible<()>;
-        async fn get_id(&mut self) -> Option<i64>;
+        async fn get_id(&mut self) -> Fallible<Option<i64>>;
         async fn get_id_strict(&mut self) -> Fallible<i64> {
             self.get_id()
-                .await
+                .await?
                 .ok_or_else(|| ErrorCode::NeedLogin.into())
         }
     }
@@ -122,26 +122,25 @@ mod product {
             self.forget_session("token")
         }
 
-        async fn get_id(&mut self) -> Option<i64> {
+        async fn get_id(&mut self) -> Fallible<Option<i64>> {
             match self.get_session::<String>("token") {
                 Some(ref token) => match crate::redis::get_conn().await {
                     Ok(mut conn) => {
                         let key = redis_login_token_key(token);
-                        log::debug!("key = {}", key);
                         match conn.get::<&str, i64>(&key).await.ok() {
                             Some(id) => {
-                                conn.expire::<&str, ()>(&key, 60 * 60 * 24 * 7).await;
-                                Some(id)
+                                conn.expire::<&str, ()>(&key, 60 * 60 * 24 * 7).await?;
+                                Ok(Some(id))
                             }
                             None => {
-                                self.forget_session("token");
-                                None
+                                self.forget_session("token")?;
+                                Ok(None)
                             }
                         }
                     }
-                    Err(_) => None,
+                    Err(_) => Ok(None),
                 },
-                None => None,
+                None => Ok(None),
             }
         }
     }

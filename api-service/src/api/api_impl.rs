@@ -13,7 +13,7 @@ use std::collections::HashMap;
 
 async fn complete_article<A: HasArticleStats>(mut articles: A, ctx: &mut Ctx) -> Fallible<A> {
     articles.assign_stats_in_place().await?;
-    if let Some(user_id) = ctx.get_id().await {
+    if let Some(user_id) = ctx.get_id().await? {
         articles.assign_personal_meta_in_place(user_id).await?;
     }
     Ok(articles)
@@ -120,7 +120,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         title: Option<String>,
         content: HashMap<String, super::model::forum::SearchField>,
     ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         let meta = db::article::search_article(
             viewer_id,
             author_name,
@@ -142,7 +142,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     ) -> Result<Vec<model::forum::ArticleMetaWithBonds>, crate::custom_error::Error> {
         let mut articles: Vec<model::forum::ArticleMeta> = Vec::new();
         let hot_article_ids = service::hot_articles::get_hot_articles().await?;
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         // TODO: N + 1 問題
         for hot_article_id in hot_article_ids.iter() {
             let res: i64 = (*hot_article_id).clone();
@@ -176,7 +176,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         _author_name: Option<String>,
         board_name: Option<String>,
     ) -> Fallible<Vec<model::forum::ArticleMetaWithBonds>> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         // TODO: 支援 author_name
         let articles: Vec<_> = match board_name {
             Some(name) => db::article::get_by_board_name(viewer_id, &name, max_id, count)
@@ -192,7 +192,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
     ) -> Fallible<model::forum::Article> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         let article = db::article::get_by_id(id, viewer_id).await?;
         complete_article(article, context).await
     }
@@ -243,7 +243,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         article_id: i64,
     ) -> Fallible<Vec<super::model::forum::Comment>> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         db::comment::get_by_article_id(article_id, viewer_id).await
     }
     async fn create_comment(
@@ -267,7 +267,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         Vec<(super::model::forum::Edge, super::model::forum::Article)>,
         crate::custom_error::Error,
     > {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         let bonders: Vec<_> = db::article::get_bonder(viewer_id, id, opt_slice(&category_set))
             .await?
             .collect();
@@ -282,7 +282,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         Vec<(super::model::forum::Edge, super::model::forum::ArticleMeta)>,
         crate::custom_error::Error,
     > {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         let bonders: Vec<_> = db::article::get_bonder_meta(viewer_id, id, opt_slice(&category_set))
             .await?
             .collect();
@@ -293,7 +293,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         context: &mut crate::Ctx,
         id: i64,
     ) -> Result<super::model::forum::ArticleMeta, crate::custom_error::Error> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         complete_article(db::article::get_meta_by_id(id, viewer_id).await?, context).await
     }
     async fn update_article(
@@ -343,7 +343,7 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         article_id: i64,
         category_set: Option<Vec<String>>,
     ) -> Result<super::model::forum::Graph, crate::custom_error::Error> {
-        let viewer_id = context.get_id().await;
+        let viewer_id = context.get_id().await?;
         let graph =
             service::graph_view::query_graph(viewer_id, 10, article_id, opt_slice(&category_set))
                 .await?;
@@ -580,7 +580,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     }
 
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::forum::User>> {
-        if let Some(id) = context.get_id().await {
+        if let Some(id) = context.get_id().await? {
             Ok(Some(db::user::get_by_id(id).await?))
         } else {
             Ok(None)

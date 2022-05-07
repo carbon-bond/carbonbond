@@ -99,9 +99,9 @@ async fn handle_chat(
         // 可抽出 get_id 的邏輯，以避免填入不需要的 users 欄位
         users: users.clone(),
     };
-    let id = match context.get_id().await {
-        Some(id) => id,
-        None => {
+    let id = match context.get_id_strict().await {
+        Ok(id) => id,
+        Err(_) => {
             log::info!("拒絕未登入用戶連接聊天室");
             return Ok(Box::new(http::status::StatusCode::UNAUTHORIZED));
         }

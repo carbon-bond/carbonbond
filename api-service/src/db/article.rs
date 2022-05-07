@@ -6,7 +6,6 @@ use crate::api::model::forum::{
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
 use chrono::{DateTime, Utc};
-use futures::future::CatchUnwind;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
