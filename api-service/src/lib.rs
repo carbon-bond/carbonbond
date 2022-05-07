@@ -63,7 +63,10 @@ mod product {
             self.resp.headers_mut().insert(
                 header::SET_COOKIE,
                 HeaderValue::from_str(
-                    &Cookie::build(key, &value.to_string()).finish().to_string(),
+                    &Cookie::build(key, &value.to_string())
+                        .max_age(time::Duration::seconds(EXPIRE_SECONDS as i64))
+                        .finish()
+                        .to_string(),
                 )?,
             );
             Ok(())
