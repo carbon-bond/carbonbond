@@ -261,25 +261,6 @@
     },
     "query": "\n                    SELECT a.id FROM articles a WHERE EXISTS (\n                        SELECT 1 FROM article_string_fields f\n                        WHERE f.name = $1 AND f.article_id = a.id AND f.value ~ $2\n                    ) AND a.id = ANY($3)\n                    "
   },
-  "1384b91c3f7f116bedb51f275a3c98fd99e92a29d54c35d78a7453df24035ea6": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Text",
-          "Text",
-          "Text",
-          "Bool",
-          "Text",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n        UPDATE drafts\n        SET\n        board_id=$2,\n        title=$3,\n        category=$4,\n        content=$5,\n        anonymous=$6,\n        bonds=$7\n        WHERE id=$8 AND author_id=$1\n        "
-  },
   "14db105952e6d3dfd3dbc4a26d43aa793ed333957cb1c1883cd779d3ce412f36": {
     "describe": {
       "columns": [],
@@ -370,6 +351,27 @@
       }
     },
     "query": "\n\t\tUPDATE chat.direct_chats\n        SET read_time_2 = $3\n\t\tWHERE id = $1 AND user_id_2 = $2\n\t\t"
+  },
+  "19cdabeee198896070abdd2f9243297a177003b5604e8e1c3b9235c16bcbab3a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "party_id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        select party_id\n        from party_members\n        where party_members.party_id = $1 and user_id = $2;\n        "
   },
   "1a4e98bf936a2d308516cc28ac8d0b9d407e536451eb3e23ee7b72590864b99e": {
     "describe": {
@@ -698,6 +700,22 @@
       }
     },
     "query": "SELECT board_name, id FROM boards"
+  },
+  "35f6b27e789ffcc4196657be29965129407045a67ccd469e18bef2a825d2ffc6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bool",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE articles\n        SET\n        title = $1,\n        anonymous = $2,\n        category = $3,\n        fields = $4\n        WHERE id = $5\n        "
   },
   "3b5c02518cd4b2ffafdf2159c5c4e4118f3db6e5551579dbc9afdb8012c2d58b": {
     "describe": {
@@ -1131,6 +1149,26 @@
     },
     "query": "SELECT board_name, board_type, id, title, 0::bigint as \"popularity!\" FROM boards WHERE id = ANY($1)"
   },
+  "5714e8ab28a8c939b66a4b542cf3631afb09bc08829a357d3c4740711edc4842": {
+    "describe": {
+      "columns": [
+        {
+          "name": "fields",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT fields FROM\n        articles\n        WHERE articles.id = $1\n        "
+  },
   "572ae4c8e843e40f3d8d46539190a654f2e52e3ec6276a522129a56e7e123091": {
     "describe": {
       "columns": [
@@ -1156,6 +1194,21 @@
       }
     },
     "query": "SELECT salt, password_hashed from users WHERE user_name = $1"
+  },
+  "5776494ed245fa44743ab2edcb1925e52b95beb3c1a3edbd201f2f5c52772cfb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE boards\n        SET\n        title = $1,\n        detail = $2,\n        force = $3\n        WHERE id = $4\n        "
   },
   "59af76e3ac42c8e43072b8135becebcfc1b7c899ccfbcb37037e7d04a96bd46a": {
     "describe": {
@@ -1230,61 +1283,32 @@
     },
     "query": "\n                    UPDATE attitude_to_articles\n                    SET attitude = TRUE\n                    WHERE id = $1\n                    "
   },
-  "604eb7064d1fd265096fd5b8bea00da56c83ed5296c1bfc2179c99b4d54d7bfe": {
+  "61de3aaebb1e845d8dc91e288fb7398faf54caf25dbe0cc89db2b3f978c6a9cf": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
           "type_info": "Int8"
-        },
-        {
-          "name": "board_id",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "party_name",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "energy",
-          "ordinal": 3,
-          "type_info": "Int4"
-        },
-        {
-          "name": "ruling",
-          "ordinal": 4,
-          "type_info": "Bool"
-        },
-        {
-          "name": "create_time",
-          "ordinal": 5,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "board_name?",
-          "ordinal": 6,
-          "type_info": "Text"
         }
       ],
       "nullable": [
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
         false
       ],
       "parameters": {
         "Left": [
-          "Int8"
+          "Int8",
+          "Int8",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Bool"
         ]
       }
     },
-    "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n    INNER JOIN party_members ON parties.id = party_members.party_id\n    WHERE user_id = $1\n        "
+    "query": "\n        INSERT INTO drafts (author_id, board_id, title, category, fields, content, bonds, anonymous)\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id\n        "
   },
   "62ea3603425efd81fdd145f32a900158bb64522cc9e91388af6dbaf79f8760ee": {
     "describe": {
@@ -1444,23 +1468,6 @@
     },
     "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.to_user\n\t\tWHERE user_relations.from_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = $2;"
   },
-  "6733f09f3956726b9fc1e94029d0ead34eb3d4d3241bb6d52f28fc22cdb07e8f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Text",
-          "Bool",
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n        UPDATE articles\n        SET\n        board_id = $1,\n        title = $2,\n        anonymous = $3,\n        category = $4,\n        fields = $5\n        WHERE id = $6\n        "
-  },
   "68424e1315dc62a4f2334eabd9b385a62f0adba65ef291c26dc615b725709929": {
     "describe": {
       "columns": [],
@@ -1570,6 +1577,26 @@
       }
     },
     "query": "SELECT id, event_name, credit, create_time\n         FROM invitation_credits WHERE user_id = $1"
+  },
+  "745bec72852ae57347737531491943caf1a84199a8ebdff9485061b16828dca4": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Bool",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE drafts\n        SET\n        board_id=$2,\n        title=$3,\n        category=$4,\n        fields=$5,\n        content=$6,\n        anonymous=$7,\n        bonds=$8\n        WHERE id=$9 AND author_id=$1\n        "
   },
   "7474caeec86585a7c2c9004818b6fbb1f15297c90c9cf90de0c68d0ad935b947": {
     "describe": {
@@ -1859,6 +1886,26 @@
       }
     },
     "query": "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)"
+  },
+  "85851b6cf5341b23bcb2ecba9637eacf4a79902bf6f2734d2270572baaf465ed": {
+    "describe": {
+      "columns": [
+        {
+          "name": "force",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT force FROM\n        boards JOIN articles\n        ON\n        boards.id = articles.board_id\n        WHERE articles.id = $1\n        "
   },
   "870acec27692e6a724b9c061fe2323f9f2486ec964e451f05e442296cf8c099d": {
     "describe": {
@@ -2162,6 +2209,27 @@
       }
     },
     "query": "\n        SELECT images.raw_data\n        FROM images\n        INNER JOIN users\n        ON users.avatar = images.id\n        where users.user_name = $1\n        "
+  },
+  "adc15f48b79d193aadca398e0de9dd007bfae3d1d9765abfb63e5a71b8925e56": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        select boards.id\n        from boards\n        join parties\n            on boards.ruling_party_id = parties.id\n        join party_members\n            on parties.id = party_members.party_id\n        where user_id = $1 and boards.id = $2;\n        "
   },
   "aedf1c9f27b6bfb0403b02176ec389b72d7292f90affedf18b79e96ee118b7a6": {
     "describe": {
@@ -2496,31 +2564,91 @@
     },
     "query": "SELECT board_id FROM parties where id = $1"
   },
-  "ba0774bf9f2ae7fd24e4f9f3158abee80c4db032ab003fac9b0c98c44754bc9d": {
+  "bb4b8d1446d4ab9cd6b07b94f36a773c7c647e67b312fbd8a6eb78c8dd931c66": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
           "type_info": "Int8"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "board_id",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "board_name",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "category?",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "title",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "content",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "fields",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "create_time",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "edit_time",
+          "ordinal": 9,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "anonymous",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "bonds",
+          "ordinal": 11,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
         false
       ],
       "parameters": {
         "Left": [
-          "Int8",
-          "Int8",
-          "Text",
-          "Text",
-          "Text",
-          "Text",
-          "Bool"
+          "Int8"
         ]
       }
     },
-    "query": "\n        INSERT INTO drafts (author_id, board_id, title, category, content, bonds, anonymous)\n        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id\n        "
+    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category as \"category?\",\n        drafts.title,\n        drafts.content,\n        drafts.fields,\n        drafts.create_time,\n        drafts.edit_time,\n        drafts.anonymous,\n        drafts.bonds\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        WHERE drafts.author_id = $1\n        ORDER BY create_time DESC\n        "
   },
   "be0b9433c7a2aa0965488fe72b6eb5aacc5f1cbac2e6d0ab2c5949e7de656a0b": {
     "describe": {
@@ -2992,6 +3120,62 @@
       }
     },
     "query": "DELETE FROM user_relations WHERE from_user = $1 AND to_user = $2"
+  },
+  "d2241ece630860ac65b3126a53771672877deabfbd69f26a61c2535db67b714f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "board_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "party_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "energy",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "ruling",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "create_time",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "board_name?",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n        INNER JOIN party_members ON parties.id = party_members.party_id\n        WHERE user_id = $1\n        "
   },
   "d3ac55606496f5a8a6be358c6e20a7d2959decdc0dcfadf7be02d2cddb379f27": {
     "describe": {
@@ -3906,86 +4090,6 @@
       }
     },
     "query": "\n\t\tSELECT users.id, users.user_name, users.sentence, users.energy FROM users\n\t\tINNER JOIN user_relations ON users.id = user_relations.from_user\n\t\tWHERE user_relations.to_user = $1 AND user_relations.kind = 'follow' AND user_relations.is_public = true;"
-  },
-  "f6ded42e759d89ff66369f14d9d4de786035b97e9cc7f80eafb96e188eab02f0": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "board_id",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "board_name",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "category?",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "title",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "content",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "create_time",
-          "ordinal": 7,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "edit_time",
-          "ordinal": 8,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "anonymous",
-          "ordinal": 9,
-          "type_info": "Bool"
-        },
-        {
-          "name": "bonds",
-          "ordinal": 10,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category as \"category?\",\n        drafts.title,\n        drafts.content,\n        drafts.create_time,\n        drafts.edit_time,\n        drafts.anonymous,\n        drafts.bonds\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        WHERE drafts.author_id = $1\n        ORDER BY create_time DESC\n        "
   },
   "f8eef5c4a7a6b71ce3554dd0fc9f878df3058618d9e8f91e2c42d4b4886f7e43": {
     "describe": {

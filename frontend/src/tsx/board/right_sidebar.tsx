@@ -23,16 +23,18 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 	}, [props.board.id]);
 
 	function onEditClick(): void {
-		console.log('press post');
 		if (editor_panel_data) {
 			alert('正在編輯其它文章');
 		} else {
 			setEditorPanelData({
 				board: props.board,
 				anonymous: false,
-				category: '',
+				category_name: '',
 				title: '',
-				content: {},
+				value: {
+					content: {},
+					fields: [],
+				},
 				bonds: [],
 			});
 			openEditorPanel();
@@ -40,32 +42,29 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 	}
 
 	function SubscribeButton(): JSX.Element {
-		if (has_subscribed) {
-			return <div onClick={() => toggleSubscribe()} className={`${style.subscribeButton} ${style.rightSidebarButton}`}>
-				<b>😭 </b>取消訂閱
-			</div>;
-		} else {
-			return <div onClick={() => toggleSubscribe()} className={`${style.subscribeButton} ${style.rightSidebarButton}`}>
-				<b>🔖 </b>訂閱看板
-			</div>;
-		}
+		return <div onClick={() => toggleSubscribe()} className={`${style.subscribeButton} ${style.rightSidebarButton}`}>
+			{
+				has_subscribed ?
+					<>😭 取消訂閱</> :
+					<>🔖 訂閱看板</>
+			}
+		</div>;
 	}
 
 	return <div className="rightSideBar">
 		{
 			user_state.login &&
 			<div className={style.rightSidebarItem}>
-				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}><b>✏️ </b>發表文章</div>
+				<div onClick={() => onEditClick()} className={`${style.postArticleButton} ${style.rightSidebarButton}`}>✏️ 發表文章</div>
 				<SubscribeButton />
 			</div>
 		}
 		<div className={style.rightSidebarItem}>
 			<div className={style.rightSidebarBlock}>
-				<div className={style.header}>看板簡介</div>
+				<div className={style.header}>關於看板</div>
 				<div className={style.content}>
 					<ShowText text={props.board.detail} />
 				</div>
-				{/* <div className={style.rightSidebarButton trackBoardButton}>訂閱此看板</div> */}
 			</div>
 		</div>
 

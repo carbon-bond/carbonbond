@@ -97,6 +97,14 @@ pub mod forum_model_root {
         pub force: force::Force,
         pub ruling_party_id: i64,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UpdatedBoard {
+        pub id: i64,
+        pub title: String,
+        pub detail: String,
+        #[ts(ts_type = "force.Force")]
+        pub force: force::Force,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticlePersonalMeta {
         pub is_favorite: bool,
@@ -165,6 +173,18 @@ pub mod forum_model_root {
     pub struct NewArticle {
         pub board_id: i64,
         pub category_name: String,
+        pub title: String,
+        pub content: String,
+        #[ts(ts_type = "force.Bond[]")]
+        pub bonds: Vec<force::Bond>,
+        pub draft_id: Option<i64>,
+        pub anonymous: bool,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct UpdatedArticle {
+        pub article_id: i64,
+        pub category_name: String,
+        pub use_legazy_fields: bool,
         pub title: String,
         pub content: String,
         #[ts(ts_type = "force.Bond[]")]
@@ -253,6 +273,8 @@ pub mod forum_model_root {
         pub board_id: i64,
         pub board_name: String,
         pub category: Option<String>,
+        #[ts(ts_type = "force.Field[]")]
+        pub fields: Vec<force::Field>,
         pub title: String,
         pub content: String,
         pub bonds: String,

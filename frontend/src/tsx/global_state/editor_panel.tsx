@@ -1,17 +1,22 @@
 import * as React from 'react';
 const { useState } = React;
 import { createContainer } from 'unstated-next';
-import { Board, BondInfo } from '../../ts/api/api_trait';
+import { Board, BondInfo, force } from '../../ts/api/api_trait';
 
 export type EditorPanelData = {
 	draft_id?: number,
-	id?: number, // 文章 id ，文章已經存在，更新文章時會用到
+	id?: number,                   // 文章 id ，文章已經存在，更新文章時會用到
 	board: Board,
-	category?: string,
+	category_name?: string,
 	title: string,
 	anonymous: boolean,
-	content: { [index: string]: string },
+	value: {
+		content: { [index: string]: string },
+		fields: force.Field[],
+	},
 	bonds: BondInfo[],
+	// is_legacy: boolean,             // 是否使用原文的欄位，僅在編輯文章時可用
+	// is_dirty: boolean              // 若與草稿完全一致， is_dirty 爲真 ，否則爲假
 };
 
 export enum WindowState {

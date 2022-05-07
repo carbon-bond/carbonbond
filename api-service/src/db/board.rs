@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{Board, BoardName, BoardOverview, BoardType, NewBoard};
+use crate::api::model::forum::{
+    Board, BoardName, BoardOverview, BoardType, NewBoard, UpdatedBoard,
+};
 use crate::custom_error::{DataType, Error, Fallible};
 use std::str::FromStr;
 
@@ -99,6 +101,25 @@ struct DBBoardOverview {
     pub title: String,
     pub popularity: i64,
 }
+pub async fn is_editable(board_id: i64, user_id: i64) -> Fallible<bool> {
+    let pool = get_pool();
+    let exist = sqlx::query!(
+        "
+        select boards.id
+        from boards
+        join parties
+            on boards.ruling_party_id = parties.id
+        join party_members
+            on parties.id = party_members.party_id
+        where user_id = $1 and boards.id = $2;
+        ",
+        user_id,
+        board_id
+    )
+    .fetch_optional(pool)
+    .await?;
+    Ok(exist.is_some())
+}
 pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
     let boards = sqlx::query_as!(
@@ -162,4 +183,28 @@ pub async fn create(board: &NewBoard) -> Fallible<i64> {
     super::party::change_board(&mut conn, board.ruling_party_id, board_id).await?;
     conn.commit().await?;
     Ok(board_id)
+}
+
+pub async fn update(board: &UpdatedBoard) -> Fallible<i64> {
+    // 檢查力語言語義
+    board.force.check_semantic()?;
+    let mut conn = get_pool().begin().await?;
+    sqlx::query!(
+        "
+        UPDATE boards
+        SET
+        title = $1,
+        detail = $2,
+        force = $3
+        WHERE id = $4
+        ",
+        board.title,
+        board.detail,
+        serde_json::to_string(&board.force).unwrap(),
+        board.id
+    )
+    .execute(&mut conn)
+    .await?;
+    conn.commit().await?;
+    Ok(board.id)
 }

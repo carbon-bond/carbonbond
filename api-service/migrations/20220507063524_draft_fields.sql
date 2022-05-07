@@ -1,0 +1,2 @@
+ALTER TABLE drafts
+ADD fields TEXT NOT NULL DEFAULT '[]';

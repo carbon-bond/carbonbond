@@ -37,6 +37,8 @@ export function ModalWindow(props: {
 				right: 'none',
 				bottom: 'none',
 				padding: '2px',
+				maxHeight: '80%',
+				overflowY: 'auto'
 			}
 		}} >
 

@@ -1,11 +1,11 @@
-use super::model::forum::{Attitude, NewArticle};
+use super::model::forum::{Attitude, NewArticle, UpdatedArticle};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
-use crate::chat;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
 use crate::db;
 use crate::service;
 use crate::util::{HasArticleStats, HasBoardProps};
+use crate::{chat, custom_error};
 use crate::{Context, Ctx};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -299,18 +299,16 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
     async fn update_article(
         &self,
         context: &mut crate::Ctx,
-        new_article: NewArticle,
-        article_id: i64,
+        updated_article: UpdatedArticle,
     ) -> Result<i64, crate::custom_error::Error> {
         log::trace!(
-            "更新文章： 看板 {}, 分類 {}, 標題 {}, 內容 {}",
-            new_article.board_id,
-            new_article.category_name,
-            new_article.title,
-            new_article.content
+            "更新文章： 分類 {}, 標題 {}, 內容 {}",
+            updated_article.category_name,
+            updated_article.title,
+            updated_article.content
         );
         let author_id = context.get_id_strict().await?;
-        let id = db::article::update(&new_article, article_id, author_id).await?;
+        let id = db::article::update(&updated_article, author_id).await?;
         // TODO: 討論是否同時更新文章熱度、發送通知
         Ok(id)
     }
@@ -429,10 +427,27 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn create_board(
         &self,
-        _context: &mut crate::Ctx,
+        context: &mut crate::Ctx,
         new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
-        Ok(db::board::create(&new_board).await?)
+        let user_id = context.get_id_strict().await?;
+        if db::party::is_pary_member(new_board.ruling_party_id, user_id).await? {
+            Ok(db::board::create(&new_board).await?)
+        } else {
+            Err(custom_error::ErrorCode::PermissionDenied.into())
+        }
+    }
+    async fn update_board(
+        &self,
+        context: &mut crate::Ctx,
+        updated_board: model::forum::UpdatedBoard,
+    ) -> Fallible<i64> {
+        let user_id = context.get_id_strict().await?;
+        if db::board::is_editable(updated_board.id, user_id).await? {
+            Ok(db::board::update(&updated_board).await?)
+        } else {
+            Err(custom_error::ErrorCode::PermissionDenied.into())
+        }
     }
     async fn query_subscribed_user_count(
         &self,
@@ -450,6 +465,14 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
             .await?
             .assign_props()
             .await
+    }
+    async fn query_editable_for_me(
+        &self,
+        context: &mut crate::Ctx,
+        id: i64,
+    ) -> Result<bool, crate::custom_error::Error> {
+        let user_id = context.get_id_strict().await?;
+        db::board::is_editable(id, user_id).await
     }
 }
 

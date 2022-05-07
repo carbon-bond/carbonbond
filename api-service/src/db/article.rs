@@ -1,11 +1,12 @@
 use super::{article_content, get_pool, DBObject};
 use crate::api::model::forum::{
     Article, ArticleMeta, ArticleMetaWithBonds, Author, BondArticleMeta, Edge, NewArticle,
-    SearchField,
+    SearchField, UpdatedArticle,
 };
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::service;
 use chrono::{DateTime, Utc};
+use futures::future::CatchUnwind;
 use serde_json::Value;
 use sqlx::PgConnection;
 use std::borrow::Cow;
@@ -425,9 +426,56 @@ pub async fn get_category(board_id: i64, category: &str) -> Fallible<crate::forc
     Err(ErrorCode::NotFound(DataType::Category, category.to_string()).into())
 }
 
-pub async fn update(new_article: &NewArticle, article_id: i64, author_id: i64) -> Fallible<i64> {
+pub async fn get_category_by_article_id(
+    article_id: i64,
+    category: &str,
+) -> Fallible<crate::force::Category> {
+    let pool = get_pool();
+    let force = sqlx::query!(
+        "
+        SELECT force FROM
+        boards JOIN articles
+        ON
+        boards.id = articles.board_id
+        WHERE articles.id = $1
+        ",
+        article_id,
+    )
+    .fetch_one(pool)
+    .await?
+    .force;
+    let force: crate::force::Force = serde_json::from_str(&force).unwrap();
+    for c in force.categories {
+        if c.name == category {
+            return Ok(c);
+        }
+    }
+    Err(ErrorCode::NotFound(DataType::Category, category.to_string()).into())
+}
+
+pub async fn get_legazy_fields_by_article_id(
+    article_id: i64,
+) -> Fallible<Vec<crate::force::Field>> {
+    let pool = get_pool();
+    let fields = sqlx::query!(
+        "
+        SELECT fields FROM
+        articles
+        WHERE articles.id = $1
+        ",
+        article_id,
+    )
+    .fetch_one(pool)
+    .await?
+    .fields;
+    let fields: Vec<crate::force::Field> = serde_json::from_str(&fields).unwrap();
+    Ok(fields)
+}
+
+pub async fn update(updated_article: &UpdatedArticle, author_id: i64) -> Fallible<i64> {
     // 校驗作者並更新文章訊息
     // NOTE: get_meta_by_id 不在 transaction 之內，若未來文章作者可能變換，可能有同步問題
+    let article_id = updated_article.article_id;
     let meta = get_meta_by_id(article_id, Some(author_id)).await?;
     let has_permission = match meta.author {
         Author::Anonymous => false,
@@ -439,32 +487,35 @@ pub async fn update(new_article: &NewArticle, article_id: i64, author_id: i64) -
     }
 
     // 檢查文章內容是否符合分類限制
-    let content: Value = serde_json::from_str(&new_article.content).map_err(|err| {
+    let content: Value = serde_json::from_str(&updated_article.content).map_err(|err| {
         ErrorCode::ParsingJson
             .context("文章內容反序列化失敗")
             .context(err)
     })?;
-    let category = get_category(new_article.board_id, &new_article.category_name).await?;
+    let category = if updated_article.use_legazy_fields {
+        crate::force::Category {
+            name: "".to_owned(),
+            fields: get_legazy_fields_by_article_id(article_id).await?,
+        }
+    } else {
+        get_category_by_article_id(article_id, &updated_article.category_name).await?
+    };
     category.validate_json(&content)?;
-
-    // TODO: 檢查 fields 合法性
 
     let mut conn = get_pool().begin().await?;
     sqlx::query!(
         "
         UPDATE articles
         SET
-        board_id = $1,
-        title = $2,
-        anonymous = $3,
-        category = $4,
-        fields = $5
-        WHERE id = $6
+        title = $1,
+        anonymous = $2,
+        category = $3,
+        fields = $4
+        WHERE id = $5
         ",
-        new_article.board_id,
-        new_article.title,
-        new_article.anonymous,
-        new_article.category_name,
+        updated_article.title,
+        updated_article.anonymous,
+        updated_article.category_name,
         serde_json::to_string(&category.fields).unwrap(),
         article_id
     )
@@ -473,7 +524,7 @@ pub async fn update(new_article: &NewArticle, article_id: i64, author_id: i64) -
     log::debug!("更新文章元資料");
 
     // 若存在草稿，刪除之
-    if let Some(draft_id) = new_article.draft_id {
+    if let Some(draft_id) = updated_article.draft_id {
         sqlx::query!(
             "
         DELETE FROM drafts
@@ -493,7 +544,7 @@ pub async fn update(new_article: &NewArticle, article_id: i64, author_id: i64) -
         &mut conn,
         article_id,
         Cow::Borrowed(&content),
-        &new_article.bonds,
+        &updated_article.bonds,
         &category,
     )
     .await?;
@@ -512,8 +563,6 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     let category = get_category(new_article.board_id, &new_article.category_name).await?;
 
     category.validate_json(&content)?;
-
-    // TODO: 驗證 fields 合法性
 
     let mut conn = get_pool().begin().await?;
     let article_id = sqlx::query!(

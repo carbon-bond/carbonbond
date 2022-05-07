@@ -38,7 +38,8 @@ function EditArticle(props: {author: Author, article_meta: ArticleMeta}): JSX.El
 		return <div className={style.edit}
 			onClick={() => {
 				if (editor_panel_data) {
-					toastErr('尚在編輯其他文章，請關閉後再點擊');
+					toastErr('尚在編輯其他文章，請關閉當前編輯器後再重新點擊');
+					return;
 				}
 				Promise.all([
 					API_FETCHER.boardQuery.queryBoardById(props.article_meta.board_id),
@@ -55,8 +56,11 @@ function EditArticle(props: {author: Author, article_meta: ArticleMeta}): JSX.El
 						board: board,
 						anonymous: article.meta.author == 'MyAnonymous',
 						title: article.meta.title,
-						category: article.meta.category,
-						content: JSON.parse(article.content),
+						category_name: article.meta.category,
+						value: {
+							content: JSON.parse(article.content),
+							fields: article.meta.fields,
+						},
 						bonds: article.bonds
 					});
 					openEditorPanel();

@@ -286,7 +286,7 @@ pub trait ArticleQueryRouter {
     async fn query_comment_list(&self, context: &mut crate::Ctx, article_id: i64) -> Result<Vec<super::model::forum::Comment>, crate::custom_error::Error>;
     async fn create_comment(&self, context: &mut crate::Ctx, article_id: i64, content: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn create_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle) -> Result<i64, crate::custom_error::Error>;
-    async fn update_article(&self, context: &mut crate::Ctx, new_article: super::model::forum::NewArticle, article_id: i64) -> Result<i64, crate::custom_error::Error>;
+    async fn update_article(&self, context: &mut crate::Ctx, updated_article: super::model::forum::UpdatedArticle) -> Result<i64, crate::custom_error::Error>;
     async fn save_draft(&self, context: &mut crate::Ctx, draft_id: Option<i64>, board_id: i64, category_name: Option<String>, title: String, content: String, bonds: String, anonymous: bool) -> Result<i64, crate::custom_error::Error>;
     async fn query_draft(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Draft>, crate::custom_error::Error>;
     async fn delete_draft(&self, context: &mut crate::Ctx, draft_id: i64) -> Result<(), crate::custom_error::Error>;
@@ -337,8 +337,8 @@ pub trait ArticleQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             ArticleQuery::UpdateArticle { new_article, article_id } => {
-                 let resp = self.update_article(context, new_article, article_id).await;
+             ArticleQuery::UpdateArticle { updated_article } => {
+                 let resp = self.update_article(context, updated_article).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
@@ -393,7 +393,9 @@ pub trait BoardQueryRouter {
     async fn query_board_by_id(&self, context: &mut crate::Ctx, id: i64) -> Result<super::model::forum::Board, crate::custom_error::Error>;
     async fn query_subscribed_user_count(&self, context: &mut crate::Ctx, id: i64) -> Result<usize, crate::custom_error::Error>;
     async fn create_board(&self, context: &mut crate::Ctx, new_board: super::model::forum::NewBoard) -> Result<i64, crate::custom_error::Error>;
+    async fn update_board(&self, context: &mut crate::Ctx, update_board: super::model::forum::UpdatedBoard) -> Result<i64, crate::custom_error::Error>;
     async fn query_hot_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
+    async fn query_editable_for_me(&self, context: &mut crate::Ctx, id: i64) -> Result<bool, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: BoardQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              BoardQuery::QueryBoardList { count } => {
@@ -426,8 +428,18 @@ pub trait BoardQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
+             BoardQuery::UpdateBoard { update_board } => {
+                 let resp = self.update_board(context, update_board).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
              BoardQuery::QueryHotBoards {  } => {
                  let resp = self.query_hot_boards(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             BoardQuery::QueryEditableForMe { id } => {
+                 let resp = self.query_editable_for_me(context, id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -196,8 +196,7 @@ pub enum ArticleQuery {
     },
     #[chitin(leaf, response = "i64")]
     UpdateArticle {
-        new_article: super::model::forum::NewArticle,
-        article_id: i64,
+        updated_article: super::model::forum::UpdatedArticle,
     },
     #[chitin(leaf, response = "i64")]
     SaveDraft {
@@ -254,8 +253,14 @@ pub enum BoardQuery {
     CreateBoard {
         new_board: super::model::forum::NewBoard,
     },
+    #[chitin(leaf, response = "i64")]
+    UpdateBoard {
+        update_board: super::model::forum::UpdatedBoard,
+    },
     #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
     QueryHotBoards {},
+    #[chitin(leaf, response = "bool")]
+    QueryEditableForMe { id: i64 },
 }
 
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
