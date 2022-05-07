@@ -38,7 +38,7 @@ export type MiniArticleMeta = {     category: string; board_name: string; board_
 export type ArticleMetaWithBonds = { meta: ArticleMeta; bonds: BondInfo [] };
 export type Article = { meta: ArticleMeta; bonds: BondInfo []; content: string };
 export type Comment = {     id: number; author: Author; create_time: string; content:     string };
-export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; title: string; content: string; bonds:     string; create_time: string; edit_time: string;     anonymous: boolean };
+export type Draft = {     id: number; author_id: number; board_id: number; board_name: string; category: string | null; fields: force.Field []; title: string;     content: string; bonds: string; create_time: string;     edit_time: string; anonymous: boolean };
 export type BoardOverview = {     id: number; board_name: string; board_type: BoardType; title:     string; popularity: number };
 export enum Attitude { Good = "Good", Bad = "Bad", None = "None" };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };

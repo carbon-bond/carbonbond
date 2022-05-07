@@ -273,6 +273,8 @@ pub mod forum_model_root {
         pub board_id: i64,
         pub board_name: String,
         pub category: Option<String>,
+        #[ts(ts_type = "force.Field[]")]
+        pub fields: Vec<force::Field>,
         pub title: String,
         pub content: String,
         pub bonds: String,

@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, force, NewArticle, UpdatedArticle } from '../../ts/api/api_trait';
+import { BoardName, BondInfo, force, NewArticle, UpdatedArticle } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -213,18 +213,6 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 	return JSON.stringify(content);
 }
 
-// function equal_fields(x: force.Field[], y: force.Field[]): boolean {
-// 	if (x.length != y.length) {
-// 		return false;
-// 	}
-// 	for (let i = 0; i < x.length; i++) {
-// 		if (x[i].kind != y[i].kind || x[i].name != y[i].name) {
-// 			return false;
-// 		}
-// 	}
-// 	return true;
-// }
-
 // 由於看板被編輯後，分類的欄位名稱、型別可能改變、甚至整個分類被刪除
 // 但草稿跟以前的文章的欄位並不會跟着改變
 // 當載入到編輯器時，可能會找不到能夠匹配的分類
@@ -259,7 +247,7 @@ function EditorBody(): JSX.Element {
 	const navigate = useNavigate();
 
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
-	let category = force.categories.find(c => c.name == editor_panel_data.category_name);
+	let found_category = force.categories.find(c => c.name == editor_panel_data.category_name);
 
 	// let categories: force.Category[] = structuredClone(force.categories);
 	// let category_name = editor_panel_data.category;
@@ -275,7 +263,7 @@ function EditorBody(): JSX.Element {
 	// }
 
 	const onSubmit = (): void => {
-		if (category == undefined) {
+		if (found_category == undefined) {
 			toastErr('請先選擇分類！');
 			return;
 		} else if (!Object.values(validate_info).every(info => info == undefined)) {
@@ -286,7 +274,7 @@ function EditorBody(): JSX.Element {
 			if (editor_panel_data.id) {
 				let article: UpdatedArticle = {
 					article_id: editor_panel_data.id,
-					category_name: category.name,
+					category_name: found_category.name,
 					use_legazy_fields: false, // TODO: 視情況決定
 					title: editor_panel_data.title,
 					content: generate_submit_content(editor_panel_data.value.fields, editor_panel_data.value.content),
@@ -298,7 +286,7 @@ function EditorBody(): JSX.Element {
 			} else {
 				let article: NewArticle = {
 					board_id: board.id,
-					category_name: category.name,
+					category_name: found_category.name,
 					title: editor_panel_data.title,
 					content: generate_submit_content(editor_panel_data.value.fields, editor_panel_data.value.content),
 					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
@@ -357,6 +345,48 @@ function EditorBody(): JSX.Element {
 			});
 	};
 
+	function changeCategory(new_category_name: string): void {
+		let new_category = force.categories.find(category => category.name == new_category_name)!;
+		if (!editor_panel_data) {
+			throw new Error('誤用 onChangeCategory');
+		}
+		if (editor_panel_data.value.fields.length > 0) {
+			let result = force_util.translate(editor_panel_data.value.fields, new_category.fields, editor_panel_data.value.content);
+			let ok = true;
+			if (result.strategy.kind == force_util.TranslateKind.NotFit) {
+				ok = confirm(
+					'警告！' +
+					`原文中的${result.strategy.not_fit_fields.map(f => force_util.get_field_name(f))}欄位` +
+					`，無法對應到${new_category.name}分類中的任何欄位，將被丟棄，` +
+					'若您仍需要這些欄位的文本，請先儲存草稿再認');
+			} else if (result.strategy.kind == force_util.TranslateKind.Shrink) {
+				ok = confirm(`原文中的${result.strategy.from_fields.map(f => force_util.get_field_name(f))}欄位，` +
+					`將被塞入${new_category.name}分類中的${force_util.get_field_name(result.strategy.to_field)}欄位`);
+			}
+			if (ok) {
+				setEditorPanelData({
+					...editor_panel_data,
+					category_name: new_category.name,
+					value: {
+						content: result.content,
+						fields: new_category.fields,
+					},
+				});
+			}
+		} else {
+			let content = force_util.create_new_content(new_category.fields);
+			setEditorPanelData({
+				...editor_panel_data,
+				category_name: new_category.name,
+				value: {
+					content,
+					fields: new_category.fields
+				},
+			});
+		}
+
+	}
+
 	return <div className={style.editorBody}>
 		<div className={style.form}>
 			<div className={style.location}>
@@ -384,46 +414,10 @@ function EditorBody(): JSX.Element {
 				</select>
 				<select required
 					className={style.category}
-					value={editor_panel_data.category_name}
-					onChange={(evt) => {
-						let new_category = force.categories.find(category => category.name == evt.target.value)!;
-						if (editor_panel_data.value.fields.length > 0) {
-							let result = force_util.translate(editor_panel_data.value.fields, new_category.fields, editor_panel_data.value.content);
-							let ok = true;
-							if (result.strategy.kind == force_util.TranslateKind.NotFit) {
-								ok = confirm(
-									'警告！' +
-									`原文中的${result.strategy.not_fit_fields.map(f => f.name)}欄位` +
-									`，無法對應到${new_category.name}分類中的任何欄位，將被丟棄，` +
-									'若您仍需要這些欄位的文本，請先儲存草稿再認');
-							} else if (result.strategy.kind == force_util.TranslateKind.Shrink) {
-								ok = confirm(`原文中的${result.strategy.from_fields.map(f => force_util.get_field_name(f))}欄位，` +
-									`將被塞入${new_category.name}分類中的${force_util.get_field_name(result.strategy.to_field)}欄位`);
-							}
-							if (ok) {
-								setEditorPanelData({
-									...editor_panel_data,
-									category_name: new_category.name,
-									value: {
-										content: result.content,
-										fields: new_category.fields,
-									},
-								});
-							}
-						} else {
-							let content = force_util.create_new_content(new_category.fields);
-							setEditorPanelData({
-								...editor_panel_data,
-								category_name: new_category.name,
-								value: {
-									content,
-									fields: new_category.fields
-								},
-							});
-						}
-					}}
+					value={found_category?.name ?? ''}
+					onChange={(evt) => changeCategory(evt.target.value)}
 				>
-					<option value="" disabled hidden>文章分類</option>
+					<option value="" disabled hidden>請選擇文章分類</option>
 					{
 						force.categories.map(category =>
 							<option value={category.name} key={category.name}>{category.name}</option>)
@@ -474,26 +468,52 @@ function EditorBody(): JSX.Element {
 			}
 			{
 				(() => {
-					if (editor_panel_data.category_name == undefined || editor_panel_data.category_name == '' || category == undefined) {
+					const EditingContent = (): JSX.Element => <>
+						<div>以下是您的文章內容：</div>
+						<ShowContent {...editor_panel_data.value} />
+					</>;
+					function ShowFields(props: { fields: force.Field[] }): JSX.Element {
+						let input_fields = [];
+						for (let field of props.fields) {
+							input_fields.push(
+								<Field
+									validate_info={validate_info[field.name]}
+									set_info={(info) => set_info({
+										...validate_info,
+										[field.name]: info
+									})}
+									key={field.name}
+									field={field} />);
+						}
+						return <div className={style.fields}>{input_fields}</div>;
+					}
+					// 如果文章已經發出，又是草稿，怎麼辦？
+					if (editor_panel_data.id) {
+						return <ShowFields fields={editor_panel_data.value.fields}/>;
+					} else if (editor_panel_data.draft_id) {
+						if (found_category == undefined) {
+							return <div>
+								<div>本草稿所屬分類 {editor_panel_data.category_name} 已經不存在，請重新選擇分類</div>
+								{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
+							</div>;
+						} else if (!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields)) {
+							return <div>
+								<div>本草稿所屬分類 {editor_panel_data.category_name} 已經被版主修改</div>
+								<div>請<button onClick={() => changeCategory(editor_panel_data.category_name!)}>點此轉換文章欄位</button></div>
+								<div>或重新選擇分類</div>
+								{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
+							</div>;
+						} else {
+							return <ShowFields fields={found_category.fields}/>;
+						}
+					} else if (editor_panel_data.category_name == undefined || editor_panel_data.category_name == '' || found_category == undefined) {
 						return <div>
 							<div>請選擇分類</div>
-							<div>以下是您編輯到一半的文章內容：</div>
-							<ShowContent {...editor_panel_data.value} />
+							{ editor_panel_data.value.fields.length > 0 ? {EditingContent} : <></> }
 						</div>;
+					} else {
+						return <ShowFields fields={found_category.fields}/>;
 					}
-					let input_fields = [];
-					for (let field of category.fields) {
-						input_fields.push(
-							<Field
-								validate_info={validate_info[field.name]}
-								set_info={(info) => set_info({
-									...validate_info,
-									[field.name]: info
-								})}
-								key={field.name}
-								field={field} />);
-					}
-					return <div className={style.fields}>{input_fields}</div>;
 				})()
 			}
 		</div>

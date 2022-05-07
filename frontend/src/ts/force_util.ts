@@ -128,3 +128,15 @@ export function create_new_content(fields: force.Field[]): Content {
 	}
 	return content;
 }
+
+export function equal_fields(x: force.Field[], y: force.Field[]): boolean {
+	if (x.length != y.length) {
+		return false;
+	}
+	for (let i = 0; i < x.length; i++) {
+		if (x[i].kind != y[i].kind || x[i].name != y[i].name) {
+			return false;
+		}
+	}
+	return true;
+}

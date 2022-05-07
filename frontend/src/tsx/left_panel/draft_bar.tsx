@@ -40,7 +40,7 @@ function DraftCard(props: {draft: Draft}): JSX.Element {
 						category_name: props.draft.category ?? '',
 						value: {
 							content: JSON.parse(props.draft.content),
-							fields: [], // XXX: 加上欄位訊息
+							fields: props.draft.fields
 						},
 						bonds: JSON.parse(props.draft.bonds),
 					});
