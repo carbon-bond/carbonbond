@@ -201,6 +201,26 @@ const Field = (props: FieldProps): JSX.Element => {
 	</div>;
 };
 
+function ShowFields(props: {
+	fields: force.Field[],
+	validate_info: ValidateInfo,
+	set_info: (info: ValidateInfo) => void
+}): JSX.Element {
+	let input_fields = [];
+	for (let field of props.fields) {
+		input_fields.push(
+			<Field
+				validate_info={props.validate_info[field.name]}
+				set_info={(info) => props.set_info({
+					...props.validate_info,
+					[field.name]: info
+				})}
+				key={field.name}
+				field={field} />);
+	}
+	return <div className={style.fields}>{input_fields}</div>;
+}
+
 function generate_submit_content(fields: force.Field[], original_content: { [index: string]: string }): string {
 	let content: { [index: string]: string | number } = {};
 	for (const field of fields) {
@@ -225,11 +245,12 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 // => 提示一個按鈕可切換到同名分類
 // 4. 編輯文章，分類已經不存在
 // => 提示分類已經不存在，但仍可繼續使用原格式
+type ValidateInfo = { [index: string]: string | undefined };
 function EditorBody(): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
-	const [validate_info, set_info] = useState<{ [index: string]: string | undefined }>({});
+	const [validate_info, set_info] = useState<ValidateInfo>({});
 	const { user_state } = UserState.useContainer();
 	const board = editor_panel_data!.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
@@ -461,37 +482,22 @@ function EditorBody(): JSX.Element {
 						<div>以下是您的文章內容：</div>
 						<ShowContent {...editor_panel_data.value} />
 					</>;
-					function ShowFields(props: { fields: force.Field[] }): JSX.Element {
-						let input_fields = [];
-						for (let field of props.fields) {
-							input_fields.push(
-								<Field
-									validate_info={validate_info[field.name]}
-									set_info={(info) => set_info({
-										...validate_info,
-										[field.name]: info
-									})}
-									key={field.name}
-									field={field} />);
-						}
-						return <div className={style.fields}>{input_fields}</div>;
-					}
 					// XXX: 如果文章已經發出，又是草稿，將無法儲存
 					// 應在更新草稿時也加上 use_legacy_fields 選項
 					if (editor_panel_data.id) {
 						if (found_category == undefined) {
 							return <div>
 								<div>本文所屬分類 {editor_panel_data.category_name} 已經不存在，但您仍可以原本格式編輯</div>
-								<ShowFields fields={editor_panel_data.value.fields} />
+								<ShowFields fields={editor_panel_data.value.fields} validate_info={validate_info} set_info={set_info}/>
 							</div>;
 						} else if (using_legacy_fields) {
 							return <div>
 								<div>本文所屬分類 {editor_panel_data.category_name} 已經被版主修改</div>
 								<div>您可<button onClick={() => changeCategory(editor_panel_data.category_name!)}>點此轉換到新格式</button>，也可保持原格式不變</div>
-								<ShowFields fields={editor_panel_data.value.fields} />
+								<ShowFields fields={editor_panel_data.value.fields} validate_info={validate_info} set_info={set_info} />
 							</div>;
 						} else {
-							return <ShowFields fields={found_category.fields}/>;
+							return <ShowFields fields={found_category.fields} validate_info={validate_info} set_info={set_info} />;
 						}
 					} else if (editor_panel_data.draft_id) {
 						if (found_category == undefined) {
@@ -507,7 +513,7 @@ function EditorBody(): JSX.Element {
 								{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
 							</div>;
 						} else {
-							return <ShowFields fields={found_category.fields}/>;
+							return <ShowFields fields={found_category.fields} validate_info={validate_info} set_info={set_info} />;
 						}
 					} else if (editor_panel_data.category_name == undefined || editor_panel_data.category_name == '' || found_category == undefined) {
 						return <div>
@@ -515,7 +521,7 @@ function EditorBody(): JSX.Element {
 							{ editor_panel_data.value.fields.length > 0 ? {EditingContent} : <></> }
 						</div>;
 					} else {
-						return <ShowFields fields={found_category.fields}/>;
+						return <ShowFields fields={found_category.fields} validate_info={validate_info} set_info={set_info}/>;
 					}
 				})()
 			}
