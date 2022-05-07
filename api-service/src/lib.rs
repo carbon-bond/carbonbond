@@ -22,12 +22,15 @@ pub mod service;
 #[cfg(not(feature = "prepare"))]
 pub mod util;
 
+// TODO: 設置到 config.toml
+static EXPIRE_SECONDS: usize = 60 * 60 * 24 * 7; // 一週
+
 #[cfg(not(feature = "prepare"))]
 mod product {
     pub const MAX_ARTICLE_FIELD: usize = 15;
 
-    use crate::chat;
     use crate::custom_error::{ErrorCode, Fallible};
+    use crate::{chat, EXPIRE_SECONDS};
 
     use async_trait::async_trait;
     use cookie::Cookie;
@@ -41,10 +44,10 @@ mod product {
     pub trait Context {
         async fn remember_id(&mut self, id: i64) -> Fallible<()>;
         async fn forget_id(&mut self) -> Fallible<()>;
-        async fn get_id(&mut self) -> Option<i64>;
+        async fn get_id(&mut self) -> Fallible<Option<i64>>;
         async fn get_id_strict(&mut self) -> Fallible<i64> {
             self.get_id()
-                .await
+                .await?
                 .ok_or_else(|| ErrorCode::NeedLogin.into())
         }
     }
@@ -55,13 +58,15 @@ mod product {
         pub users: chat::control::Users,
     }
 
-    // XXX: 明碼傳輸，先頂着用，上線前必須處理安全問題
     impl Ctx {
         fn set_session<T: ToString>(&mut self, key: &str, value: T) -> Fallible<()> {
             self.resp.headers_mut().insert(
                 header::SET_COOKIE,
                 HeaderValue::from_str(
-                    &Cookie::build(key, &value.to_string()).finish().to_string(),
+                    &Cookie::build(key, &value.to_string())
+                        .max_age(time::Duration::seconds(EXPIRE_SECONDS as i64))
+                        .finish()
+                        .to_string(),
                 )?,
             );
             Ok(())
@@ -102,38 +107,53 @@ mod product {
         let random_u8: [u8; 32] = rng.gen();
         base64::encode(&random_u8)
     }
+    // 爲 redis 的鍵添加名稱空間
+    fn redis_login_token_key(token: &String) -> String {
+        format!("login_token::{}", token)
+    }
     #[async_trait]
     impl Context for Ctx {
         async fn remember_id(&mut self, id: i64) -> Fallible<()> {
             let mut conn = crate::redis::get_conn().await?;
             let token = gen_token();
+            let key = redis_login_token_key(&token);
             // NOTE: 不知道第三個泛型參數什麼作用
-            conn.set::<&str, i64, ()>(&token, id).await?;
-            // TODO: 設置到 config.toml
-            conn.expire(&token, 60 * 60 * 24 * 7).await?;
+            conn.set::<&str, i64, ()>(&key, id).await?;
+            conn.expire(&key, EXPIRE_SECONDS).await?;
             self.set_session("token", token)
         }
 
         async fn forget_id(&mut self) -> Fallible<()> {
+            match self.get_session::<String>("token") {
+                Some(ref token) => {
+                    let mut conn = crate::redis::get_conn().await?;
+                    let key = redis_login_token_key(token);
+                    conn.del(&key).await?;
+                }
+                None => {}
+            }
             self.forget_session("token")
         }
 
-        async fn get_id(&mut self) -> Option<i64> {
+        async fn get_id(&mut self) -> Fallible<Option<i64>> {
             match self.get_session::<String>("token") {
                 Some(ref token) => match crate::redis::get_conn().await {
-                    Ok(mut conn) => match conn.get::<&str, i64>(token).await.ok() {
-                        Some(id) => {
-                            conn.expire::<&str, ()>(token, 60 * 60 * 24 * 7).await;
-                            Some(id)
+                    Ok(mut conn) => {
+                        let key = redis_login_token_key(token);
+                        match conn.get::<&str, i64>(&key).await.ok() {
+                            Some(id) => {
+                                conn.expire::<&str, ()>(&key, EXPIRE_SECONDS).await?;
+                                Ok(Some(id))
+                            }
+                            None => {
+                                self.forget_session("token")?;
+                                Ok(None)
+                            }
                         }
-                        None => {
-                            self.forget_session("token");
-                            None
-                        }
-                    },
-                    Err(_) => None,
+                    }
+                    Err(_) => Ok(None),
                 },
-                None => None,
+                None => Ok(None),
             }
         }
     }
