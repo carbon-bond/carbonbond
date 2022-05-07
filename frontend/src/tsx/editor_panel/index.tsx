@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from '../../ts/api/api';
-import { BoardName, BondInfo, force, NewArticle, UpdatedArticle } from '../../ts/api/api_trait';
+import { BoardName, force, NewArticle, UpdatedArticle } from '../../ts/api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -25,7 +25,7 @@ function useDeleteEditor(): () => void {
 	const { setEditorPanelData }
 		= EditorPanelState.useContainer();
 	return () => {
-		if (confirm('確定要結束發文？')) {
+		if (confirm('確定要結束編輯文章？')) {
 			setEditorPanelData(null);
 		}
 	};
@@ -213,18 +213,18 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 	return JSON.stringify(content);
 }
 
-// 由於看板被編輯後，分類的欄位名稱、型別可能改變、甚至整個分類被刪除
-// 但草稿跟以前的文章的欄位並不會跟着改變
+// 由於看板被編輯後，分類的欄位名稱、型別可能改變（簡稱爲格式改變）、甚至整個分類被刪除
+// 但草稿跟以前的文章的格式並不會跟着改變
 // 當載入到編輯器時，可能會找不到能夠匹配的分類
 // 處理方式可分爲以下幾種方式：
-// 1. 載入草稿，分類仍然存在，但欄位已經改變
+// 1. 載入草稿，分類仍然存在，但格式已經改變
 // => 顯示唯讀文本，要求選擇分類。提示一個按鈕可切換到同名分類
 // 2. 載入草稿，分類已經不存在
 // => 顯示唯讀文本，要求選擇分類
-// 3. 編輯文章，分類仍然存在，但欄位已經改變
+// 3. 編輯文章，分類仍然存在，但格式已經改變
 // => 提示一個按鈕可切換到同名分類
 // 4. 編輯文章，分類已經不存在
-// => 提示一個按鈕可切換到同名分類
+// => 提示分類已經不存在，但仍可繼續使用原格式
 function EditorBody(): JSX.Element {
 	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
@@ -248,19 +248,8 @@ function EditorBody(): JSX.Element {
 
 	if (editor_panel_data == null || !user_state.login) { return <></>; }
 	let found_category = force.categories.find(c => c.name == editor_panel_data.category_name);
-
-	// let categories: force.Category[] = structuredClone(force.categories);
-	// let category_name = editor_panel_data.category;
-	// if (editor_panel_data.legacy_fields && editor_panel_data.category != '') {
-	// 	if (category == undefined || !equal_fields(category.fields, editor_panel_data.legacy_fields)) {
-	// 		// TODO: 限制所有分類名不得含有空白
-	// 		category_name = `${editor_panel_data.category} （已過時）`;
-	// 		categories.push({
-	// 			name: category_name,
-	// 			fields: editor_panel_data.legacy_fields!
-	// 		});
-	// 	}
-	// }
+	const using_legacy_fields = (found_category == undefined) ||
+		!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields);
 
 	const onSubmit = (): void => {
 		if (found_category == undefined) {
@@ -275,7 +264,7 @@ function EditorBody(): JSX.Element {
 				let article: UpdatedArticle = {
 					article_id: editor_panel_data.id,
 					category_name: found_category.name,
-					use_legazy_fields: false, // TODO: 視情況決定
+					use_legazy_fields: using_legacy_fields,
 					title: editor_panel_data.title,
 					content: generate_submit_content(editor_panel_data.value.fields, editor_panel_data.value.content),
 					bonds: editor_panel_data.bonds.map(bond => {return {to: bond.article_meta.id, tag: bond.tag};}),
@@ -487,19 +476,33 @@ function EditorBody(): JSX.Element {
 						}
 						return <div className={style.fields}>{input_fields}</div>;
 					}
-					// 如果文章已經發出，又是草稿，怎麼辦？
+					// XXX: 如果文章已經發出，又是草稿，將無法儲存
+					// 應在更新草稿時也加上 use_legacy_fields 選項
 					if (editor_panel_data.id) {
-						return <ShowFields fields={editor_panel_data.value.fields}/>;
+						if (found_category == undefined) {
+							return <div>
+								<div>本文所屬分類 {editor_panel_data.category_name} 已經不存在，但您仍可以原本格式編輯</div>
+								<ShowFields fields={editor_panel_data.value.fields} />
+							</div>;
+						} else if (using_legacy_fields) {
+							return <div>
+								<div>本文所屬分類 {editor_panel_data.category_name} 已經被版主修改</div>
+								<div>您可<button onClick={() => changeCategory(editor_panel_data.category_name!)}>點此轉換到新格式</button>，也可保持原格式不變</div>
+								<ShowFields fields={editor_panel_data.value.fields} />
+							</div>;
+						} else {
+							return <ShowFields fields={found_category.fields}/>;
+						}
 					} else if (editor_panel_data.draft_id) {
 						if (found_category == undefined) {
 							return <div>
 								<div>本草稿所屬分類 {editor_panel_data.category_name} 已經不存在，請重新選擇分類</div>
 								{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
 							</div>;
-						} else if (!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields)) {
+						} else if (using_legacy_fields) {
 							return <div>
-								<div>本草稿所屬分類 {editor_panel_data.category_name} 已經被版主修改</div>
-								<div>請<button onClick={() => changeCategory(editor_panel_data.category_name!)}>點此轉換文章欄位</button></div>
+								<div>本草稿所屬分類 {editor_panel_data.category_name} 的格式已經被版主修改</div>
+								<div>請<button onClick={() => changeCategory(editor_panel_data.category_name!)}>點此轉換文章格式</button></div>
 								<div>或重新選擇分類</div>
 								{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
 							</div>;
