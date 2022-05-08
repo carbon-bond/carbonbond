@@ -64,7 +64,7 @@ mod product {
                 header::SET_COOKIE,
                 HeaderValue::from_str(
                     &Cookie::build(key, &value.to_string())
-                        .max_age(time::Duration::seconds(EXPIRE_SECONDS as i64))
+                        .max_age(time::Duration::days(360 * 1000)) // 由後端控制 session 期限（redis expire），前端就儲存一千年吧
                         .finish()
                         .to_string(),
                 )?,
@@ -88,12 +88,11 @@ mod product {
                 })
         }
         fn forget_session(&mut self, key: &str) -> Fallible<()> {
-            use time::OffsetDateTime;
             self.resp.headers_mut().insert(
                 header::SET_COOKIE,
                 HeaderValue::from_str(
                     &Cookie::build(key, "")
-                        .expires(OffsetDateTime::now_utc())
+                        .max_age(time::Duration::zero())
                         .finish()
                         .to_string(),
                 )?,
@@ -142,7 +141,7 @@ mod product {
                         let key = redis_login_token_key(token);
                         match conn.get::<&str, i64>(&key).await.ok() {
                             Some(id) => {
-                                conn.expire::<&str, ()>(&key, EXPIRE_SECONDS).await?;
+                                conn.expire::<&str, ()>(&key, EXPIRE_SECONDS).await?; // 後端續 redis 過期時間
                                 Ok(Some(id))
                             }
                             None => {
