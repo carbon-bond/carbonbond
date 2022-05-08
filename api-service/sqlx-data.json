@@ -1271,18 +1271,6 @@
     },
     "query": "INSERT INTO title_authentication_user (user_id, title) VALUES ($1, $2)"
   },
-  "6007b27283c8335c57e7afb816dd01e1f01e990b1ae06ce93cb2986ea7509b88": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                    UPDATE attitude_to_articles\n                    SET attitude = TRUE\n                    WHERE id = $1\n                    "
-  },
   "61de3aaebb1e845d8dc91e288fb7398faf54caf25dbe0cc89db2b3f978c6a9cf": {
     "describe": {
       "columns": [
@@ -1694,18 +1682,6 @@
       }
     },
     "query": "\n        UPDATE users\n        SET sentence = $1\n        WHERE id = $2\n        "
-  },
-  "7aac9a5aea545180fb9f1cc6c61395065201ed03156a2f17bc8a61773e7f0f6d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                    UPDATE attitude_to_articles\n                    SET attitude = FALSE\n                    WHERE id = $1\n                    "
   },
   "8020727a6fe86d166258296a0bf7e9aca8738b5e806f84f65b1b913344e9286e": {
     "describe": {
@@ -2230,18 +2206,6 @@
       }
     },
     "query": "\n        select boards.id\n        from boards\n        join parties\n            on boards.ruling_party_id = parties.id\n        join party_members\n            on parties.id = party_members.party_id\n        where user_id = $1 and boards.id = $2;\n        "
-  },
-  "aedf1c9f27b6bfb0403b02176ec389b72d7292f90affedf18b79e96ee118b7a6": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                    DELETE FROM attitude_to_articles\n                    WHERE id = $1\n                    "
   },
   "af8ac08a709c9e584cd09acb466f4ad190c03c3e087ee6163266628da2286d7f": {
     "describe": {
@@ -3217,28 +3181,6 @@
     },
     "query": "SELECT article_id, attitude FROM attitude_to_articles\n        WHERE user_id = $1 AND article_id = ANY($2)"
   },
-  "d5ef68f4b2e336f19ff97aa22b9136283065b73473bc4a6a6ae8df8e6f50cfc8": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8",
-          "Bool"
-        ]
-      }
-    },
-    "query": "\n                    INSERT INTO attitude_to_articles (user_id, article_id, attitude)\n                    VALUES ($1, $2, $3) RETURNING id\n                    "
-  },
   "d92ca0f691e989536162492a1950d6d5de8c9fab7a0e813ab9cf344397a86a54": {
     "describe": {
       "columns": [],
@@ -3595,6 +3537,19 @@
     },
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                boards.board_type\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                )\n            SELECT  metas.id,\n                metas.energy,\n                metas.good,\n                metas.bad,\n                fields,\n                board_id,\n                board_name,\n                board_type,\n                category,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                metas.create_time,\n                anonymous FROM metas \n        WHERE ($1 OR board_name = $2)\n        AND ($3 OR (author_name = $4 AND (anonymous = false OR author_id = $5)))\n        AND ($6 OR category = $7)\n        AND ($8 OR create_time < $9)\n        AND ($10 OR create_time > $11)\n        AND ($12 OR title ~ $13)\n        ORDER BY create_time DESC\n        "
   },
+  "e8794afd3ba865801ef5cba7996d3d1fd4582ca60183ab059b1c27d12590e3fb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n        UPDATE users\n        SET energy = users.energy + $1\n        FROM articles\n        WHERE\n            users.id = articles.author_id AND\n            articles.id = $2\n        "
+  },
   "ea99f300c01113ea32e5034897b12f2f14e1b43cb9b556f0c189e79f69d6dc29": {
     "describe": {
       "columns": [
@@ -3821,6 +3776,40 @@
       }
     },
     "query": "\n            WITH metas AS (SELECT\n                users.id,\n                users.user_name,\n                users.email,\n                users.sentence,\n                users.energy,\n                users.introduction,\n                users.gender,\n                users.birth_year,\n                users.job,\n                users.city,\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hater_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hater_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"follower_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    to_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"follower_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = true) AS \"hating_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'hate'\n                    AND is_public = false) AS \"hating_count_private!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = true) AS \"following_count_public!\",\n                (\n                SELECT\n                    COUNT(*)\n                FROM\n                    user_relations\n                WHERE\n                    from_user = users.id\n                    AND kind = 'follow'\n                    AND is_public = false) AS \"following_count_private!\",\n                (\n                SELECT\n                    string_agg(title_authentication_user.title, ',')\n                FROM\n                    title_authentication_user\n                WHERE\n                    title_authentication_user.user_id = users.id) AS \"titles! : Option<String>\"\n            FROM users) SELECT * FROM metas WHERE metas.id = $1"
+  },
+  "f0a45a9f491e8fb47ea8767a044cec2b9393b15f143717e312356228e9a04c34": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO attitude_to_articles (user_id, article_id, attitude)\n            VALUES ($1, $2, $3) RETURNING id\n            "
+  },
+  "f1d5510bb5623c84f5344955bedc42dff2e8a4870689f3da16f469906367b145": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n            DELETE FROM attitude_to_articles\n            WHERE id = $1\n            "
   },
   "f1df4842f2a606e8cc26904c20883ec3a4e2288dd40af8ea2499be37f8754ab7": {
     "describe": {
