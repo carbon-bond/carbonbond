@@ -22,14 +22,12 @@ export function ShowText(props: { text: string; }): JSX.Element {
 			// 若整行都是空的，換行
 			return <br key={key++} />;
 		} else if (isImageLink(line.trim())) {
-			return <>
-				<p key={key++}>
-					<a target="_blank" href={line}>
-						{line}
-						<img key={key++} src={line.trim()} width="100%" alt="圖片" />
-					</a>
-				</p>
-			</>;
+			return <p key={key++}>
+				<a target="_blank" href={line}>
+					{line}
+					<img key={key++} src={line.trim()} width="100%" alt="圖片" />
+				</a>
+			</p>;
 		} else {
 			return <p key={key++}>
 				<ShowLine line={line} />

@@ -173,6 +173,15 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 	const [bad_count, setBadCount] = React.useState<number>(props.article.bad);
 	const board_info = getBoardInfo(props.article);
 
+	React.useEffect(() => {
+		setFavorite(props.article.personal_meta.is_favorite);
+		setTracking(props.article.personal_meta.is_tracking);
+		setAttitude(props.article.personal_meta.attitude);
+		setGoodCount(props.article.good);
+		setBadCount(props.article.bad);
+	}, [props.article]);
+
+
 	async function onFavoriteArticleClick(): Promise<void> {
 		try {
 			if (favorite) {
