@@ -215,7 +215,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 			<div className={`${style.articleBtnItem} ${style.good} ${attitude == Attitude.Good ? style.chosenGood : ''}`} onClick={() => {
 				let next_attitude = attitude == Attitude.Good ? Attitude.None : Attitude.Good;
 				setAttitude(next_attitude);
-				API_FETCHER.articleQuery.setAttitude(props.article.id, Attitude.Good)
+				API_FETCHER.articleQuery.setAttitude(props.article.id, next_attitude)
 				.then(data => {
 					let [good, bad] = unwrap(data);
 					setGoodCount(good);

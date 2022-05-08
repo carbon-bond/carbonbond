@@ -1,9 +1,11 @@
+use reqwest::redirect::Attempt;
 use sqlx::PgConnection;
 
 use super::get_pool;
 use crate::{api::model::forum::Attitude, custom_error::Fallible};
 
 async fn increase_good(conn: &mut PgConnection, article_id: i64, amount: i64) -> Fallible<()> {
+    super::article::update_energy(conn, article_id, amount).await?;
     sqlx::query!(
         "
         UPDATE articles
@@ -20,6 +22,7 @@ async fn increase_good(conn: &mut PgConnection, article_id: i64, amount: i64) ->
 }
 
 async fn increase_bad(conn: &mut PgConnection, article_id: i64, amount: i64) -> Fallible<()> {
+    super::article::update_energy(conn, article_id, -amount).await?;
     sqlx::query!(
         "
         UPDATE articles
@@ -33,6 +36,16 @@ async fn increase_bad(conn: &mut PgConnection, article_id: i64, amount: i64) -> 
     .execute(conn)
     .await?;
     Ok(())
+}
+
+impl Attitude {
+    fn to_bool(self) -> Option<bool> {
+        match self {
+            Attitude::Bad => Some(false),
+            Attitude::Good => Some(true),
+            _ => None,
+        }
+    }
 }
 
 pub async fn set_attitude(
@@ -52,83 +65,46 @@ pub async fn set_attitude(
     .fetch_optional(&mut conn)
     .await?;
 
-    match attitude_now {
-        None => {
-            if attitude != Attitude::None {
-                let bool_attitude = if attitude == Attitude::Good {
-                    true
-                } else {
-                    false
-                };
-                sqlx::query!(
-                    "
-                    INSERT INTO attitude_to_articles (user_id, article_id, attitude)
-                    VALUES ($1, $2, $3) RETURNING id
-                    ",
-                    user_id,
-                    article_id,
-                    bool_attitude
-                )
-                .fetch_one(&mut conn)
-                .await?;
-                if bool_attitude {
-                    increase_good(&mut conn, article_id, 1).await?;
-                    super::article::update_energy(&mut conn, article_id, 1).await?;
-                } else {
-                    increase_bad(&mut conn, article_id, 1).await?;
-                    super::article::update_energy(&mut conn, article_id, -1).await?;
-                }
-            }
-        }
-        Some(a) => {
-            if attitude == Attitude::Good && a.attitude == false {
-                sqlx::query!(
-                    "
-                    UPDATE attitude_to_articles
-                    SET attitude = TRUE
-                    WHERE id = $1
-                    ",
-                    a.id
-                )
-                .execute(&mut conn)
-                .await?;
-                increase_good(&mut conn, article_id, 1).await?;
-                increase_bad(&mut conn, article_id, -1).await?;
-                super::article::update_energy(&mut conn, article_id, 2).await?;
-            } else if attitude == Attitude::Bad && a.attitude == true {
-                sqlx::query!(
-                    "
-                    UPDATE attitude_to_articles
-                    SET attitude = FALSE
-                    WHERE id = $1
-                    ",
-                    a.id
-                )
-                .execute(&mut conn)
-                .await?;
-                increase_good(&mut conn, article_id, -1).await?;
-                increase_bad(&mut conn, article_id, 1).await?;
-                super::article::update_energy(&mut conn, article_id, -2).await?;
-            } else {
-                sqlx::query!(
-                    "
-                    DELETE FROM attitude_to_articles
-                    WHERE id = $1
-                    ",
-                    a.id
-                )
-                .execute(&mut conn)
-                .await?;
-                if a.attitude {
-                    increase_good(&mut conn, article_id, -1).await?;
-                    super::article::update_energy(&mut conn, article_id, -1).await?;
-                } else {
-                    increase_bad(&mut conn, article_id, -1).await?;
-                    super::article::update_energy(&mut conn, article_id, 1).await?;
-                }
-            }
+    let attitude_id = attitude_now.as_ref().map(|a| a.id).clone();
+    let attitude_now = attitude_now.map(|a| a.attitude);
+    let attitude_next = attitude.to_bool();
+
+    if let Some(attitude_now) = attitude_now {
+        sqlx::query!(
+            "
+            DELETE FROM attitude_to_articles
+            WHERE id = $1
+            ",
+            attitude_id
+        )
+        .execute(&mut conn)
+        .await?;
+        if attitude_now {
+            increase_good(&mut conn, article_id, -1).await?;
+        } else {
+            increase_bad(&mut conn, article_id, -1).await?;
         }
     }
+
+    if let Some(attitude_next) = attitude_next {
+        sqlx::query!(
+            "
+            INSERT INTO attitude_to_articles (user_id, article_id, attitude)
+            VALUES ($1, $2, $3) RETURNING id
+            ",
+            user_id,
+            article_id,
+            attitude_next
+        )
+        .fetch_one(&mut conn)
+        .await?;
+        if attitude_next {
+            increase_good(&mut conn, article_id, 1).await?;
+        } else {
+            increase_bad(&mut conn, article_id, 1).await?;
+        }
+    }
+
     let attitude_count = sqlx::query!(
         "
         SELECT good, bad FROM articles
