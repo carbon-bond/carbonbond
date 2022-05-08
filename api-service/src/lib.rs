@@ -22,15 +22,13 @@ pub mod service;
 #[cfg(not(feature = "prepare"))]
 pub mod util;
 
-// TODO: 設置到 config.toml
-static EXPIRE_SECONDS: usize = 60 * 60 * 24 * 7; // 一週
-
 #[cfg(not(feature = "prepare"))]
 mod product {
     pub const MAX_ARTICLE_FIELD: usize = 15;
 
+    use crate::chat;
+    use crate::config::get_config;
     use crate::custom_error::{ErrorCode, Fallible};
-    use crate::{chat, EXPIRE_SECONDS};
 
     use async_trait::async_trait;
     use cookie::Cookie;
@@ -118,7 +116,8 @@ mod product {
             let key = redis_login_token_key(&token);
             // NOTE: 不知道第三個泛型參數什麼作用
             conn.set::<&str, i64, ()>(&key, id).await?;
-            conn.expire(&key, EXPIRE_SECONDS).await?;
+            conn.expire(&key, get_config().account.session_expire_seconds)
+                .await?;
             self.set_session("token", token)
         }
 
@@ -141,7 +140,11 @@ mod product {
                         let key = redis_login_token_key(token);
                         match conn.get::<&str, i64>(&key).await.ok() {
                             Some(id) => {
-                                conn.expire::<&str, ()>(&key, EXPIRE_SECONDS).await?; // 後端續 redis 過期時間
+                                conn.expire::<&str, ()>(
+                                    &key,
+                                    get_config().account.session_expire_seconds,
+                                )
+                                .await?; // 後端續 redis 過期時間
                                 Ok(Some(id))
                             }
                             None => {

@@ -31,6 +31,7 @@ host = "redis://127.0.0.1/"
 fake_email = "fake@email"
 allow_self_signup = true
 allow_invitation_signup = true
+session_expire_seconds = 604800 # 604800 秒 = 一週
 min_password_length = 6
 max_password_length = 100
 email_whitelist = [
