@@ -107,3 +107,18 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
         .map(|a| (a.board_id, a.create_time.timestamp() as u64))
         .collect())
 }
+
+pub async fn get_all_articles_in_latest_n(n: isize) -> Fallible<Vec<(i64, u64)>> {
+    let pool = get_pool();
+    let articles_in_top_n = sqlx::query!(
+        "SELECT id, create_time FROM articles
+        ORDER BY create_time DESC LIMIT $1",
+        n as i64,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(articles_in_top_n
+        .iter()
+        .map(|a| (a.id as i64, a.create_time.timestamp() as u64))
+        .collect())
+}

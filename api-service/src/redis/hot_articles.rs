@@ -4,9 +4,24 @@ use redis::AsyncCommands;
 use std::cmp;
 use std::f32;
 use std::time::{SystemTime, UNIX_EPOCH};
+use crate::db::article_statistics;
 
 const KEY_HOT_ARTICLE: &'static str = "hot_articles";
 const TOP_N: isize = 30; // 只保留前 30 名
+
+pub async fn init() -> Fallible {
+    log::info!("初始化熱門文章");
+    let mut conn = get_conn().await?;
+
+    conn.del(KEY_HOT_ARTICLE).await?;
+
+    let articles_in_top_n = article_statistics::get_all_articles_in_latest_n(TOP_N).await?;
+    for (article_id, timestamp) in articles_in_top_n {
+        set_hot_article_score_with_timestamp(article_id, timestamp).await?;
+    }
+
+    Ok(())
+}
 
 pub async fn modify_article_energy(article_id: i64, energy_old: i16, energy_diff: i16) -> Fallible {
     let mut conn = get_conn().await?;
@@ -54,13 +69,17 @@ pub async fn set_hot_article_score(article_id: i64) -> Fallible {
         Ok(n) => n.as_secs(),
         Err(_) => panic!("SystemTime before UNIX EPOCH!"),
     };
+    set_hot_article_score_with_timestamp(article_id, timestamp).await?;
+    Ok(())
+}
 
+pub async fn set_hot_article_score_with_timestamp(article_id: i64, timestamp: u64) -> Fallible {
     // formula from reddit
     let z = 1.0f32; // 推 - 噓, 最低 1
     let score = z.log10() + 1.0f32 * timestamp as f32 / 45000.0f32;
 
     log::info!(
-        "初次設定文章人氣分數：article={}, score={}, timestamp={}",
+        "設定文章人氣分數：article={}, score={}, timestamp={}",
         article_id,
         score,
         timestamp
