@@ -108,7 +108,7 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
         .collect())
 }
 
-pub async fn get_all_articles_in_latest_n(n: isize) -> Fallible<Vec<(i64, u64)>> {
+pub async fn get_all_articles_in_latest_n(n: usize) -> Fallible<Vec<(i64, u64)>> {
     let pool = get_pool();
     let articles_in_top_n = sqlx::query!(
         "SELECT id, create_time FROM articles

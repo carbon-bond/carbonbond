@@ -7,7 +7,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use crate::db::article_statistics;
 
 const KEY_HOT_ARTICLE: &'static str = "hot_articles";
-const TOP_N: isize = 30; // 只保留前 30 名
+const TOP_N: usize = 30; // 只保留前 30 名
 
 pub async fn init() -> Fallible {
     log::info!("初始化熱門文章");
@@ -60,7 +60,7 @@ pub async fn modify_article_energy(article_id: i64, energy_old: i16, energy_diff
     );
 
     conn.zadd(KEY_HOT_ARTICLE, article_id, score_new).await?;
-    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1).await?;
     Ok(())
 }
 
@@ -87,7 +87,7 @@ pub async fn set_hot_article_score_with_timestamp(article_id: i64, timestamp: u6
 
     let mut conn = get_conn().await?;
     conn.zadd(KEY_HOT_ARTICLE, article_id, score).await?;
-    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -TOP_N - 1).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1).await?;
     Ok(())
 }
 
@@ -100,7 +100,7 @@ pub async fn get_hot_articles() -> Fallible<Vec<i64>> {
         log::info!("目前資料庫中沒有熱門文章 :(");
     } else {
         article_ids = conn
-            .zrevrange(KEY_HOT_ARTICLE, 0, TOP_N)
+            .zrevrange(KEY_HOT_ARTICLE, 0, TOP_N as isize)
             .await
             .unwrap_or_default();
     }
