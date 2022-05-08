@@ -114,7 +114,7 @@ function computeRadius(meta: ArticleMeta, mode: RadiusMode = RadiusMode.Energy):
 	if (mode == RadiusMode.Energy) {
 		value = meta.energy;
 	} else if (mode == RadiusMode.AbsEnergy) {
-		value = Math.abs(meta.energy);
+		value = meta.good + meta.bad;
 	} else if (mode == RadiusMode.CommentNumber) {
 		value = Math.abs(meta.stat.comments);
 	} else {
