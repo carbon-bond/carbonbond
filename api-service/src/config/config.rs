@@ -49,6 +49,7 @@ pub struct RawAccountConfig {
     pub fake_email: Option<String>,
     pub allow_self_signup: bool,
     pub allow_invitation_signup: bool,
+    pub session_expire_seconds: usize,
     pub min_password_length: usize,
     pub max_password_length: usize,
     pub email_whitelist: Vec<String>,
@@ -101,6 +102,7 @@ pub struct AccountConfig {
     pub fake_email: Option<String>,
     pub allow_self_signup: bool,
     pub allow_invitation_signup: bool,
+    pub session_expire_seconds: usize,
     pub min_password_length: usize,
     pub max_password_length: usize,
     pub email_whitelist: Vec<String>,
@@ -128,6 +130,7 @@ impl From<RawAccountConfig> for Fallible<AccountConfig> {
             fake_email: orig.fake_email,
             allow_self_signup: orig.allow_self_signup,
             allow_invitation_signup: orig.allow_invitation_signup,
+            session_expire_seconds: orig.session_expire_seconds,
             min_password_length: orig.min_password_length,
             max_password_length: orig.max_password_length,
             // 目前無作用

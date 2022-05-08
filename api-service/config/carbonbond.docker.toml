@@ -25,6 +25,7 @@ host = "redis://redis/"
 [account]
 allow_self_signup = true
 allow_invitation_signup = true
+session_expire_seconds = 604800
 min_password_length = 6
 max_password_length = 100
 email_whitelist = [
