@@ -1,7 +1,7 @@
 use super::get_pool;
 use crate::api::model::forum::{ArticleMeta, Attitude};
 use crate::custom_error::Fallible;
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 use std::collections::HashMap;
 
 struct Entry {
@@ -108,17 +108,41 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
         .collect())
 }
 
-pub async fn get_all_articles_in_latest_n(n: usize) -> Fallible<Vec<(i64, u64)>> {
+pub async fn get_article_and_energy_before_a_timestamp(
+    timestamp: DateTime<Utc>,
+) -> Fallible<Vec<(i64, f32, u64)>> {
     let pool = get_pool();
     let articles_in_top_n = sqlx::query!(
-        "SELECT id, create_time FROM articles
-        ORDER BY create_time DESC LIMIT $1",
-        n as i64,
+        "SELECT id, energy, create_time FROM articles
+        WHERE create_time > $1",
+        timestamp,
     )
     .fetch_all(pool)
     .await?;
     Ok(articles_in_top_n
         .iter()
-        .map(|a| (a.id as i64, a.create_time.timestamp() as u64))
+        .map(|a| {
+            (
+                a.id as i64,
+                a.energy as f32,
+                a.create_time.timestamp() as u64,
+            )
+        })
         .collect())
+}
+
+pub async fn get_article_and_energy_by_id(article_id: i64) -> Fallible<(i64, f32, u64)> {
+    let pool = get_pool();
+    let article = sqlx::query!(
+        "SELECT id, energy, create_time FROM articles
+        WHERE id = $1",
+        article_id,
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok((
+        article.id,
+        article.energy as f32,
+        article.create_time.timestamp() as u64,
+    ))
 }

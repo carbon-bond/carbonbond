@@ -1,13 +1,18 @@
 use super::get_conn;
 use crate::custom_error::Fallible;
+use crate::db::article_statistics;
+use chrono::{Duration, Utc};
 use redis::AsyncCommands;
-use std::cmp;
 use std::f32;
 use std::time::{SystemTime, UNIX_EPOCH};
-use crate::db::article_statistics;
 
 const KEY_HOT_ARTICLE: &'static str = "hot_articles";
 const TOP_N: usize = 30; // 只保留前 30 名
+
+fn formula_from_reddit(energy: f32, timestamp: u64) -> f32 {
+    let z = f32::max(energy, 1.0);
+    z.log10() + 1.0f32 * timestamp as f32 / 45000.0f32
+}
 
 pub async fn init() -> Fallible {
     log::info!("初始化熱門文章");
@@ -15,71 +20,53 @@ pub async fn init() -> Fallible {
 
     conn.del(KEY_HOT_ARTICLE).await?;
 
-    let articles_in_top_n = article_statistics::get_all_articles_in_latest_n(TOP_N).await?;
-    for (article_id, timestamp) in articles_in_top_n {
-        set_hot_article_score_with_timestamp(article_id, timestamp).await?;
+    // 從 reddit 的算式 log(z) + timestamp / 45000 來看
+    // z 估計上限為 10000 (頂 - 踩)
+    // 而時間項大約 2 天造成的分數就會超越 10000 頂
+    // 因此初始化熱門文章的時候我們只拿 2 天內的文章來計算分數做初始排名
+    let timestamp = Utc::now() - Duration::days(2);
+
+    let articles = article_statistics::get_article_and_energy_before_a_timestamp(timestamp).await?;
+    for (article_id, energy, timestamp) in articles {
+        set_hot_article_score(article_id, energy, timestamp).await?;
     }
 
     Ok(())
 }
 
-pub async fn modify_article_energy(article_id: i64, energy_old: i16, energy_diff: i16) -> Fallible {
+pub async fn update_article_score(article_id: i64) -> Fallible {
     let mut conn = get_conn().await?;
 
     // update energy
-    let energy_new = energy_old + energy_diff;
+    let (article_id, energy, timestamp) =
+        article_statistics::get_article_and_energy_by_id(article_id).await?;
+    let score = formula_from_reddit(energy, timestamp);
     log::info!(
-        "更新文章鍵能：article={}, energy_diff={}, energy_old={}, energy_new={}",
+        "更新文章人氣分數：article = {}, score = {}",
         article_id,
-        energy_diff,
-        energy_old,
-        energy_new
+        score
     );
 
-    // update score
-    let z_old = cmp::max(energy_old, 1);
-    let z_new = cmp::max(energy_new, 1);
-    let z_old = z_old as f32;
-    let z_new = z_new as f32;
+    conn.zadd(KEY_HOT_ARTICLE, article_id, score).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1)
+        .await?;
+    Ok(())
+}
+
+pub async fn set_hot_article_score_first_time(article_id: i64) -> Fallible {
     let timestamp = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
         Err(_) => panic!("SystemTime before UNIX EPOCH!"),
     };
-    let z = 1.0f32; // 推 - 噓, 最低 1
-    let score_default = z.log10() + 1.0f32 * timestamp as f32 / 45000.0f32;
-    let score_old = conn
-        .zscore(KEY_HOT_ARTICLE, article_id)
-        .await
-        .unwrap_or(score_default);
-    let score_new = score_old - z_old.log10() + z_new.log10();
-    log::info!(
-        "更新文章人氣分數：article={}, score_old={}, score_new={}",
-        article_id,
-        score_old,
-        score_new
-    );
-
-    conn.zadd(KEY_HOT_ARTICLE, article_id, score_new).await?;
-    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1).await?;
+    set_hot_article_score(article_id, 0 as f32, timestamp).await?;
     Ok(())
 }
 
-pub async fn set_hot_article_score(article_id: i64) -> Fallible {
-    let timestamp = match SystemTime::now().duration_since(UNIX_EPOCH) {
-        Ok(n) => n.as_secs(),
-        Err(_) => panic!("SystemTime before UNIX EPOCH!"),
-    };
-    set_hot_article_score_with_timestamp(article_id, timestamp).await?;
-    Ok(())
-}
-
-pub async fn set_hot_article_score_with_timestamp(article_id: i64, timestamp: u64) -> Fallible {
-    // formula from reddit
-    let z = 1.0f32; // 推 - 噓, 最低 1
-    let score = z.log10() + 1.0f32 * timestamp as f32 / 45000.0f32;
+pub async fn set_hot_article_score(article_id: i64, energy: f32, timestamp: u64) -> Fallible {
+    let score = formula_from_reddit(energy, timestamp);
 
     log::info!(
-        "設定文章人氣分數：article={}, score={}, timestamp={}",
+        "設定文章人氣分數：article = {}, score = {}, timestamp = {}",
         article_id,
         score,
         timestamp
@@ -87,7 +74,8 @@ pub async fn set_hot_article_score_with_timestamp(article_id: i64, timestamp: u6
 
     let mut conn = get_conn().await?;
     conn.zadd(KEY_HOT_ARTICLE, article_id, score).await?;
-    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1).await?;
+    conn.zremrangebyrank(KEY_HOT_ARTICLE, 0, -(TOP_N as isize) - 1)
+        .await?;
     Ok(())
 }
 
