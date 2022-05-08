@@ -219,6 +219,11 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 			});
 	}
 
+	let tracking_button = window.is_mobile ? '👣' : '👣 取消追蹤';
+	let non_tracking_button = <><span className={style.articleBtnItemTracking}>👣</span> {window.is_mobile ? '' : '追蹤'}</>;
+	let favoriting_button = window.is_mobile ? '🌟' : '🌟 取消收藏';
+	let non_favoriting_button = <><span className={style.articleBtnItemTracking}>🌟</span> {window.is_mobile ? '' : '收藏'}</>;
+
 	return <div className={style.articleFooter}>
 		<div className={style.articleBtns}>
 			<div className={`${style.articleBtnItem} ${style.good} ${attitude == Attitude.Good ? style.chosenGood : ''}`} onClick={() => {
@@ -254,7 +259,7 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 					setHit(Hit.Comment);
 				}
 			}}>
-				🗯️ <span className={style.num}>{props.article.stat.comments}</span>則留言
+				🗯️ 留言 <span className={style.num}>{props.article.stat.comments}</span>
 			</div>
 			<div className={`${style.articleBtnItem} ${hit == Hit.Reply ? style.hit : ''}`} onClick={() => {
 				if (hit == Hit.Reply) {
@@ -263,16 +268,16 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 					setHit(Hit.Reply);
 				}
 			}}>
-				➡️ <span className={style.num}>{props.article.stat.replies}</span>篇回文
+				➡️ 回文 <span className={style.num}>{props.article.stat.replies}</span>
 			</div>
 			<div className={style.articleBtnItem} onClick={onTrackingArticleClick}>
-				{tracking ? '👣 取消追蹤' : <span><span className={style.articleBtnItemTracking}>👣</span> 追蹤</span>}
+				{tracking ? tracking_button : non_tracking_button}
 			</div>
 			<div className={style.articleBtnItem} onClick={onFavoriteArticleClick}>
-				{favorite ? '🌟 取消收藏' : <span><span className={style.articleBtnItemTracking}>🌟</span> 收藏</span>}
+				{favorite ? favoriting_button: non_favoriting_button}
 			</div>
 			<div className={style.articleBtnItem} onClick={onShareClick}>
-				📎 分享
+				{`📎${window.is_mobile ? '' : ' 分享'}`}
 			</div>
 		</div>
 		{
