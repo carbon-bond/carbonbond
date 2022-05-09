@@ -108,7 +108,22 @@ pub async fn get_all_articles_in_24h() -> Fallible<Vec<(i64, u64)>> {
         .collect())
 }
 
-pub async fn get_article_and_energy_before_a_timestamp(
+pub async fn get_latest_n_articles(n: usize) -> Fallible<Vec<(i64, u64)>> {
+    let pool = get_pool();
+    let articles = sqlx::query!(
+        "SELECT id, create_time FROM articles
+        ORDER BY create_time DESC LIMIT $1",
+        n as i64,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(articles
+        .iter()
+        .map(|a| (a.id as i64, a.create_time.timestamp() as u64))
+        .collect())
+}
+
+pub async fn get_article_and_energy_after_a_timestamp(
     timestamp: DateTime<Utc>,
 ) -> Fallible<Vec<(i64, f32, u64)>> {
     let pool = get_pool();
