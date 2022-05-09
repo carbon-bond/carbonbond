@@ -1137,6 +1137,32 @@
       ]
     }
   },
+  "54a349bc7af20a8c6189f16d5bcb82e7a725da762f722b93b2ff4e10ad1bf888": {
+    "query": "SELECT id, create_time FROM articles\n        ORDER BY create_time DESC LIMIT $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "create_time",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
   "550b3765661f1fc0df191dcbbc9454799c95bfc597bcf7fe12da29131d41f55f": {
     "query": "SELECT board_name, board_type, id, title, 0::bigint as \"popularity!\" FROM boards WHERE id = ANY($1)",
     "describe": {
