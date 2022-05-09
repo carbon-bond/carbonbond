@@ -1,5 +1,5 @@
 use carbonbond::{
-    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards,
+    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards, service::hot_articles,
 };
 use structopt::StructOpt;
 
@@ -33,6 +33,10 @@ async fn main() -> Fallible<()> {
     // 初始化 redis
     log::info!("初始化 redis 客戶端");
     redis::init().await.unwrap();
+
+    // 初始化熱門文章統計資料
+    log::info!("初始化熱門文章統計資料");
+    hot_articles::init().await.unwrap();
 
     // 初始化熱門看板統計資料
     log::info!("初始化熱門看板統計資料");

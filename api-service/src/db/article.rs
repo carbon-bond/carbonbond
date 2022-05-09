@@ -603,7 +603,7 @@ pub async fn create(new_article: &NewArticle, author_id: i64) -> Fallible<i64> {
     .await?;
 
     conn.commit().await?;
-    service::hot_articles::set_hot_article_score(article_id).await?;
+    service::hot_articles::set_hot_article_score_first_time(article_id).await?;
     Ok(article_id)
 }
 

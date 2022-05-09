@@ -2,6 +2,7 @@ use reqwest::redirect::Attempt;
 use sqlx::PgConnection;
 
 use super::get_pool;
+use crate::service::hot_articles;
 use crate::{api::model::forum::Attitude, custom_error::Fallible};
 
 async fn increase_good(conn: &mut PgConnection, article_id: i64, amount: i64) -> Fallible<()> {
@@ -115,5 +116,6 @@ pub async fn set_attitude(
     .fetch_one(&mut conn)
     .await?;
     conn.commit().await?;
+    hot_articles::update_article_score(article_id).await?;
     Ok((attitude_count.good, attitude_count.bad))
 }
