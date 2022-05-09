@@ -158,6 +158,11 @@
     padding: 14px 20px;
     position: relative;
 }
+@media only screen and (max-width:600px) {
+    .articleContainer {
+        padding: 10px 6px;
+    }
+}
 .articleContainer:hover {
     box-shadow: inset 0 0 5px var(--theme-color);
 }
