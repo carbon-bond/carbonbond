@@ -53,7 +53,10 @@ pub async fn init() -> Fallible {
             break;
         }
     }
-    join_all(tasks).await;
+    let results = join_all(tasks).await;
+    for result in results {
+        result?;
+    }
     Ok(())
 }
 
