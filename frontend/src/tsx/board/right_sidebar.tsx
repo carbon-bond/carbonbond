@@ -113,6 +113,10 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 	</>;
 }
 
+function onStartAnonymousArticleChat(): void {
+	return;
+}
+
 function UserIntroduction(props: {author: Author}): JSX.Element {
 	const [user, setUser] = React.useState<User | null>(null);
 	const { user_state } = UserState.useContainer();
@@ -132,8 +136,12 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 		}
 	}, [props.author, reload]);
 
-	if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+	if (props.author == 'MyAnonymous') {
 		return <></>;
+	} else if (props.author == 'Anonymous') {
+		return <div className={style.anonymousAuthor}>
+			作者匿名，但依然可以 <button onClick={onStartAnonymousArticleChat}>🗨️ 私訊作者</button>
+		</div>;
 	} else {
 		const user_name = props.author.NamedAuthor.name;
 		return <div className={style.userIntroduction}>
