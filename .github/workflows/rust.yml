@@ -47,11 +47,13 @@ jobs:
     - uses: Swatinem/rust-cache@v1
       with:
         working-directory: ./api-service
-    - name: Prepare DB
+    - name: rust 格式檢查
+      run: cargo fmt --all -- --check
+    - name: 準備 DB
       run: cargo run --verbose --features prepare --bin prepare -- -m
-    - name: Build
+    - name: rust 編譯
       run: cargo build --verbose
       env:
         SQLX_OFFLINE: true
-    - name: Run tests
+    - name: rust 測試
       run: cargo test --verbose
