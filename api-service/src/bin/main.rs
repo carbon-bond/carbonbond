@@ -1,5 +1,6 @@
 use carbonbond::{
-    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_boards, service::hot_articles,
+    config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_articles,
+    service::hot_boards,
 };
 use structopt::StructOpt;
 

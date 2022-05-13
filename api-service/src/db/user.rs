@@ -1,13 +1,13 @@
 use super::{get_pool, DBObject, ToFallible};
-use crate::api::model::forum::{LawyerbcResultMini};
-use crate::api::model::forum::{LawyerbcResult};
+use crate::api::model::forum::LawyerbcResult;
+use crate::api::model::forum::LawyerbcResultMini;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
 use crate::email::{self, send_signup_email};
 use reqwest;
-use serde_json::Error;
 use serde::{Deserialize, Serialize};
+use serde_json::Error;
 use std::collections::HashMap;
 use urlencoding::encode;
 
@@ -183,7 +183,7 @@ pub async fn query_search_result_from_lawyerbc(
         .send()
         .await?;
 
-    if ! response.status().is_success() {
+    if !response.status().is_success() {
         return Err(ErrorCode::SearchingLawyerbcFail.into());
     }
 
@@ -197,7 +197,8 @@ pub async fn query_search_result_from_lawyerbc(
     }
 
     let response_text = response.text().await?;
-    let lawyerbc_result_mini_response: Result<LawyerbcResultMiniResponse, Error> = serde_json::from_str(response_text.as_str());
+    let lawyerbc_result_mini_response: Result<LawyerbcResultMiniResponse, Error> =
+        serde_json::from_str(response_text.as_str());
     match lawyerbc_result_mini_response {
         Ok(resp) => Ok(resp.data.lawyers),
         Err(_) => Err(ErrorCode::ParsingJson.into()),
@@ -218,7 +219,8 @@ pub async fn query_detail_result_from_lawyerbc(license_id: String) -> Fallible<L
         pub data: Vec<LawyerbcResult>,
     }
 
-    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> = serde_json::from_str(response_text.as_str());
+    let lawyerbc_result_response: Result<LawyerbcResultResponse, Error> =
+        serde_json::from_str(response_text.as_str());
     match lawyerbc_result_response {
         Ok(resp) => Ok(resp.data[0].clone()),
         Err(_) => Err(ErrorCode::ParsingJson.into()),
@@ -487,12 +489,7 @@ pub async fn update_sentence(id: i64, sentence: String) -> Fallible<()> {
     Ok(())
 }
 
-pub async fn update_info(
-    id: i64,
-    introduction: String,
-    job: String,
-    city: String,
-) -> Fallible<()> {
+pub async fn update_info(id: i64, introduction: String, job: String, city: String) -> Fallible<()> {
     let pool = get_pool();
     if introduction.chars().count() > 1000 {
         return Err(ErrorCode::ArgumentFormatError("自我介紹長度".to_owned()).into());
