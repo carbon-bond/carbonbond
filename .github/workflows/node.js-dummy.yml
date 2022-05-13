@@ -1,0 +1,14 @@
+name: Node.js CI (dummy)
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'frontend/*'
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - run: echo "dummy frontend CI (always pass)"
+

@@ -1,0 +1,14 @@
+name: Rust (dummy)
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'api-service/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - run: echo "dummy backend CI (always pass)"
+
