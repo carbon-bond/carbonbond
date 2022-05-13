@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'api-service/*'
+      - 'api-service/**'
 
 defaults:
   run:
