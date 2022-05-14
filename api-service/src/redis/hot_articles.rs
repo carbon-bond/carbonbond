@@ -11,7 +11,7 @@ const KEY_HOT_ARTICLE: &'static str = "hot_articles";
 const TOP_N: usize = 30; // 只保留前 30 名
 
 fn compute_score(energy: f32, timestamp: u64) -> f32 {
-    let z = f32::max(energy, 1.0);
+    let z f32::max(energy, 1.0);
     z.log10() + 1.0f32 * timestamp as f32 / 45000.0f32
 }
 
