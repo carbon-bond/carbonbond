@@ -31,13 +31,13 @@ export class ChatSocket {
 	set_all_chat(all_chat: AllChatState): void {
 		this.all_chat = all_chat;
 	}
-	add_chat(channel: server_trigger.Channel): void {
+	add_chat(channel: server_trigger.Chat): void {
 		if ('Direct' in channel) {
 			const chat = channel.Direct;
 			console.log(chat);
-			this.all_chat!.addDirectChat(chat.channel_id, new DirectChatData(
+			this.all_chat!.addDirectChat(chat.chat_id, new DirectChatData(
 				chat.name,
-				chat.channel_id,
+				chat.chat_id,
 				chat.opposite_id,
 				[
 					new Message(
@@ -92,8 +92,8 @@ export class ChatSocket {
 				console.log('init info');
 
 				const init_info: server_trigger.InitInfo = api.InitInfo;
-				for (const channel of init_info.channels) {
-					this.add_chat(channel);
+				for (const chat of init_info.chats) {
+					this.add_chat(chat);
 				}
 			} else if ('MessageSending' in api) {
 				const message_sending: MessageSending = api.MessageSending;
@@ -103,25 +103,25 @@ export class ChatSocket {
 
 				if (this.all_chat == undefined) {
 					console.log('all_chat 尚未載入');
-				} else if (this.all_chat.all_chat.direct[message_sending.channel_id]) {
+				} else if (this.all_chat.all_chat.direct[message_sending.chat_id]) {
 					// TODO: 使用伺服器傳回的日期、訊息 id
-					this.all_chat.addMessage(message_sending.channel_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
+					this.all_chat.addMessage(message_sending.chat_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
 				} else {
 					// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
-					console.error(`找不到聊天室：${message_sending.channel_id} ，重新整理可能可以解決問題`);
+					console.error(`找不到聊天室：${message_sending.chat_id} ，重新整理可能可以解決問題`);
 				}
-			} else if ('NewChannel' in api) {
+			} else if ('NewChat' in api) {
 				console.log('new channel');
-				console.log(`${JSON.stringify(api.NewChannel)}`);
-				this.add_chat(api.NewChannel);
+				console.log(`${JSON.stringify(api.NewChat)}`);
+				this.add_chat(api.NewChat);
 			} else {
 				console.error('無法識別的 server_trigger.API');
 				console.log(`${JSON.stringify(api)}`);
 			}
 		};
 	}
-	send_message(channel_id: number, content: string): void {
-		this.send_api({MessageSending: {channel_id, content}});
+	send_message(chat_id: number, content: string): void {
+		this.send_api({MessageSending: {chat_id, content}});
 	}
 	send_api(api: client_trigger.API): void {
 		if (this.socket) {

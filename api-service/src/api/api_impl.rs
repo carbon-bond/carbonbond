@@ -1,3 +1,4 @@
+use super::model::chat::chat_model_root::NewChat;
 use super::model::forum::{Attitude, NewArticle, UpdatedArticle};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
@@ -71,15 +72,16 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
     async fn create_chat_if_not_exist(
         &self,
         context: &mut crate::Ctx,
-        opposite_id: i64,
+        new_chat: NewChat,
         msg: String,
     ) -> Result<i64, crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
-        let chat_id = chat::channel::create_if_not_exist(user_id, opposite_id, msg).await?;
-        let channel = chat::channel::get_direct_chat_by_id(chat_id, opposite_id).await?;
+        let (chat_id, opposite_id) =
+            chat::chat::create_if_not_exist(user_id, new_chat, msg).await?;
+        let chat = chat::chat::get_direct_chat_by_id(chat_id, opposite_id).await?;
         context
             .users
-            .send_api(opposite_id, server_trigger::API::NewChannel(channel))
+            .send_api(opposite_id, server_trigger::API::NewChat(chat))
             .await;
         Ok(chat_id)
     }
@@ -102,7 +104,7 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
         chat_id: i64,
     ) -> Result<(), crate::custom_error::Error> {
         let user_id = context.get_id_strict().await?;
-        chat::channel::update_direct_chat_read_time(chat_id, user_id, Utc::now()).await
+        chat::chat::update_direct_chat_read_time(chat_id, user_id, Utc::now()).await
     }
 }
 #[derive(Default)]

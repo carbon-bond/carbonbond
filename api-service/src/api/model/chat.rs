@@ -8,8 +8,13 @@ pub mod chat_model_root {
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct MessageSending {
-        pub channel_id: i64,
+        pub chat_id: i64,
         pub content: String,
+    }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum NewChat {
+        AnonymousArticle(i64), // 文章 id
+        User(i64),             // 用戶 id
     }
 
     #[chitin_model]
@@ -30,12 +35,12 @@ pub mod chat_model_root {
         pub enum API {
             InitInfo(InitInfo),
             MessageSending(MessageSending),
-            NewChannel(Channel),
+            NewChat(Chat),
         }
 
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct InitInfo {
-            pub channels: Vec<Channel>,
+            pub chats: Vec<Chat>,
         }
 
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
@@ -54,7 +59,7 @@ pub mod chat_model_root {
 
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct Direct {
-            pub channel_id: i64,
+            pub chat_id: i64,
             pub opposite_id: i64,
             pub name: String,
             pub last_msg: Message,
@@ -62,18 +67,18 @@ pub mod chat_model_root {
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct WithAnonymousAuthor {
-            pub channel_id: i64,
+            pub chat_id: i64,
             pub article_name: String,
             pub last_msg: Message,
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub struct IAmAnonymousAuthor {
-            pub channel_id: i64,
+            pub chat_id: i64,
             pub article_name: String,
             pub last_msg: Message,
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-        pub enum Channel {
+        pub enum Chat {
             Direct(Direct),
             WithAnonymousAuthor(WithAnonymousAuthor),
             IAmAnonymousAuthor(IAmAnonymousAuthor),

@@ -7,7 +7,7 @@ use sqlx::PgConnection;
 
 pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let pool = get_pool();
-    struct TmpChannel {
+    struct TmpChat {
         id: i64,
         name_1: String,
         name_2: String,
@@ -22,8 +22,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     }
     // TODO: 多重 JOIN 可能導致效能問題
     // 參考 https://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
-    let channels = sqlx::query_as!(
-        TmpChannel,
+    let chats = sqlx::query_as!(
+        TmpChat,
         "
 		SELECT chat.direct_chats.id,
             u1.user_name as name_1,
@@ -49,7 +49,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     )
     .fetch_all(pool)
     .await?;
-    let channels: Vec<server_trigger::Channel> = channels
+    let chats: Vec<server_trigger::Chat> = chats
         .into_iter()
         .map(|tmp| {
             let (name, opposite_id, read_time) = if tmp.user_id_1 == id {
@@ -62,8 +62,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             } else {
                 Sender::Opposite
             };
-            server_trigger::Channel::Direct(server_trigger::Direct {
-                channel_id: tmp.id,
+            server_trigger::Chat::Direct(server_trigger::Direct {
+                chat_id: tmp.id,
                 name,
                 opposite_id,
                 read_time,
@@ -76,7 +76,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             })
         })
         .collect();
-    Ok(server_trigger::InitInfo { channels })
+    Ok(server_trigger::InitInfo { chats })
 }
 pub async fn get_receiver(chat_id: i64, id: i64) -> Fallible<i64> {
     let pool = get_pool();
@@ -161,8 +161,8 @@ pub async fn _send_message(
 // 回傳接收者的用戶 id
 pub async fn send_message(msg: &MessageSending, my_id: i64) -> Fallible<i64> {
     let mut pool = get_pool().acquire().await?;
-    let receiver = get_receiver(msg.channel_id, my_id).await?;
-    _send_message(&mut pool, msg.channel_id, my_id, &msg.content).await?;
+    let receiver = get_receiver(msg.chat_id, my_id).await?;
+    _send_message(&mut pool, msg.chat_id, my_id, &msg.content).await?;
     Ok(receiver)
 }
 

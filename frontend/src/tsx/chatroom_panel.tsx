@@ -302,7 +302,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					setValue('');
 					setScrolling(true);
 				} else {
-					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
+					API_FETCHER.chatQuery.createChatIfNotExist({ User: chat.opposite_id }, input_props.value).then(res => {
 						return unwrap(res);
 					}).then(chat_id => {
 						ReactDOM.unstable_batchedUpdates(() => {

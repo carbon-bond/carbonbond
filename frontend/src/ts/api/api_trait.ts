@@ -58,7 +58,10 @@ export type Field = { name: string; kind: FieldKind };
 export enum FieldKind { Number = "Number", OneLine = "OneLine", MultiLine = "MultiLine" };
 export type Force = { categories: Category []; suggested_tags: string [] };
 }
-export type MessageSending = { channel_id: number; content: string };
+export type MessageSending = { chat_id: number; content: string };
+export type NewChat = 
+ | { AnonymousArticle: number } 
+ | { User: number };
 export namespace client_trigger {
 export type API = 
  | { MessageSending: MessageSending };
@@ -67,14 +70,14 @@ export namespace server_trigger {
 export type API = 
  | { InitInfo: InitInfo } 
  | { MessageSending: MessageSending } 
- | { NewChannel: Channel };
-export type InitInfo = { channels: Channel [] };
+ | { NewChat: Chat };
+export type InitInfo = { chats: Chat [] };
 export enum Sender { Myself = "Myself", Opposite = "Opposite" };
 export type Message = { id: number; sender: Sender; text: string; time: string};
-export type Direct = {     channel_id: number; opposite_id: number; name: string; last_msg:     Message; read_time: string};
-export type WithAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
-export type IAmAnonymousAuthor = { channel_id: number; article_name: string; last_msg: Message };
-export type Channel = 
+export type Direct = {     chat_id: number; opposite_id: number; name: string; last_msg:     Message; read_time: string};
+export type WithAnonymousAuthor = { chat_id: number; article_name: string; last_msg: Message };
+export type IAmAnonymousAuthor = { chat_id: number; article_name: string; last_msg: Message };
+export type Chat = 
  | { Direct: Direct } 
  | { WithAnonymousAuthor: WithAnonymousAuthor } 
  | { IAmAnonymousAuthor: IAmAnonymousAuthor };
@@ -126,8 +129,8 @@ export class ChatQuery {
     constructor(fetcher: Fetcher){
         this.fetchResult = fetcher
     }
-    async createChatIfNotExist(opposite_id: number, msg: string): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "Chat": { "CreateChatIfNotExist": { opposite_id, msg } } }));
+    async createChatIfNotExist(new_chat: NewChat, msg: string): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "Chat": { "CreateChatIfNotExist": { new_chat, msg } } }));
     }
     async queryDirectChatHistory(chat_id: number, last_msg_id: number, number: number): Promise<Result<Array<server_trigger.Message>, Error>> {
         return JSON.parse(await this.fetchResult({ "Chat": { "QueryDirectChatHistory": { chat_id, last_msg_id, number } } }));
