@@ -332,7 +332,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
-				<div className={leftSet}><Link to={`/app/user/${chat.name}`}>{chat.name}</Link></div>
+				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
 						setPrevScrollTop(ref.current?.scrollTop);

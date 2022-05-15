@@ -3,6 +3,7 @@ import * as React from 'react';
 const { useState } = React;
 import produce, { immerable } from 'immer';
 import {server_trigger} from '../../ts/api/api_trait';
+import { Link } from 'react-router-dom';
 
 export class Message {
 	[immerable] = true;
@@ -95,6 +96,14 @@ export class DirectChatData implements ChatData {
 			[]
 			, new Date()
 		);
+	}
+	getLink(): JSX.Element {
+		switch (this.meta.meta.kind) {
+			case ChatKind.Direct:
+				return <Link to={`/app/user/${this.meta.meta.opposite_name}`}>{this.name}</Link>;
+			case ChatKind.AnonymousArticleMeta:
+				return <Link to={`/app/article/${this.meta.meta.article_id}`}>{this.name}</Link>;
+		}
 	}
 	isExist(): boolean {
 		return !this.meta.is_fake;

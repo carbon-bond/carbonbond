@@ -20,7 +20,7 @@ import { SubscribeArticlePage } from '../subscribe_article_page';
 import { PopArticlePage } from '../pop_article_page';
 import { LawPage } from '../law_page';
 import { GraphPage } from '../board/graph_view';
-import { ArticlePage } from '../board/article_page';
+import { ArticlePage, ArticleRedirect } from '../board/article_page';
 
 export function MainRoutes(): JSX.Element {
 	return <Routes>
@@ -34,6 +34,7 @@ export function MainRoutes(): JSX.Element {
 		<Route path="/app/signup_invite" element={<SignupInvitationPage />} />
 		<Route path="/app/setting" element={<SettingPage />} />
 		<Route path="/app/user/:user_name" element={<KeepAliveUserPage />} />
+		<Route path="/app/article/:article_id" element={<ArticleRedirect />} />
 		<Route path="/app/b/:board_type/:board_name" element={<Outlet />}>
 			<Route path="article/:article_id" element={<ArticlePage />} />
 			<Route path="graph/:article_id" element={<GraphPage />} />
