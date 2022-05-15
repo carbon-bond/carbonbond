@@ -1,12 +1,12 @@
-use crate::custom_error::{Fallible};
-use state::Storage;
+use crate::custom_error::Fallible;
 use crate::db::article_statistics;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use state::Storage;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::collections::BTreeSet;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
-use chrono::{NaiveDateTime, DateTime, Utc};
 
 static BOARD_ARTICLE_NUMBER_IN_24H: Storage<Mutex<HashMap<i64, i64>>> = Storage::new();
 static BOARD_ARTICLE_RANK: Storage<Mutex<BTreeSet<(i64, i64)>>> = Storage::new();
@@ -28,9 +28,18 @@ pub async fn init() -> Fallible<()> {
     for (&board_id, &number) in initial_map.iter() {
         initial_map_rank.insert((number, board_id));
     }
-    assert!(BOARD_ARTICLE_NUMBER_IN_24H.set(Mutex::new(initial_map)), "初始化熱門看板 HashMap 錯誤",);
-    assert!(BOARD_ARTICLE_RANK.set(Mutex::new(initial_map_rank)), "初始化熱門看板 BtreeSet 錯誤",);
-    assert!(ARTICLE_RECORD_IN_24H.set(Mutex::new(initial_deque)), "初始化熱門看板 VecDeque 錯誤",);
+    assert!(
+        BOARD_ARTICLE_NUMBER_IN_24H.set(Mutex::new(initial_map)),
+        "初始化熱門看板 HashMap 錯誤",
+    );
+    assert!(
+        BOARD_ARTICLE_RANK.set(Mutex::new(initial_map_rank)),
+        "初始化熱門看板 BtreeSet 錯誤",
+    );
+    assert!(
+        ARTICLE_RECORD_IN_24H.set(Mutex::new(initial_deque)),
+        "初始化熱門看板 VecDeque 錯誤",
+    );
     log::debug!("初始化熱門看板統計資料完畢");
     Ok(())
 }
@@ -78,8 +87,14 @@ pub async fn get_hot_boards() -> Fallible<Vec<i64>> {
             break;
         }
         if timestamp > &(current_timestamp - ARTICLE_NUMBER_LIFETIME) {
-            let naive_datetime = NaiveDateTime::from_timestamp((current_timestamp - ARTICLE_NUMBER_LIFETIME) as i64, 0);
-            log::debug!("已清除看板文章數中早於 {} 之文章數量統計", DateTime::<Utc>::from_utc(naive_datetime, Utc));
+            let naive_datetime = NaiveDateTime::from_timestamp(
+                (current_timestamp - ARTICLE_NUMBER_LIFETIME) as i64,
+                0,
+            );
+            log::debug!(
+                "已清除看板文章數中早於 {} 之文章數量統計",
+                DateTime::<Utc>::from_utc(naive_datetime, Utc)
+            );
             break;
         }
         if let Some(article_number) = board_article_number.get_mut(&board_id) {
