@@ -10,5 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-    - run: echo "dummy backend CI (always pass)"
+    - name: 假的測試
+      run: echo "dummy backend CI (always pass)"
 
