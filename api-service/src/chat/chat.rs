@@ -191,14 +191,16 @@ pub async fn get_direct_chat_by_id(chat_id: i64, user_id: i64) -> Fallible<serve
         user_id_2: i64,
         read_time_1: DateTime<Utc>,
         read_time_2: DateTime<Utc>,
+        article_id: Option<i64>,
+        article_title: Option<String>,
         sender_id: i64,
         time: DateTime<Utc>,
         text: String,
         msg_id: i64,
     }
-    let chat = sqlx::query_as!(
+    let tmp_chat = sqlx::query_as!(
         TmpChat,
-        "
+        r#"
 		SELECT chat.direct_chats.id,
             u1.user_name as name_1,
             u2.user_name as name_2,
@@ -206,6 +208,8 @@ pub async fn get_direct_chat_by_id(chat_id: i64, user_id: i64) -> Fallible<serve
             user_id_2,
             read_time_1,
             read_time_2,
+            article_id,
+            articles.title as "article_title?",
             m.create_time as time,
             m.id as msg_id,
             m.content as text,
@@ -215,34 +219,51 @@ pub async fn get_direct_chat_by_id(chat_id: i64, user_id: i64) -> Fallible<serve
         ON chat.direct_chats.user_id_1 = u1.id
         JOIN users u2
         ON chat.direct_chats.user_id_2 = u2.id
+        LEFT JOIN articles
+        ON chat.direct_chats.article_id = articles.id
         JOIN chat.direct_messages m
         on chat.direct_chats.last_message = m.id
         WHERE chat.direct_chats.id = $1
-		",
+		"#,
         chat_id
     )
     .fetch_one(pool)
     .await?;
-    let (opposite_id, name, read_time) = if chat.user_id_1 == user_id {
-        (chat.user_id_2, chat.name_2, chat.read_time_1)
+
+    let sender = if tmp_chat.sender_id == user_id {
+        Sender::Myself
     } else {
-        (chat.user_id_1, chat.name_1, chat.read_time_2)
+        Sender::Opposite
+    };
+    let (opposite_id, name, read_time) = if tmp_chat.user_id_1 == user_id {
+        (tmp_chat.user_id_2, tmp_chat.name_2, tmp_chat.read_time_1)
+    } else {
+        (tmp_chat.user_id_1, tmp_chat.name_1, tmp_chat.read_time_2)
+    };
+    let last_msg = Message {
+        id: tmp_chat.msg_id,
+        sender,
+        text: tmp_chat.text,
+        time: tmp_chat.time,
     };
 
-    Ok(server_trigger::Chat::Direct(server_trigger::Direct {
-        chat_id: chat.id,
-        opposite_id,
-        name,
-        read_time,
-        last_msg: Message {
-            id: chat.msg_id,
-            text: chat.text,
-            sender: if chat.sender_id == user_id {
-                Sender::Myself
-            } else {
-                Sender::Opposite
-            },
-            time: chat.time,
-        },
-    }))
+    let chat = match tmp_chat.article_id {
+        Some(article_id) => {
+            server_trigger::Chat::AnonymousArticle(server_trigger::AnonymousArticle {
+                chat_id: tmp_chat.id,
+                article_title: tmp_chat.article_title.unwrap(), // article_id 有東西, article_title 也應有東西
+                article_id,
+                read_time,
+                last_msg,
+            })
+        }
+        None => server_trigger::Chat::Direct(server_trigger::Direct {
+            chat_id: tmp_chat.id,
+            opposite_id,
+            name,
+            read_time,
+            last_msg,
+        }),
+    };
+    Ok(chat)
 }

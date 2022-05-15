@@ -13,10 +13,10 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         name_2: String,
         user_id_1: i64,
         user_id_2: i64,
-        article_id: Option<i64>,
-        article_title: Option<String>,
         read_time_1: DateTime<Utc>,
         read_time_2: DateTime<Utc>,
+        article_id: Option<i64>,
+        article_title: Option<String>,
         sender_id: i64,
         time: DateTime<Utc>,
         text: String,
@@ -46,7 +46,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         JOIN users u2
         ON chat.direct_chats.user_id_2 = u2.id
         LEFT JOIN articles
-        ON chat.direct_chats.article_id = article_id
+        ON chat.direct_chats.article_id = articles.id
         JOIN chat.direct_messages m
         on chat.direct_chats.last_message = m.id
         WHERE (user_id_1 = $1 OR user_id_2 = $1)
