@@ -7,7 +7,7 @@ use sqlx::PgConnection;
 
 pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     let pool = get_pool();
-    struct TmpChannel {
+    struct TmpChat {
         id: i64,
         name_1: String,
         name_2: String,
@@ -15,6 +15,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         user_id_2: i64,
         read_time_1: DateTime<Utc>,
         read_time_2: DateTime<Utc>,
+        article_id: Option<i64>,
+        article_title: Option<String>,
         sender_id: i64,
         time: DateTime<Utc>,
         text: String,
@@ -22,9 +24,9 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     }
     // TODO: 多重 JOIN 可能導致效能問題
     // 參考 https://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
-    let channels = sqlx::query_as!(
-        TmpChannel,
-        "
+    let chats = sqlx::query_as!(
+        TmpChat,
+        r#"
 		SELECT chat.direct_chats.id,
             u1.user_name as name_1,
             u2.user_name as name_2,
@@ -32,6 +34,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             user_id_2,
             read_time_1,
             read_time_2,
+            article_id,
+            articles.title as "article_title?",
             m.create_time as time,
             m.id as msg_id,
             m.content as text,
@@ -41,15 +45,17 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         ON chat.direct_chats.user_id_1 = u1.id
         JOIN users u2
         ON chat.direct_chats.user_id_2 = u2.id
+        LEFT JOIN articles
+        ON chat.direct_chats.article_id = articles.id
         JOIN chat.direct_messages m
         on chat.direct_chats.last_message = m.id
         WHERE (user_id_1 = $1 OR user_id_2 = $1)
-		",
+		"#,
         id
     )
     .fetch_all(pool)
     .await?;
-    let channels: Vec<server_trigger::Channel> = channels
+    let chats: Vec<server_trigger::Chat> = chats
         .into_iter()
         .map(|tmp| {
             let (name, opposite_id, read_time) = if tmp.user_id_1 == id {
@@ -62,21 +68,37 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             } else {
                 Sender::Opposite
             };
-            server_trigger::Channel::Direct(server_trigger::Direct {
-                channel_id: tmp.id,
-                name,
-                opposite_id,
-                read_time,
-                last_msg: server_trigger::Message {
-                    id: tmp.msg_id,
-                    sender,
-                    text: tmp.text,
-                    time: tmp.time,
-                },
-            })
+            match tmp.article_id {
+                Some(article_id) => {
+                    server_trigger::Chat::AnonymousArticle(server_trigger::AnonymousArticle {
+                        chat_id: tmp.id,
+                        article_title: tmp.article_title.unwrap(), // article_id 有東西, article_title 也應有東西
+                        article_id,
+                        read_time,
+                        last_msg: server_trigger::Message {
+                            id: tmp.msg_id,
+                            sender,
+                            text: tmp.text,
+                            time: tmp.time,
+                        },
+                    })
+                }
+                None => server_trigger::Chat::Direct(server_trigger::Direct {
+                    chat_id: tmp.id,
+                    name,
+                    opposite_id,
+                    read_time,
+                    last_msg: server_trigger::Message {
+                        id: tmp.msg_id,
+                        sender,
+                        text: tmp.text,
+                        time: tmp.time,
+                    },
+                }),
+            }
         })
         .collect();
-    Ok(server_trigger::InitInfo { channels })
+    Ok(server_trigger::InitInfo { chats })
 }
 pub async fn get_receiver(chat_id: i64, id: i64) -> Fallible<i64> {
     let pool = get_pool();
@@ -161,8 +183,8 @@ pub async fn _send_message(
 // 回傳接收者的用戶 id
 pub async fn send_message(msg: &MessageSending, my_id: i64) -> Fallible<i64> {
     let mut pool = get_pool().acquire().await?;
-    let receiver = get_receiver(msg.channel_id, my_id).await?;
-    _send_message(&mut pool, msg.channel_id, my_id, &msg.content).await?;
+    let receiver = get_receiver(msg.chat_id, my_id).await?;
+    _send_message(&mut pool, msg.chat_id, my_id, &msg.content).await?;
     Ok(receiver)
 }
 

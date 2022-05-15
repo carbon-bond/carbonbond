@@ -1,9 +1,20 @@
 import { toast } from 'react-toastify';
-import { AllChatState, DirectChatData, Message } from '../tsx/global_state/chat';
+import { AllChatState, OppositeKind, DirectChatData, Message } from '../tsx/global_state/chat';
 import { toastErr } from '../tsx/utils';
 import { server_trigger, MessageSending, client_trigger } from './api/api_trait';
 
 const MAX_ATTEMPT_TIMES = 3;
+
+function to_history(message: server_trigger.Message): Message[] {
+	return [
+		new Message(
+			message.id,
+			message.sender,
+			message.text,
+			new Date(message.time),
+		)
+	];
+}
 
 export class ChatSocket {
 	socket: WebSocket | null;
@@ -31,24 +42,41 @@ export class ChatSocket {
 	set_all_chat(all_chat: AllChatState): void {
 		this.all_chat = all_chat;
 	}
-	add_chat(channel: server_trigger.Channel): void {
-		if ('Direct' in channel) {
-			const chat = channel.Direct;
-			console.log(chat);
-			this.all_chat!.addDirectChat(chat.channel_id, new DirectChatData(
-				chat.name,
-				chat.channel_id,
-				chat.opposite_id,
-				[
-					new Message(
-						chat.last_msg.id,
-						chat.last_msg.sender,
-						chat.last_msg.text,
-						new Date(chat.last_msg.time),
-					)
-				],
-				new Date(chat.read_time),
-				true
+	add_chat(chat: server_trigger.Chat): void {
+		if ('Direct' in chat) {
+			const direct_chat = chat.Direct;
+			console.log(direct_chat);
+			this.all_chat!.addDirectChat(direct_chat.chat_id, new DirectChatData(
+				direct_chat.name,
+				direct_chat.chat_id,
+				{
+					is_fake: false,
+					id: direct_chat.chat_id,
+					opposite: {
+						kind: OppositeKind.Direct,
+						opposite_id: direct_chat.opposite_id,
+						opposite_name: direct_chat.name,
+					}
+				},
+				to_history(direct_chat.last_msg),
+				new Date(direct_chat.read_time)
+			));
+		} else if ('AnonymousArticle' in chat) {
+			const article_chat = chat.AnonymousArticle;
+			this.all_chat!.addDirectChat(article_chat.chat_id, new DirectChatData(
+				article_chat.article_title,
+				article_chat.chat_id,
+				{
+					is_fake: false,
+					id: article_chat.chat_id,
+					opposite: {
+						kind: OppositeKind.AnonymousArticleMeta,
+						article_id: article_chat.article_id,
+						article_title: article_chat.article_title,
+					}
+				},
+				to_history(article_chat.last_msg),
+				new Date(article_chat.read_time),
 			));
 		}
 	}
@@ -83,8 +111,6 @@ export class ChatSocket {
 			}, duration * Math.random() * 1000);
 		};
 		this.socket.onmessage = (event) => {
-			// XXX: 使用 server_trigger.API
-			// eslint-disable-next-line
 			const api: server_trigger.API = JSON.parse(event.data);
 			console.log(`from server: ${event.data}`);
 			if ('InitInfo' in api) {
@@ -92,8 +118,8 @@ export class ChatSocket {
 				console.log('init info');
 
 				const init_info: server_trigger.InitInfo = api.InitInfo;
-				for (const channel of init_info.channels) {
-					this.add_chat(channel);
+				for (const chat of init_info.chats) {
+					this.add_chat(chat);
 				}
 			} else if ('MessageSending' in api) {
 				const message_sending: MessageSending = api.MessageSending;
@@ -103,25 +129,25 @@ export class ChatSocket {
 
 				if (this.all_chat == undefined) {
 					console.log('all_chat 尚未載入');
-				} else if (this.all_chat.all_chat.direct[message_sending.channel_id]) {
+				} else if (this.all_chat.all_chat.direct[message_sending.chat_id]) {
 					// TODO: 使用伺服器傳回的日期、訊息 id
-					this.all_chat.addMessage(message_sending.channel_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
+					this.all_chat.addMessage(message_sending.chat_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
 				} else {
 					// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
-					console.error(`找不到聊天室：${message_sending.channel_id} ，重新整理可能可以解決問題`);
+					console.error(`找不到聊天室：${message_sending.chat_id} ，重新整理可能可以解決問題`);
 				}
-			} else if ('NewChannel' in api) {
-				console.log('new channel');
-				console.log(`${JSON.stringify(api.NewChannel)}`);
-				this.add_chat(api.NewChannel);
+			} else if ('NewChat' in api) {
+				console.log('new chat');
+				console.log(`${JSON.stringify(api.NewChat)}`);
+				this.add_chat(api.NewChat);
 			} else {
 				console.error('無法識別的 server_trigger.API');
 				console.log(`${JSON.stringify(api)}`);
 			}
 		};
 	}
-	send_message(channel_id: number, content: string): void {
-		this.send_api({MessageSending: {channel_id, content}});
+	send_message(chat_id: number, content: string): void {
+		this.send_api({MessageSending: {chat_id, content}});
 	}
 	send_api(api: client_trigger.API): void {
 		if (this.socket) {

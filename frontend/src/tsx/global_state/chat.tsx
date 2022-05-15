@@ -3,6 +3,7 @@ import * as React from 'react';
 const { useState } = React;
 import produce, { immerable } from 'immer';
 import {server_trigger} from '../../ts/api/api_trait';
+import { Link } from 'react-router-dom';
 
 export class Message {
 	[immerable] = true;
@@ -18,23 +19,99 @@ export class Message {
 	}
 }
 
+export enum OppositeKind {
+	Direct, AnonymousArticleMeta
+};
+
+type DirectUser = {
+	kind: OppositeKind.Direct,
+	opposite_id: number,
+	opposite_name: string,
+};
+
+type AnonymousArticle = {
+	kind: OppositeKind.AnonymousArticleMeta,
+	article_id: number,
+	article_title: string,
+};
+
+export type Opposite = DirectUser | AnonymousArticle;
+
+type ChatMeta = {
+	is_fake: true,
+	id: null,
+	opposite: Opposite
+} | {
+	is_fake: false,
+	id: number,
+	opposite: Opposite
+};
+
+let fake_id_counter = -1;
+
 export class DirectChatData implements ChatData {
 	[immerable] = true;
+	name: string;         // 未來一個對話的名字可能由使用者自行設置
+	id: number;
+	meta: ChatMeta;       // meta 中 opposite_name, article_title 則是固定的
+	read_time: Date;
 	exhaust_history: boolean;
 	history: Message[];
-	name: string;
-	id: number;
-	opposite_id: number;
-	read_time: Date;
-	exist: boolean;
-	constructor(name: string, id: number, opposite_id: number, history: Message[], read_time: Date, exist: boolean) {
-		this.exhaust_history = false;
+	constructor(name: string, id: number, meta: ChatMeta, history: Message[], read_time: Date) {
 		this.name = name;
 		this.id = id;
-		this.opposite_id = opposite_id;
-		this.history = history;
+		this.meta = meta;
 		this.read_time = read_time;
-		this.exist = exist;
+		this.exhaust_history = false;
+		this.history = history;
+	}
+	static new_fake_direct(opposite_id: number, opposite_name: string): DirectChatData {
+		return new DirectChatData(
+			opposite_name,
+			fake_id_counter--,
+			{
+				is_fake: true,
+				id: null,
+				opposite: {
+					kind: OppositeKind.Direct,
+					opposite_id,
+					opposite_name
+				}
+			},
+			[]
+			, new Date()
+		);
+	}
+	static new_fake_article(article_id: number, article_title: string): DirectChatData {
+		return new DirectChatData(
+			article_title,
+			fake_id_counter--,
+			{
+				is_fake: true,
+				id: null,
+				opposite: {
+					kind: OppositeKind.AnonymousArticleMeta,
+					article_id,
+					article_title
+				}
+			},
+			[]
+			, new Date()
+		);
+	}
+	getLink(): JSX.Element {
+		return <Link to={this.getURL()}>{this.name}</Link>;
+	}
+	getURL(): string {
+		switch (this.meta.opposite.kind) {
+			case OppositeKind.Direct:
+				return `/app/user/${this.meta.opposite.opposite_name}`;
+			case OppositeKind.AnonymousArticleMeta:
+				return `/app/article/${this.meta.opposite.article_id}`;
+		}
+	}
+	isExist(): boolean {
+		return !this.meta.is_fake;
 	}
 	isUnread(): boolean {
 		const last_msg = this.history[this.history.length - 1];
@@ -85,6 +162,9 @@ export class GroupChatData {
 		this.channels = channels;
 		this.read_time = read_time;
 	}
+	isExist(): boolean {
+		return this.exist;
+	}
 	isUnread(): boolean {
 		return this.unreadChannels().length > 0;
 	}
@@ -111,10 +191,10 @@ export interface IMessage {
 
 export interface ChatData {
 	id: number;
-	exist: boolean;
 	name: string;
 	newestMessage(): IMessage | undefined
 	isUnread(): boolean
+	isExist(): boolean
 };
 
 class AllChat {
@@ -128,7 +208,11 @@ class AllChat {
 	toRealDirectChat(fake_id: number, chat_id: number): AllChat {
 		return produce(this, (draft) => {
 			draft.direct[chat_id] = draft.direct[fake_id];
-			draft.direct[chat_id].exist = true;
+			draft.direct[chat_id].meta = {
+				...draft.direct[chat_id].meta,
+				is_fake: false,
+				id: chat_id,
+			};
 			draft.direct[chat_id].id = chat_id;
 			delete draft.direct[fake_id];
 		});

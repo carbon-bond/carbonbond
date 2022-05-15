@@ -4,12 +4,12 @@ import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit, NormalBondLines } from '../article_card';
 import style from '../../css/board/article_page.module.css';
-import { Article, Board, force } from '../../ts/api/api_trait';
+import { Article, ArticleMeta, Board, force } from '../../ts/api/api_trait';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
 import { LocationCacheState } from '../global_state/location_cache';
-import { useBoardInfo } from '.';
+import { BoardInfo, useBoardInfo } from '.';
 import { ShowText } from '../display/show_text';
 import { EditorPanelState } from '../global_state/editor_panel';
 
@@ -114,12 +114,34 @@ export function ArticlePage(): JSX.Element {
 				<div className="mainContent">
 					<ArticleDisplayPage article={article} board={board} />
 				</div>
-				{window.is_mobile ? <></> : <ArticleSidebar author={article.meta.author}/>}
+				{window.is_mobile ? <></> : <ArticleSidebar article={article}/>}
 			</div>;
 		} else {
 			return <Navigate to={`${board_info.to_url()}/article/${article.meta.id}`} />;
 		}
 	} else {
 		return <div>{`文章代碼 ${article_id} ：不存在`}</div>;
+	}
+}
+
+// 網址僅有文章 id 而無看板資訊時，以此元件進行轉址
+export function ArticleRedirect(): JSX.Element {
+	let params = useParams();
+	let article_id = parseInt(params.article_id!);
+	let [article, setArticle] = React.useState<ArticleMeta | null>(null);
+	React.useEffect(() => {
+		API_FETCHER.articleQuery.queryArticleMeta(article_id)
+		.then((article) => {
+			setArticle(unwrap(article));
+		}).catch(err => {
+			toastErr(err);
+		});
+	}, [article_id]);
+
+	if (article == null) {
+		return <div></div>;
+	} else {
+		let board_info = new BoardInfo(article.board_name, article.board_type);
+		return <Navigate to={`${board_info.to_url()}/article/${article_id}`} />;
 	}
 }

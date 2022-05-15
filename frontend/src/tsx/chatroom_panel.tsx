@@ -8,8 +8,10 @@ import { useScrollBottom, useInputValue, toastErr } from './utils';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	AllChatState,
+	OppositeKind,
 	IMessage,
 	Message,
+	DirectChatData,
 } from './global_state/chat';
 import {
 	BottomPanelState,
@@ -26,7 +28,7 @@ import { UserState } from './global_state/user';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import produce from 'immer';
 import { Link } from 'react-router-dom';
-import { server_trigger } from '../ts/api/api_trait';
+import { NewChat, server_trigger } from '../ts/api/api_trait';
 import { useScroll } from 'react-use';
 import ReactDOM from 'react-dom';
 import { ShowLine } from './display/show_text';
@@ -89,22 +91,60 @@ function MessageShow(props: { content: string }): JSX.Element {
 	}
 }
 
-const MessageBlocks = React.memo((props: {messages: IMessage[], user_name: string, room_name: string}): JSX.Element => {
+const MessageBlocks = React.memo((props: {
+	chat: DirectChatData
+	messages: IMessage[],
+	user_name: string,
+	room_name: string
+}): JSX.Element => {
 	const agg_messages = aggregateMessages(props.messages);
+	const OppositeImage = (() => {
+		switch (props.chat.meta.opposite.kind) {
+			case OppositeKind.Direct:
+				return <Link to={props.chat.getURL()}>
+					<img src={`/avatar/${props.room_name}`} />
+				</Link>;
+			case OppositeKind.AnonymousArticleMeta:
+				return <Link to={props.chat.getURL()}>
+					<img src={'/public/no-avatar.png'} />
+				</Link>;
+		}
+	})();
+	const MyImage = <Link to={`/app/user/${props.user_name}`}>
+		<img src={`/avatar/${props.user_name}`} />
+	</Link>;
+	const OppositeLink = <Link to={props.chat.getURL()}>
+		<span className={style.who}>{props.room_name}</span>
+	</Link>;
+	const MyLink = <Link to={`/app/user/${props.user_name}`}>
+		<span className={style.who}>{props.user_name}</span>
+	</Link>;
+
 	return <>
 		{
 			// XXX: key 要改成能表示時間順序的 id
 			agg_messages.map(message => {
-				let sender_name = (message.who == server_trigger.Sender.Myself ? props.user_name : props.room_name);
+				const Image = (() => {
+					switch (message.who) {
+						case server_trigger.Sender.Myself:
+							return MyImage;
+						case server_trigger.Sender.Opposite:
+							return OppositeImage;
+					}
+				})();
+				const SenderLink = (() => {
+					switch (message.who) {
+						case server_trigger.Sender.Myself:
+							return MyLink;
+						case server_trigger.Sender.Opposite:
+							return OppositeLink;
+					}
+				})();
 				return <div key={Number(message.date)} className={style.messageBlock}>
-					<div className={style.leftSet}>
-						<Link to={`/app/user/${sender_name}`}>
-							<img src={`/avatar/${sender_name}`} />
-						</Link>
-					</div>
+					<div className={style.leftSet}>{Image}</div>
 					<div className={style.rightSet}>
 						<div className={style.meta}>
-							<Link to={`/app/user/${sender_name}`}><span className={style.who}>{sender_name}</span></Link>
+							{SenderLink};
 							<span className={style.date}>{relativeDate(message.date)}</span>
 						</div>
 						{
@@ -259,7 +299,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 	React.useEffect(() => {
 		const PAGE_SIZE = 50;
-		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
+		if (y < 200 && extended && !chat.exhaust_history && chat.isExist() && !fetchingHistory) {
 			setFetchingHistory(true);
 			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 				let history = unwrap(res);
@@ -280,7 +320,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				setFetchingHistory(false);
 			});
 		}
-	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing]);
+	}, [fetchingHistory, chat.exhaust_history, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing, chat]);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -295,14 +335,22 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				if (chat.exist) {
+				if (chat.isExist()) {
 					window.chat_socket.send_message(chat!.id, input_props.value);
 					// TODO: 計算回傳的 id
 					addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
 					setValue('');
 					setScrolling(true);
 				} else {
-					API_FETCHER.chatQuery.createChatIfNotExist(chat.opposite_id, input_props.value).then(res => {
+					let new_chat: NewChat = (() => {
+						switch (chat.meta.opposite.kind) {
+							case OppositeKind.Direct:
+								return { User: chat.meta.opposite.opposite_id };
+							case OppositeKind.AnonymousArticleMeta:
+								return { AnonymousArticle: chat.meta.opposite.article_id };
+						}
+					})();
+					API_FETCHER.chatQuery.createChatIfNotExist(new_chat, input_props.value).then(res => {
 						return unwrap(res);
 					}).then(chat_id => {
 						ReactDOM.unstable_batchedUpdates(() => {
@@ -323,7 +371,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 		return <div className={style.chatPanel}>
 			<div className={roomTitle}>
-				<div className={leftSet}><Link to={`/app/user/${chat.name}`}>{chat.name}</Link></div>
+				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
 						setPrevScrollTop(ref.current?.scrollTop);
@@ -336,7 +384,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				</div>
 			</div>
 			<div ref={ref} className={style.messages}>
-				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={chat.name}/>
+				<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
@@ -426,7 +474,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				<div>
 					<div ref={ref} className={style.messages}>
 						{/* TODO: channel 運作方式與私訊不同*/}
-						<MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" />
+						{/* <MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" /> */}
 					</div>
 					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>
