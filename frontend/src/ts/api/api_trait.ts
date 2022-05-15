@@ -75,12 +75,10 @@ export type InitInfo = { chats: Chat [] };
 export enum Sender { Myself = "Myself", Opposite = "Opposite" };
 export type Message = { id: number; sender: Sender; text: string; time: string};
 export type Direct = {     chat_id: number; opposite_id: number; name: string; last_msg:     Message; read_time: string};
-export type WithAnonymousAuthor = { chat_id: number; article_name: string; last_msg: Message };
-export type IAmAnonymousAuthor = { chat_id: number; article_name: string; last_msg: Message };
+export type AnonymousArticle = {     chat_id: number; article_id: number; article_title: string; last_msg: Message; read_time: string};
 export type Chat = 
  | { Direct: Direct } 
- | { WithAnonymousAuthor: WithAnonymousAuthor } 
- | { IAmAnonymousAuthor: IAmAnonymousAuthor };
+ | { AnonymousArticle: AnonymousArticle };
 }
 export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
 export type ErrorCode = 

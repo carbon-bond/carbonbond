@@ -66,22 +66,17 @@ pub mod chat_model_root {
             pub read_time: DateTime<Utc>,
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-        pub struct WithAnonymousAuthor {
+        pub struct AnonymousArticle {
             pub chat_id: i64,
-            pub article_name: String,
+            pub article_id: i64,
+            pub article_title: String,
             pub last_msg: Message,
-        }
-        #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
-        pub struct IAmAnonymousAuthor {
-            pub chat_id: i64,
-            pub article_name: String,
-            pub last_msg: Message,
+            pub read_time: DateTime<Utc>,
         }
         #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
         pub enum Chat {
             Direct(Direct),
-            WithAnonymousAuthor(WithAnonymousAuthor),
-            IAmAnonymousAuthor(IAmAnonymousAuthor),
+            AnonymousArticle(AnonymousArticle),
         }
     }
 }

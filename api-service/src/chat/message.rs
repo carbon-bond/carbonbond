@@ -13,6 +13,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         name_2: String,
         user_id_1: i64,
         user_id_2: i64,
+        article_id: Option<i64>,
+        article_title: Option<String>,
         read_time_1: DateTime<Utc>,
         read_time_2: DateTime<Utc>,
         sender_id: i64,
@@ -24,7 +26,7 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
     // 參考 https://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
     let chats = sqlx::query_as!(
         TmpChat,
-        "
+        r#"
 		SELECT chat.direct_chats.id,
             u1.user_name as name_1,
             u2.user_name as name_2,
@@ -32,6 +34,8 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             user_id_2,
             read_time_1,
             read_time_2,
+            article_id,
+            articles.title as "article_title?",
             m.create_time as time,
             m.id as msg_id,
             m.content as text,
@@ -41,10 +45,12 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
         ON chat.direct_chats.user_id_1 = u1.id
         JOIN users u2
         ON chat.direct_chats.user_id_2 = u2.id
+        LEFT JOIN articles
+        ON chat.direct_chats.article_id = article_id
         JOIN chat.direct_messages m
         on chat.direct_chats.last_message = m.id
         WHERE (user_id_1 = $1 OR user_id_2 = $1)
-		",
+		"#,
         id
     )
     .fetch_all(pool)
@@ -62,18 +68,34 @@ pub async fn get_init_info(id: i64) -> Fallible<server_trigger::InitInfo> {
             } else {
                 Sender::Opposite
             };
-            server_trigger::Chat::Direct(server_trigger::Direct {
-                chat_id: tmp.id,
-                name,
-                opposite_id,
-                read_time,
-                last_msg: server_trigger::Message {
-                    id: tmp.msg_id,
-                    sender,
-                    text: tmp.text,
-                    time: tmp.time,
-                },
-            })
+            match tmp.article_id {
+                Some(article_id) => {
+                    server_trigger::Chat::AnonymousArticle(server_trigger::AnonymousArticle {
+                        chat_id: tmp.id,
+                        article_title: tmp.article_title.unwrap(), // article_id 有東西, article_title 也應有東西
+                        article_id,
+                        read_time,
+                        last_msg: server_trigger::Message {
+                            id: tmp.msg_id,
+                            sender,
+                            text: tmp.text,
+                            time: tmp.time,
+                        },
+                    })
+                }
+                None => server_trigger::Chat::Direct(server_trigger::Direct {
+                    chat_id: tmp.id,
+                    name,
+                    opposite_id,
+                    read_time,
+                    last_msg: server_trigger::Message {
+                        id: tmp.msg_id,
+                        sender,
+                        text: tmp.text,
+                        time: tmp.time,
+                    },
+                }),
+            }
         })
         .collect();
     Ok(server_trigger::InitInfo { chats })

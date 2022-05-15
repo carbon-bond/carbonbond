@@ -114,7 +114,7 @@ export function ArticlePage(): JSX.Element {
 				<div className="mainContent">
 					<ArticleDisplayPage article={article} board={board} />
 				</div>
-				{window.is_mobile ? <></> : <ArticleSidebar author={article.meta.author}/>}
+				{window.is_mobile ? <></> : <ArticleSidebar article={article}/>}
 			</div>;
 		} else {
 			return <Navigate to={`${board_info.to_url()}/article/${article.meta.id}`} />;

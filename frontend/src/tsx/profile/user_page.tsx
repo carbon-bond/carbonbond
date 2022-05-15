@@ -22,7 +22,6 @@ import produce from 'immer';
 import { Link, useParams } from 'react-router-dom';
 import { KeepAlive } from 'react-activation';
 
-let fake_id_counter = -1;
 
 function EditSentence(props: { sentence: string, setSentence: (sentence: string) => void }): JSX.Element {
 	const [is_editing, setIsEditing] = React.useState<boolean>(false);
@@ -575,13 +574,14 @@ export function ProfileAction(props: {profile_user: User,
 
 	function onStartChat(): void {
 		const user_name = props.profile_user.user_name;
+		const user_id = props.profile_user.id;
 		let chat = Object.values(all_chat.direct).find(chat => chat.name == user_name);
 		if (chat != undefined) {
 			addRoom(chat.id);
 		} else {
-			addDirectChat(fake_id_counter, new DirectChatData(user_name, fake_id_counter, props.profile_user.id, [], new Date(), false));
-			addRoom(fake_id_counter);
-			fake_id_counter--;
+			let fake_direct = DirectChatData.new_fake_direct(user_id, user_name);
+			addDirectChat(fake_direct.id, fake_direct);
+			addRoom(fake_direct.id);
 		}
 	}
 

@@ -8,6 +8,7 @@ import { useScrollBottom, useInputValue, toastErr } from './utils';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	AllChatState,
+	ChatKind,
 	IMessage,
 	Message,
 } from './global_state/chat';
@@ -26,7 +27,7 @@ import { UserState } from './global_state/user';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import produce from 'immer';
 import { Link } from 'react-router-dom';
-import { server_trigger } from '../ts/api/api_trait';
+import { NewChat, server_trigger } from '../ts/api/api_trait';
 import { useScroll } from 'react-use';
 import ReactDOM from 'react-dom';
 import { ShowLine } from './display/show_text';
@@ -259,7 +260,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 	React.useEffect(() => {
 		const PAGE_SIZE = 50;
-		if (y < 200 && extended && !chat.exhaust_history && chat.exist && !fetchingHistory) {
+		if (y < 200 && extended && !chat.exhaust_history && chat.isExist() && !fetchingHistory) {
 			setFetchingHistory(true);
 			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 				let history = unwrap(res);
@@ -280,7 +281,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				setFetchingHistory(false);
 			});
 		}
-	}, [fetchingHistory, chat.exhaust_history, chat.exist, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing]);
+	}, [fetchingHistory, chat.exhaust_history, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing, chat]);
 
 	if (user_state.login == false) {
 		return <></>;
@@ -295,14 +296,22 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 			if (e.key == 'Enter' && input_props.value.length > 0) {
 				const now = new Date();
-				if (chat.exist) {
+				if (chat.isExist()) {
 					window.chat_socket.send_message(chat!.id, input_props.value);
 					// TODO: 計算回傳的 id
 					addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
 					setValue('');
 					setScrolling(true);
 				} else {
-					API_FETCHER.chatQuery.createChatIfNotExist({ User: chat.opposite_id }, input_props.value).then(res => {
+					let new_chat: NewChat = (() => {
+						switch (chat.meta.meta.kind) {
+							case ChatKind.Direct:
+								return { User: chat.meta.meta.opposite_id };
+							case ChatKind.AnonymousArticleMeta:
+								return { AnonymousArticle: chat.meta.meta.article_id };
+						}
+					})();
+					API_FETCHER.chatQuery.createChatIfNotExist(new_chat, input_props.value).then(res => {
 						return unwrap(res);
 					}).then(chat_id => {
 						ReactDOM.unstable_batchedUpdates(() => {

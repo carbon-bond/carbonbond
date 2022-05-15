@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Author, Board, Party, User } from '../../ts/api/api_trait';
+import { Article, Board, Party, User } from '../../ts/api/api_trait';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 
 import style from '../../css/board/right_sidebar.module.css';
@@ -9,6 +9,8 @@ import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileRelation, ProfileAction, ProfileDetail } from '../profile/user_page';
 import { ShowText } from '../display/show_text';
+import { AllChatState, ChatKind, DirectChatData } from '../global_state/chat';
+import { BottomPanelState } from '../global_state/bottom_panel';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -113,20 +115,19 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 	</>;
 }
 
-function onStartAnonymousArticleChat(): void {
-	return;
-}
-
-function UserIntroduction(props: {author: Author}): JSX.Element {
+function UserIntroduction(props: {article: Article}): JSX.Element {
+	let author = props.article.meta.author;
+	const { all_chat, addDirectChat } = AllChatState.useContainer();
+	const { addRoom } = BottomPanelState.useContainer();
 	const [user, setUser] = React.useState<User | null>(null);
 	const { user_state } = UserState.useContainer();
 	const [reload, setReload] = React.useState<number>(Date.now());
 
 	React.useEffect(() => {
-		if (props.author == 'Anonymous' || props.author == 'MyAnonymous') {
+		if (author == 'Anonymous' || author == 'MyAnonymous') {
 			return;
 		} else {
-			API_FETCHER.userQuery.queryUser(props.author.NamedAuthor.name).then((user) => {
+			API_FETCHER.userQuery.queryUser(author.NamedAuthor.name).then((user) => {
 				try {
 					setUser(unwrap(user));
 				} catch (err) {
@@ -134,16 +135,36 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 				}
 			});
 		}
-	}, [props.author, reload]);
+	}, [author, reload]);
 
-	if (props.author == 'MyAnonymous') {
+	if (author == 'MyAnonymous') {
 		return <></>;
-	} else if (props.author == 'Anonymous') {
+	} else if (author == 'Anonymous') {
 		return <div className={style.anonymousAuthor}>
-			作者匿名，但依然可以 <button onClick={onStartAnonymousArticleChat}>🗨️ 私訊作者</button>
+			作者匿名，但依然可以 <button onClick={() => {
+				const article_id = props.article.meta.id;
+				const article_title = props.article.meta.title;
+				let chat = Object.values(all_chat.direct).find(chat => {
+					return chat.meta.is_fake &&
+						chat.meta.meta.kind == ChatKind.AnonymousArticleMeta &&
+						chat.meta.meta.article_id == article_id;
+				});
+				// TODO: 問後端這個文章對話是否已經存在
+				// 以後聊天室對話實作分頁之後，
+				if (chat != undefined) {
+					addRoom(chat.id);
+				} else {
+					let fake_direct = DirectChatData.new_fake_article(article_id, article_title);
+					addDirectChat(fake_direct.id, fake_direct);
+					addRoom(fake_direct.id);
+				}
+
+			}}>
+				🗨️ 私訊作者
+			</button>
 		</div>;
 	} else {
-		const user_name = props.author.NamedAuthor.name;
+		const user_name = author.NamedAuthor.name;
 		return <div className={style.userIntroduction}>
 			<div className={style.userTop}>
 				<div className={style.avatar}>
@@ -183,11 +204,11 @@ function UserIntroduction(props: {author: Author}): JSX.Element {
 	}
 }
 
-export function ArticleSidebar(props: {author: Author}): JSX.Element {
+export function ArticleSidebar(props: {article: Article}): JSX.Element {
 	return <div className="rightSideBar">
 		<div className={style.rightSidebarItem}>
 			<div className={style.rightSidebarBlock}>
-				<UserIntroduction author={props.author} />
+				<UserIntroduction article={props.article} />
 			</div>
 		</div>
 
