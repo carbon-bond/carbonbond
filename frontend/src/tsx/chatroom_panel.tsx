@@ -8,9 +8,10 @@ import { useScrollBottom, useInputValue, toastErr } from './utils';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	AllChatState,
-	ChatKind,
+	OppositeKind,
 	IMessage,
 	Message,
+	DirectChatData,
 } from './global_state/chat';
 import {
 	BottomPanelState,
@@ -90,22 +91,60 @@ function MessageShow(props: { content: string }): JSX.Element {
 	}
 }
 
-const MessageBlocks = React.memo((props: {messages: IMessage[], user_name: string, room_name: string}): JSX.Element => {
+const MessageBlocks = React.memo((props: {
+	chat: DirectChatData
+	messages: IMessage[],
+	user_name: string,
+	room_name: string
+}): JSX.Element => {
 	const agg_messages = aggregateMessages(props.messages);
+	const OppositeImage = (() => {
+		switch (props.chat.meta.opposite.kind) {
+			case OppositeKind.Direct:
+				return <Link to={props.chat.getURL()}>
+					<img src={`/avatar/${props.room_name}`} />
+				</Link>;
+			case OppositeKind.AnonymousArticleMeta:
+				return <Link to={props.chat.getURL()}>
+					<img src={'/public/no-avatar.png'} />
+				</Link>;
+		}
+	})();
+	const MyImage = <Link to={`/app/user/${props.user_name}`}>
+		<img src={`/avatar/${props.user_name}`} />
+	</Link>;
+	const OppositeLink = <Link to={props.chat.getURL()}>
+		<span className={style.who}>{props.room_name}</span>
+	</Link>;
+	const MyLink = <Link to={`/app/user/${props.user_name}`}>
+		<span className={style.who}>{props.user_name}</span>
+	</Link>;
+
 	return <>
 		{
 			// XXX: key 要改成能表示時間順序的 id
 			agg_messages.map(message => {
-				let sender_name = (message.who == server_trigger.Sender.Myself ? props.user_name : props.room_name);
+				const Image = (() => {
+					switch (message.who) {
+						case server_trigger.Sender.Myself:
+							return MyImage;
+						case server_trigger.Sender.Opposite:
+							return OppositeImage;
+					}
+				})();
+				const SenderLink = (() => {
+					switch (message.who) {
+						case server_trigger.Sender.Myself:
+							return MyLink;
+						case server_trigger.Sender.Opposite:
+							return OppositeLink;
+					}
+				})();
 				return <div key={Number(message.date)} className={style.messageBlock}>
-					<div className={style.leftSet}>
-						<Link to={`/app/user/${sender_name}`}>
-							<img src={`/avatar/${sender_name}`} />
-						</Link>
-					</div>
+					<div className={style.leftSet}>{Image}</div>
 					<div className={style.rightSet}>
 						<div className={style.meta}>
-							<Link to={`/app/user/${sender_name}`}><span className={style.who}>{sender_name}</span></Link>
+							{SenderLink};
 							<span className={style.date}>{relativeDate(message.date)}</span>
 						</div>
 						{
@@ -304,11 +343,11 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					setScrolling(true);
 				} else {
 					let new_chat: NewChat = (() => {
-						switch (chat.meta.meta.kind) {
-							case ChatKind.Direct:
-								return { User: chat.meta.meta.opposite_id };
-							case ChatKind.AnonymousArticleMeta:
-								return { AnonymousArticle: chat.meta.meta.article_id };
+						switch (chat.meta.opposite.kind) {
+							case OppositeKind.Direct:
+								return { User: chat.meta.opposite.opposite_id };
+							case OppositeKind.AnonymousArticleMeta:
+								return { AnonymousArticle: chat.meta.opposite.article_id };
 						}
 					})();
 					API_FETCHER.chatQuery.createChatIfNotExist(new_chat, input_props.value).then(res => {
@@ -345,7 +384,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				</div>
 			</div>
 			<div ref={ref} className={style.messages}>
-				<MessageBlocks messages={chat!.history} user_name={user_state.user_name} room_name={chat.name}/>
+				<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 		</div>;
@@ -435,7 +474,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 				<div>
 					<div ref={ref} className={style.messages}>
 						{/* TODO: channel 運作方式與私訊不同*/}
-						<MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" />
+						{/* <MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" /> */}
 					</div>
 					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
 				</div>

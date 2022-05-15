@@ -19,30 +19,32 @@ export class Message {
 	}
 }
 
-export enum ChatKind {
+export enum OppositeKind {
 	Direct, AnonymousArticleMeta
 };
 
-type DirectMeta = {
-	kind: ChatKind.Direct,
+type DirectUser = {
+	kind: OppositeKind.Direct,
 	opposite_id: number,
 	opposite_name: string,
 };
 
-type AnonymousArticleMeta = {
-	kind: ChatKind.AnonymousArticleMeta,
+type AnonymousArticle = {
+	kind: OppositeKind.AnonymousArticleMeta,
 	article_id: number,
 	article_title: string,
 };
 
+export type Opposite = DirectUser | AnonymousArticle;
+
 type ChatMeta = {
 	is_fake: true,
 	id: null,
-	meta: DirectMeta | AnonymousArticleMeta
+	opposite: Opposite
 } | {
 	is_fake: false,
 	id: number,
-	meta: DirectMeta | AnonymousArticleMeta
+	opposite: Opposite
 };
 
 let fake_id_counter = -1;
@@ -70,8 +72,8 @@ export class DirectChatData implements ChatData {
 			{
 				is_fake: true,
 				id: null,
-				meta: {
-					kind: ChatKind.Direct,
+				opposite: {
+					kind: OppositeKind.Direct,
 					opposite_id,
 					opposite_name
 				}
@@ -87,8 +89,8 @@ export class DirectChatData implements ChatData {
 			{
 				is_fake: true,
 				id: null,
-				meta: {
-					kind: ChatKind.AnonymousArticleMeta,
+				opposite: {
+					kind: OppositeKind.AnonymousArticleMeta,
 					article_id,
 					article_title
 				}
@@ -98,11 +100,14 @@ export class DirectChatData implements ChatData {
 		);
 	}
 	getLink(): JSX.Element {
-		switch (this.meta.meta.kind) {
-			case ChatKind.Direct:
-				return <Link to={`/app/user/${this.meta.meta.opposite_name}`}>{this.name}</Link>;
-			case ChatKind.AnonymousArticleMeta:
-				return <Link to={`/app/article/${this.meta.meta.article_id}`}>{this.name}</Link>;
+		return <Link to={this.getURL()}>{this.name}</Link>;
+	}
+	getURL(): string {
+		switch (this.meta.opposite.kind) {
+			case OppositeKind.Direct:
+				return `/app/user/${this.meta.opposite.opposite_name}`;
+			case OppositeKind.AnonymousArticleMeta:
+				return `/app/article/${this.meta.opposite.article_id}`;
 		}
 	}
 	isExist(): boolean {

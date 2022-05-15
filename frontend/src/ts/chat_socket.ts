@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import { AllChatState, ChatKind, DirectChatData, Message } from '../tsx/global_state/chat';
+import { AllChatState, OppositeKind, DirectChatData, Message } from '../tsx/global_state/chat';
 import { toastErr } from '../tsx/utils';
 import { server_trigger, MessageSending, client_trigger } from './api/api_trait';
 
@@ -52,8 +52,8 @@ export class ChatSocket {
 				{
 					is_fake: false,
 					id: direct_chat.chat_id,
-					meta: {
-						kind: ChatKind.Direct,
+					opposite: {
+						kind: OppositeKind.Direct,
 						opposite_id: direct_chat.opposite_id,
 						opposite_name: direct_chat.name,
 					}
@@ -69,8 +69,8 @@ export class ChatSocket {
 				{
 					is_fake: false,
 					id: article_chat.chat_id,
-					meta: {
-						kind: ChatKind.AnonymousArticleMeta,
+					opposite: {
+						kind: OppositeKind.AnonymousArticleMeta,
 						article_id: article_chat.article_id,
 						article_title: article_chat.article_title,
 					}

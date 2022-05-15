@@ -9,7 +9,7 @@ import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileRelation, ProfileAction, ProfileDetail } from '../profile/user_page';
 import { ShowText } from '../display/show_text';
-import { AllChatState, ChatKind, DirectChatData } from '../global_state/chat';
+import { AllChatState, OppositeKind, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
@@ -146,8 +146,8 @@ function UserIntroduction(props: {article: Article}): JSX.Element {
 				const article_title = props.article.meta.title;
 				let chat = Object.values(all_chat.direct).find(chat => {
 					return chat.meta.is_fake &&
-						chat.meta.meta.kind == ChatKind.AnonymousArticleMeta &&
-						chat.meta.meta.article_id == article_id;
+						chat.meta.opposite.kind == OppositeKind.AnonymousArticleMeta &&
+						chat.meta.opposite.article_id == article_id;
 				});
 				// TODO: 問後端這個文章對話是否已經存在
 				// 以後聊天室對話實作分頁之後，
