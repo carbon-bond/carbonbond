@@ -3,8 +3,8 @@ use crate::custom_error::Fallible;
 use crate::db::article_statistics;
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use futures::future::join_all;
-use redis::AsyncCommands;
 use std::f32;
+use redis::AsyncCommands;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const KEY_HOT_ARTICLE: &'static str = "hot_articles";
