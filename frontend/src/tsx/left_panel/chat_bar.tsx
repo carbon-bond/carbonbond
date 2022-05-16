@@ -95,7 +95,7 @@ function ChatBar(): JSX.Element {
 		{/* TODO: 尋找聊天室 */}
 		{/* <input type="text" placeholder="🔍 尋找對話" /> */}
 		{
-			chat_array.sort(date_cmp).map((chat) => <ChatUnit key={chat.name} chat={chat} />)
+			chat_array.sort(date_cmp).map((chat) => <ChatUnit key={chat.id} chat={chat} />)
 		}
 	</div>;
 }

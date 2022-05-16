@@ -106,7 +106,7 @@ const MessageBlocks = React.memo((props: {
 				</Link>;
 			case OppositeKind.AnonymousArticleMeta:
 				return <Link to={props.chat.getURL()}>
-					<img src={'/public/no-avatar.png'} />
+					<img src={'/no-avatar.png'} />
 				</Link>;
 		}
 	})();
@@ -144,7 +144,7 @@ const MessageBlocks = React.memo((props: {
 					<div className={style.leftSet}>{Image}</div>
 					<div className={style.rightSet}>
 						<div className={style.meta}>
-							{SenderLink};
+							{SenderLink}
 							<span className={style.date}>{relativeDate(message.date)}</span>
 						</div>
 						{
