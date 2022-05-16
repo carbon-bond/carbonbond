@@ -518,7 +518,7 @@ function EditorBody(): JSX.Element {
 					} else if (editor_panel_data.category_name == undefined || editor_panel_data.category_name == '' || found_category == undefined) {
 						return <div>
 							<div>請選擇分類</div>
-							{ editor_panel_data.value.fields.length > 0 ? {EditingContent} : <></> }
+							{ editor_panel_data.value.fields.length > 0 ? <EditingContent /> : <></> }
 						</div>;
 					} else {
 						return <ShowFields fields={found_category.fields} validate_info={validate_info} set_info={set_info}/>;
