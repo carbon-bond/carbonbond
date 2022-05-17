@@ -35,7 +35,7 @@ export function MyPartyList(): JSX.Element {
 	}, [setCurrentLocation]);
 	useTitle('我的政黨');
 
-	if (!user_state.login && !user_state.fetching) {
+	if (!user_state.login) {
 		return <Navigate to="/app" />;
 	} if (fetching) {
 		return <div></div>;
@@ -49,8 +49,7 @@ export function MyPartyList(): JSX.Element {
 								if (party.board_id == null) {
 									return <div className={style.boardName}>{EXILED_PARTY_NAME}</div>;
 								} else {
-									// XXX: 補看板名
-									let href = `/app/board/${party.board_name}`;
+									let href = `/app/b/general/${party.board_name}`;
 									return <Link to={href} className={style.boardName}>
 										<div className={style.boardName}>{party.board_name}</div>
 									</Link>;
@@ -62,15 +61,37 @@ export function MyPartyList(): JSX.Element {
 							key={party.id}
 							className={style.partyColumn}
 						>
-							<div className={style.ruling}>{party.ruling ? '執政 ' : ''}</div>
+							<div className={style.ruling}>{party.ruling ? '👑 執政 ' : '🌿 在野'}</div>
 							<div className={style.partyLabel}>{party.party_name}</div>
 							<div className={style.partyLabel}>☘ {party.energy}</div>
-							{/* <div className={style.partyLabel}>👑{party.chairmanId}</div> */}
+							{/* <div className={style.partyLabel}>{party.chairmanId}</div> */}
 							{/* <div className={style.partyLabel}>📊 10%</div> */}
 						</Link>
 					</div>;
 				})
 			}
+			<div className={style.partyIntroduction}>
+				<p>
+					碳鍵中的每個看板都是一個政體（國家），
+					由一個執政黨管理。
+				</p>
+				<p>
+					任何用戶均可建立自己的政黨。政黨可以依附在任何看板之下（或是不依附任何看板，此時會被稱爲流亡政黨）。
+					透過發表文章、留言等，累積鍵能。當鍵能達到一定數量後，便可以創建自己的看板或奪取他人的看板。
+				</p>
+				<p>
+					碳鍵希望讓用戶自行爭取其他用戶的認同或回響，並透過政黨系統自治。
+				</p>
+				<div className={style.declaration}>
+					以上敘述的政黨系統尚只有雛形，有以下限制
+					<ul>
+						<li>目前的黨員人數僅能有一人（每個黨都是一人政黨）</li>
+						<li>政黨還無法累積鍵能，沒有任何門檻就能創版</li>
+						<li>無奪權功能</li>
+					</ul>
+					請謹慎使用政黨及創版功能，若您僅是想體驗創版，建議你試試開個<Link to={`/app/b/personal/${user_state.user_name}`}>個版</Link>
+				</div>
+			</div>
 			<CreatePartyBlock />
 		</div>;
 	}
@@ -95,7 +116,7 @@ function CreatePartyBlock(): JSX.Element {
 			/>
 			<input type="text"
 				value={board_name}
-				placeholder="依附於看板（預設為流亡政黨）"
+				placeholder="依附於看板（不依附則為流亡政黨）"
 				className={style.createPartyInput}
 				onChange={evt => {
 					setBoardName(evt.target.value);
