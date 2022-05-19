@@ -97,9 +97,9 @@ export function SignupPage(): JSX.Element {
 				</form>
 				<div className={style.terms}>
 					點擊註冊按鈕，代表你已同意
-					<a target="_blank" href="/app/law/terms">服務條款</a>
+					<a target="_blank" href="/app/law/服務條款.md">服務條款</a>
 					以及
-					<a target="_blank" href="/app/law/rules">論壇守則</a>
+					<a target="_blank" href="/app/law/論壇守則.md">論壇守則</a>
 				</div>
 			</div>
 		</div>;
