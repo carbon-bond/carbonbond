@@ -16,6 +16,10 @@ const mobilePlugin = (): Plugin => ({
 				if (req.url == '/' || req.url?.startsWith('/app')) {
 					req.url = '/index.mobile.html';
 				}
+			} else {
+				if (req.url == '/' || req.url?.startsWith('/app')) {
+					req.url = '/index.html';
+				}
 			}
 			next();
 		});

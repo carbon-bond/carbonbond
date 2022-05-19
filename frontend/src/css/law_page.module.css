@@ -3,7 +3,7 @@
     display: flex;
     justify-content: center;
     & div {
-        width: 800px;
+        max-width: 800px;
         line-height: 24px;
         & * {
             margin: 20px 0px;

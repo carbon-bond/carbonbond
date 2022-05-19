@@ -14,8 +14,8 @@ function LawPage(): JSX.Element {
 	return <div className={style.lawPage}>
 		<div>
 			<Routes>
-				<Route path="terms" element={<TermsComponent />} />
-				<Route path="rules" element={<RulesComponent />} />
+				<Route path={encodeURIComponent('服務條款.md')} element={<TermsComponent />} />
+				<Route path={encodeURIComponent('論壇守則.md')} element={<RulesComponent />} />
 			</Routes>
 		</div>
 	</div>;
