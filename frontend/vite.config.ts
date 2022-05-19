@@ -23,7 +23,12 @@ export default defineConfig({
 				manualChunks: {
 					react_family: ['react', 'react-dom', 'react-router-dom'],
 					emoji: ['emoji-mart'],
-					laws: ['src/md/law/服務條款.md', 'src/md/law/論壇守則.md'],
+					laws: [
+						'src/md/law/服務條款.md',
+						'src/md/law/論壇守則.md',
+						'src/md/law/品牌使用準則.md',
+						'src/md/law/看板和活動政策.md'
+					],
 				},
 			},
 		},
