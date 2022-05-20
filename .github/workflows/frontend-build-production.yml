@@ -1,27 +1,27 @@
-name: api-service-build-dev
+name: frontend-build-production
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [ published ]
 
 defaults:
   run:
     shell: bash
-    working-directory: ./api-service
+    working-directory: ./frontend
 
 jobs:
   release:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions/setup-node@v1
       with:
-        toolchain: stable
-    - uses: Swatinem/rust-cache@v1
+        node-version: '14.x'
+    - uses: c-hive/gha-yarn-cache@v2 
       with:
-        working-directory: ./api-service
-    - name: 編譯
-      run: sh ./build.sh
+        directory: ./frontend
+    - run: yarn install
+    - run: yarn build
     - name: 登入 DockerHub
       uses: docker/login-action@v1
       with:
@@ -30,15 +30,15 @@ jobs:
     - name: 建構並推送 docker 映像檔
       uses: docker/build-push-action@v2
       with:
-        context: ./api-service
+        context: ./frontend
         push: true
-        tags: carbonbond/api-service:latest
-        file: ./api-service/deploy/Dockerfile
-    - name: 佈屬到開發環境
+        tags: carbonbond/frontend:stable
+        file: ./frontend/deploy/Dockerfile
+    - name: 佈屬到正式環境
       if: ${{ success() }}
       uses: distributhor/workflow-webhook@v2
       env:
-        webhook_url: ${{ secrets.DEV_WEBHOOK_URL }}/hooks/redeploy-api-service
-        webhook_secret: ${{ secrets.DEV_WEBHOOK_SECRET }}
+        webhook_url: ${{ secrets.PRODUCTION_WEBHOOK_URL }}/hooks/redeploy-frontend
+        webhook_secret: ${{ secrets.PRODUCTION_WEBHOOK_SECRET }}
         verify_ssl: false
         verbose: true

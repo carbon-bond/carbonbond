@@ -1,10 +1,8 @@
-name: frontend-build
+name: frontend-build-dev
 
 on:
-  release:
-    types: [ published ]
   push:
-    branches: [ release, master ]
+    branches: [ master ]
 
 defaults:
   run:
@@ -40,7 +38,7 @@ jobs:
       if: ${{ success() }}
       uses: distributhor/workflow-webhook@v2
       env:
-        webhook_url: ${{ secrets.WEBHOOK_URL }}/hooks/redeploy-frontend
-        webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+        webhook_url: ${{ secrets.DEV_WEBHOOK_URL }}/hooks/redeploy-frontend
+        webhook_secret: ${{ secrets.DEV_WEBHOOK_SECRET }}
         verify_ssl: false
         verbose: true
