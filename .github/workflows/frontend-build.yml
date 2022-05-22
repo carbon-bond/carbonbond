@@ -3,6 +3,8 @@ name: frontend-build-dev
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'frontend/**'
 
 defaults:
   run:

@@ -3,6 +3,8 @@ name: api-service-build-dev
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'api-service/**'
 
 defaults:
   run:
