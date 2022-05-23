@@ -332,6 +332,27 @@ pub async fn send_reset_password_email(email: String) -> Fallible<()> {
     conn.commit().await?;
     Ok(())
 }
+
+pub async fn send_change_email_email(user_id: i64, email: String) -> Fallible<()> {
+    let mut conn = get_pool().begin().await?;
+    // 1. 生成 token
+    let token = crate::util::generate_token();
+    sqlx::query!(
+        "INSERT INTO change_email (user_id, token, email) VALUES
+        ($1, $2, $3)",
+        user_id,
+        token,
+        email
+    )
+    .execute(&mut conn)
+    .await?;
+
+    // 2. 寄信
+    email::send_change_email_email(&token, &email).await?;
+
+    conn.commit().await?;
+    Ok(())
+}
 pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<String>> {
     let pool = get_pool();
     let record = sqlx::query!("SELECT email FROM signup_tokens WHERE token = $1", token)
@@ -449,6 +470,25 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     .execute(pool)
     .await?;
     Ok(())
+}
+
+pub async fn check_password(id: i64, password: &str) -> Fallible<()> {
+    let pool = get_pool();
+    let record = sqlx::query!("SELECT salt, password_hashed from users WHERE id = $1", id)
+        .fetch_optional(pool)
+        .await?
+        .ok_or(ErrorCode::PermissionDenied.context("查無使用者"))?;
+    let equal = argon2::verify_raw(
+        password.as_bytes(),
+        &record.salt,
+        &record.password_hashed,
+        &argon2::Config::default(),
+    )?;
+    if equal {
+        Ok(())
+    } else {
+        Err(ErrorCode::PermissionDenied.context("密碼錯誤"))
+    }
 }
 
 pub async fn login(name: &str, password: &str) -> Fallible<User> {

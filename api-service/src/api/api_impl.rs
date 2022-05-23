@@ -537,6 +537,16 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         db::user::send_reset_password_email(email).await
     }
+    async fn send_change_email_email(
+        &self,
+        context: &mut crate::Ctx,
+        email: String,
+        password: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::check_password(id, &password).await?;
+        db::user::send_change_email_email(id, email).await
+    }
     async fn signup(
         &self,
         context: &mut crate::Ctx,

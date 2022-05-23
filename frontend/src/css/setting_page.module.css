@@ -4,6 +4,17 @@
     justify-content: center;
     padding-top: 5%;
     & .settings {
-
+        width: 100%;
+        max-width: 400px;
+        & .setting {
+            & .name {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 6px;
+            }
+        }
+        & hr {
+            border: 1px solid var(--light-gray);
+        }
     }
 }

@@ -9,9 +9,10 @@ export function isEmojis(s: string): boolean {
 	return !removeEmoji(s).length;
 }
 
+export const EMAIL_REGEX = new RegExp('.+@.+');
+
 export function isEmail(s: string): boolean {
-	const pattern = new RegExp('.+@.+');
-	return !!pattern.test(s);
+	return !!EMAIL_REGEX.test(s);
 }
 
 export function isLink(s: string): boolean {
