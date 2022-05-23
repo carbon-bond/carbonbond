@@ -5,6 +5,7 @@ on:
     branches: [ master ]
     paths:
       - 'frontend/**'
+      - 'deploy/**'
 
 defaults:
   run:
