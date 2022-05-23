@@ -18,7 +18,7 @@ services:
     networks:
       - carbonbond-net
   frontend:
-    image: carbonbond/frontend:latest
+    image: "carbonbond/frontend:${TAG:-latest}"
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../frontend
@@ -29,7 +29,7 @@ services:
     networks:
       - carbonbond-net
   api-service:
-    image: carbonbond/api-service:latest
+    image: "carbonbond/api-service:${TAG:-latest}"
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../api-service
