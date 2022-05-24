@@ -46,7 +46,7 @@ function InviteList(props: { invitations: SignupInvitation[] }): JSX.Element {
 					<span className={style.email}>{invitation.email} </span>
 					{
 						invitation.user_name == undefined ?
-							'尚未完成註冊'
+							'尚未完成註冊，或者已經更換信箱'
 							: <Link to={`/app/user/${invitation.user_name}`}>
 								{invitation.user_name}
 							</Link>
