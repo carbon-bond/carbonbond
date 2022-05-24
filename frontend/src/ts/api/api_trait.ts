@@ -88,6 +88,7 @@ export type ErrorCode =
  | { NotFound: [DataType, string] } 
  | "DuplicateInvitation" 
  | "DuplicateRegister" 
+ | "UselessToken" 
  | "NotAllowSelfSignup" 
  | "PasswordLength" 
  | "ParsingJson" 
@@ -166,6 +167,12 @@ export class UserQuery {
     }
     async sendResetPasswordEmail(email: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SendResetPasswordEmail": { email } } }));
+    }
+    async sendChangeEmailEmail(email: string, password: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SendChangeEmailEmail": { email, password } } }));
+    }
+    async changeEmailByToken(token: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "ChangeEmailByToken": { token } } }));
     }
     async signup(user_name: string, password: string, token: string): Promise<Result<User, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Signup": { user_name, password, token } } }));

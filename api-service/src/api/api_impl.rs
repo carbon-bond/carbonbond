@@ -412,7 +412,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn query_board(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         name: String,
         style: String,
     ) -> Fallible<model::forum::Board> {
@@ -421,7 +421,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
     }
     async fn query_board_by_id(
         &self,
-        context: &mut crate::Ctx,
+        _context: &mut crate::Ctx,
         id: i64,
     ) -> Fallible<model::forum::Board> {
         let board = db::board::get_by_id(id).await?;
@@ -536,6 +536,23 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         email: String,
     ) -> Result<(), crate::custom_error::Error> {
         db::user::send_reset_password_email(email).await
+    }
+    async fn send_change_email_email(
+        &self,
+        context: &mut crate::Ctx,
+        email: String,
+        password: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::check_password(id, &password).await?;
+        db::user::send_change_email_email(id, email).await
+    }
+    async fn change_email_by_token(
+        &self,
+        _context: &mut crate::Ctx,
+        token: String,
+    ) -> Result<(), crate::custom_error::Error> {
+        db::user::change_email_by_token(&token).await
     }
     async fn signup(
         &self,

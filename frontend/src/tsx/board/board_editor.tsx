@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { API_FETCHER } from '../../ts/api/api';
+import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Board, BoardType } from '../../ts/api/api_trait';
 import { UserState } from '../global_state/user';
 import { useForm } from 'react-hook-form';
@@ -223,7 +223,10 @@ export function BoardEditor(props: {
 					force: forceValueCopy,
 					...data
 				})
-					.then(() => location.reload())
+					.then((res) => {
+						unwrap(res);
+						location.reload();
+					})
 					.catch(err => toastErr(err));
 			} else if (props.editor_data.kind == BoardEditorKind.Edit) {
 				API_FETCHER.boardQuery.updateBoard({
@@ -232,7 +235,10 @@ export function BoardEditor(props: {
 					detail: data.detail,
 					id: props.editor_data.board.id
 				})
-					.then(() => location.reload())
+					.then((res) => {
+						unwrap(res);
+						location.reload();
+					})
 					.catch(err => toastErr(err));
 			} else {
 				toastErr('Bug: 未窮盡 BoardEditorKind');

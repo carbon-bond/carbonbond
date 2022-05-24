@@ -21,11 +21,13 @@ import { PopArticlePage } from '../pop_article_page';
 import { LawPage } from '../law_page';
 import { GraphPage } from '../board/graph_view';
 import { ArticlePage, ArticleRedirect } from '../board/article_page';
+import { ChangeEmail } from '../change_email';
 
 export function MainRoutes(): JSX.Element {
 	return <Routes>
 		<Route path="/app/signup/:token" element={<SignupPage />} />
 		<Route path="/app/reset_password/:token" element={<ResetPassword />} />
+		<Route path="/app/change_email/:token" element={<ChangeEmail />} />
 		<Route path="/app" element={<BoardList />} />
 		<Route path="/app/board_list" element={<BoardList />} />
 		<Route path="/app/search" element={<SearchPage />} />

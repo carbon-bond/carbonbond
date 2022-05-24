@@ -97,3 +97,22 @@ pub async fn send_reset_password_email(token: &str, email_address: &str) -> Fall
     log::debug!("寄信回傳訊息：{}", ret_msg);
     Ok(())
 }
+
+pub async fn send_change_email_email(token: &str, email_address: &str) -> Fallible<()> {
+    log::debug!("給 {} 寄發更換信箱信", email_address);
+    let base_url = &get_config().server.base_url;
+    let url = format!("{}/app/change_email/{}", base_url, token);
+    let subject = format!("更換碳鍵電子信箱");
+    let html_content = format!(
+        "<html> \
+         <p>點選以下連結，奔向新的藏身處！</p> \
+         <a href=\"{}\">{}</a> <br/> \
+         </html>",
+        url, url
+    );
+    log::debug!("更換信箱網址： {}", url);
+
+    let ret_msg = send_html_email(email_address, &subject, &html_content).await?;
+    log::debug!("寄信回傳訊息：{}", ret_msg);
+    Ok(())
+}

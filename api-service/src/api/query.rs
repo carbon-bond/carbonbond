@@ -66,6 +66,18 @@ pub enum UserQuery {
     SendSignupEmail { email: String, is_invite: bool },
     #[chitin(leaf, response = "()")]
     SendResetPasswordEmail { email: String },
+
+    // 要求再次輸入密碼才能更換信箱
+    // 以防有人在持有登入 token 的情況（如，偷用別人瀏覽器 / 竊聽封包而獲取 token）下透過
+    // 1. 更換 email
+    // 2. 重設密碼
+    // 來徹底盜走帳號
+    #[chitin(leaf, response = "()")]
+    SendChangeEmailEmail { email: String, password: String },
+
+    #[chitin(leaf, response = "()")]
+    ChangeEmailByToken { token: String },
+
     #[chitin(leaf, response = "super::model::forum::User")]
     Signup {
         user_name: String,
