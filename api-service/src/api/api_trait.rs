@@ -39,6 +39,7 @@ pub trait UserQueryRouter {
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
     async fn send_change_email_email(&self, context: &mut crate::Ctx, email: String, password: String) -> Result<(), crate::custom_error::Error>;
+    async fn change_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<(), crate::custom_error::Error>;
     async fn signup(&self, context: &mut crate::Ctx, user_name: String, password: String, token: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
     async fn query_user_name_by_reset_password_token(&self, context: &mut crate::Ctx, token: String) -> Result<Option<String>, crate::custom_error::Error>;
@@ -111,6 +112,11 @@ pub trait UserQueryRouter {
             }
              UserQuery::SendChangeEmailEmail { email, password } => {
                  let resp = self.send_change_email_email(context, email, password).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::ChangeEmailByToken { token } => {
+                 let resp = self.change_email_by_token(context, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

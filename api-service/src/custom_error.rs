@@ -68,6 +68,8 @@ mod inner {
         DuplicateInvitation,
         #[display(fmt = "重複註冊")]
         DuplicateRegister,
+        #[display(fmt = "Token 已用過或不存在")]
+        UselessToken,
         #[display(fmt = "目前不開放自行註冊，請找朋友邀請")]
         NotAllowSelfSignup,
         #[display(fmt = "密碼長度不符限制")]

@@ -353,6 +353,34 @@ pub async fn send_change_email_email(user_id: i64, email: String) -> Fallible<()
     conn.commit().await?;
     Ok(())
 }
+
+pub async fn change_email_by_token(token: &str) -> Fallible<()> {
+    log::trace!("使用者更換信箱");
+    let pool = get_pool();
+    // 更新密碼
+    let id = sqlx::query!(
+        "UPDATE users SET email = change_email.email
+        FROM change_email
+        WHERE change_email.token = $1 AND change_email.is_used = FALSE AND change_email.user_id = users.id
+        RETURNING users.id",
+        token,
+    )
+    .fetch_optional(pool)
+    .await?;
+    if id.is_none() {
+        return Err(ErrorCode::UselessToken.into());
+    }
+    // 設同用戶的所有 token 無效
+    sqlx::query!(
+        "UPDATE change_email SET is_used = TRUE
+        FROM users
+        WHERE change_email.user_id = (SELECT user_id from change_email where token = $1)",
+        token
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
 pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<String>> {
     let pool = get_pool();
     let record = sqlx::query!("SELECT email FROM signup_tokens WHERE token = $1", token)
@@ -450,16 +478,20 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     let pool = get_pool();
     // 更新密碼
     let (salt, hash) = crate::util::generate_password_hash(password)?;
-    sqlx::query!(
+    let id = sqlx::query!(
         "UPDATE users SET (password_hashed, salt) = ($1, $2)
         FROM reset_password
-        WHERE reset_password.token = $3 and reset_password.user_id = users.id",
+        WHERE reset_password.token = $3 AND reset_password.is_used = FALSE AND reset_password.user_id = users.id
+        RETURNING users.id",
         hash,
         salt,
         token,
     )
-    .execute(pool)
+    .fetch_optional(pool)
     .await?;
+    if id.is_none() {
+        return Err(ErrorCode::UselessToken.into());
+    }
     // 設同用戶的所有 token 無效
     sqlx::query!(
         "UPDATE reset_password SET is_used = TRUE

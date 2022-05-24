@@ -75,6 +75,9 @@ pub enum UserQuery {
     #[chitin(leaf, response = "()")]
     SendChangeEmailEmail { email: String, password: String },
 
+    #[chitin(leaf, response = "()")]
+    ChangeEmailByToken { token: String },
+
     #[chitin(leaf, response = "super::model::forum::User")]
     Signup {
         user_name: String,
