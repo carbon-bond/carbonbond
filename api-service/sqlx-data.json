@@ -463,6 +463,28 @@
     },
     "query": "\n            DELETE FROM drafts\n            WHERE id = $1\n        "
   },
+  "22f4beecaac3dff113d691c28baf01f45c19af43cd6c2342594123aa5ddbd2ef": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Bytea",
+          "Bytea",
+          "Text"
+        ]
+      }
+    },
+    "query": "UPDATE users SET (password_hashed, salt) = ($1, $2)\n        FROM reset_password\n        WHERE reset_password.token = $3 AND reset_password.is_used = FALSE AND reset_password.user_id = users.id\n        RETURNING users.id"
+  },
   "25af72249eb8564302007c114ebd9a3d9d5f45ad94993020f03183653f828be5": {
     "describe": {
       "columns": [
@@ -1395,6 +1417,20 @@
     },
     "query": "\n        SELECT n.*, users.user_name as user2_name, boards.board_name, boards.board_type, a1.title as article1_title, a2.title as article2_title\n        FROM notifications n\n        LEFT JOIN users on n.user2_id = users.id\n        LEFT JOIN boards on n.board_id = boards.id\n        LEFT JOIN articles a1 on n.article1_id = a1.id\n        LEFT JOIN articles a2 on n.article2_id = a2.id\n        WHERE user_id = $1 AND ($2 OR NOT n.read)\n        ORDER BY n.create_time DESC\n        "
   },
+  "63321d921e5b41cdca581dcfa6e4af1f22233a2a13088f04ebfec249a351fbf3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Varchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "INSERT INTO change_email (user_id, token, email) VALUES\n        ($1, $2, $3)"
+  },
   "6465e582bd36f6c4c3d9aa068e1ab7dcd8174789552d729921fc00d5a385912b": {
     "describe": {
       "columns": [
@@ -2007,6 +2043,32 @@
     },
     "query": "\n        DELETE FROM article_bonds\n        WHERE from_id = $1\n        "
   },
+  "928722707b891d7b1cb217a79093f086632fd5eff7c2f5bd60a8f57328192674": {
+    "describe": {
+      "columns": [
+        {
+          "name": "salt",
+          "ordinal": 0,
+          "type_info": "Bytea"
+        },
+        {
+          "name": "password_hashed",
+          "ordinal": 1,
+          "type_info": "Bytea"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "SELECT salt, password_hashed from users WHERE id = $1"
+  },
   "93105e45ed9adc9e15eb7ec5a030966a4f8d4fab032ab7f76464c48b82244148": {
     "describe": {
       "columns": [
@@ -2141,20 +2203,6 @@
       }
     },
     "query": "\n        UPDATE chat.direct_chats\n        SET last_message = $1\n        WHERE id = $2\n\t\t"
-  },
-  "a5694a6fc51bd98daf7d483a05402539226e6b969b818914aa70d8e4ee4e904f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Bytea",
-          "Bytea",
-          "Text"
-        ]
-      }
-    },
-    "query": "UPDATE users SET (password_hashed, salt) = ($1, $2)\n        FROM reset_password\n        WHERE reset_password.token = $3 and reset_password.user_id = users.id"
   },
   "a84766d86d329414f9ba641a7efba8c8abbb0aeacc20637c41aae44ad6be73ea": {
     "describe": {
@@ -3662,6 +3710,38 @@
       }
     },
     "query": "WITH metas AS (SELECT\n                articles.*,\n                users.user_name AS author_name,\n                boards.board_name,\n                boards.board_type\n            FROM\n                articles\n                INNER JOIN users ON articles.author_id = users.id\n                INNER JOIN boards ON articles.board_id = boards.id\n                )\n            SELECT  metas.id,\n                metas.energy,\n                metas.good,\n                metas.bad,\n                fields,\n                board_id,\n                board_name,\n                board_type,\n                category,\n                title,\n                author_id,\n                author_name,\n                digest AS digest_content,\n                digest_truncated,\n                metas.create_time,\n                anonymous FROM metas \n        WHERE ($1 OR board_name = $2)\n        AND ($3 OR (author_name = $4 AND (anonymous = false OR author_id = $5)))\n        AND ($6 OR category = $7)\n        AND ($8 OR create_time < $9)\n        AND ($10 OR create_time > $11)\n        AND ($12 OR title ~ $13)\n        ORDER BY create_time DESC\n        "
+  },
+  "e432180b5882e34c0af0e39e8643dc26a6fa02e69af0e9b8199191b7534c4783": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "UPDATE change_email SET is_used = TRUE\n        FROM users\n        WHERE change_email.user_id = (SELECT user_id from change_email where token = $1)"
+  },
+  "e48165f8105c88527ffcf4be222c556155fdcffc4e62641febfee0750aad533d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "UPDATE users SET email = change_email.email\n        FROM change_email\n        WHERE change_email.token = $1 AND change_email.is_used = FALSE AND change_email.user_id = users.id\n        RETURNING users.id"
   },
   "e7b6ff013fa00226f95232f87fee340a19128a2f65ca0006c7f7395669532688": {
     "describe": {
