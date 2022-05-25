@@ -61,7 +61,15 @@ pub mod forum_model_root {
         pub create_time: DateTime<Utc>,
     }
     #[derive(
-        Serialize, Deserialize, TypeScriptify, Clone, Copy, EnumString, strum::ToString, Debug,
+        Serialize,
+        Deserialize,
+        TypeScriptify,
+        Clone,
+        Copy,
+        EnumString,
+        strum::ToString,
+        Debug,
+        PartialEq,
     )]
     pub enum BoardType {
         #[strum(serialize = "General")]

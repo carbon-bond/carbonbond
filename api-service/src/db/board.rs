@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 
-use super::{get_pool, DBObject, ToFallible};
+use super::{get_pool, user, DBObject, ToFallible};
 use crate::api::model::forum::{
     Board, BoardName, BoardOverview, BoardType, NewBoard, UpdatedBoard,
 };
@@ -103,6 +103,8 @@ struct DBBoardOverview {
 }
 pub async fn is_editable(board_id: i64, user_id: i64) -> Fallible<bool> {
     let pool = get_pool();
+
+    // 判定公開板
     let exist = sqlx::query!(
         "
         select boards.id
@@ -118,7 +120,18 @@ pub async fn is_editable(board_id: i64, user_id: i64) -> Fallible<bool> {
     )
     .fetch_optional(pool)
     .await?;
-    Ok(exist.is_some())
+    if (exist.is_some()) {
+        return Ok(true);
+    }
+
+    // 判定個板
+    let user = user::get_by_id(user_id).await?;
+    let board = get_by_id(board_id).await?;
+    if user.user_name == board.board_name && board.ruling_party_id == -1 {
+        return Ok(true);
+    }
+
+    Ok(false)
 }
 pub async fn get_overview(board_ids: &[i64]) -> Fallible<Vec<BoardOverview>> {
     let pool = get_pool();
