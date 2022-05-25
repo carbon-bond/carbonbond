@@ -6,7 +6,11 @@ import { Config } from '../../ts/api/api_trait';
 const { useState } = React;
 
 function useConfigState(): { server_config: Config } {
-	const [server_config, setServerConfig] = useState<Config>({min_password_length: 0, max_password_length: 10000});
+	const [server_config, setServerConfig] = useState<Config>({
+		min_password_length: 0,
+		max_password_length: 10000,
+		advertisement_contact_email: null
+	});
 
 	async function getConfig(): Promise<void> {
 		try {

@@ -874,6 +874,7 @@ impl api_trait::ConfigQueryRouter for ConfigQueryRouter {
         Ok(super::model::forum::Config {
             min_password_length: config.account.min_password_length,
             max_password_length: config.account.max_password_length,
+            advertisement_contact_email: config.business.advertisement_contact_mail.clone(),
         })
     }
 }

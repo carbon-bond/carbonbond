@@ -405,6 +405,7 @@ pub mod forum_model_root {
     pub struct Config {
         pub min_password_length: usize,
         pub max_password_length: usize,
+        pub advertisement_contact_email: Option<String>,
     }
 
     #[chitin_model]

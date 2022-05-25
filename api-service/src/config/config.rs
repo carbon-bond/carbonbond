@@ -32,6 +32,7 @@ pub struct RawConfig {
     pub account: RawAccountConfig,
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
+    pub business: BusinessConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,6 +56,11 @@ pub struct RawAccountConfig {
     pub email_whitelist: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BusinessConfig {
+    pub advertisement_contact_mail: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub file_name: PathBuf,
@@ -63,6 +69,7 @@ pub struct Config {
     pub database: DatabaseConfig,
     pub account: AccountConfig,
     pub redis: RedisConfig,
+    pub business: BusinessConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -208,6 +215,7 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         account: Fallible::<AccountConfig>::from(raw_config.account)?,
         database: raw_config.database,
         redis: raw_config.redis,
+        business: raw_config.business,
     };
 
     Ok(config)

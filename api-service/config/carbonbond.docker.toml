@@ -40,3 +40,6 @@ email_whitelist = [
     '@ntnu\.edu\.tw$',
     '@mail\.nknu\.edu\.tw$'
 ]
+
+[business]
+advertisement_contact_mail = "business@carbonbond.monster"

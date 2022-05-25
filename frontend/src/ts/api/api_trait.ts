@@ -50,7 +50,7 @@ export type SearchField =
  | { Range: [number, number] };
 export type Edge = {     id: number; from: number; to: number; energy: number; tag: string     | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
-export type Config = { min_password_length: number; max_password_length: number };
+export type Config = {     min_password_length: number; max_password_length: number;     advertisement_contact_email: string | null };
 export namespace force {
 export type Bond = { to: number; tag: string };
 export type Category = { name: string; fields: Field [] };

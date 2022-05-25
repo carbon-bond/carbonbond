@@ -58,3 +58,6 @@ email_whitelist = [
     # 高師大
     '@mail\.nknu\.edu\.tw$'
 ]
+
+[business]
+advertisement_contact_mail = "advertisment@carbonbond.monster"
