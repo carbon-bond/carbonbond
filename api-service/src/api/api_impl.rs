@@ -433,7 +433,11 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
         let user_id = context.get_id_strict().await?;
-        if db::party::is_pary_member(new_board.ruling_party_id, user_id).await? {
+        if new_board.ruling_party_id == -1
+            && new_board.board_type == model::forum::BoardType::Personal
+        {
+            Ok(db::board::create(&new_board).await?)
+        } else if db::party::is_pary_member(new_board.ruling_party_id, user_id).await? {
             Ok(db::board::create(&new_board).await?)
         } else {
             Err(custom_error::ErrorCode::PermissionDenied.into())
