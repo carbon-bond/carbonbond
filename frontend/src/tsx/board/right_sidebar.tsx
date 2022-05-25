@@ -11,6 +11,7 @@ import { ProfileRelation, ProfileAction, ProfileDetail } from '../profile/user_p
 import { ShowText } from '../display/show_text';
 import { AllChatState, OppositeKind, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
+import { ConfigState } from '../global_state/config';
 
 export function BoardSidebar(props: { board: Board }): JSX.Element {
 	let { user_state } = UserState.useContainer();
@@ -205,6 +206,8 @@ function UserIntroduction(props: {article: Article}): JSX.Element {
 }
 
 export function ArticleSidebar(props: {article: Article}): JSX.Element {
+	let { server_config } = ConfigState.useContainer();
+	const mail = server_config.advertisement_contact_email;
 	return <div className="rightSideBar">
 		<div className={style.rightSidebarItem}>
 			<div className={style.rightSidebarBlock}>
@@ -215,7 +218,11 @@ export function ArticleSidebar(props: {article: Article}): JSX.Element {
 		<div className={style.rightSidebarItem}>
 			<div className={style.rightSidebarBlock}>
 				<div className={style.advertisement}>廣告</div>
-				招租中，意者請洽 <a href="mailto:c.carbonbond.c@gmail.com">c.carbonbond.c@gmail.com</a>
+				{
+					mail ?
+						<> 招租中，意者請洽 <a href={`mailto:${mail}`}>{mail}</a> </> :
+						<></>
+				}
 			</div>
 		</div>
 	</div>;

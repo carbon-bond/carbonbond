@@ -120,7 +120,7 @@ pub async fn is_editable(board_id: i64, user_id: i64) -> Fallible<bool> {
     )
     .fetch_optional(pool)
     .await?;
-    if (exist.is_some()) {
+    if exist.is_some() {
         return Ok(true);
     }
 
