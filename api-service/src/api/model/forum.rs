@@ -361,7 +361,9 @@ pub mod forum_model_root {
         #[strum(serialize = "article_bad_replied")]
         ArticleBadReplied,
         #[strum(serialize = "comment_replied")]
-        CommentReplied,
+        CommentReplied, // 發表的文章被回覆
+        #[strum(serialize = "other_comment_replied")]
+        OtherCommentReplied, // 你在 A 文章留言，其他人也在 A 文章留言時，會收到該通知
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Notification {

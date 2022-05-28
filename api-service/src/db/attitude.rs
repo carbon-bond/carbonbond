@@ -1,4 +1,3 @@
-use reqwest::redirect::Attempt;
 use sqlx::PgConnection;
 
 use super::get_pool;

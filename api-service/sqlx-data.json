@@ -1343,7 +1343,8 @@
                   "article_replied",
                   "article_bad_replied",
                   "article_good_replied",
-                  "comment_replied"
+                  "comment_replied",
+                  "other_comment_replied"
                 ]
               },
               "name": "notification_kind"
@@ -2269,6 +2270,21 @@
       }
     },
     "query": "\n        INSERT INTO articles (author_id, board_id, title, anonymous, category, fields)\n        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id\n        "
+  },
+  "b034194522ab7a92701883226da8e26dfff9c1b270210c337f7175609bde2515": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8",
+          "Int8",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO notifications\n            (user_id, user2_id, board_id, article1_id, article2_id, kind, quality)\n        SELECT\n            comments.author_id as user_id,\n            $2 as user2_id,\n            $3 as board_id,\n            $1 as article1_id,\n            NULL as article2_id,\n            $4::text::notification_kind as kind,\n            NULL as quality\n        FROM\n            articles\n        JOIN\n            comments\n        ON\n            articles.id = comments.article_id\n        WHERE\n            articles.id = $1\n        AND\n            comments.author_id <> $2\n        AND\n            comments.author_id <> articles.author_id\n        GROUP BY\n            comments.author_id\n        "
   },
   "b27823035dea5fa88c3a60ede72654e279cf449d2c7a3b39437bf76614bf8a03": {
     "describe": {
