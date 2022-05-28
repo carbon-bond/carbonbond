@@ -5,7 +5,7 @@ use crate::api::model::forum::SignupTokenRecord;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::email::{self, send_signup_email};
+use crate::email::{self, send_invitation_email, send_signup_email};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Error;
@@ -300,7 +300,12 @@ pub async fn create_signup_token(
     .await?;
 
     // 4. 寄信
-    send_signup_email(&token, &email).await?;
+    if let Some(inviter_id) = inviter_id {
+        let user = get_by_id(inviter_id).await?;
+        send_invitation_email(&token, &email, user.user_name).await?;
+    } else {
+        send_signup_email(&token, &email).await?;
+    }
 
     conn.commit().await?;
     Ok(())
