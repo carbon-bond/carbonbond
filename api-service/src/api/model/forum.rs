@@ -235,6 +235,12 @@ pub mod forum_model_root {
         pub create_time: DateTime<chrono::Utc>,
         pub is_used: bool,
     }
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct SignupTokenRecord {
+        pub email: String,
+        pub inviter_id: Option<i64>,
+        pub license_id: String,
+    }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug, Default)]
     pub struct ArticleStatistics {
         pub replies: i64,

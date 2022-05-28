@@ -32,6 +32,7 @@ export type UpdatedArticle = {     article_id: number; category_name: string; us
 export type ArticleMeta = {     id: number; energy: number; good: number; bad: number; board_id:     number; board_name: string; board_type: BoardType; category: string; title: string; author: Author; digest: ArticleDigest; create_time: string; fields: force.Field []; stat: ArticleStatistics;     personal_meta: ArticlePersonalMeta };
 export type SignupInvitationCredit = {     id: number; event_name: string; credit: number; create_time:     string};
 export type SignupInvitation = {     email: string; user_name: string | null; create_time: string; is_used: boolean };
+export type SignupTokenRecord = { email: string; inviter_id: number | null; license_id: string };
 export type ArticleStatistics = { replies: number; comments: number };
 export type BondInfo = { article_meta: MiniArticleMeta; energy: number; tag: string };
 export type MiniArticleMeta = {     category: string; board_name: string; board_type: BoardType; author: Author; id: number; title: string; create_time: string};
