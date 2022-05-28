@@ -37,6 +37,46 @@ pub async fn create(
     Ok(id)
 }
 
+// NOTE: 若一篇文章有 n 個人留言，需通知 n 個人。若 n 巨大，可能帶給伺服器壓力
+pub async fn notify_all_commenter(author_id: i64, article_id: i64, board_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query!(
+        "
+        INSERT INTO notifications
+            (user_id, user2_id, board_id, article1_id, article2_id, kind, quality)
+        SELECT
+            comments.author_id as user_id,
+            $2 as user2_id,
+            $3 as board_id,
+            $1 as article1_id,
+            NULL as article2_id,
+            $4::text::notification_kind as kind,
+            NULL as quality
+        FROM
+            articles
+        JOIN
+            comments
+        ON
+            articles.id = comments.article_id
+        WHERE
+            articles.id = $1
+        AND
+            comments.author_id <> $2
+        AND
+            comments.author_id <> articles.author_id
+        GROUP BY
+            comments.author_id
+        ",
+        article_id,
+        author_id,
+        board_id,
+        NotificationKind::OtherCommentReplied.to_string()
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>> {
     let pool = get_pool();
     // XXX: 一旦 sqlx 自訂型別進化就改掉這段
