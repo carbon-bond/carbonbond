@@ -1,7 +1,6 @@
 use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::LawyerbcResult;
 use crate::api::model::forum::LawyerbcResultMini;
-use crate::api::model::forum::SignupTokenRecord;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
@@ -387,7 +386,12 @@ pub async fn change_email_by_token(token: &str) -> Fallible<()> {
     .await?;
     Ok(())
 }
-pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<SignupTokenRecord>> {
+pub struct SignupTokenRecord {
+    pub email: String,
+    pub inviter_id: Option<i64>,
+    pub license_id: String,
+}
+pub async fn get_signup_token_record(token: &str) -> Fallible<Option<SignupTokenRecord>> {
     let pool = get_pool();
     let record = sqlx::query!(
         "SELECT email, inviter_id, license_id FROM signup_tokens WHERE token = $1",
@@ -409,7 +413,7 @@ pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<SignupTok
 }
 pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallible<i64> {
     log::trace!("使用者用註冊碼註冊");
-    if let Some(signup_token_record) = get_email_by_signup_token(token).await? {
+    if let Some(signup_token_record) = get_signup_token_record(token).await? {
         let mut conn = get_pool().begin().await?;
         let email = signup_token_record.email;
         let id = signup(name, password, &email).await?;
