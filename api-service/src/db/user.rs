@@ -4,7 +4,7 @@ use crate::api::model::forum::LawyerbcResultMini;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
-use crate::email::{self, send_signup_email};
+use crate::email::{self, send_invitation_email, send_signup_email};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Error;
@@ -299,7 +299,12 @@ pub async fn create_signup_token(
     .await?;
 
     // 4. 寄信
-    send_signup_email(&token, &email).await?;
+    if let Some(inviter_id) = inviter_id {
+        let user = get_by_id(inviter_id).await?;
+        send_invitation_email(&token, &email, user.user_name).await?;
+    } else {
+        send_signup_email(&token, &email).await?;
+    }
 
     conn.commit().await?;
     Ok(())
@@ -381,18 +386,36 @@ pub async fn change_email_by_token(token: &str) -> Fallible<()> {
     .await?;
     Ok(())
 }
-pub async fn get_email_by_signup_token(token: &str) -> Fallible<Option<String>> {
+pub struct SignupTokenRecord {
+    pub email: String,
+    pub inviter_id: Option<i64>,
+    pub license_id: String,
+}
+pub async fn get_signup_token_record(token: &str) -> Fallible<Option<SignupTokenRecord>> {
     let pool = get_pool();
-    let record = sqlx::query!("SELECT email FROM signup_tokens WHERE token = $1", token)
-        .fetch_optional(pool)
-        .await?;
-    Ok(record.map(|r| r.email))
+    let record = sqlx::query!(
+        "SELECT email, inviter_id, license_id FROM signup_tokens WHERE token = $1",
+        token
+    )
+    .fetch_optional(pool)
+    .await?;
+    match record {
+        Some(r) => {
+            let signup_token_record = SignupTokenRecord {
+                email: r.email,
+                inviter_id: r.inviter_id,
+                license_id: r.license_id,
+            };
+            Ok(Some(signup_token_record))
+        }
+        None => Ok(None),
+    }
 }
 pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallible<i64> {
     log::trace!("使用者用註冊碼註冊");
-    let email = get_email_by_signup_token(token).await?;
-    if let Some(email) = email {
+    if let Some(signup_token_record) = get_signup_token_record(token).await? {
         let mut conn = get_pool().begin().await?;
+        let email = signup_token_record.email;
         let id = signup(name, password, &email).await?;
         sqlx::query!(
             "UPDATE signup_tokens SET is_used = TRUE WHERE token = $1",
@@ -410,20 +433,24 @@ pub async fn signup_by_token(name: &str, password: &str, token: &str) -> Fallibl
         )
         .execute(&mut conn)
         .await?;
-        sqlx::query!(
-            "INSERT INTO title_authentication_user (user_id, title) VALUES ($1, $2)",
-            id,
-            "律師",
-        )
-        .execute(&mut conn)
-        .await?;
-        sqlx::query!(
-            "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)",
-            "律師",
-            email,
-        )
-        .execute(&mut conn)
-        .await?;
+        if let None = signup_token_record.inviter_id {
+            // 沒有 inviter_id 紀錄，代表此註冊是經由法務部律師查詢系統
+            // 需自動為該使用者帶入律師身份
+            sqlx::query!(
+                "INSERT INTO title_authentication_user (user_id, title) VALUES ($1, $2)",
+                id,
+                "律師",
+            )
+            .execute(&mut conn)
+            .await?;
+            sqlx::query!(
+                "INSERT INTO title_authentication_unique_id (title,  unique_id) VALUES ($1, $2)",
+                "律師",
+                signup_token_record.license_id,
+            )
+            .execute(&mut conn)
+            .await?;
+        }
         conn.commit().await?;
         Ok(id)
     } else {

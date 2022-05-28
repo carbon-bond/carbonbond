@@ -578,8 +578,8 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         _context: &mut crate::Ctx,
         token: String,
     ) -> Result<String, crate::custom_error::Error> {
-        if let Some(email) = db::user::get_email_by_signup_token(&token).await? {
-            Ok(email)
+        if let Some(signup_token_record) = db::user::get_signup_token_record(&token).await? {
+            Ok(signup_token_record.email)
         } else {
             Err(ErrorCode::NotFound(DataType::SignupToken, token).into())
         }
