@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { API_FETCHER, unwrap_or } from '../../ts/api/api';
 import { UserState } from '../global_state/user';
 import { STORAGE_NAME } from '../../ts/constants';
-import { BoardOverview } from '../../ts/api/api_trait';
+import { BoardOverview, BoardType } from '../../ts/api/api_trait';
 
 import style from '../../css/left_panel/browse_bar.module.css';
 import { SubscribedBoardsState } from '../global_state/subscribed_boards';
@@ -119,15 +119,19 @@ export function BrowseBar(): JSX.Element {
 
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 	let board_info = getBoardInfo(props.board);
+	const is_personal_board = props.board.board_type == BoardType.Personal;
 	return <Link to={board_info.to_url()}>
 		<div className={style.boardBlock}>
 			<div>
-				<div className={style.boardName}>😈 {props.board.board_name}</div>
-				<div className={style.boardHeat}>🔥 {props.board.popularity}</div>
+				<div className={style.boardInfo}>
+					<div className={style.boardName}>😈 {props.board.board_name}</div>
+					<div className={style.boardType}>{is_personal_board ? '(個版)' : ''}</div>
+					<div className={style.boardHeat}>🔥 {props.board.popularity}</div>
+				</div>
 				<div className={style.boardTitle}>{props.board.title}</div>
 			</div>
 		</div>
-	</Link>;
+	</Link >;
 }
 
 function ShrinkableBlock(props: {
