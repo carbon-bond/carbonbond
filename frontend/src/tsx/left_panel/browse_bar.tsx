@@ -131,7 +131,7 @@ export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
 				<div className={style.boardTitle}>{props.board.title}</div>
 			</div>
 		</div>
-	</Link >;
+	</Link>;
 }
 
 function ShrinkableBlock(props: {
