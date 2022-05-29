@@ -37,10 +37,7 @@
         & .boardType {
             flex: 1;
             color: var(--green);
-            font-size: 12px;
             margin-left: 5px;
-            display: flex;
-            align-items: flex-end;
         }
     }
     & .boardTitle {

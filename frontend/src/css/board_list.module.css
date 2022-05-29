@@ -26,10 +26,7 @@
                 & .type {
                     flex: 1px;
                     color: var(--green);
-                    font-size: 12px;
                     margin-left: 5px;
-                    display: flex;
-                    align-items: flex-end;
                 }
             }
             & .title {

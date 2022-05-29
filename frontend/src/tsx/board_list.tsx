@@ -22,7 +22,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	return <Link to={board_info.to_url()}>
 		<div>
 			<div className={style.info}>
-				<div className={style.nameame}>{name}</div>
+				<div className={style.name}>{name}</div>
 				<div className={style.type}>{is_personal_board ? '(個版)' : ''}</div>
 			</div>
 			<div className={style.title}>{title}</div>
