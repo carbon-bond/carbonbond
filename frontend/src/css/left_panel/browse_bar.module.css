@@ -30,22 +30,18 @@
     display: inline-block;
     width: 100%;
     color: var(--font-color);
-    & .boardName {
-        margin-top: 2px;
-        margin-left: 5%;
-        display: inline-block;
-        margin-right: auto;
-    }
-    & .boardHeat {
-        margin-top: 2px;
-        margin-right: 5%;
-        display: block;
-        float: right;
+    padding: 3px 10px;
+    & .boardInfo {
+        display: flex;
+        flex-direction: row;
+        & .boardType {
+            flex: 1;
+            color: var(--green);
+            margin-left: 5px;
+        }
     }
     & .boardTitle {
         font-size: 12px;
-        margin-top: 3px;
-        margin-left: 10px;
     }
 }
 .boardBlock:hover {

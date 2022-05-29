@@ -16,9 +16,18 @@
             border: 1px var(--lighter-gray) solid;
             width: 100%;
             padding: 5px;
-            & .name {
-                color: black;
-                font-size: 16px;
+            & .info {
+                display: flex;
+                flex-direction: row;
+                & .name {
+                    color: black;
+                    font-size: 16px;
+                }
+                & .type {
+                    flex: 1px;
+                    color: var(--green);
+                    margin-left: 5px;
+                }
             }
             & .title {
                 color: black;

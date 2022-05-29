@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTitle } from 'react-use';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
-import { Board } from '../ts/api/api_trait';
+import { Board, BoardType } from '../ts/api/api_trait';
 import { LocationCacheState } from './global_state/location_cache';
 
 import style from '../css/board_list.module.css';
@@ -18,9 +18,13 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 	const name = props.board.board_name;
 	const board_info = getBoardInfo(props.board);
 	const title = props.board.title;
+	const is_personal_board = props.board.board_type == BoardType.Personal;
 	return <Link to={board_info.to_url()}>
 		<div>
-			<div className={style.name}>{name}</div>
+			<div className={style.info}>
+				<div className={style.name}>{name}</div>
+				<div className={style.type}>{is_personal_board ? '(個版)' : ''}</div>
+			</div>
 			<div className={style.title}>{title}</div>
 		</div>
 	</Link>;
@@ -36,7 +40,7 @@ function BoardList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '所有看板', is_article_page: false});
+		setCurrentLocation({ name: '所有看板', is_article_page: false });
 	}, [setCurrentLocation]);
 	useTitle('所有看板');
 
