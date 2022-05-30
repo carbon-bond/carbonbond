@@ -1,7 +1,7 @@
 # 若本地環境與此設定檔有出入，請勿直接修改本檔案，應另創建一份 carbonbond.dev.toml 設定檔
 
 [server]
-address = "127.0.0.1"
+address = "0.0.0.0"
 port = 8080
 # base_url 為前端網址（若反向代理，前端、後端的 IP 跟埠口可能不同）
 base_url = "http://localhost:3000"
