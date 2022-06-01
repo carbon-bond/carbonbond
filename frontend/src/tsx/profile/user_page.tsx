@@ -73,18 +73,24 @@ function Sentence(props: { is_me: boolean, sentence: string, setSentence: ((sent
 	}
 }
 
-function CertificationItem(props: { title: string }) : JSX.Element {
-	if (props.title === '律師') {
-		return <span className={style.titleLabel}>
-			<span className={style.titleLawyer}>
-				<span className={style.titleLawyerImage}/> <span className={style.titleLawyerText}>{props.title}</span>
-			</span>
-		</span>;
-	}
+import 律師圖標 from '../../img/title/律師.png';
+import 站方代表圖標 from '../../img/title/站方代表.png';
 
+const TITLE_IMAGE_MAPPING: {[index: string]: string} = {
+	'律師': 律師圖標,
+	'站方代表': 站方代表圖標
+};
+
+function CertificationItem(props: { title: string }) : JSX.Element {
+	let image_url = TITLE_IMAGE_MAPPING[props.title];
 	return <span className={style.titleLabel}>
-		<span className={style.titleUnknown}>
-			{props.title}
+		<span className={style.titleBlock}>
+			{
+				image_url ?
+					<img src={image_url} className={style.titleImage} /> :
+					<></>
+			}
+			<span className={style.titleText}>{props.title}</span>
 		</span>
 	</span>;
 }
@@ -193,7 +199,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 						無
 					</div>
 					: props.profile_user.titles.split(',').map(title => (
-						<CertificationItem title={title} key={`key-${title}`}/>
+						<CertificationItem title={title} key={`${title}`}/>
 					))}
 			</div>
 		</div>
