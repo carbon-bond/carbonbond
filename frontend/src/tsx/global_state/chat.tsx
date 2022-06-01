@@ -253,6 +253,9 @@ class AllChat {
 			}
 		});
 	}
+	unreadNumber(): number {
+		return Object.values(this.direct).filter(chat => chat.isUnread()).length;
+	}
 }
 
 export type AllChatState = {

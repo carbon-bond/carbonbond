@@ -7,7 +7,7 @@ import { Board, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
 const { articleWrapper } = aritcle_wrapper_style;
-import { LocationCacheState } from '../global_state/location_cache';
+import { BoardLocation, LocationCacheState } from '../global_state/location_cache';
 import { useMainScroll } from '../utils';
 import { BoardSidebar } from './right_sidebar';
 
@@ -52,9 +52,8 @@ export function BoardBody(props: {board: Board}): JSX.Element {
 	}, [board_name]);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: board_name, is_article_page: false});
+		setCurrentLocation(new BoardLocation(board_name));
 	}, [setCurrentLocation, board_name]);
-	useTitle(`看版 | ${board_name}`);
 
 	const scrollHandler = React.useCallback((): void => {
 		// 第一次載入結束前 or 已經載到最早的文章了，不要動作

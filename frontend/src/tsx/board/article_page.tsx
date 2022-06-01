@@ -8,7 +8,7 @@ import { Article, ArticleMeta, Board, force } from '../../ts/api/api_trait';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
-import { LocationCacheState } from '../global_state/location_cache';
+import { ArticleLocation, LocationCacheState } from '../global_state/location_cache';
 import { BoardInfo, useBoardInfo } from '.';
 import { ShowText } from '../display/show_text';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -102,9 +102,12 @@ export function ArticlePage(): JSX.Element {
 	}, [updated_article_id, article_id, article, setUpdatedArticleId]);
 
 	React.useEffect(() => {
-		setCurrentLocation(board_info.name ? {name: board_info.name, is_article_page: true} : null);
-	}, [setCurrentLocation, board_info.name]);
-	useTitle(article?.meta.title || '');
+		setCurrentLocation(
+			board_info.name ?
+				new ArticleLocation(board_info.name, article?.meta.title || '') :
+				null
+		);
+	}, [setCurrentLocation, board_info.name, article]);
 
 	if (fetching) {
 		return <></>;

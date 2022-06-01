@@ -10,6 +10,7 @@ import { toastErr } from './utils';
 
 import style from '../css/signup_invitation_page.module.css';
 import { toast } from 'react-toastify';
+import { LocationCacheState, SimpleLocation } from './global_state/location_cache';
 
 async function fetchInvitationList(): Promise<SignupInvitation[]> {
 	return unwrap_or(await API_FETCHER.userQuery.querySignupInvitationList(), []);
@@ -90,6 +91,11 @@ export function SignupInvitationPage(): JSX.Element {
 	let [rerun, setRerun] = React.useState<number>(0);
 	let [invitations, setInvitations] = React.useState<SignupInvitation[]>([]);
 	let [credits, setCredits] = React.useState<SignupInvitationCredit[]>([]);
+
+	const { setCurrentLocation } = LocationCacheState.useContainer();
+	React.useEffect(() => {
+		setCurrentLocation(new SimpleLocation('我的邀請碼'));
+	}, [setCurrentLocation]);
 
 	React.useEffect(() => {
 		if (user_state.login) {

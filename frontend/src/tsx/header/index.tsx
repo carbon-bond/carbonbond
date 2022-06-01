@@ -12,7 +12,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { LocationCacheState } from '../global_state/location_cache';
+import { ArticleLocation, LocationCacheState } from '../global_state/location_cache';
 import { NotificationIcon } from './notification';
 import { DropDown } from '../components/drop_down';
 import { SignupModal, LoginModal } from './login_modal';
@@ -116,9 +116,9 @@ function Header(): JSX.Element {
 			</div>;
 		}
 	}
-	let title = current_location ? current_location.name : '所有看板';
+	let title = current_location ? current_location.show_in_header() : '所有看板';
 	function RouteToBoard(): string {
-		if (current_location?.is_article_page) {
+		if (current_location instanceof ArticleLocation) {
 			return window.location.pathname.split('/').slice(0, -2).join('/');
 		}
 		return window.location.pathname;
@@ -141,7 +141,7 @@ function Header(): JSX.Element {
 					</Link>
 				</div>
 				<div className={style.middleSet}>
-					<SearchBar cur_board={current_location ? current_location.name : ''} />
+					<SearchBar cur_board={current_location ? current_location.show_in_header() : ''} />
 				</div>
 				<div className={style.rightSet}>
 					{UserStatus()}

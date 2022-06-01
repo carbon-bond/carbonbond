@@ -1,12 +1,11 @@
 import * as React from 'react';
 import { Navigate, Link, useParams } from 'react-router-dom';
-import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardEditor, BoardEditorKind } from '../board/board_editor';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
-import { LocationCacheState } from '../global_state/location_cache';
+import { LocationCacheState, PartyLocation } from '../global_state/location_cache';
 
 import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';
@@ -23,7 +22,10 @@ export function PartyDetail(): JSX.Element {
 
 	let party_name = params.party_name;
 	React.useEffect(() => {
-		if (!party_name) {return;}
+		if (!party_name) {
+			console.error('無法從政黨頁網址取得政黨名稱');
+			return;
+		}
 		fetchPartyDetail(party_name).then(p => {
 			setParty(p);
 			console.log(p);
@@ -34,9 +36,10 @@ export function PartyDetail(): JSX.Element {
 	}, [party_name]);
 
 	React.useEffect(() => {
-		setCurrentLocation(party_name ? {name: party_name, is_article_page: false} : null);
+		if (party_name) {
+			setCurrentLocation(new PartyLocation(party_name!));
+		}
 	}, [setCurrentLocation, party_name]);
-	useTitle(`政黨 | ${party_name ? party_name : ''}`);
 
 	const { user_state } = UserState.useContainer();
 

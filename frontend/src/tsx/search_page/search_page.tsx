@@ -10,7 +10,7 @@ import { produce } from 'immer';
 import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
-import { LocationCacheState } from '../global_state/location_cache';
+import { BoardLocation, LocationCacheState } from '../global_state/location_cache';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 function getQueryOr(name: string, search_params: URLSearchParams, default_val: string): string {
@@ -93,7 +93,8 @@ export function SearchPage(): JSX.Element {
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
-					setCurrentLocation({name: board, is_article_page: false});
+					// TODO: 搜尋頁應該有自己的分頁標題
+					setCurrentLocation(new BoardLocation(board));
 				} else {
 					setUrlBoard('');
 					setSearchBoard('');
@@ -200,7 +201,7 @@ export function SearchPage(): JSX.Element {
 					{
 						(() => {
 							if (current_location) {
-								return <option value={current_location.name}>{current_location.name}</option>;
+								return <option value={current_location.show_in_header()}>{current_location.show_in_header()}</option>;
 							} else if (url_board) {
 								return <option value={url_board}>{url_board}</option>;
 							}

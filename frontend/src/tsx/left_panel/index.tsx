@@ -43,7 +43,7 @@ function LeftPanel(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	const { user_state } = UserState.useContainer();
 	// NOTE: 暫時只計算雙人對話
-	const unread_chat_number = Object.values(all_chat.direct).filter(chat => chat.isUnread()).length;
+	const unread_chat_number = all_chat.unreadNumber();
 
 	React.useEffect(() => {
 		const previous_record = localStorage[STORAGE_NAME.leftbar_expand] ?? Option.Browse;

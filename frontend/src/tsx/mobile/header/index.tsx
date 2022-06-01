@@ -3,7 +3,7 @@ import * as React from 'react';
 import style from '../../../css/header/index.module.css';
 
 import { UserState } from '../../global_state/user';
-import { LocationCacheState } from '../../global_state/location_cache';
+import { ArticleLocation, LocationCacheState } from '../../global_state/location_cache';
 
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
@@ -58,9 +58,9 @@ function Header(): JSX.Element {
 			</div>
 		</>;
 	}
-	let title = current_location ? current_location.name : '所有看板';
+	let title = current_location ? current_location.show_in_header() : '所有看板';
 	function routeToBoard(): void {
-		if (current_location?.is_article_page) {
+		if (current_location instanceof ArticleLocation) {
 			navigate(window.location.pathname.split('/').slice(0, -2).join('/'));
 		}
 	}
@@ -73,7 +73,7 @@ function Header(): JSX.Element {
 						<img className={style.imageIcon} src={carbonbondIconURL} alt="" />
 					</div>
 					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
-					<SearchBar cur_board={current_location ? current_location.name : ''} hide_select_board/>
+					<SearchBar cur_board={current_location ? current_location.show_in_header() : ''} hide_select_board/>
 				</div>
 				<div className={style.rightSet}>
 					<UserStatus/>

@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
-import { useTitle } from 'react-use';
 
 import { UserState } from '../global_state/user';
-import { LocationCacheState } from '../global_state/location_cache';
+import { LocationCacheState, SimpleLocation } from '../global_state/location_cache';
 import style from '../../css/party/my_party_list.module.css';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
@@ -31,9 +30,8 @@ export function MyPartyList(): JSX.Element {
 	}, []);
 
 	React.useEffect(() => {
-		setCurrentLocation({name: '我的政黨', is_article_page: false});
+		setCurrentLocation(new SimpleLocation('我的政黨'));
 	}, [setCurrentLocation]);
-	useTitle('我的政黨');
 
 	if (!user_state.login) {
 		return <Navigate to="/app" />;
