@@ -194,28 +194,20 @@
         & .item {
             margin: 0px 0px 5px;
         }
-        & .titleLawyer {
+        & .titleBlock {
             background-color: var(--lighter-gray);
             border-radius: 3px;
             display: inline-block;
             padding: 2px 5px 2px 2px;
-            & .titleLawyerImage {
-                background-image: url('/src/img/Q_lawyer.png');
-                background-size: 16px;
-                display: inline-block;
+            & .titleImage {
                 width: 16px;
                 height: 16px;
                 vertical-align: middle;
             }
-            & .titleLawyerText {
+            & .titleText {
+                margin-left: 4px;
                 vertical-align: middle;
             }
-        }
-        & .titleUnknown {
-            background-color: var(--lighter-gray);
-            border-radius: 3px;
-            display: inline-block;
-            padding: 2px 5px 2px 2px;
         }
     }
 
