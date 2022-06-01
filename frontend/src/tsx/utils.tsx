@@ -158,9 +158,18 @@ function useMainScroll(): {
 	};
 }
 
+function useFocus(): [React.RefObject<HTMLInputElement>, () => void] {
+	const input_ref = React.useRef<HTMLInputElement>(null);
+	const setFocus = (): void => { input_ref.current && input_ref.current.focus(); };
+
+	return [input_ref, setFocus];
+}
+
+
 export {
 	useInputValue,
 	useScrollBottom,
 	useScrollState,
 	useMainScroll,
+	useFocus
 };

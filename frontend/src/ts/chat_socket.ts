@@ -2,6 +2,7 @@ import { toast } from 'react-toastify';
 import { AllChatState, OppositeKind, DirectChatData, Message } from '../tsx/global_state/chat';
 import { toastErr } from '../tsx/utils';
 import { server_trigger, MessageSending, client_trigger } from './api/api_trait';
+import { play_message_notification } from './sound';
 
 const MAX_ATTEMPT_TIMES = 3;
 
@@ -132,6 +133,9 @@ export class ChatSocket {
 				} else if (this.all_chat.all_chat.direct[message_sending.chat_id]) {
 					// TODO: 使用伺服器傳回的日期、訊息 id
 					this.all_chat.addMessage(message_sending.chat_id, new Message(-1, server_trigger.Sender.Opposite, message_sending.content, new Date()));
+					if (!document.hasFocus()) {
+						play_message_notification();
+					}
 				} else {
 					// XXX: 如果初始化的時候沒有載入這個頻道（初始化的時候很可能不會載入所有頻道，僅會載入最近活躍的頻道），就會找不到聊天室
 					console.error(`找不到聊天室：${message_sending.chat_id} ，重新整理可能可以解決問題`);
@@ -155,6 +159,5 @@ export class ChatSocket {
 		} else {
 			console.error('嘗試發送消息，但 socket 尚未建立');
 		}
-
 	}
 }

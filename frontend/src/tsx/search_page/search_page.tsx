@@ -10,7 +10,7 @@ import { produce } from 'immer';
 import style from '../../css/article_wrapper.module.css';
 import '../../css/layout.css';
 import { toastErr, useInputValue } from '../utils';
-import { LocationCacheState } from '../global_state/location_cache';
+import { BoardLocation, LocationState } from '../global_state/location';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 function getQueryOr(name: string, search_params: URLSearchParams, default_val: string): string {
@@ -40,7 +40,7 @@ type CategoryEntry = { name: string, board_name: string, id: number };
 type SearchFields = { [name: string]: SearchField };
 
 export function SearchPage(): JSX.Element {
-	const { current_location, setCurrentLocation } = LocationCacheState.useContainer();
+	const { current_location, setCurrentLocation } = LocationState.useContainer();
 	let [cur_category, setCurCategory] = React.useState<number | null>(null);
 
 	const used_board_value = useInputValue('');
@@ -93,7 +93,8 @@ export function SearchPage(): JSX.Element {
 				if (board) {
 					setUrlBoard(board);
 					setSearchBoard(board);
-					setCurrentLocation({name: board, is_article_page: false});
+					// TODO: 搜尋頁應該有自己的分頁標題
+					setCurrentLocation(new BoardLocation(board));
 				} else {
 					setUrlBoard('');
 					setSearchBoard('');
@@ -200,7 +201,7 @@ export function SearchPage(): JSX.Element {
 					{
 						(() => {
 							if (current_location) {
-								return <option value={current_location.name}>{current_location.name}</option>;
+								return <option value={current_location.show_in_header()}>{current_location.show_in_header()}</option>;
 							} else if (url_board) {
 								return <option value={url_board}>{url_board}</option>;
 							}

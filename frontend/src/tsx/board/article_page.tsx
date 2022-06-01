@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Navigate, useParams } from 'react-router';
-import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { ArticleHeader, ArticleLine, ArticleFooter, Hit, NormalBondLines } from '../article_card';
 import style from '../../css/board/article_page.module.css';
@@ -8,7 +7,7 @@ import { Article, ArticleMeta, Board, force } from '../../ts/api/api_trait';
 import { toastErr, useMainScroll } from '../utils';
 import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
-import { LocationCacheState } from '../global_state/location_cache';
+import { ArticleLocation, LocationState } from '../global_state/location';
 import { BoardInfo, useBoardInfo } from '.';
 import { ShowText } from '../display/show_text';
 import { EditorPanelState } from '../global_state/editor_panel';
@@ -73,7 +72,7 @@ export function ArticlePage(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [article, setArticle] = React.useState<Article | null>(null);
 	let [board, setBoard] = React.useState<Board | null>(null);
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 	const {setUpdatedArticleId, updated_article_id } = EditorPanelState.useContainer();
 
 	React.useEffect(() => {
@@ -102,9 +101,12 @@ export function ArticlePage(): JSX.Element {
 	}, [updated_article_id, article_id, article, setUpdatedArticleId]);
 
 	React.useEffect(() => {
-		setCurrentLocation(board_info.name ? {name: board_info.name, is_article_page: true} : null);
-	}, [setCurrentLocation, board_info.name]);
-	useTitle(article?.meta.title || '');
+		setCurrentLocation(
+			board_info.name ?
+				new ArticleLocation(board_info.name, article?.meta.title || '') :
+				null
+		);
+	}, [setCurrentLocation, board_info.name, article]);
 
 	if (fetching) {
 		return <></>;

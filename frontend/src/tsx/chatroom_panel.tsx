@@ -4,7 +4,7 @@ const {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} = bottom_pane
 import style from '../css/bottom_panel/chat_room.module.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
-import { useScrollBottom, useInputValue, toastErr } from './utils';
+import { useScrollBottom, useInputValue, toastErr, useFocus } from './utils';
 import useOnClickOutside from 'use-onclickoutside';
 import {
 	AllChatState,
@@ -168,6 +168,7 @@ type InputBarProp = {
 	},
 	setValue: React.Dispatch<React.SetStateAction<string>>,
 	onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+	input_ref: React.RefObject<HTMLInputElement>,
 };
 
 type Emoji = {
@@ -175,17 +176,17 @@ type Emoji = {
 };
 
 function InputBar(props: InputBarProp): JSX.Element {
-	const inputElement = React.useRef<HTMLInputElement>(null);
+	const input_ref = props.input_ref;
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
 	const ref = React.useRef(null);
 	useOnClickOutside(ref, () => setExtendEmoji(false));
 
 	function onSelect(emoji: EmojiMart.EmojiData): void {
-		if (inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
-			inputElement.current.focus();
+		if (input_ref.current) {  // 判斷式只是為了 TS 的型別檢查
+			input_ref.current.focus();
 			const value = props.input_props.value;
-			const start = inputElement.current.selectionStart;
-			const end = inputElement.current.selectionEnd;
+			const start = input_ref.current.selectionStart;
+			const end = input_ref.current.selectionEnd;
 			if (start == null || end == null) {
 				const new_value = value + (emoji as Emoji).native;
 				props.setValue(new_value);
@@ -195,8 +196,8 @@ function InputBar(props: InputBarProp): JSX.Element {
 				let em = (emoji as Emoji).native;
 				const new_value = left + em + right;
 				window.requestAnimationFrame(() => {
-					inputElement.current!.selectionStart = start + em.length;
-					inputElement.current!.selectionEnd = start + em.length;
+					input_ref.current!.selectionStart = start + em.length;
+					input_ref.current!.selectionEnd = start + em.length;
 				});
 				props.setValue(new_value);
 			}
@@ -209,8 +210,8 @@ function InputBar(props: InputBarProp): JSX.Element {
 	}
 
 	function onClick(): void {
-		if (inputElement.current) {  // 判斷式只是為了 TS 的型別檢查
-			inputElement.current.focus();
+		if (input_ref.current) {  // 判斷式只是為了 TS 的型別檢查
+			input_ref.current.focus();
 		}
 		setExtendEmoji(!extendEmoji);
 	}
@@ -233,7 +234,7 @@ function InputBar(props: InputBarProp): JSX.Element {
 			}
 		</div>
 		<input {...props.input_props}
-			ref={inputElement}
+			ref={input_ref}
 			onKeyDown={onKeyDownWrap}
 			type="text"
 			placeholder="輸入訊息..."
@@ -256,8 +257,10 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const {y} = useScroll(ref);
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.id];
+	const [input_ref, setInputFocus] = useFocus();
+	const [toggle_focus_test, setToggleFocusTest] = React.useState(false);
 	React.useEffect(() => {
-		if (extended && chat?.isUnread()) {
+		if (extended && chat?.isUnread() && document.activeElement === input_ref?.current && document.hasFocus()) {
 			let now = new Date();
 			updateLastRead(props.room.id, now);
 			API_FETCHER.chatQuery.updateReadTime(chat.id).then(res => unwrap(res)).catch(err => {
@@ -265,7 +268,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				console.error(err);
 			});
 		}
-	}, [extended, chat, updateLastRead, props.room.id]);
+	}, [extended, chat, updateLastRead, props.room.id, input_ref, toggle_focus_test]);
 
 	React.useEffect(() => {
 		if (scrolling) {
@@ -369,7 +372,12 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			}
 		}
 
-		return <div className={style.chatPanel}>
+		function focusPanel(): void {
+			setInputFocus();
+			setToggleFocusTest(!toggle_focus_test);
+		}
+
+		return <div className={style.chatPanel} onClick={focusPanel}>
 			<div className={roomTitle}>
 				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
@@ -386,7 +394,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			<div ref={ref} className={style.messages}>
 				<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name}/>
 			</div>
-			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
+			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref}/>
 		</div>;
 	} else {
 		return <div className={`${style.chatPanel} ${roomWidth}`}>
@@ -408,6 +416,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	const { input_props, setValue } = useInputValue('');
 	const [ref, _scrollToBottom] = useScrollBottom();
 	const { user_state } = UserState.useContainer();
+	const [input_ref, _setInputFocus] = useFocus();
 
 	const chat = all_chat.group[props.room.id];
 	if (chat == undefined) { console.error(`找不到含頻道聊天室 ${props.room.id}`); }
@@ -476,7 +485,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 						{/* TODO: channel 運作方式與私訊不同*/}
 						{/* <MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" /> */}
 					</div>
-					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown}/>
+					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref}/>
 				</div>
 			</div>
 		</div>;
