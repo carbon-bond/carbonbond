@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
-import { useTitle } from 'react-use';
 import style from '../css/setting_page.module.css';
 import { API_FETCHER, unwrap } from '../ts/api/api';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
-import { LocationCacheState, SimpleLocation } from './global_state/location_cache';
+import { LocationState, SimpleLocation } from './global_state/location';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from './components/invalid_message';
 import { EMAIL_REGEX } from '../ts/regex_util';
@@ -42,7 +41,7 @@ function ChangePassword(): JSX.Element {
 
 export function SettingPage(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 	React.useEffect(() => {
 		setCurrentLocation(new SimpleLocation('設定'));
 	}, [setCurrentLocation]);

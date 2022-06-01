@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { useTitle } from 'react-use';
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { ArticleCard } from './article_card';
 import { ArticleMetaWithBonds } from '../ts/api/api_trait';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
-import { LocationCacheState, SimpleLocation } from './global_state/location_cache';
+import { LocationState, SimpleLocation } from './global_state/location';
 
 import style from '../css/pop_article_page.module.css';
 import '../css/layout.css';
@@ -13,7 +12,7 @@ import '../css/layout.css';
 export function SubscribeArticlePage(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const { user_state } = UserState.useContainer();
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 
 	React.useEffect(() => {
 		fetchSubscribeArticles().then(more_articles => {

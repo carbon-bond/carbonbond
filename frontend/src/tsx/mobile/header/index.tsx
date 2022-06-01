@@ -3,7 +3,7 @@ import * as React from 'react';
 import style from '../../../css/header/index.module.css';
 
 import { UserState } from '../../global_state/user';
-import { ArticleLocation, LocationCacheState } from '../../global_state/location_cache';
+import { ArticleLocation, LocationState } from '../../global_state/location';
 
 import { Menu } from './menu';
 import { DropDown } from '../../components/drop_down';
@@ -26,7 +26,7 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 
 function Header(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { current_location } = LocationCacheState.useContainer();
+	const { current_location } = LocationState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
 	let [logining, setLogining] = React.useState(false);
 	const navigate = useNavigate();

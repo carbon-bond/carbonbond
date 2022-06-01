@@ -5,7 +5,7 @@ import { Party, BoardType } from '../../ts/api/api_trait';
 import { BoardEditor, BoardEditorKind } from '../board/board_editor';
 import { EXILED_PARTY_NAME } from './index';
 import { UserState } from '../global_state/user';
-import { LocationCacheState, PartyLocation } from '../global_state/location_cache';
+import { LocationState, PartyLocation } from '../global_state/location';
 
 import style from '../../css/party/party_detail.module.css';
 import { toastErr } from '../utils';
@@ -17,7 +17,7 @@ async function fetchPartyDetail(party_name: string): Promise<Party> {
 export function PartyDetail(): JSX.Element {
 	let [party, setParty] = React.useState<Party | null>(null);
 	let [fetching, setFetching] = React.useState(true);
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 	let params = useParams();
 
 	let party_name = params.party_name;

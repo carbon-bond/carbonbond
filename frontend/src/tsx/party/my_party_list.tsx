@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 
 import { UserState } from '../global_state/user';
-import { LocationCacheState, SimpleLocation } from '../global_state/location_cache';
+import { LocationState, SimpleLocation } from '../global_state/location';
 import style from '../../css/party/my_party_list.module.css';
 import { API_FETCHER, unwrap_or, unwrap } from '../../ts/api/api';
 import { Party } from '../../ts/api/api_trait';
@@ -20,7 +20,7 @@ export function MyPartyList(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [party_list, setPartyList] = React.useState<Party[]>([]);
 	let { user_state } = UserState.useContainer();
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 
 	React.useEffect(() => {
 		fetchPartyList().then(tree => {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { API_FETCHER, unwrap_or } from '../ts/api/api';
 import { Board, BoardType } from '../ts/api/api_trait';
-import { SimpleLocation, LocationCacheState } from './global_state/location_cache';
+import { SimpleLocation, LocationState } from './global_state/location';
 
 import style from '../css/board_list.module.css';
 import '../css/layout.css';
@@ -31,7 +31,7 @@ function BoardBlock(props: { board: Board }): JSX.Element {
 
 function BoardList(): JSX.Element {
 	let [board_list, setBoardList] = React.useState<Board[]>([]);
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 	React.useEffect(() => {
 		fetchBoardList().then(board_list => {
 			setBoardList(board_list);

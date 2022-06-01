@@ -73,7 +73,7 @@ export class UserLocation implements Location {
 	};
 }
 
-function useLocationCacheState(): {
+function useLocationState(): {
 	current_location: Location | null,
 	setCurrentLocation: (location: Location | null) => void;
 	} {
@@ -87,4 +87,4 @@ function useLocationCacheState(): {
 	};
 }
 
-export const LocationCacheState = createContainer(useLocationCacheState);
+export const LocationState = createContainer(useLocationState);

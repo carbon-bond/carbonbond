@@ -12,7 +12,7 @@ import { API_FETCHER, unwrap } from '../../ts/api/api';
 import { toastErr } from '../utils';
 import { UserState } from '../global_state/user';
 import { SearchBar } from './search_bar';
-import { ArticleLocation, LocationCacheState } from '../global_state/location_cache';
+import { ArticleLocation, LocationState } from '../global_state/location';
 import { NotificationIcon } from './notification';
 import { DropDown } from '../components/drop_down';
 import { SignupModal, LoginModal } from './login_modal';
@@ -35,7 +35,7 @@ function Header(): JSX.Element {
 	const [logining, setLogining] = React.useState(false);
 	const [signuping, setSignuping] = React.useState(false);
 	const { user_state, setLogout } = UserState.useContainer();
-	const { current_location } = LocationCacheState.useContainer();
+	const { current_location } = LocationState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
 
 	let [expanding_user, setExpandingUser] = React.useState(false);

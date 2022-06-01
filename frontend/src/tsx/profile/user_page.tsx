@@ -6,7 +6,7 @@ import { Avatar } from './avatar';
 import { UserCard } from './user_card';
 import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from '../../ts/api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
-import { LocationCacheState, UserLocation } from '../global_state/location_cache';
+import { LocationState, UserLocation } from '../global_state/location';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
 import { AllChatState, DirectChatData } from '../global_state/chat';
@@ -748,7 +748,7 @@ function UserPage(): JSX.Element {
 	const [reload, setReload] = React.useState<number>(Date.now());
 
 	const [user, setUser] = React.useState<User | null>(null);
-	const { setCurrentLocation } = LocationCacheState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
 
 	React.useEffect(() => {
 		API_FETCHER.userQuery.queryUser(user_name).then((user) => {
