@@ -80,15 +80,15 @@ export function Menu(props: {
 	}
 
 	return <>
-        <div className={style.wrap}>
+		<div className={style.wrap}>
         	<div className={style.cover} onClick={onCoverClicked} />
         	<div className={style.menu}>
         		{
         			!user_state.login ? null : <>
-                        <Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>
+						<Row to={`/app/user/${user_state.user_name}`}>{props.userBlock}</Row>
 						<Row onClick={logout_request}>登出</Row>
 						<BoardsRow name="訂閱看板" fetchBoards={async () => await API_FETCHER.userQuery.querySubcribedBoards()} />
-                    </>
+					</>
         		}
         		{
         			user_state.login ? null : <Row onClick={() => {props.setLogining(true); props.setExpandingMenu(false);}}>登入</Row>
@@ -96,10 +96,10 @@ export function Menu(props: {
         		<BoardsRow name="熱門看板" fetchBoards={async () => await API_FETCHER.boardQuery.queryHotBoards()} />
         		{
         			!user_state.login ? null : <>
-                        <Row to={`/app/b/personal/${user_state.user_name}`}>我的個板</Row>
-                    </>
+						<Row to={`/app/b/personal/${user_state.user_name}`}>我的個板</Row>
+					</>
         		}
         	</div>
-        </div>
-    </>;
+		</div>
+	</>;
 }

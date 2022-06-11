@@ -36,10 +36,10 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0',
 		proxy: {
-			'/api': 'http://localhost:8080',
-			'/avatar': 'http://localhost:8080',
+			'/api': 'http://127.0.0.1:8080',
+			'/avatar': 'http://127.0.0.1:8080',
 			'/chat': {
-				target: 'ws://localhost:8080',
+				target: 'ws://127.0.0.1:8080',
 				ws: true,
 			},
 		}

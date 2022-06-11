@@ -602,7 +602,7 @@ export function ProfileAction(props: {profile_user: User,
 			}
 			{
 				is_me ?
-						<></> :
+					<></> :
 					<button onClick={onStartChat}>🗨️ 私訊</button>
 			}
 			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>

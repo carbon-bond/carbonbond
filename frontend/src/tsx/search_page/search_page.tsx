@@ -181,15 +181,15 @@ export function SearchPage(): JSX.Element {
 	return <div className="forumBody">
 		<div className="content">
 			<div className="mainContent">
-                <>
-                    {
+				<>
+					{
                     	articles.map(article => {
                     		return <div className={style.articleWrapper} key={`article-${article.meta.id}`}>
                     			<ArticleCard article={article.meta} bonds={article.bonds} />
                     		</div>;
                     	})
-                    }
-                </>
+					}
+				</>
 
 			</div>
 			<div className="rightSideBar">
@@ -274,33 +274,33 @@ function CategoryBlock(props: CategoryBlockProps): JSX.Element {
 		return <></>;
 	} else {
 		return <>
-		{
-			category.fields.map((field) => {
-				let ty = field.kind;
-				let name = field.name;
-				return <>
-					<div key={`${category_id}${name}`}>
-						<label>{name}</label> <br />
-						{
-							(() => {
-								if (ty == force.FieldKind.Number) {
-									return <DualSlider
-										range={[1, 20]}
-										onChange={r => setField(name, r)}
-										transform={n => Math.floor(n)}
-									/>;
-								} else {
-									return <input type="text" onChange={
-										e => setField(name, e.target.value)
-									} />;
-								}
-							})()
-						}
-						<br />
-					</div>
-				</>;
-			})
-		}
+			{
+				category.fields.map((field) => {
+					let ty = field.kind;
+					let name = field.name;
+					return <>
+						<div key={`${category_id}${name}`}>
+							<label>{name}</label> <br />
+							{
+								(() => {
+									if (ty == force.FieldKind.Number) {
+										return <DualSlider
+											range={[1, 20]}
+											onChange={r => setField(name, r)}
+											transform={n => Math.floor(n)}
+										/>;
+									} else {
+										return <input type="text" onChange={
+											e => setField(name, e.target.value)
+										} />;
+									}
+								})()
+							}
+							<br />
+						</div>
+					</>;
+				})
+			}
 		</>;
 	}
 }
