@@ -5,7 +5,8 @@ import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 
 import { api_trait, api_utils } from 'carbonbond-api';
-const { API_FETCHER, unwrap_or } = api_utils;
+const { unwrap_or } = api_utils;
+import { API_FETCHER } from '../api';
 
 async function fetchBoardList(): Promise<api_trait.Board[]> {
 	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
@@ -16,7 +17,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 	React.useEffect(() => {
     fetchBoardList().then(board_list => {
 			setBoardList(board_list);
-		});
+		})
+    .catch(err => console.warn(err));
 	}, []);
 
   return (
