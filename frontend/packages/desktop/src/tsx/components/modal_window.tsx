@@ -61,7 +61,7 @@ export function ModalWindow(props: {
 	</ReactModal>;
 }
 
-export function SimpleModal<T>(props: { close: () => void, children: T }): JSX.Element {
+export function SimpleModal(props: { close: () => void, children: React.ReactNode }): JSX.Element {
 	ReactModal.setAppElement('body');
 	return <ReactModal
 		isOpen={true}
