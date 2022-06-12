@@ -1,0 +1,14 @@
+# node
+node_modules/
+
+# chitin-codegen
+api_trait.rs
+
+# 編譯產物
+dist/
+
+# jest coverage
+coverage/
+
+# eslint
+.eslintcache
