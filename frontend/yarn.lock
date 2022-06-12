@@ -3032,6 +3032,11 @@ anymatch@^3.0.3, anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
+api@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/api/-/api-0.1.0.tgz#9af3fa56453517cede3f93885a8ef74c48edd607"
+  integrity sha512-tBD8irVdpQ+5BBBTX/e4WH3div6AIHwlIaj5CMuQoGUcHQIQi5JGWCyjOglnq36jDXK5/9Yenqr2zMCO4UnoVw==
+
 appdirsjs@^1.2.4:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/appdirsjs/-/appdirsjs-1.2.6.tgz#fccf9ee543315492867cacfcfd4a2b32257d30ac"

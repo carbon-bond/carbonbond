@@ -6,7 +6,8 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/**"
+    "app/**",
+    "lib/**"
   ],
   "resolutions": {
     "@types/react": "17",

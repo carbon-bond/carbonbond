@@ -65,7 +65,7 @@ fn gen_api_files() -> std::io::Result<()> {
         error: "Error",
     };
 
-    let mut client_file = File::create("../frontend/src/ts/api/api_trait.ts")?;
+    let mut client_file = File::create("../frontend/lib/api/src/api_trait.ts")?;
     client_file.write_all(b"/*eslint-disable*/\n")?;
     client_file.write_all(b"export type BoxedErr = string\n")?;
     client_file.write_all(b"export type ValidationError = string\n")?;
