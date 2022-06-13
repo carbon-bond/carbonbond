@@ -65,7 +65,6 @@
         ],
         "react/jsx-uses-vars": "warn",
         "react/jsx-uses-react": "warn",
-        "react/react-in-jsx-scope": "error",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn"
     }
