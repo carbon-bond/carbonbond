@@ -21,8 +21,8 @@ services:
     image: "carbonbond/frontend:${TAG:-latest}"
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
-    #   context: ../frontend
-    #   dockerfile: ../frontend/deploy/Dockerfile
+    #   context: ../frontend/app/desktop
+    #   dockerfile: ../frontend/app/desktop/deploy/Dockerfile
     restart: always
     ports:
       - 80:80
