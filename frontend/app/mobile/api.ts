@@ -1,4 +1,4 @@
-import { api_trait } from 'carbonbond-api';
+import { api_trait } from 'carbonbond-api/index';
 import { getEnvVars } from './env';
 
 async function fetchResult(query: Object): Promise<string> {
