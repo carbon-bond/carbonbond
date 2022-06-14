@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 
 import { Text, View } from '../components/Themed';
 
-import { api_trait, api_utils } from 'carbonbond-api';
+import { api_trait, api_utils } from 'carbonbond-api/index';
 const { unwrap_or } = api_utils;
 import { API_FETCHER } from '../api';
 

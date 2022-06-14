@@ -15,5 +15,12 @@ module.exports = async function (env, argv) {
 		}
 	};
 
+	config.module.rules.push(
+		{
+			test: /\.tsx?$/,
+			loader: 'babel-loader'
+		}
+	);
+
 	return config;
 };

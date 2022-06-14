@@ -21,7 +21,7 @@ const ENV = {
 	},
 };
 
-export const getEnvVars = (env = Constants.manifest.releaseChannel): Env => {
+export const getEnvVars = (env = Constants.manifest?.releaseChannel): Env => {
 	// eslint-disable-next-line
 	if (__DEV__) {
 		return ENV.dev;
