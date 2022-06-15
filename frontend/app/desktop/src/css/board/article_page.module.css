@@ -1,5 +1,6 @@
 .articlePage {
-    border: 1px var(--lighter-gray) solid;
+    border: 1px var(--border-color) solid;
+    border-radius: 10px;
     background-color: var(--background-color);
     padding: 20px;
     margin-top: 20px;
