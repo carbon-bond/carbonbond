@@ -41,7 +41,7 @@ jobs:
       if: ${{ success() }}
       uses: distributhor/workflow-webhook@v2
       env:
-        webhook_url: ${{ secrets.DEV_WEBHOOK_URL }}/hooks/redeploy-api-service
+        webhook_url: ${{ secrets.DEV_WEBHOOK_URL }}/hooks/dev-redeploy-api-service
         webhook_secret: ${{ secrets.DEV_WEBHOOK_SECRET }}
         verify_ssl: false
         verbose: true

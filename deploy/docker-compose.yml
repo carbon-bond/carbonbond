@@ -9,7 +9,7 @@ services:
       - "postgres-data:/var/lib/postgresql/data"
     restart: always
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT:-5432}:5432
     networks:
       - carbonbond-net
   redis:
@@ -25,7 +25,7 @@ services:
     #   dockerfile: ../frontend/app/desktop/deploy/Dockerfile
     restart: always
     ports:
-      - 80:80
+      - ${FRONTEND_PORT:-80}:80
     networks:
       - carbonbond-net
   api-service:
