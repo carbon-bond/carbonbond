@@ -1,8 +1,8 @@
 .articleWrapper {
-    padding: 20px 0 10px 0;
+    padding: 10px 0 10px 0;
     display: block;
     position: relative;
 }
 .articleWrapper:not(:first-child) {
-    padding: 20px 0 10px 0;
+    padding: 0px 0 10px 0;
 }

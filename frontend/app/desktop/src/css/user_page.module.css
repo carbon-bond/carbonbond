@@ -156,6 +156,8 @@
 .detail {
     display: flex;
     flex-direction: column;
+    border: 1px var(--border-color) solid;
+    border-radius: 10px;
     & > div > div:not(:first-child) {
         border-top: 1px solid var(--border-color);
     }
