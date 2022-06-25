@@ -27,6 +27,10 @@
             cursor: pointer;
             color: var(--link-color);
         }
+        & .anonymous:hover {
+            cursor: auto;
+            color: var(--light-font-color);
+        }
         & .articleBoard:hover {
             cursor: pointer;
             color: var(--link-color);
@@ -41,25 +45,16 @@
 
 .bondLine {
     font-size: 16px;
-    color: var(--gray);
-    display: flex;
-    justify-content: space-between;
+    color: var(--light-font-color);
     width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     & .bondTag {
         margin-right: 8px;
     }
-    & .leftSet {
-        flex: 2;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    & .rightSet {
-        flex: 1;
-        text-align: right;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    & .seperator {
+        margin: 0px 4px;
     }
 }
 
@@ -67,8 +62,9 @@
     font-size: 80%;
     position: relative;
     bottom: 1px;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border: 1px solid var(--gray);
+    border-radius: 2px;
+    margin-right: 4px;
     padding: 0px 3px;
 }
 
