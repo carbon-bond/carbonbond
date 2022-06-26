@@ -438,16 +438,11 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 				return;
 			}
 			let lines = Math.floor(height / line_height);
-			// console.log(props.article.id);
-			// console.log(`height: ${height}`);
-			// console.log(`line_height: ${line_height}`);
-			// console.log(`lines: ${lines}`);
 			if (lines > MAX_BRIEF_LINE) {
 				setShrinkable(true);
 				setReady(true);
 				wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
 			} else if (!truncated) {
-				// console.log(`${props.article.id}摘要完整且行數短，直接展開`);
 				expand();
 			}
 		}
@@ -485,20 +480,24 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 		return '';
 	}
 
-	function ShowMoreButton(): JSX.Element | null {
-		return <div className={style.readMore}>
-			{
-				article == null ?
-					<a onClick={() => expand()}>...閱讀更多</a> :
-					shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
-			}
-		</div>;
+	function GradientFilter(): JSX.Element {
+		if (article == null) {
+			return <div className={style.gradientFilter} onClick={expand}></div>;
+		} else {
+			return <></>;
+		}
 	}
 
 	if (article) {
 		return <>
 			<ArticleContent article={article} />
-			<ShowMoreButton />
+			{
+				shrinkable ?
+					<div className={style.readLess}>
+						<a onClick={() => setArticle(null)}>收起</a>
+					</div> :
+					<></>
+			}
 		</>;
 	}
 
@@ -511,6 +510,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			style={ready ? undefined : hidden_style}
 			className={style.articleContentWrapper}
 		>
+			<GradientFilter />
 			<div ref={div => onDivLoad(div, false)}>
 				{
 					props.article.fields.map(field => {
@@ -520,13 +520,12 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 						}
 						return <div key={field.name}>
 							{show_name ? <h4>{field.name}</h4> : null}
-							<pre className={style.articleContent}>{inner}</pre>
+							<pre className={style.fieldValue}>{inner}</pre>
 						</div>;
 					})
 				}
 			</div>
 		</div>
-		<ShowMoreButton />
 	</>;
 }
 
