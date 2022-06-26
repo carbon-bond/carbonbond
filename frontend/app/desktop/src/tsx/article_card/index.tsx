@@ -1,7 +1,7 @@
 import * as React from 'react';
 import style from '../../css/board/article_card.module.css';
 import '../../css/global.css';
-import { dateDistance, relativeDate } from '../../ts/date';
+import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType, Attitude } from 'carbonbond-api/api_trait';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
@@ -19,9 +19,9 @@ const MAX_BRIEF_LINE = 4;
 
 function ShowAuthor(props: {author: Author}): JSX.Element {
 	if (props.author == 'Anonymous') {
-		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶</span>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名</span>;
 	} else if (props.author == 'MyAnonymous') {
-		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</span>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名（我）</span>;
 	} else {
 		return <Link to={`/app/user/${props.author.NamedAuthor.name}`}>
 			<span className={style.authorId}>{props.author.NamedAuthor.name}</span>
@@ -302,18 +302,11 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.ReactNode }): JSX.Element {
 	const board_info = getBoardInfo(props.mini_meta);
 	return <div className={style.bondLine}>
-		<div className={style.leftSet}>
-			{props.children}
-			<Link to={`${board_info.to_url()}/article/${props.mini_meta.id}`}>
-				<span className={style.border}>{props.mini_meta.category}</span>
-				<span>{props.mini_meta.title}</span>
-			</Link>
-		</div>
-		<div className={style.rightSet}>
-			<span>{dateDistance(new Date(props.mini_meta.create_time))}</span>
-			<span> • </span>
-			<ShowAuthor author={props.mini_meta.author} />
-		</div>
+		{props.children}
+		<Link to={`${board_info.to_url()}/article/${props.mini_meta.id}`}>
+			<span className={style.border}>{props.mini_meta.category}</span>
+			<span>{props.mini_meta.title}</span>
+		</Link>
 	</div>;
 }
 

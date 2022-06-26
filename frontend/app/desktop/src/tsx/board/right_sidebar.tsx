@@ -112,7 +112,6 @@ function PartyList(props: {parties: Party[]}): JSX.Element {
 				})
 			}
 		</div>
-		<div className={`${style.rightSidebarButton} ${style.showPartyButton}`}>顯示更多政黨</div>
 	</>;
 }
 

@@ -15,6 +15,6 @@ a:not(.styleless) {
     color: var(--gray);
 }
 a:not(.styleless):hover {
-    color: var(--theme-color);
+    color: var(--link-color);
     text-decoration: underline;
 }
