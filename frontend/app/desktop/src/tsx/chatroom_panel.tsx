@@ -378,7 +378,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		}
 
 		return <div className={style.chatPanel} onClick={focusPanel}>
-			<div className={roomTitle}>
+			<div className={`${roomTitle} ${roomWidth}`}>
 				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
