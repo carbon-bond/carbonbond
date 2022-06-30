@@ -124,7 +124,11 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 	let [anonymous, setAnonymous] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue('');
 	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
-		if (e.key == 'Enter' && !e.shiftKey && input_props.value.length > 0) {
+		// 使用 mac 上的注音輸入法，在 safari 上按 enter 選字時
+		// e.key == 'Enter' ，使得選字事件與純按 enter 事件無法區分
+		// 但使用將要廢棄的 e.keyCode 反而能夠分辨，選字時 e.keyCode == 229
+		// 純按 enter 時， e.keyCode == 13
+		if (e.keyCode == 13 && !e.shiftKey && input_props.value.length > 0) {
 			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value, anonymous).then(_id => {
 				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
 			}).then(data => {
