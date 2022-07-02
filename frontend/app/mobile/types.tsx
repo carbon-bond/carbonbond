@@ -36,20 +36,11 @@ export type RootTabScreenProps<Screen extends keyof RootTabParamList> = Composit
 
 export type BoardStackParamList = {
   BoardList: undefined;
-  ArticleList: {screen: string, params: {board_name: string}};
+  ArticleList: {board_name: string};
+  ArticleDetail: {article_id: number};
 };
 
 export type BoardStackScreenProps<Screen extends keyof BoardStackParamList> = NativeStackScreenProps<
   BoardStackParamList,
-  Screen
->;
-
-export type ArticleStackParamList = {
-  ArticleListScrollView: {board_name: string};
-  ArticleDetail: {article_id: number};
-};
-
-export type ArticleStackScreenProps<Screen extends keyof ArticleStackParamList> = NativeStackScreenProps<
-  ArticleStackParamList,
   Screen
 >;
