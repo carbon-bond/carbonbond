@@ -196,6 +196,11 @@ export function BoardEditor(props: {
 
 			let forceValueCopy = JSON.parse(JSON.stringify(forceValue)) as Force;
 
+			// XXX: react hook form 不會載入個板的板名
+			if (props.board_type == BoardType.Personal) {
+				data.board_name = user_name;
+			}
+
 			for (let category of forceValueCopy.categories) {
 				if (category_name_set.has(category.name)) {
 					toastErr('不允許同名分類');
@@ -227,7 +232,9 @@ export function BoardEditor(props: {
 						unwrap(res);
 						location.reload();
 					})
-					.catch(err => toastErr(err));
+					.catch(err => {
+						toastErr(err);
+					});
 			} else if (props.editor_data.kind == BoardEditorKind.Edit) {
 				API_FETCHER.boardQuery.updateBoard({
 					force: forceValueCopy,
@@ -239,7 +246,9 @@ export function BoardEditor(props: {
 						unwrap(res);
 						location.reload();
 					})
-					.catch(err => toastErr(err));
+					.catch(err => {
+						toastErr(err);
+					});
 			} else {
 				toastErr('Bug: 未窮盡 BoardEditorKind');
 			}
@@ -252,14 +261,17 @@ export function BoardEditor(props: {
 	let name_disabled = false;
 	let title = '';
 	let detail = '';
-	if (props.board_type == BoardType.Personal) {
-		name = user_name;
-		name_disabled = true;
-	} else if (props.editor_data.kind == BoardEditorKind.Edit) {
+
+	if (props.editor_data.kind == BoardEditorKind.Edit) {
 		name = props.editor_data.board.board_name;
 		name_disabled = true;
 		title = props.editor_data.board.title;
 		detail = props.editor_data.board.detail;
+	} else if (props.editor_data.kind == BoardEditorKind.Create) {
+		if (props.board_type == BoardType.Personal) {
+			name = user_name;
+			name_disabled = true;
+		}
 	}
 
 	return <div className={style.boardEditor}>

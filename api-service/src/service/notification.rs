@@ -100,5 +100,5 @@ pub async fn handle_comment(author_id: i64, article_id: i64, anonymous: bool) ->
         NotificationKind::CommentReplied,
     )
     .await?;
-    db::notification::notify_all_commenter(author_id, article_id, board_id).await
+    db::notification::notify_all_commenter(author_id, article_id, board_id, anonymous).await
 }

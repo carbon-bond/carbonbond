@@ -258,7 +258,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 	const { user_state } = UserState.useContainer();
 	const chat = all_chat.direct[props.room.id];
 	const [input_ref, setInputFocus] = useFocus();
-	const [toggle_focus_test, setToggleFocusTest] = React.useState(false);
+	const [toggle_focus, setToggleFocus] = React.useState(false);
 	React.useEffect(() => {
 		if (extended && chat?.isUnread() && document.activeElement === input_ref?.current && document.hasFocus()) {
 			let now = new Date();
@@ -268,7 +268,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 				console.error(err);
 			});
 		}
-	}, [extended, chat, updateLastRead, props.room.id, input_ref, toggle_focus_test]);
+	}, [extended, chat, updateLastRead, props.room.id, input_ref, toggle_focus]);
 
 	React.useEffect(() => {
 		if (scrolling) {
@@ -373,12 +373,16 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 		}
 
 		function focusPanel(): void {
-			setInputFocus();
-			setToggleFocusTest(!toggle_focus_test);
+			setToggleFocus(!toggle_focus);
+			// 若沒有選取任何文字，聚焦到輸入框
+			const selection = window.getSelection();
+			if (!selection || selection.toString().length == 0) {
+				setInputFocus();
+			}
 		}
 
-		return <div className={style.chatPanel} onClick={focusPanel}>
-			<div className={roomTitle}>
+		return <div className={style.chatPanel} onMouseUp={focusPanel}>
+			<div className={`${roomTitle} ${roomWidth}`}>
 				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
