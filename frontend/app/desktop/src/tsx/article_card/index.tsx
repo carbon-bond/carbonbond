@@ -78,7 +78,8 @@ export function ArticleHeader(props: {
 	author: Author,
 	board_info: { board_name: string, board_type: BoardType },
 	date: Date,
-	article_meta: ArticleMeta
+	article_meta: ArticleMeta,
+	with_button: boolean,
 }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	const board_info = getBoardInfo(props.board_info);
@@ -92,7 +93,11 @@ export function ArticleHeader(props: {
 			<div className={style.seperationDot}>•</div>
 			<div className={style.articleTime}>{date_string}</div>
 		</div>
-		<EditArticle author={props.author} article_meta={props.article_meta} />
+		{
+			props.with_button ?
+				<EditArticle author={props.author} article_meta={props.article_meta} /> :
+				<></>
+		}
 	</div>;
 }
 
@@ -338,7 +343,7 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 	return (
 		<div>
 			<div className={style.articleContainer}>
-				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} />
+				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} with_button={true} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
 						<div className={style.articleLineWrap}>
@@ -387,7 +392,8 @@ function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMet
 				board_info={meta}
 				author={meta.author}
 				article_meta={props.meta}
-				date={new Date(meta.create_time)} />
+				date={new Date(meta.create_time)}
+				with_button={false} />
 		</div>
 		<div className={style.rightSet}>
 			{props.children}
