@@ -136,6 +136,57 @@ export function LoginModal(props: { setLogining: (logining: boolean) => void }):
 }
 
 export function SignupModal(props: {setSignuping: (signing: boolean) => void}): JSX.Element {
+	let email = useInputValue('').input_props;
+	async function signup_request(email: string): Promise<void> {
+		if (!isEmail(email)) {
+			toast.error('電子信箱格式不符');
+			return;
+		}
+		try {
+			unwrap(await API_FETCHER.userQuery.sendSignupEmail(email, false));
+		} catch (err) {
+			toastErr(err);
+		}
+		toast(`註冊信已送出，請至 ${email} 查收`);
+		props.setSignuping(false);
+	}
+	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+		if (e.key == 'Enter') {
+			signup_request(email.value);
+		} else if (e.key == 'Escape') {
+			props.setSignuping(false);
+		}
+	}
+
+	const buttons: ModalButton[] = [
+		{ text: '註冊', handler: () => signup_request(email.value) },
+		{ text: '取消', handler: () => props.setSignuping(false) }
+	];
+
+	function getBody(): JSX.Element {
+		return <div className={style.loginModal}>
+			<div>
+				<input
+					type="text"
+					className={style.inputContainer}
+					placeholder="📧 信箱"
+					autoFocus
+					{...email}
+					onKeyDown={onKeyDown} />
+			</div>
+		</div>;
+	}
+
+	return <ModalWindow
+		title="註冊"
+		body={getBody()}
+		buttons={buttons}
+		visible={true}
+		setVisible={props.setSignuping}
+	/>;
+}
+
+export function LawerTitleApply(props: {setSignuping: (signing: boolean) => void}): JSX.Element {
 	let [lawyer_search_result, setLawyerSearchResult] = React.useState<LawyerbcResultMini[]>([]);
 	let [lawyer_detail_result, setLawyerDetailResult] = React.useState<LawyerbcResult | null>(null);
 	let [selected_search_result_index, setSelectedSearchResult] = React.useState<number>(-1);

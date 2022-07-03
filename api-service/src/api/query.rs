@@ -49,11 +49,32 @@ pub enum UserQuery {
     #[chitin(leaf, response = "Vec<super::model::forum::ArticleMetaWithBonds>")]
     QueryMyFavoriteArticleList {},
 
+    #[chitin(leaf, response = "super::model::forum::User")]
+    QueryUser { name: String },
+    #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
+    QuerySubcribedBoards {},
+    #[chitin(leaf, response = "()")]
+    SubscribeBoard { board_id: i64 },
+    #[chitin(leaf, response = "()")]
+    UnsubscribeBoard { board_id: i64 },
+    #[chitin(leaf, response = "i64")]
+    FavoriteArticle { article_id: i64 },
+    #[chitin(leaf, response = "()")]
+    UnfavoriteArticle { article_id: i64 },
+    #[chitin(leaf, response = "i64")]
+    TrackingArticle { article_id: i64 },
+    #[chitin(leaf, response = "()")]
+    UntrackingArticle { article_id: i64 },
+
+    // 帳號系統
+
     // 法務部律師查詢系統 https://lawyerbc.moj.gov.tw/
     #[chitin(leaf, response = "Vec<super::model::forum::LawyerbcResultMini>")]
     QuerySearchResultFromLawyerbc { search_text: String },
     #[chitin(leaf, response = "super::model::forum::LawyerbcResult")]
     QueryDetailResultFromLawyerbc { license_id: String },
+
+    // XXX: 危險！可直接呼叫此 API 僞造生年、型別、律師證號
     #[chitin(leaf, response = "()")]
     RecordSignupApply {
         email: String,
@@ -96,30 +117,14 @@ pub enum UserQuery {
     Login { user_name: String, password: String },
     #[chitin(leaf, response = "()")]
     Logout {},
-    #[chitin(leaf, response = "super::model::forum::User")]
-    QueryUser { name: String },
-    #[chitin(leaf, response = "Vec<super::model::forum::BoardOverview>")]
-    QuerySubcribedBoards {},
-    #[chitin(leaf, response = "()")]
-    SubscribeBoard { board_id: i64 },
-    #[chitin(leaf, response = "()")]
-    UnsubscribeBoard { board_id: i64 },
-    #[chitin(leaf, response = "i64")]
-    FavoriteArticle { article_id: i64 },
-    #[chitin(leaf, response = "()")]
-    UnfavoriteArticle { article_id: i64 },
-    #[chitin(leaf, response = "i64")]
-    TrackingArticle { article_id: i64 },
-    #[chitin(leaf, response = "()")]
-    UntrackingArticle { article_id: i64 },
+
+    // 人際關係
     #[chitin(leaf, response = "()")]
     CreateUserRelation {
         target_user: i64,
         kind: super::model::forum::UserRelationKind,
         is_public: bool,
     },
-
-    // 人際關係
     #[chitin(leaf, response = "()")]
     DeleteUserRelation { target_user: i64 },
     #[chitin(leaf, response = "super::model::forum::UserRelation")]

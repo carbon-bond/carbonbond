@@ -8,8 +8,9 @@ import { LocationState, SimpleLocation } from './global_state/location';
 import { useForm } from 'react-hook-form';
 import { InvalidMessage } from './components/invalid_message';
 import { EMAIL_REGEX } from '../ts/regex_util';
+import { LawerTitleApply } from './header/login_modal';
 
-function ChangePassword(): JSX.Element {
+function ChangeEmail(): JSX.Element {
 	const {
 		register,
 		handleSubmit,
@@ -39,14 +40,8 @@ function ChangePassword(): JSX.Element {
 	</div>;
 }
 
-export function SettingPage(): JSX.Element {
+function ResetPassword(): JSX.Element {
 	const { user_state } = UserState.useContainer();
-	const { setCurrentLocation } = LocationState.useContainer();
-	React.useEffect(() => {
-		setCurrentLocation(new SimpleLocation('設定'));
-	}, [setCurrentLocation]);
-
-
 	async function reset_password_request(): Promise<void> {
 		try {
 			if (user_state.login) {
@@ -58,14 +53,33 @@ export function SettingPage(): JSX.Element {
 		}
 		return;
 	}
+
+	return <div className={style.setting}>
+		<div className={style.name}>重置密碼</div>
+		<button onClick={reset_password_request}> 寄發重置碼到信箱 </button>
+	</div>;
+
+}
+
+export function SettingPage(): JSX.Element {
+	const { setCurrentLocation } = LocationState.useContainer();
+	const [signuping, setSignuping] = React.useState(false);
+	React.useEffect(() => {
+		setCurrentLocation(new SimpleLocation('設定'));
+	}, [setCurrentLocation]);
+
+
 	return <div className={style.settingPage}>
 		<div className={style.settings}>
-			<div className={style.setting}>
-				<div className={style.name}>重置密碼</div>
-				<button onClick={reset_password_request}> 寄發重置碼到信箱 </button>
-			</div>
+			<ResetPassword />
 			<hr />
-			<ChangePassword />
+			<ChangeEmail />
+			<hr />
+			<div className={style.setting}>
+				<div className={style.name}>驗證稱號</div>
+				<button onClick={() => { setSignuping(true); }}> 律師 </button>
+				{ signuping ? <LawerTitleApply setSignuping={setSignuping} /> : <></> }
+			</div>
 		</div>
 	</div>;
 }

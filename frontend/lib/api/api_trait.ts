@@ -153,6 +153,30 @@ export class UserQuery {
     async queryMyFavoriteArticleList(): Promise<Result<Array<ArticleMetaWithBonds>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryMyFavoriteArticleList": {  } } }));
     }
+    async queryUser(name: string): Promise<Result<User, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryUser": { name } } }));
+    }
+    async querySubcribedBoards(): Promise<Result<Array<BoardOverview>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QuerySubcribedBoards": {  } } }));
+    }
+    async subscribeBoard(board_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SubscribeBoard": { board_id } } }));
+    }
+    async unsubscribeBoard(board_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UnsubscribeBoard": { board_id } } }));
+    }
+    async favoriteArticle(article_id: number): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "FavoriteArticle": { article_id } } }));
+    }
+    async unfavoriteArticle(article_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UnfavoriteArticle": { article_id } } }));
+    }
+    async trackingArticle(article_id: number): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "TrackingArticle": { article_id } } }));
+    }
+    async untrackingArticle(article_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "UntrackingArticle": { article_id } } }));
+    }
     async querySearchResultFromLawyerbc(search_text: string): Promise<Result<Array<LawyerbcResultMini>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QuerySearchResultFromLawyerbc": { search_text } } }));
     }
@@ -191,30 +215,6 @@ export class UserQuery {
     }
     async logout(): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Logout": {  } } }));
-    }
-    async queryUser(name: string): Promise<Result<User, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QueryUser": { name } } }));
-    }
-    async querySubcribedBoards(): Promise<Result<Array<BoardOverview>, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "QuerySubcribedBoards": {  } } }));
-    }
-    async subscribeBoard(board_id: number): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "SubscribeBoard": { board_id } } }));
-    }
-    async unsubscribeBoard(board_id: number): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "UnsubscribeBoard": { board_id } } }));
-    }
-    async favoriteArticle(article_id: number): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "FavoriteArticle": { article_id } } }));
-    }
-    async unfavoriteArticle(article_id: number): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "UnfavoriteArticle": { article_id } } }));
-    }
-    async trackingArticle(article_id: number): Promise<Result<number, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "TrackingArticle": { article_id } } }));
-    }
-    async untrackingArticle(article_id: number): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "UntrackingArticle": { article_id } } }));
     }
     async createUserRelation(target_user: number, kind: UserRelationKind, is_public: boolean): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "CreateUserRelation": { target_user, kind, is_public } } }));
