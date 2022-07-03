@@ -433,6 +433,7 @@ impl api_trait::BoardQueryRouter for BoardQueryRouter {
         new_board: model::forum::NewBoard,
     ) -> Fallible<i64> {
         let user_id = context.get_id_strict().await?;
+        log::debug!("創建看板 {}", new_board.board_name);
         if new_board.ruling_party_id == -1
             && new_board.board_type == model::forum::BoardType::Personal
         {
