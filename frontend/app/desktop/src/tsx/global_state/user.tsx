@@ -13,14 +13,16 @@ export type UserStateType = {
 	id: number,
 	user_name: string,
 	email: string,
-	energy: number
+	energy: number,
+	titles: string[],
 };
 
 interface LoginData {
 	id: number,
 	user_name: string,
 	email: string,
-	energy: number
+	energy: number,
+	titles: string | null
 }
 
 function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData) => void, setLogout: Function, getLoginState: Function } {
@@ -51,6 +53,7 @@ function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData
 			user_name: data.user_name,
 			email: data.email,
 			energy: data.energy,
+			titles: data.titles ? data.titles.split(',') : []
 		});
 		window.chat_socket.init(all_chat_state);
 	}

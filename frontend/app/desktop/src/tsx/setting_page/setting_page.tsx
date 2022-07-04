@@ -61,12 +61,26 @@ function ResetPassword(): JSX.Element {
 
 }
 
+const CLAIMS = [
+	{
+		title: '律師',
+		element: ClaimLawerTitle
+	}
+];
+
 export function SettingPage(): JSX.Element {
 	const { setCurrentLocation } = LocationState.useContainer();
 	const [signuping, setSignuping] = React.useState(false);
+	const { user_state } = UserState.useContainer();
 	React.useEffect(() => {
 		setCurrentLocation(new SimpleLocation('設定'));
 	}, [setCurrentLocation]);
+
+	if (!user_state.login) {
+		return <div className={style.settingPage}>
+			登入用戶才能使用設定功能
+		</div>;
+	}
 
 
 	return <div className={style.settingPage}>
@@ -76,9 +90,19 @@ export function SettingPage(): JSX.Element {
 			<ChangeEmail />
 			<hr />
 			<div className={style.setting}>
-				<div className={style.name}>驗證稱號</div>
-				<button onClick={() => { setSignuping(true); }}> 律師 </button>
-				{ signuping ? <ClaimLawerTitle setSignuping={setSignuping} /> : <></> }
+				<div className={style.name}>認證稱號</div>
+				{
+					CLAIMS.map(claim => {
+						const already_has = user_state.titles.includes(claim.title);
+						return <div key={claim.title}>
+							<button disabled={already_has} onClick={() => { setSignuping(true); }}>
+								{claim.title}
+							</button>
+							{already_has ? '（已認證）' : ''}
+							{signuping ? <claim.element setSignuping={setSignuping} /> : <></>}
+						</div>;
+					})
+				}
 			</div>
 		</div>
 	</div>;

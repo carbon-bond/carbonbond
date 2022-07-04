@@ -33,6 +33,7 @@ function LoginStatus(
 					id: user.id,
 					email: user.email,
 					energy: user.energy,
+					titles: user.titles
 				});
 				toast('登入成功');
 			} else {
