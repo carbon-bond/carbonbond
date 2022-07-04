@@ -38,7 +38,12 @@ pub async fn create(
 }
 
 // NOTE: 若一篇文章有 n 個人留言，需通知 n 個人。若 n 巨大，可能帶給伺服器壓力
-pub async fn notify_all_commenter(author_id: i64, article_id: i64, board_id: i64) -> Fallible<()> {
+pub async fn notify_all_commenter(
+    author_id: i64,
+    article_id: i64,
+    board_id: i64,
+    anonymous: bool,
+) -> Fallible<()> {
     let pool = get_pool();
     sqlx::query!(
         "
@@ -46,7 +51,7 @@ pub async fn notify_all_commenter(author_id: i64, article_id: i64, board_id: i64
             (user_id, user2_id, board_id, article1_id, article2_id, kind, quality)
         SELECT
             comments.author_id as user_id,
-            $2 as user2_id,
+            $5 as user2_id,
             $3 as board_id,
             $1 as article1_id,
             NULL as article2_id,
@@ -70,7 +75,8 @@ pub async fn notify_all_commenter(author_id: i64, article_id: i64, board_id: i64
         article_id,
         author_id,
         board_id,
-        NotificationKind::OtherCommentReplied.to_string()
+        NotificationKind::OtherCommentReplied.to_string(),
+        if anonymous { None } else { Some(author_id) },
     )
     .execute(pool)
     .await?;

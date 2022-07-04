@@ -1,6 +1,7 @@
 :root {
     --room-width: 320px;
 }
+
 .roomWidth {
     width: var(--room-width);
 }
@@ -24,8 +25,12 @@
     align-items: center;
     justify-content: space-between;
     & .leftSet {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         font-size: 18px;
         margin-left: 4px;
+        max-width: 80%;
     }
     & .middleSet {
         flex-grow: 1;

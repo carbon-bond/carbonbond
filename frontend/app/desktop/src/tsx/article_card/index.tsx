@@ -1,7 +1,7 @@
 import * as React from 'react';
 import style from '../../css/board/article_card.module.css';
 import '../../css/global.css';
-import { dateDistance, relativeDate } from '../../ts/date';
+import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType, Attitude } from 'carbonbond-api/api_trait';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
@@ -19,9 +19,9 @@ const MAX_BRIEF_LINE = 4;
 
 function ShowAuthor(props: {author: Author}): JSX.Element {
 	if (props.author == 'Anonymous') {
-		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶</span>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名</span>;
 	} else if (props.author == 'MyAnonymous') {
-		return <span className={`${style.authorId} ${style.anonymous}`}>匿名用戶（我自己）</span>;
+		return <span className={`${style.authorId} ${style.anonymous}`}>匿名（我）</span>;
 	} else {
 		return <Link to={`/app/user/${props.author.NamedAuthor.name}`}>
 			<span className={style.authorId}>{props.author.NamedAuthor.name}</span>
@@ -78,7 +78,8 @@ export function ArticleHeader(props: {
 	author: Author,
 	board_info: { board_name: string, board_type: BoardType },
 	date: Date,
-	article_meta: ArticleMeta
+	article_meta: ArticleMeta,
+	with_button: boolean,
 }): JSX.Element {
 	const date_string = relativeDate(props.date);
 	const board_info = getBoardInfo(props.board_info);
@@ -92,7 +93,11 @@ export function ArticleHeader(props: {
 			<div className={style.seperationDot}>•</div>
 			<div className={style.articleTime}>{date_string}</div>
 		</div>
-		<EditArticle author={props.author} article_meta={props.article_meta} />
+		{
+			props.with_button ?
+				<EditArticle author={props.author} article_meta={props.article_meta} /> :
+				<></>
+		}
 	</div>;
 }
 
@@ -124,7 +129,11 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 	let [anonymous, setAnonymous] = React.useState<boolean>(false);
 	const { input_props, setValue } = useInputValue('');
 	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
-		if (e.key == 'Enter' && !e.shiftKey && input_props.value.length > 0) {
+		// 使用 mac 上的注音輸入法，在 safari 上按 enter 選字時
+		// e.key == 'Enter' ，使得選字事件與純按 enter 事件無法區分
+		// 但使用將要廢棄的 e.keyCode 反而能夠分辨，選字時 e.keyCode == 229
+		// 純按 enter 時， e.keyCode == 13
+		if (e.keyCode == 13 && !e.shiftKey && input_props.value.length > 0) {
 			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value, anonymous).then(_id => {
 				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
 			}).then(data => {
@@ -302,18 +311,11 @@ export function ArticleFooter(props: { article: ArticleMeta, hit?: Hit }): JSX.E
 export function BondLine(props: { mini_meta: MiniArticleMeta, children: React.ReactNode }): JSX.Element {
 	const board_info = getBoardInfo(props.mini_meta);
 	return <div className={style.bondLine}>
-		<div className={style.leftSet}>
-			{props.children}
-			<Link to={`${board_info.to_url()}/article/${props.mini_meta.id}`}>
-				<span className={style.border}>{props.mini_meta.category}</span>
-				<span>{props.mini_meta.title}</span>
-			</Link>
-		</div>
-		<div className={style.rightSet}>
-			<span>{dateDistance(new Date(props.mini_meta.create_time))}</span>
-			<span> • </span>
-			<ShowAuthor author={props.mini_meta.author} />
-		</div>
+		{props.children}
+		<Link to={`${board_info.to_url()}/article/${props.mini_meta.id}`}>
+			<span className={style.border}>{props.mini_meta.category}</span>
+			<span>{props.mini_meta.title}</span>
+		</Link>
 	</div>;
 }
 
@@ -341,7 +343,7 @@ function ArticleCard(props: { article: ArticleMeta, bonds: Array<BondInfo> }): J
 	return (
 		<div>
 			<div className={style.articleContainer}>
-				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} />
+				<ArticleHeader author={author} board_info={props.article} date={date} article_meta={props.article} with_button={true} />
 				<div className={style.articleBody}>
 					<div className={style.leftPart}>
 						<div className={style.articleLineWrap}>
@@ -390,7 +392,8 @@ function SimpleArticleCard(props: { children?: React.ReactNode, meta: ArticleMet
 				board_info={meta}
 				author={meta.author}
 				article_meta={props.meta}
-				date={new Date(meta.create_time)} />
+				date={new Date(meta.create_time)}
+				with_button={false} />
 		</div>
 		<div className={style.rightSet}>
 			{props.children}
@@ -445,16 +448,11 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 				return;
 			}
 			let lines = Math.floor(height / line_height);
-			// console.log(props.article.id);
-			// console.log(`height: ${height}`);
-			// console.log(`line_height: ${line_height}`);
-			// console.log(`lines: ${lines}`);
 			if (lines > MAX_BRIEF_LINE) {
 				setShrinkable(true);
 				setReady(true);
 				wrapper.style.height = `${line_height * MAX_BRIEF_LINE}px`;
 			} else if (!truncated) {
-				// console.log(`${props.article.id}摘要完整且行數短，直接展開`);
 				expand();
 			}
 		}
@@ -492,20 +490,24 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 		return '';
 	}
 
-	function ShowMoreButton(): JSX.Element | null {
-		return <div className={style.readMore}>
-			{
-				article == null ?
-					<a onClick={() => expand()}>...閱讀更多</a> :
-					shrinkable ? <a onClick={() => setArticle(null)}>收起</a> : null
-			}
-		</div>;
+	function GradientFilter(): JSX.Element {
+		if (article == null) {
+			return <div className={style.gradientFilter} onClick={expand}></div>;
+		} else {
+			return <></>;
+		}
 	}
 
 	if (article) {
 		return <>
 			<ArticleContent article={article} />
-			<ShowMoreButton />
+			{
+				shrinkable ?
+					<div className={style.readLess}>
+						<a onClick={() => setArticle(null)}>收起</a>
+					</div> :
+					<></>
+			}
 		</>;
 	}
 
@@ -518,6 +520,7 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 			style={ready ? undefined : hidden_style}
 			className={style.articleContentWrapper}
 		>
+			<GradientFilter />
 			<div ref={div => onDivLoad(div, false)}>
 				{
 					props.article.fields.map(field => {
@@ -527,13 +530,12 @@ function ArticleContentShrinkable(props: { article: ArticleMeta }): JSX.Element 
 						}
 						return <div key={field.name}>
 							{show_name ? <h4>{field.name}</h4> : null}
-							<pre className={style.articleContent}>{inner}</pre>
+							<pre className={style.fieldValue}>{inner}</pre>
 						</div>;
 					})
 				}
 			</div>
 		</div>
-		<ShowMoreButton />
 	</>;
 }
 

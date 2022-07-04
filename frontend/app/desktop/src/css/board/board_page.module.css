@@ -1,6 +1,5 @@
 .boardHeader {
-
-    border-bottom: 1px var(--lighter-gray) solid;
+    border-bottom: 1px var(--border-color) solid;
     height: 100%;
     display: flex;
     flex-direction: column;

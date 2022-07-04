@@ -23,18 +23,8 @@
 }
 
 .subscribeButton {
-    background-color: var(--theme-color);
-    color: var(--background-color);
-}
-
-.trackBoardButton {
-    border: 2px var(--theme-color) solid;
     color: var(--theme-color);
-}
-
-.showPartyButton {
-    border: 2px var(--border-color) solid;
-    color: var(--light-font-color);
+    border: 2px solid var(--theme-color);
 }
 
 .rightSidebarBlock {
@@ -45,9 +35,9 @@
 
     & .header {
         font-size: 20px;
-        padding: 4px 12px;
-        background-color: var(--theme-color);
-        color: var(--background-color)
+        padding: 5px 12px;
+        border-bottom: 1px var(--border-color) solid;
+        color: var(--font-color)
     }
 
     & .content {
