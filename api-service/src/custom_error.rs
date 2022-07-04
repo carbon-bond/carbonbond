@@ -43,6 +43,8 @@ mod inner {
         SignupToken,
         #[display(fmt = "重置密碼碼")]
         ResetPasswordToken,
+        #[display(fmt = "稱號驗證碼")]
+        ClaimTitleToken,
     }
 
     // TODO: 加入鍵結錯誤
@@ -68,6 +70,8 @@ mod inner {
         DuplicateInvitation,
         #[display(fmt = "重複註冊")]
         DuplicateRegister,
+        #[display(fmt = "重複宣稱稱號")]
+        DuplicateClaimTitle,
         #[display(fmt = "Token 已用過或不存在")]
         UselessToken,
         #[display(fmt = "目前不開放自行註冊，請找朋友邀請")]

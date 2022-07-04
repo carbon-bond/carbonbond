@@ -463,6 +463,38 @@
     },
     "query": "\n            DELETE FROM drafts\n            WHERE id = $1\n        "
   },
+  "211d7e787a1d40c47c63e5d0e0fe5dcb18204982e39748ceb37621ea43a025e6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "email",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "inviter_id",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "is_used",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT email, inviter_id, is_used FROM signup_tokens WHERE token = $1"
+  },
   "22f4beecaac3dff113d691c28baf01f45c19af43cd6c2342594123aa5ddbd2ef": {
     "describe": {
       "columns": [
@@ -568,6 +600,20 @@
       }
     },
     "query": "\n        SELECT article_id, name, value FROM article_string_fields\n        WHERE article_id = $1;\n        "
+  },
+  "2b091fd60397645003da711e6a7efe070c7133f24b5eb08256f9227f41986c1f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "INSERT INTO signup_tokens (email, token, inviter_id) VALUES ($1, $2, $3)"
   },
   "2d680e691d71f2259578f9894d5b22d3ff786030a1ab286a201734ab19548fca": {
     "describe": {
@@ -1237,6 +1283,44 @@
     },
     "query": "UPDATE images\n            SET raw_data = $1\n            WHERE images.id = $2"
   },
+  "5a8b1a8188270cce850e0e7e3ac22ac62d7f67bca6f4426e49d0aa41e658c325": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "title",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "license_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_used",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id, title, license_id, is_used FROM claim_title_tokens WHERE token = $1"
+  },
   "5c7980f449bb457c6bdcf5657c7dab31256df0594aa21d66c697b0f0afa03af5": {
     "describe": {
       "columns": [
@@ -1597,38 +1681,6 @@
     },
     "query": "SELECT id, event_name, credit, create_time\n         FROM invitation_credits WHERE user_id = $1"
   },
-  "7278915df769714e1c54346994f719bea5ec26d1cb006d4d941f2ac57729ec4f": {
-    "describe": {
-      "columns": [
-        {
-          "name": "email",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "inviter_id",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "license_id",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT email, inviter_id, license_id FROM signup_tokens WHERE token = $1"
-  },
   "745bec72852ae57347737531491943caf1a84199a8ebdff9485061b16828dca4": {
     "describe": {
       "columns": [],
@@ -1946,23 +1998,6 @@
     },
     "query": "\n        SELECT force FROM\n        boards JOIN articles\n        ON\n        boards.id = articles.board_id\n        WHERE articles.id = $1\n        "
   },
-  "870acec27692e6a724b9c061fe2323f9f2486ec964e451f05e442296cf8c099d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Int4",
-          "Text",
-          "Text",
-          "Text",
-          "Int8"
-        ]
-      }
-    },
-    "query": "INSERT INTO signup_tokens (email, birth_year, gender, license_id, token, inviter_id) VALUES ($1, $2, $3, $4, $5, $6)"
-  },
   "8b86312a9243be7da0c376490bda36bb710b7d6ad15a68ca14db0fbaed105d86": {
     "describe": {
       "columns": [
@@ -2272,6 +2307,22 @@
       }
     },
     "query": "\n        SELECT images.raw_data\n        FROM images\n        INNER JOIN users\n        ON users.avatar = images.id\n        where users.user_name = $1\n        "
+  },
+  "abcba3f32740e2eaf733f47fa9140bc209b2c3f9bc803ba5a4d77c7faa3416dc": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Int8"
+        ]
+      }
+    },
+    "query": "INSERT INTO claim_title_tokens (email, token, title, license_id, user_id) VALUES ($1, $2, $3, $4, $5)"
   },
   "adc15f48b79d193aadca398e0de9dd007bfae3d1d9765abfb63e5a71b8925e56": {
     "describe": {
@@ -2792,6 +2843,27 @@
       }
     },
     "query": "\n        SELECT\n        drafts.id, drafts.author_id, drafts.board_id,\n        boards.board_name,\n        drafts.category as \"category?\",\n        drafts.title,\n        drafts.content,\n        drafts.fields,\n        drafts.create_time,\n        drafts.edit_time,\n        drafts.anonymous,\n        drafts.bonds\n        FROM drafts\n        JOIN boards ON drafts.board_id = boards.id\n        WHERE drafts.author_id = $1\n        ORDER BY create_time DESC\n        "
+  },
+  "bb57ab79515dd057451b392d54c2fbb131f31da0bd6a0ae11af009f9fd9f4fb6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "t",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT 1 as t from title_authentication_unique_id\n        where\n            title = $1\n        AND\n            unique_id = $2\n        LIMIT 1\n        "
   },
   "be0b9433c7a2aa0965488fe72b6eb5aacc5f1cbac2e6d0ab2c5949e7de656a0b": {
     "describe": {
@@ -3342,6 +3414,18 @@
     },
     "query": "\n        SELECT parties.*, boards.board_name as \"board_name?\" FROM parties\n        LEFT JOIN boards on boards.id = parties.board_id\n            \n        INNER JOIN party_members ON parties.id = party_members.party_id\n        WHERE user_id = $1\n        "
   },
+  "d286861575455405b446080e743f64658c9d4a4bcd59269fb25ccbb001ff7b9b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                UPDATE claim_title_tokens SET is_used = true\n                WHERE token = $1\n                "
+  },
   "d3ac55606496f5a8a6be358c6e20a7d2959decdc0dcfadf7be02d2cddb379f27": {
     "describe": {
       "columns": [],
@@ -3403,19 +3487,6 @@
       }
     },
     "query": "SELECT article_id, attitude FROM attitude_to_articles\n        WHERE user_id = $1 AND article_id = ANY($2)"
-  },
-  "d92ca0f691e989536162492a1950d6d5de8c9fab7a0e813ab9cf344397a86a54": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text"
-        ]
-      }
-    },
-    "query": "UPDATE users\n            SET gender = (SELECT gender FROM signup_tokens WHERE token = $1),\n                birth_year = (SELECT birth_year FROM signup_tokens WHERE token = $1)\n            WHERE user_name = $2"
   },
   "da896ce6f3293cce1597ea7ad7c9931a1eed579a156cccec2cb117317a26cdc5": {
     "describe": {

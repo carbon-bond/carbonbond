@@ -33,9 +33,18 @@ pub trait UserQueryRouter {
     async fn query_me(&self, context: &mut crate::Ctx, ) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn query_my_party_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Party>, crate::custom_error::Error>;
     async fn query_my_favorite_article_list(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::ArticleMetaWithBonds>, crate::custom_error::Error>;
+    async fn query_user(&self, context: &mut crate::Ctx, name: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
+    async fn query_subcribed_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
+    async fn subscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn unsubscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn favorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
+    async fn unfavorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
+    async fn tracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
+    async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_search_result_from_lawyerbc(&self, context: &mut crate::Ctx, search_text: String) -> Result<Vec<super::model::forum::LawyerbcResultMini>, crate::custom_error::Error>;
     async fn query_detail_result_from_lawyerbc(&self, context: &mut crate::Ctx, license_id: String) -> Result<super::model::forum::LawyerbcResult, crate::custom_error::Error>;
-    async fn record_signup_apply(&self, context: &mut crate::Ctx, email: String, birth_year: i32, gender: String, license_id: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
+    async fn claim_title(&self, context: &mut crate::Ctx, request: super::model::forum::ClaimTitleRequest) -> Result<(), crate::custom_error::Error>;
+    async fn verify_title(&self, context: &mut crate::Ctx, token: String) -> Result<(), crate::custom_error::Error>;
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
     async fn send_change_email_email(&self, context: &mut crate::Ctx, email: String, password: String) -> Result<(), crate::custom_error::Error>;
@@ -46,14 +55,6 @@ pub trait UserQueryRouter {
     async fn reset_password_by_token(&self, context: &mut crate::Ctx, password: String, token: String) -> Result<(), crate::custom_error::Error>;
     async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn logout(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
-    async fn query_user(&self, context: &mut crate::Ctx, name: String) -> Result<super::model::forum::User, crate::custom_error::Error>;
-    async fn query_subcribed_boards(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::BoardOverview>, crate::custom_error::Error>;
-    async fn subscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn unsubscribe_board(&self, context: &mut crate::Ctx, board_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn favorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
-    async fn unfavorite_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
-    async fn tracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<i64, crate::custom_error::Error>;
-    async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind, is_public: bool) -> Result<(), crate::custom_error::Error>;
     async fn delete_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_user_relation(&self, context: &mut crate::Ctx, target_user: i64) -> Result<super::model::forum::UserRelation, crate::custom_error::Error>;
@@ -85,6 +86,46 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
+             UserQuery::QueryUser { name } => {
+                 let resp = self.query_user(context, name).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QuerySubcribedBoards {  } => {
+                 let resp = self.query_subcribed_boards(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::SubscribeBoard { board_id } => {
+                 let resp = self.subscribe_board(context, board_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::UnsubscribeBoard { board_id } => {
+                 let resp = self.unsubscribe_board(context, board_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::FavoriteArticle { article_id } => {
+                 let resp = self.favorite_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::UnfavoriteArticle { article_id } => {
+                 let resp = self.unfavorite_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::TrackingArticle { article_id } => {
+                 let resp = self.tracking_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::UntrackingArticle { article_id } => {
+                 let resp = self.untracking_article(context, article_id).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
              UserQuery::QuerySearchResultFromLawyerbc { search_text } => {
                  let resp = self.query_search_result_from_lawyerbc(context, search_text).await;
                  let s = serde_json::to_string(&resp)?;
@@ -95,8 +136,13 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::RecordSignupApply { email, birth_year, gender, license_id, is_invite } => {
-                 let resp = self.record_signup_apply(context, email, birth_year, gender, license_id, is_invite).await;
+             UserQuery::ClaimTitle { request } => {
+                 let resp = self.claim_title(context, request).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::VerifyTitle { token } => {
+                 let resp = self.verify_title(context, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
@@ -147,46 +193,6 @@ pub trait UserQueryRouter {
             }
              UserQuery::Logout {  } => {
                  let resp = self.logout(context, ).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::QueryUser { name } => {
-                 let resp = self.query_user(context, name).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::QuerySubcribedBoards {  } => {
-                 let resp = self.query_subcribed_boards(context, ).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::SubscribeBoard { board_id } => {
-                 let resp = self.subscribe_board(context, board_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::UnsubscribeBoard { board_id } => {
-                 let resp = self.unsubscribe_board(context, board_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::FavoriteArticle { article_id } => {
-                 let resp = self.favorite_article(context, article_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::UnfavoriteArticle { article_id } => {
-                 let resp = self.unfavorite_article(context, article_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::TrackingArticle { article_id } => {
-                 let resp = self.tracking_article(context, article_id).await;
-                 let s = serde_json::to_string(&resp)?;
-                 Ok((s, resp.err()))
-            }
-             UserQuery::UntrackingArticle { article_id } => {
-                 let resp = self.untracking_article(context, article_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -38,7 +38,7 @@ pub async fn send_signup_email(token: &str, email_address: &str) -> Fallible<()>
     log::debug!("對 {} 寄發註冊確認信", email_address);
     let base_url = &get_config().server.base_url;
     let url = format!("{}/app/signup/{}", base_url, token);
-    let subject = format!("您註冊碳鍵囉^Q^");
+    let subject = format!("歡迎您註冊碳鍵");
     let welcome_msg = format!(
         "<html> \
          <h1>歡迎加入碳鍵！</h1> \
@@ -113,6 +113,31 @@ pub async fn send_change_email_email(token: &str, email_address: &str) -> Fallib
     log::debug!("更換信箱網址： {}", url);
 
     let ret_msg = send_html_email(email_address, &subject, &html_content).await?;
+    log::debug!("寄信回傳訊息：{}", ret_msg);
+    Ok(())
+}
+
+pub async fn send_claim_title_email(
+    token: &str,
+    email_address: &str,
+    title: &str,
+    license_id: &str,
+) -> Fallible<()> {
+    log::debug!("對 {} 寄發稱號驗證信", email_address);
+    let base_url = &get_config().server.base_url;
+    let url = format!("{}/app/verify_title/{}", base_url, token);
+    let subject = format!("驗證 {} 稱號", title);
+    let welcome_msg = format!(
+        "<html> \
+         <p>點選以下連結，以驗證你宣稱的 {} 稱號，唯一識別字 {}</p> \
+         <a href=\"{}\">{}</a> <br/> \
+         </html>",
+        title, license_id, url, url
+    );
+
+    log::debug!("稱號驗證網址： {}", url);
+
+    let ret_msg = send_html_email(email_address, &subject, &welcome_msg).await?;
     log::debug!("寄信回傳訊息：{}", ret_msg);
     Ok(())
 }

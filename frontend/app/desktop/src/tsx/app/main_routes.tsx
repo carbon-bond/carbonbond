@@ -15,19 +15,21 @@ import { PartyDetail } from '../party/party_detail';
 import { SignupInvitationPage } from '../signup_invitation_page';
 import { KeepAliveBoardPage } from '../board';
 import { SearchPage } from '../search_page/search_page';
-import { SettingPage } from '../setting_page';
+import { SettingPage } from '../setting_page/setting_page';
 import { SubscribeArticlePage } from '../subscribe_article_page';
 import { PopArticlePage } from '../pop_article_page';
 import { LawPage } from '../law_page';
 import { GraphPage } from '../board/graph_view';
 import { ArticlePage, ArticleRedirect } from '../board/article_page';
 import { ChangeEmail } from '../change_email';
+import { VerifyTitle } from '../verify_title';
 
 export function MainRoutes(): JSX.Element {
 	return <Routes>
 		<Route path="/app/signup/:token" element={<SignupPage />} />
 		<Route path="/app/reset_password/:token" element={<ResetPassword />} />
 		<Route path="/app/change_email/:token" element={<ChangeEmail />} />
+		<Route path="/app/verify_title/:token" element={<VerifyTitle />} />
 		<Route path="/app" element={<BoardList />} />
 		<Route path="/app/board_list" element={<BoardList />} />
 		<Route path="/app/search" element={<SearchPage />} />
