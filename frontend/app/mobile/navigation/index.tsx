@@ -66,8 +66,16 @@ function BottomTabNavigator(): JSX.Element {
 			<BottomTab.Screen
 				name="TabOne"
 				component={TabOneScreen}
-				options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-					title: 'Tab One',
+				options={() => ({
+					headerShown: false,
+					tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+				})}
+			/>
+			<BottomTab.Screen
+				name="TabTwo"
+				component={TabTwoScreen}
+				options={({ navigation }: RootTabScreenProps<'TabTwo'>) => ({
+					title: 'Tab Two',
 					tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
 					headerRight: () => (
 						<Pressable
@@ -84,14 +92,6 @@ function BottomTabNavigator(): JSX.Element {
 						</Pressable>
 					),
 				})}
-			/>
-			<BottomTab.Screen
-				name="TabTwo"
-				component={TabTwoScreen}
-				options={{
-					title: 'Tab Two',
-					tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-				}}
 			/>
 		</BottomTab.Navigator>
 	);

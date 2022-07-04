@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 
 const server = Platform.OS == 'web' ?
 	`${window.location.protocol}//${window.location.hostname}:${window.location.port}` :
-	'https://devs.carbonbond.cc';
+	'https://dev.carbonbond.cc';
 
 type Env = {
 	server: string

@@ -33,3 +33,14 @@ export type RootTabScreenProps<Screen extends keyof RootTabParamList> = Composit
   BottomTabScreenProps<RootTabParamList, Screen>,
   NativeStackScreenProps<RootStackParamList>
 >;
+
+export type BoardStackParamList = {
+  BoardList: undefined;
+  ArticleList: {board_name: string};
+  ArticleDetail: {article_id: number};
+};
+
+export type BoardStackScreenProps<RouteName extends keyof BoardStackParamList> = NativeStackScreenProps<
+  BoardStackParamList,
+  RouteName
+>;
