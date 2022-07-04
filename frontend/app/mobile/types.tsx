@@ -40,7 +40,7 @@ export type BoardStackParamList = {
   ArticleDetail: {article_id: number};
 };
 
-export type BoardStackScreenProps<Screen extends keyof BoardStackParamList> = NativeStackScreenProps<
+export type BoardStackScreenProps<RouteName extends keyof BoardStackParamList> = NativeStackScreenProps<
   BoardStackParamList,
-  Screen
+  RouteName
 >;
