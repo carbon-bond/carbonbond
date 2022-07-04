@@ -11,6 +11,8 @@ export type Result<T, E> = {
     'Err': E
 };
 export type Fetcher = (query: Object) => Promise<string>;
+export type ClaimTitleRequest = 
+ | { Lawer: { license_id: string } };
 export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string; titles: string | null };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
@@ -80,7 +82,7 @@ export type Chat =
  | { Direct: Direct } 
  | { AnonymousArticle: AnonymousArticle };
 }
-export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken" };
+export enum DataType {     DirectChannel = "DirectChannel", Category = "Category", IntField =     "IntField", StringField = "StringField", BondField = "BondField", Board =     "Board", Article = "Article", Party = "Party", User = "User", Email =     "Email", Notification = "Notification", SignupToken = "SignupToken",     ResetPasswordToken = "ResetPasswordToken", ClaimTitleToken =     "ClaimTitleToken" };
 export type ErrorCode = 
  | "NeedLogin" 
  | "PermissionDenied" 
@@ -88,6 +90,7 @@ export type ErrorCode =
  | { NotFound: [DataType, string] } 
  | "DuplicateInvitation" 
  | "DuplicateRegister" 
+ | "DuplicateClaimTitle" 
  | "UselessToken" 
  | "NotAllowSelfSignup" 
  | "PasswordLength" 
@@ -183,8 +186,11 @@ export class UserQuery {
     async queryDetailResultFromLawyerbc(license_id: string): Promise<Result<LawyerbcResult, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "QueryDetailResultFromLawyerbc": { license_id } } }));
     }
-    async recordSignupApply(email: string, birth_year: number, gender: string, license_id: string, is_invite: boolean): Promise<Result<null, Error>> {
-        return JSON.parse(await this.fetchResult({ "User": { "RecordSignupApply": { email, birth_year, gender, license_id, is_invite } } }));
+    async claimTitle(request: ClaimTitleRequest): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "ClaimTitle": { request } } }));
+    }
+    async verifyTitle(token: string): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "VerifyTitle": { token } } }));
     }
     async sendSignupEmail(email: string, is_invite: boolean): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SendSignupEmail": { email, is_invite } } }));

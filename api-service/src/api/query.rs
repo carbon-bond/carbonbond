@@ -74,15 +74,12 @@ pub enum UserQuery {
     #[chitin(leaf, response = "super::model::forum::LawyerbcResult")]
     QueryDetailResultFromLawyerbc { license_id: String },
 
-    // XXX: 危險！可直接呼叫此 API 僞造生年、型別、律師證號
     #[chitin(leaf, response = "()")]
-    RecordSignupApply {
-        email: String,
-        birth_year: i32,
-        gender: String,
-        license_id: String,
-        is_invite: bool,
+    ClaimTitle {
+        request: super::model::forum::ClaimTitleRequest,
     },
+    #[chitin(leaf, response = "()")]
+    VerifyTitle { token: String },
     #[chitin(leaf, response = "()")]
     SendSignupEmail { email: String, is_invite: bool },
     #[chitin(leaf, response = "()")]

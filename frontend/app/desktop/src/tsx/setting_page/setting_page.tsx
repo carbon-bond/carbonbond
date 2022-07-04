@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { toast } from 'react-toastify';
-import style from '../css/setting_page.module.css';
+import style from '../../css/setting_page.module.css';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
-import { UserState } from './global_state/user';
-import { toastErr } from './utils';
-import { LocationState, SimpleLocation } from './global_state/location';
+import { UserState } from '../global_state/user';
+import { toastErr } from '../utils';
+import { LocationState, SimpleLocation } from '../global_state/location';
 import { useForm } from 'react-hook-form';
-import { InvalidMessage } from './components/invalid_message';
-import { EMAIL_REGEX } from '../ts/regex_util';
-import { LawerTitleApply } from './header/login_modal';
+import { InvalidMessage } from '../components/invalid_message';
+import { EMAIL_REGEX } from '../../ts/regex_util';
+import { ClaimLawerTitle } from './claim_title';
 
 function ChangeEmail(): JSX.Element {
 	const {
@@ -78,7 +78,7 @@ export function SettingPage(): JSX.Element {
 			<div className={style.setting}>
 				<div className={style.name}>驗證稱號</div>
 				<button onClick={() => { setSignuping(true); }}> 律師 </button>
-				{ signuping ? <LawerTitleApply setSignuping={setSignuping} /> : <></> }
+				{ signuping ? <ClaimLawerTitle setSignuping={setSignuping} /> : <></> }
 			</div>
 		</div>
 	</div>;

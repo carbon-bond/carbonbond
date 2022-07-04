@@ -43,7 +43,8 @@ pub trait UserQueryRouter {
     async fn untracking_article(&self, context: &mut crate::Ctx, article_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn query_search_result_from_lawyerbc(&self, context: &mut crate::Ctx, search_text: String) -> Result<Vec<super::model::forum::LawyerbcResultMini>, crate::custom_error::Error>;
     async fn query_detail_result_from_lawyerbc(&self, context: &mut crate::Ctx, license_id: String) -> Result<super::model::forum::LawyerbcResult, crate::custom_error::Error>;
-    async fn record_signup_apply(&self, context: &mut crate::Ctx, email: String, birth_year: i32, gender: String, license_id: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
+    async fn claim_title(&self, context: &mut crate::Ctx, request: super::model::forum::ClaimTitleRequest) -> Result<(), crate::custom_error::Error>;
+    async fn verify_title(&self, context: &mut crate::Ctx, token: String) -> Result<(), crate::custom_error::Error>;
     async fn send_signup_email(&self, context: &mut crate::Ctx, email: String, is_invite: bool) -> Result<(), crate::custom_error::Error>;
     async fn send_reset_password_email(&self, context: &mut crate::Ctx, email: String) -> Result<(), crate::custom_error::Error>;
     async fn send_change_email_email(&self, context: &mut crate::Ctx, email: String, password: String) -> Result<(), crate::custom_error::Error>;
@@ -135,8 +136,13 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
-             UserQuery::RecordSignupApply { email, birth_year, gender, license_id, is_invite } => {
-                 let resp = self.record_signup_apply(context, email, birth_year, gender, license_id, is_invite).await;
+             UserQuery::ClaimTitle { request } => {
+                 let resp = self.claim_title(context, request).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::VerifyTitle { token } => {
+                 let resp = self.verify_title(context, token).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

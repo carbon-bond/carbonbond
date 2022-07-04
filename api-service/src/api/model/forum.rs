@@ -7,6 +7,12 @@ pub mod forum_model_root {
     use strum::EnumString;
     use typescript_definitions::{TypeScriptify, TypeScriptifyTrait};
 
+    // 認證的稱號，如執業律師
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub enum ClaimTitleRequest {
+        Lawer { license_id: String },
+    }
+
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct User {
         pub id: i64,
