@@ -1,53 +1,19 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { Text, View } from '../components/Themed';
+import { BoardStackParamList } from '../types';
+import { BoardListScreen } from './BoardListScreen';
+import { ArticleListScreen } from './ArticleListScreen';
+import { ArticleDetailScreen } from './ArticleDetailScreen';
 
-import { api_trait, api_utils } from 'carbonbond-api/index';
-const { unwrap_or } = api_utils;
-import { API_FETCHER } from '../api';
-
-async function fetchBoardList(): Promise<api_trait.Board[]> {
-	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
-}
+const BoardStack = createNativeStackNavigator<BoardStackParamList>();
 
 export default function TabOneScreen(): JSX.Element {
-	let [board_list, setBoardList] = React.useState<api_trait.Board[]>([]);
-	React.useEffect(() => {
-		fetchBoardList().then(board_list => {
-			setBoardList(board_list);
-		})
-    .catch(err => console.warn(err));
-	}, []);
-
 	return (
-		<View style={styles.container}>
-			<Text style={styles.title}>看板列表</Text>
-			<View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-			{
-				board_list.map(board => {
-					return <Text key={board.id}>
-						{board.board_name}
-					</Text>;
-				})
-			}
-		</View>
+		<BoardStack.Navigator initialRouteName="BoardList">
+			<BoardStack.Screen name="BoardList" component={BoardListScreen} />
+			<BoardStack.Screen name="ArticleList" component={ArticleListScreen} />
+			<BoardStack.Screen name="ArticleDetail" component={ArticleDetailScreen} />
+		</BoardStack.Navigator>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	title: {
-		fontSize: 20,
-		fontWeight: 'bold',
-	},
-	separator: {
-		marginVertical: 30,
-		height: 1,
-		width: '80%',
-	},
-});
