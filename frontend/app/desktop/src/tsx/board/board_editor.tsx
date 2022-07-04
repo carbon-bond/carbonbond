@@ -137,7 +137,7 @@ export function ForceEditor(props: { value: Force, setValue: React.Dispatch<Reac
 		<div className={style.suggestedTags}>
 			<div className={style.question}>建議鍵結標籤</div>
 			<input {...tag.input_props} onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-				if (e.key == 'Enter') {
+				if (e.keyCode == 13) {
 					onAddTag();
 				}
 			}}/>

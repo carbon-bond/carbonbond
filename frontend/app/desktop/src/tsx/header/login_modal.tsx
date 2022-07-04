@@ -45,7 +45,7 @@ function LoginStatus(
 		return;
 	}
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-		if (e.key == 'Enter') {
+		if (e.keyCode == 13) {
 			login_request(name.value, password.value);
 		} else if (e.key == 'Escape') {
 			props.setLogining(false);
@@ -151,7 +151,7 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		props.setSignuping(false);
 	}
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-		if (e.key == 'Enter') {
+		if (e.keyCode == 13) {
 			signup_request(email.value);
 		} else if (e.key == 'Escape') {
 			props.setSignuping(false);

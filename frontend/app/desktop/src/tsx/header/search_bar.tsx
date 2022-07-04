@@ -22,7 +22,7 @@ export function SearchBar(props: { cur_board: string | null, hide_select_board?:
 		setContent(evt.target.value);
 	}
 	function onKeyDown(evt: React.KeyboardEvent): void {
-		if (evt.key == 'Enter') {
+		if (evt.keyCode == 13) {
 			onSearch(board);
 		}
 	}

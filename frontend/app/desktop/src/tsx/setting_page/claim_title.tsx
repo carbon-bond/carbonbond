@@ -73,7 +73,7 @@ export function ClaimLawerTitle(props: {setSignuping: (signing: boolean) => void
 	];
 
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-		if (e.key == 'Enter') {
+		if (e.keyCode == 13) {
 			handleSearch();
 		}
 	}

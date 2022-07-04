@@ -336,7 +336,7 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 
 	if (extended) {
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-			if (e.key == 'Enter' && input_props.value.length > 0) {
+			if (e.keyCode == 13 && input_props.value.length > 0) {
 				const now = new Date();
 				if (chat.isExist()) {
 					window.chat_socket.send_message(chat!.id, input_props.value);
@@ -440,7 +440,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	if (extended) {
 
 		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-			if (e.key == 'Enter' && input_props.value.length > 0) {
+			if (e.keyCode == 13 && input_props.value.length > 0) {
 				const now = new Date();
 				addChannelMessage(props.room.id, props.room.channel, new Message(
 					-1,
