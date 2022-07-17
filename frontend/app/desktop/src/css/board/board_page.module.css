@@ -1,11 +1,14 @@
 .boardHeader {
     border-bottom: 1px var(--border-color) solid;
     height: 100%;
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
     padding: 5px;
-    position: relative;
+
+    background-color: var(--background-color);
 
     & .headerLeft {
         padding-left: 20px;
@@ -23,17 +26,14 @@
     }
 
     & .headerRight {
-        padding: 10px;
-        position: absolute;
-        bottom: 0px;
-        right: 0px;
+        padding: 5px;
         color: var(--font-color);
 
         & .dataBox {
             display: flex;
             
             & .dataBoxItem {
-                padding: 0px 20px;
+                padding: 0px 10px;
 
                 & .number {
                     text-align: center;

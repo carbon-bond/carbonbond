@@ -52,13 +52,6 @@
         & .forumBody {
             width: 100%;
             height: 100%;
-
-            & .boardHeader {
-                height: 80px;
-                width: 100%;
-                background-color: var(--background-color);
-            }
-
         }
     }
 }

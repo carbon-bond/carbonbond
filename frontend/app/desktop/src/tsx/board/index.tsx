@@ -57,34 +57,32 @@ function BoardHeader(props: { board: Board}): JSX.Element {
 
 	return <div className="boardHeader">
 		<div className={style.boardHeader}>
-			<div>
-				<div className={style.headerLeft}>
-					<div className={style.boardTitle}>
-						<Link to="#">{props.board.board_name}</Link>
-						{
-							editable ? <span className={style.editButton}>
-								<button onClick={() => setEditing(true)}>設定看板</button>
-							</span>
-								: <></>
-						}
-					</div>
-					<div className={style.boardSubTitle}>{props.board.title}</div>
-				</div>
-
-				<div className={style.headerRight}>
+			<div className={style.headerLeft}>
+				<div className={style.boardTitle}>
+					<Link to="#">{props.board.board_name}</Link>
 					{
-						props.board == null ? null : <div className={style.dataBox}>
-							<div className={style.dataBoxItem}>
-								<div className={style.number}>{subscribe_count}</div>
-								<div className={style.text}>訂閱人數</div>
-							</div>
-							<div className={style.dataBoxItem}>
-								<div className={style.number}>{props.board.popularity}</div>
-								<div className={style.text}>本日文章數</div>
-							</div>
-						</div>
+						editable ? <span className={style.editButton}>
+							<button onClick={() => setEditing(true)}>設定看板</button>
+						</span>
+							: <></>
 					}
 				</div>
+				<div className={style.boardSubTitle}>{props.board.title}</div>
+			</div>
+
+			<div className={style.headerRight}>
+				{
+					props.board == null ? null : <div className={style.dataBox}>
+						<div className={style.dataBoxItem}>
+							<div className={style.number}>{subscribe_count}</div>
+							<div className={style.text}>訂閱人數</div>
+						</div>
+						<div className={style.dataBoxItem}>
+							<div className={style.number}>{props.board.popularity}</div>
+							<div className={style.text}>本日文章數</div>
+						</div>
+					</div>
+				}
 			</div>
 		</div>
 		<BoardEditorModal board={props.board} />
