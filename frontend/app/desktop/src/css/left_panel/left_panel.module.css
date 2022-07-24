@@ -1,6 +1,5 @@
-.menubarInner {
-    position: fixed;
-    height: 100%;
+.menubar {
+    height: calc(100vh - var(--header-height));
     background-color: var(--bar-color);
     width: var(--menubar-width);
     border-right-width: 1px;
@@ -10,6 +9,8 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    z-index: 100;
+    font-size: 28px;
     & .topSet {
         width: 100%;
         & .icon {
@@ -18,7 +19,6 @@
             justify-content: center;
             align-items: center;
             height: var(--menubar-width);
-            font-size: 28px;
             cursor: pointer;
         }
     }
@@ -33,7 +33,6 @@
             justify-content: center;
             align-items: center;
             height: var(--menubar-width);
-            font-size: 28px;
             cursor: pointer;
         }
     }
@@ -42,6 +41,25 @@
     }
 }
 
+@media only screen and (max-width: 600px) {
+    .menubar {
+        height: 100vh;
+        font-size: 28px;
+        & .icon {
+            padding: 32px 0px;
+        }
+    }
+}
+
+.panel {
+    background-color: var(--background-color);
+    width: var(--left-panel-width);
+    height: calc(100vh - var(--header-height));
+    border-right-width: 1px;
+    border-right-color: var(--border-color);
+    border-right-style: solid;
+    z-index: 100;
+}
 
 @media only screen and (max-width: 1200px) {
     .panel {
@@ -50,13 +68,10 @@
     }
 }
 
-.panel {
-    background-color: var(--background-color);
-    z-index: 100;
-    height: calc(100vh - var(--header-height));
-    position: fixed;
-    width: 300px;
-    border-right-width: 1px;
-    border-right-color: var(--border-color);
-    border-right-style: solid;
+@media only screen and (max-width: 600px) {
+    .panel {
+        height: 100vh;
+        position: absolute;
+        width: 70vw;
+    }
 }

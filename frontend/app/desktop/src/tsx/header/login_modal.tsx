@@ -125,8 +125,8 @@ function ForgetPasswordStatus(
 
 export function LoginModal(props: { setLogining: (logining: boolean) => void }): JSX.Element {
 	let ref_all = React.useRef(null);
-	const [status, setStatus] = React.useState<Status>(Status.Login);
 	useOnClickOutside(ref_all, () => { props.setLogining(false); });
+	const [status, setStatus] = React.useState<Status>(Status.Login);
 	switch (status) {
 		case Status.Login:
 			return <LoginStatus {...props} setStatus={setStatus}/>;
