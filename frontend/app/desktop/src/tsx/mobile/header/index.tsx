@@ -31,10 +31,7 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 
 	function toggleOption(op: Option): (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void {
 		return () => {
-			if (op == option) {
-				setOption(Option.None);
-				localStorage[STORAGE_NAME.leftbar_expand] = Option.None;
-			} else {
+			if (op != option) {
 				setOption(op);
 				localStorage[STORAGE_NAME.leftbar_expand] = op;
 			}
