@@ -39,6 +39,10 @@
     & .bottomSet > .icon:hover {
         background-color: var(--hover-background-color);
     }
+    & .isCurrent {
+        background-color: var(--light-gray);
+        border-left: 4px var(--gray) solid;
+    }
 }
 
 @media only screen and (max-width: 600px) {
@@ -46,7 +50,7 @@
         height: 100vh;
         font-size: 28px;
         & .icon {
-            padding: 32px 0px;
+            padding: 28px 0px;
         }
     }
 }

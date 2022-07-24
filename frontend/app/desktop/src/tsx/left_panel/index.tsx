@@ -44,6 +44,22 @@ export function PanelMenu(props: {
 }): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	const { user_state } = UserState.useContainer();
+
+	const current_option = props.option;
+	const toggleOption = props.toggleOption;
+
+	function MenuButton(props: {
+		option: Option,
+		children: React.ReactNode,
+	}): JSX.Element {
+		const is_current = (props.option == current_option);
+		return <div
+			onClick={toggleOption(props.option)}
+			className={`${style.icon} ${is_current ? style.isCurrent : ''}`} >
+			{props.children}
+		</div>;
+	}
+
 	// NOTE: 暫時只計算雙人對話
 	const unread_chat_number = all_chat.unreadNumber();
 	return <div className={style.menubar}>
@@ -51,15 +67,16 @@ export function PanelMenu(props: {
 			{
 				user_state.login ?
 					<>
-						<div className={style.icon} onClick={props.toggleOption(Option.Browse)}>📑</div>
-						<NumberOver number={unread_chat_number} className={style.icon} top="2px" left="4px">
-							<div onClick={props.toggleOption(Option.Chat)}>🗨️</div>
+						<MenuButton option={Option.Browse}>📑</MenuButton>
+						<NumberOver number={unread_chat_number} top="8px" left="8px">
+							<MenuButton option={Option.Chat}>
+								🗨️
+							</MenuButton>
 						</NumberOver>
-						{/* <div className={style.icon} onClick={toggleOption(Option.DiscoverFriend)}>💑</div> */}
-						<div className={style.icon} onClick={props.toggleOption(Option.Draft)}>稿</div>
+						<MenuButton option={Option.Draft}>稿</MenuButton>
 					</> :
 					<>
-						<div className={style.icon} onClick={props.toggleOption(Option.Browse)}>📑</div>
+						<MenuButton option={Option.Browse}>📑</MenuButton>
 					</>
 			}
 		</div>
