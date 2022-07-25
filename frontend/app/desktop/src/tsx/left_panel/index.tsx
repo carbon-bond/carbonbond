@@ -18,7 +18,9 @@ export enum Option {
 }
 
 function PanelWrap(props: { children: JSX.Element }): JSX.Element {
-	return <div className={style.panel}>{props.children}</div>;
+	return <div className={style.panelShell}>
+		<div className={style.panel}>{props.children}</div>
+	</div>;
 }
 
 export function PanelMain(props: { option: Option }): JSX.Element {
@@ -62,26 +64,28 @@ export function PanelMenu(props: {
 
 	// NOTE: 暫時只計算雙人對話
 	const unread_chat_number = all_chat.unreadNumber();
-	return <div className={style.menubar}>
-		<div className={style.topSet}>
-			{
-				user_state.login ?
-					<>
-						<MenuButton option={Option.Browse}>📑</MenuButton>
-						<NumberOver number={unread_chat_number} top="8px" left="8px">
-							<MenuButton option={Option.Chat}>
-								🗨️
-							</MenuButton>
-						</NumberOver>
-						<MenuButton option={Option.Draft}>稿</MenuButton>
-					</> :
-					<>
-						<MenuButton option={Option.Browse}>📑</MenuButton>
-					</>
-			}
-		</div>
-		<div className={style.bottomSet}>
-			{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
+	return <div className={style.menubarShell}>
+		<div className={style.menubar}>
+			<div className={style.topSet}>
+				{
+					user_state.login ?
+						<>
+							<MenuButton option={Option.Browse}>📑</MenuButton>
+							<NumberOver number={unread_chat_number} top="8px" left="8px">
+								<MenuButton option={Option.Chat}>
+									🗨️
+								</MenuButton>
+							</NumberOver>
+							<MenuButton option={Option.Draft}>稿</MenuButton>
+						</> :
+						<>
+							<MenuButton option={Option.Browse}>📑</MenuButton>
+						</>
+				}
+			</div>
+			<div className={style.bottomSet}>
+				{/* <div className={style.icon} onClick={toggleOption(Option.PluginStore)}>🛍</div> */}
+			</div>
 		</div>
 	</div>;
 }

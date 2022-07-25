@@ -1,4 +1,11 @@
+/* 製造一個空間，讓
+position: fixed 的 menubar
+可以覆蓋其上 */
+.menubarShell {
+    width: var(--menubar-width);
+}
 .menubar {
+    position: fixed;
     height: calc(100vh - var(--header-height));
     background-color: var(--bar-color);
     width: var(--menubar-width);
@@ -55,10 +62,16 @@
     }
 }
 
+/* 類似於 menubarShell */
+.panelShell {
+    width: var(--left-panel-width);
+}
 .panel {
     background-color: var(--background-color);
     width: var(--left-panel-width);
     height: calc(100vh - var(--header-height));
+    position: fixed;
+    left: var(--menubar-width);
     border-right-width: 1px;
     border-right-color: var(--border-color);
     border-right-style: solid;
@@ -66,9 +79,8 @@
 }
 
 @media only screen and (max-width: 1200px) {
-    .panel {
-        left: var(--menubar-width);
-        position: absolute;
+    .panelShell {
+        width: 0px;
     }
 }
 
