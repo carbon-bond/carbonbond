@@ -30,7 +30,7 @@ export function useCurrentFooter(): FooterOption {
 
 export function Footer(): JSX.Element {
 	let {getNotificationNumber} = NotificationState.useContainer();
-	return <div className={`footer ${style.footer}`}>
+	return <div className={style.footer}>
 		<IconBlock icon={<>🏠</>} current_option={FooterOption.Home} />
 		<IconBlock
 			icon={<NumberOver number={getNotificationNumber(null)}>🔔</NumberOver>}
