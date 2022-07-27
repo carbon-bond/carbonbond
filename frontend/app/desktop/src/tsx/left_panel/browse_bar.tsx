@@ -95,7 +95,7 @@ export function BrowseBar(): JSX.Element {
 				onClick={() => onTitleClick(1)}
 			>
 				{
-					hot_boards.map((board, i) => <BoardBlock key={i} board={board} />)
+					hot_boards.map((board) => <BoardBlock key={board.id} board={board} />)
 				}
 			</ShrinkableBlock>
 			{
@@ -107,7 +107,7 @@ export function BrowseBar(): JSX.Element {
 							onClick={() => onTitleClick(2)}
 						>
 							{
-								Object.entries(subscribed_boards).map(([i, board]) => <BoardBlock key={i} board={board} />)
+								Object.entries(subscribed_boards).map(([_, board]) => <BoardBlock key={board.id} board={board} />)
 							}
 						</ShrinkableBlock>;
 					}

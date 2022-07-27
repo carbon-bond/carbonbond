@@ -162,9 +162,10 @@ export function useBoardInfo(): BoardInfo {
 
 export function KeepAliveBoardPage(): JSX.Element {
 	let history = createBrowserHistory();
-	return <KeepAlive name={history.location.key} id={history.location.key}>
+	return <KeepAlive cacheKey="boardPage" name={history.location.key} id={history.location.key}>
 		<BoardPageWrap />
 	</KeepAlive>;
+	// return <BoardPageWrap />;
 }
 
 function BoardPageWrap(): JSX.Element {
@@ -172,7 +173,6 @@ function BoardPageWrap(): JSX.Element {
 	let [fetching, setFetching] = React.useState(true);
 	let [board, setBoard] = React.useState<Board | null>(null);
 	React.useEffect(() => {
-		setBoard(null); // 注意：這裡會導致切看板時畫面閃動，但如果拿掉它，就要留意看板頁「以為自己在前一個的看板」之問題
 		setFetching(true);
 		API_FETCHER.boardQuery.queryBoard(info.name, info.type).then(res => {
 			try {
