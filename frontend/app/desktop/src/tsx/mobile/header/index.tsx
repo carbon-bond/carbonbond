@@ -42,7 +42,7 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 		<>
 			<div className={left_panel_style.leftPanel}>
 				<PanelMenu option={option} toggleOption={toggleOption}/>
-				<PanelMain option={option}/>
+				<PanelMain option={option} onLinkClick={() => { props.setExpanding(false); }}/>
 			</div>
 			<Filter setExpanding={props.setExpanding} />
 		</>

@@ -23,10 +23,10 @@ function PanelWrap(props: { children: JSX.Element }): JSX.Element {
 	</div>;
 }
 
-export function PanelMain(props: { option: Option }): JSX.Element {
+export function PanelMain(props: { option: Option, onLinkClick: () => void }): JSX.Element {
 	switch (props.option) {
 		case Option.Browse:
-			return <PanelWrap><BrowseBar /></PanelWrap>;
+			return <PanelWrap><BrowseBar onLinkClick={props.onLinkClick} /></PanelWrap>;
 		case Option.Chat:
 			return <PanelWrap><ChatBar /></PanelWrap>;
 		// case Option.DiscoverFriend:
