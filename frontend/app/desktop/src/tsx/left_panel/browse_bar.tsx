@@ -30,14 +30,12 @@ export function BrowseBar(): JSX.Element {
 			return [true, true, true];
 		}
 	})();
-	let [fetching, setFetching] = React.useState(true);
 	let [hot_boards, setHotBoards] = React.useState<BoardOverview[]>([]);
 	let [expand, setExpand] = React.useState(default_expand);
 
 	React.useEffect(() => {
 		fetchHotBoards().then(boards => {
 			setHotBoards(boards);
-			setFetching(false);
 		});
 	}, []);
 
@@ -58,63 +56,59 @@ export function BrowseBar(): JSX.Element {
 		}
 	}
 
-	if (fetching) {
-		return <></>;
-	} else {
-		return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
-			<ShrinkableBlock
-				title="特化瀏覽"
-				expand={expand[0]}
-				onClick={() => onTitleClick(0)}
-			>
-				<div className={style.special}>
-					{
-						user_state.login ?
-							<Link to={'/app/subscribe_article'}>
-								<div>
-									<span className={style.specialBlock}> 📰 我的追蹤 </span>
-								</div>
-							</Link> :
-							<></>
-					}
-					<Link to={'/app/pop_article'}>
-						<div>
-							<span className={style.specialBlock}>🔥 全站熱門</span>
-						</div>
-					</Link>
-					<Link to={'/app/board_list'}>
-						<div>
-							<span className={style.specialBlock}>🛹 所有看板</span>
-						</div>
-					</Link>
-				</div>
-			</ShrinkableBlock>
-			<ShrinkableBlock
-				title="熱門看板"
-				expand={expand[1]}
-				onClick={() => onTitleClick(1)}
-			>
+	return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
+		<ShrinkableBlock
+			title="特化瀏覽"
+			expand={expand[0]}
+			onClick={() => onTitleClick(0)}
+		>
+			<div className={style.special}>
 				{
-					hot_boards.map((board) => <BoardBlock key={board.id} board={board} />)
+					user_state.login ?
+						<Link to={'/app/subscribe_article'}>
+							<div>
+								<span className={style.specialBlock}> 📰 我的追蹤 </span>
+							</div>
+						</Link> :
+						<></>
 				}
-			</ShrinkableBlock>
+				<Link to={'/app/pop_article'}>
+					<div>
+						<span className={style.specialBlock}>🔥 全站熱門</span>
+					</div>
+				</Link>
+				<Link to={'/app/board_list'}>
+					<div>
+						<span className={style.specialBlock}>🛹 所有看板</span>
+					</div>
+				</Link>
+			</div>
+		</ShrinkableBlock>
+		<ShrinkableBlock
+			title="熱門看板"
+			expand={expand[1]}
+			onClick={() => onTitleClick(1)}
+		>
 			{
-				(() => {
-					if (user_state.login) {
-						return <ShrinkableBlock
-							title="訂閱看板"
-							expand={expand[2]}
-							onClick={() => onTitleClick(2)}
-						>
-							{
-								Object.entries(subscribed_boards).map(([_, board]) => <BoardBlock key={board.id} board={board} />)
-							}
-						</ShrinkableBlock>;
-					}
-				})()
+				hot_boards.map((board, i) => <BoardBlock key={i} board={board} />)
 			}
-		</div>;
-	}
+		</ShrinkableBlock>
+		{
+			(() => {
+				if (user_state.login) {
+					return <ShrinkableBlock
+						title="訂閱看板"
+						expand={expand[2]}
+						onClick={() => onTitleClick(2)}
+					>
+						{
+							Object.entries(subscribed_boards).map(([i, board]) => <BoardBlock key={i} board={board} />)
+						}
+					</ShrinkableBlock>;
+				}
+			})()
+		}
+	</div>;
 }
 
 export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
