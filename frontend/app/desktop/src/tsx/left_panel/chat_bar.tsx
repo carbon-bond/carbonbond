@@ -92,6 +92,7 @@ function ChatBar(): JSX.Element {
 	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
 	chat_array = chat_array.filter(chat => chat.isExist() === true);
 	return <div className={style.chatbar}>
+		<div className={style.barName}>聊天室</div>
 		{/* TODO: 尋找聊天室 */}
 		{/* <input type="text" placeholder="🔍 尋找對話" /> */}
 		{

@@ -1,6 +1,9 @@
 .chatbar {
     display: flex;
     flex-direction: column;
+    & .barName {
+        background: var(--sub-theme-color);
+    }
     & .chatUnit {
         cursor: pointer;
         height: 46px;

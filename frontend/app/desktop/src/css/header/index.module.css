@@ -29,8 +29,6 @@
             font-weight: bold;
             & img {
                 cursor: pointer;
-                /* width: 125px;
-                height: var(--header-height); */
             }
             & .imageText {
                 width: 80px;
@@ -135,24 +133,4 @@
 }
 .icon:hover {
     background-color: var(--hover-background-color);
-}
-.unreadCount {
-    border-radius: 8px;
-    height: 16;
-    width: 16;
-    font-size: 16;
-    background-color: pink;
-    position: absolute;
-    text-align: center;
-    top: 35px;
-    left: 15;
-}
-.notificationDropdown {
-    right: -100px;
-    width: 400px;
-    position: absolute;
-    overflow-y: auto;
-    overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
-    max-height: calc(0.9 * (100vh - var(--header-height)));
-    background-color: var(--background-color);
 }

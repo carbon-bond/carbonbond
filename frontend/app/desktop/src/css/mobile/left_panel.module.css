@@ -1,0 +1,27 @@
+@keyframes slide {
+    from { left: calc(calc(0px - var(--left-panel-width)) - var(--menubar-width)); }
+    to { left: 0px; }
+}
+
+.leftPanel {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    animation-name: slide;
+    animation-duration: 0.2s;
+}
+
+@keyframes fade {
+    from { background-color: rgba(0, 0, 0, 0); }
+    to { background-color: rgba(0, 0, 0, 0.3); }
+}
+
+.filter {
+    position: fixed;
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;    
+    background-color: rgba(0, 0, 0, 0.5);
+    animation-name: fade;
+    animation-duration: 0.2s;
+}

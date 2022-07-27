@@ -2,6 +2,7 @@
     --header-height: 60px;
     --footer-height: 48px;
     --menubar-width: 56px;
+    --left-panel-width: 300px;
 
     --deep-gray: #212429;
     --gray: #616569;
@@ -37,4 +38,11 @@
     --header-color: var(--white);
     --background-color: var(--white);
     --hover-background-color: var(--third-theme-color);
+}
+
+@media only screen and (max-width: 600px) {
+    :root {
+        --menubar-width: 48px;
+        --left-panel-width: 70vw;
+    }
 }

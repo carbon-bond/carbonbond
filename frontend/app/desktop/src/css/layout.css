@@ -18,13 +18,6 @@
     position: fixed;
     top: var(--header-height);
 }
-.footer {
-    height: var(--footer-height);
-    width: 100%;
-    position: fixed;
-    z-index: 1000;
-    bottom: 0px;
-}
 
 .content {
     width: 100%;
@@ -35,17 +28,10 @@
 .other {
     background-color: var(--lightest-gray);
     top: var(--header-height); 
+    min-height: calc(100vh - var(--header-height));
     display: flex;
     flex-direction: row;
     position: relative;
-    & .menubar {
-        width: var(--menubar-width);
-        height: calc(100vh - var(--header-height));
-    }
-    & .panel {
-        width: 300px;
-        height: calc(100vh - var(--header-height));
-    }
     & .mainBody {
         height: 100%;
         flex: 1;

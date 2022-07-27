@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, LinkProps } from 'react-router-dom';
 
 import { API_FETCHER, unwrap_or } from 'carbonbond-api/api_utils';
 import { UserState } from '../global_state/user';
@@ -18,7 +18,7 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 
 // TODO: 應該用 context 記住熱門看板與訂閱看板，以免每次切換測邊欄都要向後端發 request
 
-export function BrowseBar(): JSX.Element {
+export function BrowseBar(props: { onLinkClick: () => void }): JSX.Element {
 	let { subscribed_boards } = SubscribedBoardsState.useContainer();
 	let { user_state } = UserState.useContainer();
 	let default_expand = (() => {
@@ -30,14 +30,15 @@ export function BrowseBar(): JSX.Element {
 			return [true, true, true];
 		}
 	})();
-	let [fetching, setFetching] = React.useState(true);
 	let [hot_boards, setHotBoards] = React.useState<BoardOverview[]>([]);
 	let [expand, setExpand] = React.useState(default_expand);
+	function InjectedLink(link_props: LinkProps): JSX.Element {
+		return <Link {...link_props} onClick={props.onLinkClick}></Link>;
+	}
 
 	React.useEffect(() => {
 		fetchHotBoards().then(boards => {
 			setHotBoards(boards);
-			setFetching(false);
 		});
 	}, []);
 
@@ -58,69 +59,67 @@ export function BrowseBar(): JSX.Element {
 		}
 	}
 
-	if (fetching) {
-		return <></>;
-	} else {
-		return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
-			<ShrinkableBlock
-				title="特化瀏覽"
-				expand={expand[0]}
-				onClick={() => onTitleClick(0)}
-			>
-				<div className={style.special}>
-					{
-						user_state.login ?
-							<Link to={'/app/subscribe_article'}>
-								<div>
-									<span className={style.specialBlock}> 📰 我的追蹤 </span>
-								</div>
-							</Link> :
-							<></>
-					}
-					<Link to={'/app/pop_article'}>
-						<div>
-							<span className={style.specialBlock}>🔥 全站熱門</span>
-						</div>
-					</Link>
-					<Link to={'/app/board_list'}>
-						<div>
-							<span className={style.specialBlock}>🛹 所有看板</span>
-						</div>
-					</Link>
-				</div>
-			</ShrinkableBlock>
-			<ShrinkableBlock
-				title="熱門看板"
-				expand={expand[1]}
-				onClick={() => onTitleClick(1)}
-			>
+	return <div className={style.browseBar} style={{ gridTemplateRows: genGridTemplate() }}>
+		<ShrinkableBlock
+			title="特化瀏覽"
+			expand={expand[0]}
+			onClick={() => onTitleClick(0)}
+		>
+			<div className={style.special}>
 				{
-					hot_boards.map((board, i) => <BoardBlock key={i} board={board} />)
+					user_state.login ?
+						<InjectedLink to={'/app/subscribe_article'}>
+							<div>
+								<span className={style.specialBlock}> 📰 我的追蹤 </span>
+							</div>
+						</InjectedLink> :
+						<></>
 				}
-			</ShrinkableBlock>
+				<InjectedLink to={'/app/pop_article'}>
+					<div>
+						<span className={style.specialBlock}>🔥 全站熱門</span>
+					</div>
+				</InjectedLink>
+				<InjectedLink to={'/app/board_list'}>
+					<div>
+						<span className={style.specialBlock}>🛹 所有看板</span>
+					</div>
+				</InjectedLink>
+			</div>
+		</ShrinkableBlock>
+		<ShrinkableBlock
+			title="熱門看板"
+			expand={expand[1]}
+			onClick={() => onTitleClick(1)}
+		>
 			{
-				(() => {
-					if (user_state.login) {
-						return <ShrinkableBlock
-							title="訂閱看板"
-							expand={expand[2]}
-							onClick={() => onTitleClick(2)}
-						>
-							{
-								Object.entries(subscribed_boards).map(([i, board]) => <BoardBlock key={i} board={board} />)
-							}
-						</ShrinkableBlock>;
-					}
-				})()
+				hot_boards.map((board, i) => <BoardBlock key={i} board={board} onLinkClick={props.onLinkClick} />)
 			}
-		</div>;
-	}
+		</ShrinkableBlock>
+		{
+			(() => {
+				if (user_state.login) {
+					return <ShrinkableBlock
+						title="訂閱看板"
+						expand={expand[2]}
+						onClick={() => onTitleClick(2)}
+					>
+						{
+							Object.entries(subscribed_boards).map(([i, board]) => <BoardBlock key={i} board={board} onLinkClick={props.onLinkClick} />)
+						}
+					</ShrinkableBlock>;
+				}
+			})()
+		}
+	</div>;
 }
 
-export function BoardBlock(props: { board: BoardOverview }): JSX.Element {
+export function BoardBlock(props: {
+	board: BoardOverview,
+	onLinkClick?: () => void }): JSX.Element {
 	let board_info = getBoardInfo(props.board);
 	const is_personal_board = props.board.board_type == BoardType.Personal;
-	return <Link to={board_info.to_url()}>
+	return <Link to={board_info.to_url()} onClick={props.onLinkClick ?? (() => {})}>
 		<div className={style.boardBlock}>
 			<div>
 				<div className={style.boardInfo}>

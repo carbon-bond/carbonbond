@@ -1,4 +1,9 @@
 .footer {
+    height: var(--footer-height);
+    width: 100%;
+    z-index: 5000;
+    position: fixed;
+    bottom: 0px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
