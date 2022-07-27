@@ -17,7 +17,7 @@ import { KeepAliveBoardPage } from '../board';
 import { SearchPage } from '../search_page/search_page';
 import { SettingPage } from '../setting_page/setting_page';
 import { SubscribeArticlePage } from '../subscribe_article_page';
-import { PopArticlePage } from '../pop_article_page';
+import { PopularArticlePage } from '../pop_article_page';
 import { LawPage } from '../law_page';
 import { GraphPage } from '../board/graph_view';
 import { ArticlePage, ArticleRedirect } from '../board/article_page';
@@ -45,7 +45,7 @@ export function MainRoutes(): JSX.Element {
 			<Route path="" element={<KeepAliveBoardPage />} />
 		</Route>
 		<Route path="/app/subscribe_article" element={<SubscribeArticlePage />} />
-		<Route path="/app/pop_article" element={<PopArticlePage />} />
+		<Route path="/app/pop_article" element={<PopularArticlePage />} />
 		<Route path="/app/law/*" element={<LawPage />} />
 		<Route path="*" element={<Navigate to="/app" />} />
 	</Routes>;

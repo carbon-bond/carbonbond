@@ -113,7 +113,7 @@ function LeftPanel(): JSX.Element {
 	return (
 		<>
 			<PanelMenu option={option} toggleOption={toggleOption}/>
-			<PanelMain option={option}/>
+			<PanelMain option={option} onLinkClick={() => {}}/>
 		</>
 	);
 }

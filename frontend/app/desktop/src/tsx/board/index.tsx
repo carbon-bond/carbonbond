@@ -165,7 +165,6 @@ export function KeepAliveBoardPage(): JSX.Element {
 	return <KeepAlive cacheKey="boardPage" name={history.location.key} id={history.location.key}>
 		<BoardPageWrap />
 	</KeepAlive>;
-	// return <BoardPageWrap />;
 }
 
 function BoardPageWrap(): JSX.Element {
