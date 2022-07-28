@@ -4,6 +4,7 @@ const { useState } = React;
 import produce, { immerable } from 'immer';
 import {server_trigger} from 'carbonbond-api/api_trait';
 import { Link } from 'react-router-dom';
+import { AvatarImage } from '../profile/avatar';
 
 export class Message {
 	[immerable] = true;
@@ -121,6 +122,14 @@ export class DirectChatData implements ChatData {
 			return this.read_time <= last_msg.time;
 		}
 	}
+	toAvatar(className?: string): JSX.Element {
+		switch (this.meta.opposite.kind) {
+			case OppositeKind.Direct:
+				return <AvatarImage className={className} name={this.meta.opposite.opposite_name} />;
+			case OppositeKind.AnonymousArticleMeta:
+				return <div>{this.meta.opposite.article_title.slice(0, 1)}</div>;
+		}
+	}
 	newestMessage(): Message | undefined {
 		return this.history[this.history.length - 1];
 	}
@@ -195,6 +204,7 @@ export interface ChatData {
 	newestMessage(): IMessage | undefined
 	isUnread(): boolean
 	isExist(): boolean
+	toAvatar(className: string): JSX.Element
 };
 
 class AllChat {

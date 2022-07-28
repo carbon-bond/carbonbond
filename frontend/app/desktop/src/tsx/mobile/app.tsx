@@ -15,7 +15,6 @@ import { Footer } from './footer';
 import { MainRoutes } from '../app/main_routes';
 import { init, useInit } from '../app/init';
 import { Providers } from '../app/providers';
-import { Panel } from './panel';
 
 function MainBody(): JSX.Element {
 	return <div className="mainBody" >
@@ -27,7 +26,6 @@ function Content(): JSX.Element {
 	useInit();
 	return <Router>
 		<Header />
-		<Panel />
 		<div className="other" >
 			<MainBody />
 		</div>
