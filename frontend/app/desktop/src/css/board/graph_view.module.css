@@ -3,7 +3,6 @@
     transition: .2s;
 }
 .wrapper {
-    /* z-index: -99; */
     width: 100%;
     position: relative;
     height: 100vh;
@@ -25,7 +24,6 @@
     }
 }
 .svgBlock {
-    /* z-index: -99; */
     width: 100%;
     position: relative;
     background-color: var(--lightest-gray);

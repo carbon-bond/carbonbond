@@ -9,6 +9,7 @@
     position: absolute;
     animation-name: slide;
     animation-duration: 0.2s;
+    animation-timing-function: ease;
 }
 
 @keyframes fade {
@@ -18,7 +19,7 @@
 
 .filter {
     position: fixed;
-    z-index: 2;
+    z-index: 500;
     width: 100vw;
     height: 100vh;    
     background-color: rgba(0, 0, 0, 0.5);
