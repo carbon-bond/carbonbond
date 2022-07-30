@@ -1,11 +1,23 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { AllChatState, ChatData } from '../../global_state/chat';
+import { BottomPanelState, RoomKind } from '../../global_state/bottom_panel';
+import { AllChatState, DirectChatData } from '../../global_state/chat';
+
+function ChatBubble(props: {
+	chat: DirectChatData,
+	onClick: () => void,
+}): JSX.Element {
+	return <div
+		onClick={props.onClick}
+		className={`${style.chatBubble} ${props.chat.isUnread() ? style.unread : ''}`}>
+		{props.chat.toAvatar(style.avatar)}
+	</div>;
+}
 
 export function Footer(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	let [expanding, setExpanding] = React.useState<boolean | null>(null);
-	let chat_array: ChatData[] = Array.from(Object.values(all_chat.direct));
+	const { chatrooms } = BottomPanelState.useContainer();
 
 	function getPanelClassName(): string {
 		if (expanding == null) {
@@ -32,17 +44,19 @@ export function Footer(): JSX.Element {
 			className={`${style.footer} ${getFooterClassName()}`}
 		>
 			{
-				chat_array.filter(chat => chat.isUnread()).map(chat => {
-					return <div
-						key={chat.id}
-						onClick={() => {
-							console.log('click');
-							setExpanding(!expanding);
-						}}
-						className={`${style.avatar} ${style.unread}`}>
-						{chat.toAvatar(style.avatar)}
-					</div>;
-				})
+				chatrooms.
+				reduce((chats: DirectChatData[], room) => {
+					if (room.kind == RoomKind.Simple) {
+						const chat = all_chat.direct[room.id];
+						if (chat.isUnread()) {
+							chats.push(chat);
+						}
+					} else {
+						console.warn('尚不支援含頻道聊天室');
+					}
+					return chats;
+				}, [])
+				.map(chat => <ChatBubble chat={chat} onClick={() => { setExpanding(!expanding); }} />)
 			}
 		</div >
 		<div className={`${style.panel} ${getPanelClassName()}`}>

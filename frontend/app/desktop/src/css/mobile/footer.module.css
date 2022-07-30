@@ -52,17 +52,23 @@
   position: fixed;
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   background: rgba(200, 200, 200, 0.4);
-  & .avatar {
+  & .chatBubble {
     border-radius: 100%;
     height: 100%;
     width: auto;
+    margin: 0px 4px;
+    & .avatar {
+      border-radius: 100%;
+      height: 100%;
+      width: auto;
+    }
   }
   & .unread {
     box-shadow: 0px 0px 1px 3px var(--sub-theme-color);
-    animation: breath 2s infinite alternate-reverse;
+    animation: breath 1s infinite alternate-reverse;
   }
 }
 

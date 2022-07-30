@@ -7,7 +7,7 @@ import { server_trigger } from 'carbonbond-api/api_trait';
 import { UserState } from '../global_state/user';
 import { toastErr } from '../utils';
 
-function ChatUnit(props: { chat: ChatData }): JSX.Element {
+function ChatUnit(props: { chat: ChatData, onClick: () => void }): JSX.Element {
 	const { addRoom, addRoomWithChannel } = BottomPanelState.useContainer();
 	const { user_state } = UserState.useContainer();
 	const message = props.chat.newestMessage()!;
@@ -61,6 +61,7 @@ function ChatUnit(props: { chat: ChatData }): JSX.Element {
 				addRoomWithChannel(props.chat.id, Object.values(props.chat.unreadChannels())[0].name);
 			}
 		}
+		props.onClick();
 	}
 
 	return <div className={`${style.chatUnit} ${is_unread ? style.bold : ''}`} onClick={onClick}>
@@ -86,17 +87,18 @@ const date_cmp = (x: ChatData, y: ChatData): number => {
 	return Number(y_msg!.time) - Number(x_msg!.time);
 };
 
-function ChatBar(): JSX.Element {
+function ChatBar(props: { onChatUnitClick: () => void }): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
 	let chat_array: ChatData[] = Array.from(Object.values(all_chat.direct));
-	chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
+	// TODO: 支援羣聊
+	// chat_array = chat_array.concat(Array.from(Object.values(all_chat.group)));
 	chat_array = chat_array.filter(chat => chat.isExist() === true);
 	return <div className={style.chatbar}>
 		<div className={style.barName}>聊天室</div>
 		{/* TODO: 尋找聊天室 */}
 		{/* <input type="text" placeholder="🔍 尋找對話" /> */}
 		{
-			chat_array.sort(date_cmp).map((chat) => <ChatUnit key={chat.id} chat={chat} />)
+			chat_array.sort(date_cmp).map((chat) => <ChatUnit key={chat.id} chat={chat} onClick={props.onChatUnitClick} />)
 		}
 	</div>;
 }
