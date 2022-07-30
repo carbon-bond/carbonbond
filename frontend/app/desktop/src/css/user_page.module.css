@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     border-bottom: 1px var(--border-color) solid;
 }
 
@@ -11,8 +12,34 @@
 }
 
 .profileActionWrap {
-    width: 150px;
-    padding: 30px 0px;
+    width: 200px;
+    padding: 0px 0px 10px;
+    & .personalBoard {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid var(--border-color);
+        padding: 2px;
+        border-radius: 3px;
+    }
+    & .personalBoard:hover {
+        background: var(--lightest-gray);
+    }
+    @media only screen and (max-width: 600px) {
+        & .personalBoard {
+            display: none;
+        }
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .up {
+        flex-direction: column;
+    }
+    .profileOverviewWrap {
+        width: 100%;
+    }
 }
 
 .account {
@@ -34,6 +61,11 @@
         & .username {
             font-size: 32px;
         }
+        @media only screen and (max-width: 600px) {
+            & .username {
+                display: none;
+            }
+        }
         & .sentence {
             font-size: 20px;
             & button {
@@ -49,6 +81,16 @@
                 margin-left: 15px;
                 font-size: 14px;
             }
+        }
+    }
+    @media only screen and (max-width: 600px) {
+        & .avatarContainer {
+            margin: 30px 5px;
+            height: 100px;
+        }
+        & .abstract {
+            width: 300px;
+            margin: 30px 20px;
         }
     }
 }
@@ -91,24 +133,18 @@
     width: 100%;
     & .links {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         & > :not(:first-child) {
-            margin-top: 10px;
+            margin-left: 10px;
+        }
+        & .linkButton {
+            flex: 1;
+            & button {
+                width: 100%;
+            }
         }
         & button:hover {
             cursor: pointer;
-        }
-        & .personalBoard {
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            padding: 2px;
-            border-radius: 3px;
-        }
-        & .personalBoard:hover {
-            background: var(--lightest-gray);
         }
     }
 }
@@ -213,6 +249,12 @@
         }
     }
 
+}
+
+@media only screen and (max-width: 600px) {
+    .detail {
+        display: none;
+    }
 }
 
 .editModal {

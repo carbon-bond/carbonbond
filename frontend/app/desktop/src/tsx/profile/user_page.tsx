@@ -477,7 +477,8 @@ function RelationEditComponent(props: {target_user_id: number,
 
 function ProfileOverview(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null,
 		user_state: UserStateType,
-		reload: number}): JSX.Element {
+		reload: number,
+		setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -499,7 +500,7 @@ function ProfileOverview(props: { profile_user: User, setProfileUser: React.Disp
 		<div className={style.abstract}>
 			<div className={style.username}>{props.profile_user.user_name}</div>
 			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={props.setProfileUser ? setSentence : null} />
-			<ProfileRelation {...props}/>
+			<ProfileAction profile_user={props.profile_user} user_state={props.user_state} reload={props.reload} setReload={props.setReload}/>
 		</div>
 	</div>;
 }
@@ -595,21 +596,27 @@ export function ProfileAction(props: {profile_user: User,
 		<div className={style.links}>
 			{
 				props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-					<RelationEditComponent target_user_id={props.profile_user.id}
-						relation_type={relation_type} setRelationType={setRelationType}
-						relation_public={relation_public} setRelationPublic={setRelationPublic}
-						setReload={props.setReload}/>: <></>
+					<div className={style.linkButton}>
+						<RelationEditComponent target_user_id={props.profile_user.id}
+							relation_type={relation_type} setRelationType={setRelationType}
+							relation_public={relation_public} setRelationPublic={setRelationPublic}
+							setReload={props.setReload}/>
+					</div>: <></>
 			}
 			{
 				is_me ?
 					<></> :
-					<button onClick={onStartChat}>🗨️ 私訊</button>
+					<div className={style.linkButton}>
+						<button onClick={onStartChat}>🗨️ 私訊</button>
+					</div>
 			}
-			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-				<div className={style.personalBoard}>
-						🤠 個板
-				</div>
-			</Link>
+			{/* <div className={style.linkButton}>
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+					<div className={style.personalBoard}>
+							🤠 個板
+					</div>
+				</Link>
+			</div> */}
 		</div>
 	</div>;
 }
@@ -777,10 +784,15 @@ function UserPage(): JSX.Element {
 	return <div>
 		<div className={style.up}>
 			<div className={style.profileOverviewWrap}>
-				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload}/>
+				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
 			</div>
 			<div className={style.profileActionWrap}>
-				<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${user.user_name}`}>
+					<div className={style.personalBoard}>
+							🤠 個板
+					</div>
+				</Link>
+				<ProfileRelation profile_user={user} user_state={user_state} reload={reload}/>
 			</div>
 		</div>
 		<div className={style.down}>
