@@ -1,6 +1,7 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { BottomPanelState, RoomKind } from '../../global_state/bottom_panel';
+import { ChatRoomPanel } from '../../chatroom_panel';
+import { BottomPanelState, RoomKind, SimpleRoomData } from '../../global_state/bottom_panel';
 import { AllChatState, DirectChatData } from '../../global_state/chat';
 
 function ChatBubble(props: {
@@ -14,28 +15,55 @@ function ChatBubble(props: {
 	</div>;
 }
 
+type ChosenBubble = {
+	kind: 'chat',
+	chatroom: SimpleRoomData,
+} | {
+	kind: 'editor',
+};
+
 export function Footer(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
-	let [expanding, setExpanding] = React.useState<boolean | null>(null);
+	let [is_init, set_is_init] = React.useState<boolean>(true);
+	let [chosen, setChosen_] = React.useState<ChosenBubble | null>(null);
 	const { chatrooms } = BottomPanelState.useContainer();
 
+	function setChosen(chosen: ChosenBubble | null): void {
+		set_is_init(false);
+		setChosen_(chosen);
+	}
+
 	function getPanelClassName(): string {
-		if (expanding == null) {
+		if (is_init) {
 			return style.panelInit;
-		} else if (expanding == true) {
-			return style.panelOpen;
-		} else {
+		} else if (chosen == null) {
 			return style.panelClose;
+		} else {
+			return style.panelOpen;
 		}
 	}
 
 	function getFooterClassName(): string {
-		if (expanding == null) {
+		if (is_init) {
 			return style.footerInit;
-		} else if (expanding == true) {
-			return style.footerOpen;
-		} else {
+		} else if (chosen == null) {
 			return style.footerClose;
+		} else {
+			return style.footerOpen;
+		}
+	}
+
+	function FooterPanel(): JSX.Element {
+		if (chosen == null) {
+			return <></>;
+		}
+		switch (chosen.kind) {
+			case 'chat': {
+				return <ChatRoomPanel room={chosen.chatroom} />;
+			}
+			case 'editor': {
+				return <></>;
+			}
 		}
 	}
 
@@ -45,22 +73,22 @@ export function Footer(): JSX.Element {
 		>
 			{
 				chatrooms.
-				reduce((chats: DirectChatData[], room) => {
-					if (room.kind == RoomKind.Simple) {
-						const chat = all_chat.direct[room.id];
-						if (chat.isUnread()) {
-							chats.push(chat);
+					reduce((chats: [DirectChatData, SimpleRoomData][], room) => {
+						if (room.kind == RoomKind.Simple) {
+							const chat = all_chat.direct[room.id];
+							chats.push([chat, room]);
+						} else {
+							console.warn('尚不支援含頻道聊天室');
 						}
-					} else {
-						console.warn('尚不支援含頻道聊天室');
-					}
-					return chats;
-				}, [])
-				.map(chat => <ChatBubble chat={chat} onClick={() => { setExpanding(!expanding); }} />)
+						return chats;
+					}, [])
+					.map(([chat, room]) => <ChatBubble key={chat.id} chat={chat} onClick={() => {
+						setChosen({ kind: 'chat', chatroom: room });
+					}} />)
 			}
 		</div >
 		<div className={`${style.panel} ${getPanelClassName()}`}>
-			面板
+			<FooterPanel />
 		</div>
 	</>;
 }
