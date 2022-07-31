@@ -1,5 +1,7 @@
 :root {
     --room-width: 320px;
+    --room-height: 420px;
+    --room-title-height: 30px;
 }
 
 .roomWidth {
@@ -18,7 +20,7 @@
 
 .roomTitle {
     background-color: var(--sub-theme-color);
-    height: 30px;
+    height: var(--room-title-height);
     cursor: pointer;
     display: flex;
     flex-direction: row;

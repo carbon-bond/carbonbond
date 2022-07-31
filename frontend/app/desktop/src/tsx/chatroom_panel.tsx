@@ -1,6 +1,6 @@
 import * as React from 'react';
 import bottom_panel_style from '../css/bottom_panel/bottom_panel.module.css';
-const {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} = bottom_panel_style;
+const {roomTitle, roomContent, roomWidth, leftSet, middleSet, rightSet, button} = bottom_panel_style;
 import style from '../css/bottom_panel/chat_room.module.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
@@ -242,9 +242,14 @@ function InputBar(props: InputBarProp): JSX.Element {
 		/>
 	</div>;
 }
+function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
+	return <div className={`${style.chatPanel} ${roomWidth}`}>
+		<SimpleChatRoomPanelContent room={props.room} />
+	</div>;
+}
 
 // 聊天室
-function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
+function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element {
 	const { deleteRoom, toRealRoom } = BottomPanelState.useContainer();
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
@@ -381,8 +386,8 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 			}
 		}
 
-		return <div className={style.chatPanel} onMouseUp={focusPanel}>
-			<div className={`${roomTitle} ${roomWidth}`}>
+		return <div className={style.roomContent}>
+			<div className={`${roomTitle}`}>
 				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
 					if (ref.current) {
@@ -395,13 +400,13 @@ function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
 					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Simple)}>✗</div>
 				</div>
 			</div>
-			<div ref={ref} className={style.messages}>
+			<div ref={ref} className={style.messages} onMouseUp={focusPanel}>
 				<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name}/>
 			</div>
 			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref}/>
 		</div>;
 	} else {
-		return <div className={`${style.chatPanel} ${roomWidth}`}>
+		return <div className={style.roomContent}>
 			<div className={roomTitle}>
 				<div className={leftSet}>{chat.name}</div>
 				<div className={middleSet} onClick={() => setExtended(true)}></div>
@@ -514,6 +519,15 @@ function ChatRoomPanel(props: {room: RoomData}): JSX.Element {
 	}
 }
 
+function ChatRoomPanelContent(props: {room: RoomData}): JSX.Element {
+	if (isChannelRoomData(props.room)) {
+		console.warn('尚未支援多頻道聊天室');
+		return <ChannelChatRoomPanel room={props.room} />;
+	} else  {
+		return <SimpleChatRoomPanelContent room={props.room} />;
+	}
+}
+
 export {
-	ChatRoomPanel
+	ChatRoomPanel, ChatRoomPanelContent
 };

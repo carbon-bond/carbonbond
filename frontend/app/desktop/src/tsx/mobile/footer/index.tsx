@@ -1,6 +1,6 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { ChatRoomPanel } from '../../chatroom_panel';
+import { ChatRoomPanelContent } from '../../chatroom_panel';
 import { BottomPanelState, RoomKind, SimpleRoomData } from '../../global_state/bottom_panel';
 import { AllChatState, DirectChatData } from '../../global_state/chat';
 
@@ -59,7 +59,7 @@ export function Footer(): JSX.Element {
 		}
 		switch (chosen.kind) {
 			case 'chat': {
-				return <ChatRoomPanel room={chosen.chatroom} />;
+				return <ChatRoomPanelContent room={chosen.chatroom} />;
 			}
 			case 'editor': {
 				return <></>;
@@ -83,7 +83,13 @@ export function Footer(): JSX.Element {
 						return chats;
 					}, [])
 					.map(([chat, room]) => <ChatBubble key={chat.id} chat={chat} onClick={() => {
-						setChosen({ kind: 'chat', chatroom: room });
+						if (chosen == null
+							|| chosen.kind != 'chat'
+							|| (chosen.kind == 'chat' && chosen.chatroom.id != room.id)) {
+							setChosen({ kind: 'chat', chatroom: room });
+						} else {
+							setChosen(null);
+						}
 					}} />)
 			}
 		</div >
