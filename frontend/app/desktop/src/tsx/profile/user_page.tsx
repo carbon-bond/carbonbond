@@ -187,6 +187,11 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 			<div className={style.info}>
 				<ShowText text={introduction} />
 			</div>
+			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+				<div className={style.personalBoard}>
+						🤠 個板
+				</div>
+			</Link>
 			<div className={style.info}>
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
@@ -787,11 +792,6 @@ function UserPage(): JSX.Element {
 				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
 			</div>
 			<div className={style.profileActionWrap}>
-				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${user.user_name}`}>
-					<div className={style.personalBoard}>
-							🤠 個板
-					</div>
-				</Link>
 				<ProfileRelation profile_user={user} user_state={user_state} reload={reload}/>
 			</div>
 		</div>

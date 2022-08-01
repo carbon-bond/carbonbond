@@ -14,23 +14,6 @@
 .profileActionWrap {
     width: 200px;
     padding: 0px 0px 10px;
-    & .personalBoard {
-        display: flex;
-        width: 100%;
-        flex-direction: column;
-        align-items: center;
-        border: 1px solid var(--border-color);
-        padding: 2px;
-        border-radius: 3px;
-    }
-    & .personalBoard:hover {
-        background: var(--lightest-gray);
-    }
-    @media only screen and (max-width: 600px) {
-        & .personalBoard {
-            display: none;
-        }
-    }
 }
 
 @media only screen and (max-width: 600px) {
@@ -60,11 +43,6 @@
         justify-content: space-between;
         & .username {
             font-size: 32px;
-        }
-        @media only screen and (max-width: 600px) {
-            & .username {
-                display: none;
-            }
         }
         & .sentence {
             font-size: 20px;
@@ -216,6 +194,23 @@
             flex-grow: 1;
         }
         & .editButton {}
+    }
+    & .personalBoard {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid var(--border-color);
+        padding: 2px;
+        border-radius: 3px;
+    }
+    & .personalBoard:hover {
+        background: var(--lightest-gray);
+    }
+    @media only screen and (max-width: 600px) {
+        & .personalBoard {
+            display: none;
+        }
     }
     & .info {
         & .item {
