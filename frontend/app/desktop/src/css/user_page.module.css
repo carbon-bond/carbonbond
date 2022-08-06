@@ -195,20 +195,25 @@
         }
         & .editButton {}
     }
-    & .personalBoard {
-        display: flex;
+    & .boardCard {
         width: 100%;
-        flex-direction: column;
-        align-items: center;
         border: 1px solid var(--border-color);
         padding: 2px;
         border-radius: 3px;
-    }
-    & .personalBoard:hover {
         background: var(--lightest-gray);
+        & .boardName {
+            font-size: 16px;
+        }
+        & .boardTitle {
+            font-size: 12px;
+            padding: 3px 0px;
+        }
+    }
+    & .boardCard:hover {
+        background: var(--lighter-gray);
     }
     @media only screen and (max-width: 600px) {
-        & .personalBoard {
+        & .boardCard {
             display: none;
         }
     }

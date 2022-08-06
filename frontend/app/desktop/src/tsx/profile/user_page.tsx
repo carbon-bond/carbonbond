@@ -4,7 +4,7 @@ import { useTitle } from 'react-use';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from 'carbonbond-api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMetaWithBonds, Board, BoardType } from 'carbonbond-api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { LocationState, UserLocation } from '../global_state/location';
 import { toastErr, useInputValue } from '../utils';
@@ -95,6 +95,36 @@ function CertificationItem(props: { title: string }) : JSX.Element {
 	</span>;
 }
 
+function PersonalBoardCard(props: { board: Board }) : JSX.Element {
+	const [subscribe_count, setSubscribeCount] = React.useState<number>(0);
+
+	React.useEffect(() => {
+		API_FETCHER.boardQuery.querySubscribedUserCount(props.board.id).then(count => {
+			try {
+				setSubscribeCount(unwrap(count));
+			} catch (err) {
+				return Promise.reject(err);
+			}
+		}).catch(err => {
+			console.error(err);
+		});
+	}, [props.board]);
+
+	return <div className={style.boardCard}>
+		<div className={style.boardName}>
+			{props.board.board_name} (個版)
+		</div>
+		<div className={style.boardTitle}>
+			{props.board.title}
+		</div>
+		<div className={style.boardStatistics}>
+			<span>{subscribe_count} 訂閱</span>
+			<span> · </span>
+			<span>本日 {props.board.popularity} 篇文</span>
+		</div>
+	</div>;
+}
+
 export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	let { user_state } = UserState.useContainer();
@@ -102,6 +132,8 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
 	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
 	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
+	const [fetching, setFetching] = React.useState(true);
+	const [board, setBoard] = React.useState<Board | null>(null);
 
 	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		try {
@@ -122,6 +154,20 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 			setGender(props.profile_user.gender);
 			setJob(props.profile_user.job);
 			setCity(props.profile_user.city);
+
+			API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
+				try {
+					let board = unwrap(res);
+					setBoard(board);
+					console.log('haha');
+				} catch (err) {
+					return Promise.reject(err);
+				}
+			}).catch(err => {
+				console.error(err);
+			}).finally(() => {
+				setFetching(false);
+			});
 		}
 	}, [props.profile_user]);
 
@@ -178,6 +224,10 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 
 	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
+	if (fetching) {
+		return <></>;
+	}
+
 	return <div className={style.detail}>
 		<div>
 			<div className={style.introduction}>
@@ -187,11 +237,13 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 			<div className={style.info}>
 				<ShowText text={introduction} />
 			</div>
-			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-				<div className={style.personalBoard}>
-						🤠 個板
-				</div>
-			</Link>
+			{
+				board ? <div className={style.personalBoard}>
+					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+						<PersonalBoardCard board={board} />
+					</Link>
+				</div> : <></>
+			}
 			<div className={style.info}>
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
