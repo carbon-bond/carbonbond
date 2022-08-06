@@ -51,12 +51,12 @@ function EditSentence(props: { sentence: string, setSentence: (sentence: string)
 	} else if (props.sentence == '') {
 		return <div className={style.noSentence}>
 			尚未設置一句話介紹
-			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏</button>
 		</div>;
 	} else {
 		return <div className={style.sentence}>
-			{props.sentence}
-			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
+			<span className={style.words}>{props.sentence}</span>
+			<button onClick={() => setIsEditing(true)}>✏</button>
 		</div>;
 	}
 }
@@ -224,7 +224,7 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 
 	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
-	if (fetching) {
+	if (window.is_mobile || fetching) {
 		return <></>;
 	}
 
@@ -615,8 +615,6 @@ export function ProfileAction(props: {profile_user: User,
 	const { addRoom } = BottomPanelState.useContainer();
 	const { all_chat, addDirectChat } = AllChatState.useContainer();
 
-	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
-
 	React.useEffect(() => {
 		async function queryUserRelation(): Promise<{}> {
 			if (props.profile_user) {
@@ -649,31 +647,21 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}
 
+	if (!props.user_state.login || props.user_state.user_name == props.profile_user.user_name) {
+		return <></>;
+	}
+
 	return <div className={style.operation}>
 		<div className={style.links}>
-			{
-				props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-					<div className={style.linkButton}>
-						<RelationEditComponent target_user_id={props.profile_user.id}
-							relation_type={relation_type} setRelationType={setRelationType}
-							relation_public={relation_public} setRelationPublic={setRelationPublic}
-							setReload={props.setReload}/>
-					</div>: <></>
-			}
-			{
-				is_me ?
-					<></> :
-					<div className={style.linkButton}>
-						<button onClick={onStartChat}>🗨️ 私訊</button>
-					</div>
-			}
-			{/* <div className={style.linkButton}>
-				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-					<div className={style.personalBoard}>
-							🤠 個板
-					</div>
-				</Link>
-			</div> */}
+			<div className={style.linkButton}>
+				<RelationEditComponent target_user_id={props.profile_user.id}
+					relation_type={relation_type} setRelationType={setRelationType}
+					relation_public={relation_public} setRelationPublic={setRelationPublic}
+					setReload={props.setReload}/>
+			</div>
+			<div className={style.linkButton}>
+				<button onClick={onStartChat}>🗨️ 私訊</button>
+			</div>
 		</div>
 	</div>;
 }

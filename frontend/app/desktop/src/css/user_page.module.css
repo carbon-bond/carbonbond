@@ -38,16 +38,24 @@
     & .abstract {
         width: 300px;
         margin: 30px 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        & > div:not(:first-child) {
+            margin-top: 10px;
+        }
         & .username {
             font-size: 32px;
         }
         & .sentence {
             font-size: 20px;
+            display: flex;
+            & .words {
+                max-width: 240px;
+                display: inline-block;
+                overflow:hidden; 
+                white-space:nowrap; 
+                text-overflow: ellipsis;
+            }
             & button {
-                margin-left: 15px;
+                margin-left: 10px;
                 font-size: 14px;
             }
         }
@@ -61,14 +69,28 @@
             }
         }
     }
-    @media only screen and (max-width: 600px) {
+}
+
+@media only screen and (max-width: 600px) {
+    .account {
+        height: 120px;
+        margin-bottom: 10px;
         & .avatarContainer {
-            margin: 30px 5px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
+            margin: 0px;
         }
         & .abstract {
-            width: 300px;
-            margin: 30px 20px;
+            flex: 1;
+            margin: 10px 10px;
+            & .username {
+                font-size: 28px;
+            }
+            & .sentence {
+                & .words {
+                    max-width: 180px;
+                }
+            }
         }
     }
 }
@@ -212,11 +234,6 @@
     & .boardCard:hover {
         background: var(--lighter-gray);
     }
-    @media only screen and (max-width: 600px) {
-        & .boardCard {
-            display: none;
-        }
-    }
     & .info {
         & .item {
             margin: 10px 0px;
@@ -249,12 +266,6 @@
         }
     }
 
-}
-
-@media only screen and (max-width: 600px) {
-    .detail {
-        display: none;
-    }
 }
 
 .editModal {
