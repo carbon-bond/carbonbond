@@ -4,7 +4,7 @@ import { useTitle } from 'react-use';
 import { ArticleCard } from '../article_card';
 import { Avatar } from './avatar';
 import { UserCard } from './user_card';
-import { UserRelationKind, User, UserMini, ArticleMetaWithBonds } from 'carbonbond-api/api_trait';
+import { UserRelationKind, User, UserMini, ArticleMetaWithBonds, Board, BoardType } from 'carbonbond-api/api_trait';
 import { UserState, UserStateType } from '../global_state/user';
 import { LocationState, UserLocation } from '../global_state/location';
 import { toastErr, useInputValue } from '../utils';
@@ -51,12 +51,12 @@ function EditSentence(props: { sentence: string, setSentence: (sentence: string)
 	} else if (props.sentence == '') {
 		return <div className={style.noSentence}>
 			尚未設置一句話介紹
-			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
+			<button onClick={() => setIsEditing(true)}>✏</button>
 		</div>;
 	} else {
 		return <div className={style.sentence}>
-			{props.sentence}
-			<button onClick={() => setIsEditing(true)}>✏ 修改</button>
+			<span className={style.words}>{props.sentence}</span>
+			<button onClick={() => setIsEditing(true)}>✏</button>
 		</div>;
 	}
 }
@@ -95,6 +95,36 @@ function CertificationItem(props: { title: string }) : JSX.Element {
 	</span>;
 }
 
+function PersonalBoardCard(props: { board: Board }) : JSX.Element {
+	const [subscribe_count, setSubscribeCount] = React.useState<number>(0);
+
+	React.useEffect(() => {
+		API_FETCHER.boardQuery.querySubscribedUserCount(props.board.id).then(count => {
+			try {
+				setSubscribeCount(unwrap(count));
+			} catch (err) {
+				return Promise.reject(err);
+			}
+		}).catch(err => {
+			console.error(err);
+		});
+	}, [props.board]);
+
+	return <div className={style.boardCard}>
+		<div className={style.boardName}>
+			{props.board.board_name} (個版)
+		</div>
+		<div className={style.boardTitle}>
+			{props.board.title}
+		</div>
+		<div className={style.boardStatistics}>
+			<span>{subscribe_count} 訂閱</span>
+			<span> · </span>
+			<span>本日 {props.board.popularity} 篇文</span>
+		</div>
+	</div>;
+}
+
 export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	let { user_state } = UserState.useContainer();
@@ -102,6 +132,8 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
 	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
 	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
+	const [fetching, setFetching] = React.useState(true);
+	const [board, setBoard] = React.useState<Board | null>(null);
 
 	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		try {
@@ -122,6 +154,20 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 			setGender(props.profile_user.gender);
 			setJob(props.profile_user.job);
 			setCity(props.profile_user.city);
+
+			API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
+				try {
+					let board = unwrap(res);
+					setBoard(board);
+					console.log('haha');
+				} catch (err) {
+					return Promise.reject(err);
+				}
+			}).catch(err => {
+				console.error(err);
+			}).finally(() => {
+				setFetching(false);
+			});
 		}
 	}, [props.profile_user]);
 
@@ -178,6 +224,10 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 
 	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
+	if (window.is_mobile || fetching) {
+		return <></>;
+	}
+
 	return <div className={style.detail}>
 		<div>
 			<div className={style.introduction}>
@@ -187,6 +237,13 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 			<div className={style.info}>
 				<ShowText text={introduction} />
 			</div>
+			{
+				board ? <div className={style.personalBoard}>
+					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+						<PersonalBoardCard board={board} />
+					</Link>
+				</div> : <></>
+			}
 			<div className={style.info}>
 				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
 				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
@@ -477,7 +534,8 @@ function RelationEditComponent(props: {target_user_id: number,
 
 function ProfileOverview(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null,
 		user_state: UserStateType,
-		reload: number}): JSX.Element {
+		reload: number,
+		setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
 
 	function setSentence(sentence: string): void {
 		let new_state = produce(props.profile_user, nxt => {
@@ -499,7 +557,7 @@ function ProfileOverview(props: { profile_user: User, setProfileUser: React.Disp
 		<div className={style.abstract}>
 			<div className={style.username}>{props.profile_user.user_name}</div>
 			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={props.setProfileUser ? setSentence : null} />
-			<ProfileRelation {...props}/>
+			<ProfileAction profile_user={props.profile_user} user_state={props.user_state} reload={props.reload} setReload={props.setReload}/>
 		</div>
 	</div>;
 }
@@ -557,8 +615,6 @@ export function ProfileAction(props: {profile_user: User,
 	const { addRoom } = BottomPanelState.useContainer();
 	const { all_chat, addDirectChat } = AllChatState.useContainer();
 
-	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
-
 	React.useEffect(() => {
 		async function queryUserRelation(): Promise<{}> {
 			if (props.profile_user) {
@@ -591,25 +647,21 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}
 
+	if (!props.user_state.login || props.user_state.user_name == props.profile_user.user_name) {
+		return <></>;
+	}
+
 	return <div className={style.operation}>
 		<div className={style.links}>
-			{
-				props.user_state.login && props.user_state.user_name != props.profile_user.user_name ?
-					<RelationEditComponent target_user_id={props.profile_user.id}
-						relation_type={relation_type} setRelationType={setRelationType}
-						relation_public={relation_public} setRelationPublic={setRelationPublic}
-						setReload={props.setReload}/>: <></>
-			}
-			{
-				is_me ?
-					<></> :
-					<button onClick={onStartChat}>🗨️ 私訊</button>
-			}
-			<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-				<div className={style.personalBoard}>
-						🤠 個板
-				</div>
-			</Link>
+			<div className={style.linkButton}>
+				<RelationEditComponent target_user_id={props.profile_user.id}
+					relation_type={relation_type} setRelationType={setRelationType}
+					relation_public={relation_public} setRelationPublic={setRelationPublic}
+					setReload={props.setReload}/>
+			</div>
+			<div className={style.linkButton}>
+				<button onClick={onStartChat}>🗨️ 私訊</button>
+			</div>
 		</div>
 	</div>;
 }
@@ -777,10 +829,10 @@ function UserPage(): JSX.Element {
 	return <div>
 		<div className={style.up}>
 			<div className={style.profileOverviewWrap}>
-				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload}/>
+				<ProfileOverview profile_user={user} setProfileUser={setUser} user_state={user_state} reload={reload} setReload={setReload}/>
 			</div>
 			<div className={style.profileActionWrap}>
-				<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+				<ProfileRelation profile_user={user} user_state={user_state} reload={reload}/>
 			</div>
 		</div>
 		<div className={style.down}>
