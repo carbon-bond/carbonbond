@@ -1,6 +1,6 @@
 import * as React from 'react';
 import bottom_panel_style from '../css/bottom_panel/bottom_panel.module.css';
-const {roomTitle, roomContent, roomWidth, leftSet, middleSet, rightSet, button} = bottom_panel_style;
+const {roomTitle, roomWidth, leftSet, middleSet, rightSet, button} = bottom_panel_style;
 import style from '../css/bottom_panel/chat_room.module.css';
 import { relativeDate } from '../ts/date';
 import { differenceInMinutes } from 'date-fns';
@@ -175,7 +175,9 @@ type Emoji = {
 	native: string
 };
 
-function InputBar(props: InputBarProp): JSX.Element {
+type InputBar = (props: InputBarProp) => JSX.Element;
+
+function EmojiInputBar(props: InputBarProp): JSX.Element {
 	const input_ref = props.input_ref;
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
 	const ref = React.useRef(null);
@@ -242,30 +244,31 @@ function InputBar(props: InputBarProp): JSX.Element {
 		/>
 	</div>;
 }
-function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
-	return <div className={`${style.chatPanel} ${roomWidth}`}>
-		<SimpleChatRoomPanelContent room={props.room} />
-	</div>;
-}
 
-// 聊天室
-function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element {
-	const { deleteRoom, toRealRoom } = BottomPanelState.useContainer();
+function SimplChatView(props: {
+	room: SimpleRoomData,
+	input_bar: InputBar,
+	focus_when_click: boolean, // 點擊聊天面板時，游標是否直接聚焦到輸入框（桌面版要、行動版不要）
+	// TODO: 滾動條位置可放入 context
+	prev_scroll_top: number,
+	setPrevScrollTop: React.Dispatch<React.SetStateAction<number>>
+	initializing: boolean,
+	setInitializing: React.Dispatch<React.SetStateAction<boolean>>
+}): JSX.Element {
+	const { toRealRoom } = BottomPanelState.useContainer();
 	const { all_chat, addMessage, updateLastRead, setAllChat } = AllChatState.useContainer();
-	const [extended, setExtended] = React.useState(true);
+	const chat = all_chat.direct[props.room.id];
+	const { user_state } = UserState.useContainer();
 	const [scrolling, setScrolling] = React.useState(false);
 	const [fetchingHistory, setFetchingHistory] = React.useState(false);
-	const [initializing, setInitializing] = React.useState(true);
-	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
 	const { input_props, setValue } = useInputValue('');
 	const [ref, scrollToBottom] = useScrollBottom();
 	const {y} = useScroll(ref);
-	const { user_state } = UserState.useContainer();
-	const chat = all_chat.direct[props.room.id];
 	const [input_ref, setInputFocus] = useFocus();
 	const [toggle_focus, setToggleFocus] = React.useState(false);
+	const [prev_scroll_is_restored, setPrevScrollIsRestored] = React.useState(false);
 	React.useEffect(() => {
-		if (extended && chat?.isUnread() && document.activeElement === input_ref?.current && document.hasFocus()) {
+		if (chat?.isUnread() && document.activeElement === input_ref?.current && document.hasFocus()) {
 			let now = new Date();
 			updateLastRead(props.room.id, now);
 			API_FETCHER.chatQuery.updateReadTime(chat.id).then(res => unwrap(res)).catch(err => {
@@ -273,24 +276,29 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 				console.error(err);
 			});
 		}
-	}, [extended, chat, updateLastRead, props.room.id, input_ref, toggle_focus]);
+	}, [chat, updateLastRead, props.room.id, input_ref, toggle_focus]);
+
+	React.useEffect(() => {
+		props.setPrevScrollTop(y);
+	}, [y, props]);
 
 	React.useEffect(() => {
 		if (scrolling) {
 			setScrolling(false);
 			scrollToBottom();
 		}
-		if (initializing) {
-			setInitializing(false);
+		if (props.initializing) {
+			props.setInitializing(false);
 			setScrolling(true);
 		}
-	}, [scrolling, scrollToBottom, initializing]);
+	}, [scrolling, scrollToBottom, props]);
 
 	React.useEffect(() => {
-		if (extended && ref.current) {
-			ref.current.scrollTop = prev_scroll_top;
+		if (!prev_scroll_is_restored && ref.current) {
+			ref.current.scrollTop = props.prev_scroll_top;
+			setPrevScrollIsRestored(true);
 		}
-	}, [extended, prev_scroll_top, ref]);
+	}, [prev_scroll_is_restored, props.initializing, props.prev_scroll_top, ref]);
 
 	// 如果聊天室本就捲動至底部，收到訊息時，捲動至底部
 	React.useEffect(() => {
@@ -307,7 +315,7 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 
 	React.useEffect(() => {
 		const PAGE_SIZE = 50;
-		if (y < 200 && extended && !chat.exhaust_history && chat.isExist() && !fetchingHistory) {
+		if (y < 200 && !chat.exhaust_history && chat.isExist() && !fetchingHistory) {
 			setFetchingHistory(true);
 			API_FETCHER.chatQuery.queryDirectChatHistory(chat.id, chat.history[0].id, PAGE_SIZE).then(res => {
 				let history = unwrap(res);
@@ -318,8 +326,8 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 					// TODO: 給出真實的 message ID
 					return draft.addOldMessages(props.room.id, old_messages);
 				}));
-				if (initializing) {
-					setInitializing(false);
+				if (props.initializing) {
+					props.setInitializing(false);
 					scrollToBottom();
 				}
 				setFetchingHistory(false);
@@ -328,7 +336,55 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 				setFetchingHistory(false);
 			});
 		}
-	}, [fetchingHistory, chat.exhaust_history, chat.history, chat.id, extended, props.room.id, scrollToBottom, setAllChat, y, initializing, chat]);
+	}, [fetchingHistory, chat.exhaust_history, chat.history, chat.id, props.room.id, scrollToBottom, setAllChat, y, chat, props]);
+
+	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+		if (e.keyCode == 13 && input_props.value.length > 0) {
+			const now = new Date();
+			if (chat.isExist()) {
+				window.chat_socket.send_message(chat!.id, input_props.value);
+				// TODO: 計算回傳的 id
+				ReactDOM.unstable_batchedUpdates(() => {
+					addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
+					setValue('');
+					setScrolling(true);
+				});
+			} else {
+				let new_chat: NewChat = (() => {
+					switch (chat.meta.opposite.kind) {
+						case OppositeKind.Direct:
+							return { User: chat.meta.opposite.opposite_id };
+						case OppositeKind.AnonymousArticleMeta:
+							return { AnonymousArticle: chat.meta.opposite.article_id };
+					}
+				})();
+				API_FETCHER.chatQuery.createChatIfNotExist(new_chat, input_props.value).then(res => {
+					return unwrap(res);
+				}).then(chat_id => {
+					ReactDOM.unstable_batchedUpdates(() => {
+						setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
+							// TODO: 給出真實的 message ID
+							let ret = draft.addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
+							ret = ret.toRealDirectChat(props.room.id, chat_id);
+							return ret;
+						}));
+						toRealRoom(props.room.id, chat_id);
+					});
+				}).catch(err => toastErr(err));
+				setScrolling(true);
+				setValue('');
+			}
+		}
+	}
+
+	function focusPanel(): void {
+		setToggleFocus(!toggle_focus);
+		// 若沒有選取任何文字，聚焦到輸入框
+		const selection = window.getSelection();
+		if (props.focus_when_click && (!selection || selection.toString().length == 0)) {
+			setInputFocus();
+		}
+	}
 
 	if (user_state.login == false) {
 		return <></>;
@@ -339,60 +395,34 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 		return <></>;
 	}
 
+	return <>
+		<div ref={ref} className={style.messages} onMouseUp={focusPanel}>
+			<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name} />
+		</div>
+		<props.input_bar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref} />
+	</>;
+}
+
+function SimpleChatRoomPanel(props: {room: SimpleRoomData}): JSX.Element {
+	return <div className={`${style.chatPanel} ${roomWidth}`}>
+		<SimpleChatRoomPanelContent room={props.room} />
+	</div>;
+}
+
+// 聊天室
+function SimpleChatRoomPanelContent(props: { room: SimpleRoomData }): JSX.Element {
+	const { deleteRoom } = BottomPanelState.useContainer();
+	const [extended, setExtended] = React.useState(true);
+	const { all_chat } = AllChatState.useContainer();
+	const chat = all_chat.direct[props.room.id];
+	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
+	const [initializing, setInitializing] = React.useState(true);
+
 	if (extended) {
-		function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-			if (e.keyCode == 13 && input_props.value.length > 0) {
-				const now = new Date();
-				if (chat.isExist()) {
-					window.chat_socket.send_message(chat!.id, input_props.value);
-					// TODO: 計算回傳的 id
-					addMessage(props.room.id, new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
-					setValue('');
-					setScrolling(true);
-				} else {
-					let new_chat: NewChat = (() => {
-						switch (chat.meta.opposite.kind) {
-							case OppositeKind.Direct:
-								return { User: chat.meta.opposite.opposite_id };
-							case OppositeKind.AnonymousArticleMeta:
-								return { AnonymousArticle: chat.meta.opposite.article_id };
-						}
-					})();
-					API_FETCHER.chatQuery.createChatIfNotExist(new_chat, input_props.value).then(res => {
-						return unwrap(res);
-					}).then(chat_id => {
-						ReactDOM.unstable_batchedUpdates(() => {
-							setAllChat(previous_all_chat => produce(previous_all_chat, (draft) => {
-								// TODO: 給出真實的 message ID
-								let ret = draft.addMessage(props.room.id,  new Message(-1, server_trigger.Sender.Myself, input_props.value, now));
-								ret = ret.toRealDirectChat(props.room.id, chat_id);
-								return ret;
-							}));
-							toRealRoom(props.room.id, chat_id);
-						});
-					}).catch(err => toastErr(err));
-					setValue('');
-					setScrolling(true);
-				}
-			}
-		}
-
-		function focusPanel(): void {
-			setToggleFocus(!toggle_focus);
-			// 若沒有選取任何文字，聚焦到輸入框
-			const selection = window.getSelection();
-			if (!selection || selection.toString().length == 0) {
-				setInputFocus();
-			}
-		}
-
 		return <div className={style.roomContent}>
 			<div className={`${roomTitle}`}>
 				<div className={leftSet}>{chat.getLink()}</div>
 				<div className={middleSet} onClick={() => {
-					if (ref.current) {
-						setPrevScrollTop(ref.current?.scrollTop);
-					}
 					setExtended(false);
 				}}></div>
 				<div className={rightSet}>
@@ -400,10 +430,15 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 					<div className={button} onClick={() => deleteRoom(props.room.id, RoomKind.Simple)}>✗</div>
 				</div>
 			</div>
-			<div ref={ref} className={style.messages} onMouseUp={focusPanel}>
-				<MessageBlocks messages={chat!.history} chat={chat} user_name={user_state.user_name} room_name={chat.name}/>
-			</div>
-			<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref}/>
+			<SimplChatView
+				room={props.room}
+				focus_when_click={true}
+				prev_scroll_top={prev_scroll_top}
+				setPrevScrollTop={setPrevScrollTop}
+				input_bar={EmojiInputBar}
+				initializing={initializing}
+				setInitializing={setInitializing}
+				 />
 		</div>;
 	} else {
 		return <div className={style.roomContent}>
@@ -418,7 +453,7 @@ function SimpleChatRoomPanelContent(props: {room: SimpleRoomData}): JSX.Element 
 	}
 }
 
-function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
+function ChannelChatRoomPanel(props: { room: ChannelRoomData }): JSX.Element {
 	const { deleteRoom, changeChannel } = BottomPanelState.useContainer();
 	const { all_chat, addChannelMessage, updateLastReadChannel } = AllChatState.useContainer();
 	const [extended, setExtended] = React.useState(true);
@@ -494,7 +529,7 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 						{/* TODO: channel 運作方式與私訊不同*/}
 						{/* <MessageBlocks messages={channel!.history} user_name={user_state.user_name} room_name="待修正" /> */}
 					</div>
-					<InputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref}/>
+					<EmojiInputBar input_props={input_props} setValue={setValue} onKeyDown={onKeyDown} input_ref={input_ref} />
 				</div>
 			</div>
 		</div>;
@@ -511,23 +546,23 @@ function ChannelChatRoomPanel(props: {room: ChannelRoomData}): JSX.Element {
 	}
 }
 
-function ChatRoomPanel(props: {room: RoomData}): JSX.Element {
+function DesktopChatRoomPanel(props: { room: RoomData }): JSX.Element {
 	if (isChannelRoomData(props.room)) {
 		return <ChannelChatRoomPanel room={props.room} />;
-	} else  {
+	} else {
 		return <SimpleChatRoomPanel room={props.room} />;
 	}
 }
 
-function ChatRoomPanelContent(props: {room: RoomData}): JSX.Element {
+function MobileChatRoomPanel(props: { room: RoomData }): JSX.Element {
 	if (isChannelRoomData(props.room)) {
 		console.warn('尚未支援多頻道聊天室');
-		return <ChannelChatRoomPanel room={props.room} />;
-	} else  {
+		return <></>;
+	} else {
 		return <SimpleChatRoomPanelContent room={props.room} />;
 	}
 }
 
 export {
-	ChatRoomPanel, ChatRoomPanelContent
+	DesktopChatRoomPanel, MobileChatRoomPanel
 };

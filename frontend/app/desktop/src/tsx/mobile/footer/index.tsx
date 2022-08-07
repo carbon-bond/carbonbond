@@ -1,6 +1,6 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { ChatRoomPanelContent } from '../../chatroom_panel';
+import { MobileChatRoomPanel } from '../../chatroom_panel';
 import { BottomPanelState, RoomKind, SimpleRoomData } from '../../global_state/bottom_panel';
 import { AllChatState, DirectChatData } from '../../global_state/chat';
 
@@ -21,6 +21,20 @@ type ChosenBubble = {
 } | {
 	kind: 'editor',
 };
+
+function FooterPanel(props: {chosen: ChosenBubble | null}): JSX.Element {
+	if (props.chosen == null) {
+		return <></>;
+	}
+	switch (props.chosen.kind) {
+		case 'chat': {
+			return <MobileChatRoomPanel room={props.chosen.chatroom} />;
+		}
+		case 'editor': {
+			return <></>;
+		}
+	}
+}
 
 export function Footer(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
@@ -53,19 +67,6 @@ export function Footer(): JSX.Element {
 		}
 	}
 
-	function FooterPanel(): JSX.Element {
-		if (chosen == null) {
-			return <></>;
-		}
-		switch (chosen.kind) {
-			case 'chat': {
-				return <ChatRoomPanelContent room={chosen.chatroom} />;
-			}
-			case 'editor': {
-				return <></>;
-			}
-		}
-	}
 
 	return <>
 		<div
@@ -94,7 +95,7 @@ export function Footer(): JSX.Element {
 			}
 		</div >
 		<div className={`${style.panel} ${getPanelClassName()}`}>
-			<FooterPanel />
+			<FooterPanel chosen={chosen} />
 		</div>
 	</>;
 }
