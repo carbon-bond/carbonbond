@@ -8,6 +8,10 @@
     width: var(--room-width);
 }
 
+.roomHeight {
+    height: var(--room-height);
+}
+
 .bottomPanel {
     position: fixed;
     right: 20px;
