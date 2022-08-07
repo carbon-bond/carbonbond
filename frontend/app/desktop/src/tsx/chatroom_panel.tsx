@@ -177,6 +177,18 @@ type Emoji = {
 
 type InputBar = (props: InputBarProp) => JSX.Element;
 
+function MobileInputBar(props: InputBarProp): JSX.Element {
+	return <div className={style.inputBar}>
+		<input {...props.input_props}
+			ref={props.input_ref}
+			onKeyDown={props.onKeyDown}
+			type="text"
+			placeholder="輸入訊息..."
+			autoFocus
+		/>
+	</div>;
+}
+
 function EmojiInputBar(props: InputBarProp): JSX.Element {
 	const input_ref = props.input_ref;
 	const [extendEmoji, setExtendEmoji] = React.useState(false);
@@ -466,7 +478,7 @@ function MobileSimpleChatRoomPanel(props: { room: SimpleRoomData }): JSX.Element
 			focus_when_click={true}
 			prev_scroll_top={prev_scroll_top}
 			setPrevScrollTop={setPrevScrollTop}
-			input_bar={EmojiInputBar}
+			input_bar={MobileInputBar}
 			initializing={initializing}
 			setInitializing={setInitializing}
 		/>

@@ -42,6 +42,19 @@ export function Footer(): JSX.Element {
 	let [chosen, setChosen_] = React.useState<ChosenBubble | null>(null);
 	const { chatrooms } = BottomPanelState.useContainer();
 
+	React.useEffect(() => {
+		if (
+			chatrooms.find(room => {
+				return chosen
+					&& chosen.kind == 'chat'
+					&& room.kind == RoomKind.Simple
+					&& room.id == chosen.chatroom.id;
+			}) == undefined
+		) {
+			setChosen(null);
+		}
+	}, [chatrooms, chosen]);
+
 	function setChosen(chosen: ChosenBubble | null): void {
 		set_is_init(false);
 		setChosen_(chosen);

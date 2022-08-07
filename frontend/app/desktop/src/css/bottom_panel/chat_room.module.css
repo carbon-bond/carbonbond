@@ -1,5 +1,11 @@
 :root {
-    --input-bar-height: 34px;
+    --input-bar-height: 36px;
+}
+
+@media only screen and (max-width: 600px) {
+    :root {
+        --input-bar-height: 42px;
+    }
 }
 
 .fullHeight {
@@ -56,7 +62,7 @@
             margin-left: 4px;
             border-radius: 10px;
             text-indent: 5px;
-            height: 28px;
+            height: 80%;
         }
     }
 }
