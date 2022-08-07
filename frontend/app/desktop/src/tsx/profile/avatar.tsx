@@ -147,16 +147,24 @@ function EditAvatar(props: { name: string }): JSX.Element {
 	</div>;
 }
 
+function AvatarImage(props: { name: string, className?: string }): JSX.Element {
+	return <img
+		className={props.className ?? style.image}
+		src={`/avatar/${props.name}`}
+		alt={`${props.name}的大頭貼`} />;
+}
+
 function Avatar(props: { is_me: boolean, name: string }): JSX.Element {
 	if (props.is_me) {
 		return <EditAvatar name={props.name} />;
 	} else {
 		return <div className={style.avatar}>
-			<img src={`/avatar/${props.name}`} alt={`${props.name}的大頭貼`} />
+			<AvatarImage name={props.name} />
 		</div>;
 	}
 }
 
 export {
+	AvatarImage,
 	Avatar
 };

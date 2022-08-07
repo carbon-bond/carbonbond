@@ -28,7 +28,7 @@ export function PanelMain(props: { option: Option, onLinkClick: () => void }): J
 		case Option.Browse:
 			return <PanelWrap><BrowseBar onLinkClick={props.onLinkClick} /></PanelWrap>;
 		case Option.Chat:
-			return <PanelWrap><ChatBar /></PanelWrap>;
+			return <PanelWrap><ChatBar onChatUnitClick={props.onLinkClick} /></PanelWrap>;
 		// case Option.DiscoverFriend:
 			// return <PanelWrap><DiscoverFriendBar /></PanelWrap>;
 		case Option.Draft:

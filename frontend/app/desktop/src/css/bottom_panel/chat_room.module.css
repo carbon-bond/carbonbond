@@ -1,5 +1,73 @@
-.chatPanel {
+:root {
+    --input-bar-height: 36px;
+}
+
+@media only screen and (max-width: 600px) {
+    :root {
+        --input-bar-height: 42px;
+    }
+}
+
+.fullHeight {
+    height: 100%;
+}
+
+.panelMargin {
     margin-left: 10px;
+}
+
+.roomContent {
+    display: flex;
+    flex-direction: column;
+    & .messages {
+        padding: 4px;
+        background: white;
+        border: 1px #DDDDDD solid;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: scroll;
+        overscroll-behavior: contain;
+    }
+
+    & .inputBar {
+        background: #F1F1F1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: var(--input-bar-height);
+        padding-right: 4px;
+        position: relative;
+        border-left: var(--border-color) 1px solid;
+        border-right: var(--border-color) 1px solid;
+        & .nonText {
+            cursor: pointer;
+            font-size: 22px;
+            margin-left: 4px;
+            & .emojiPicker {
+                position: absolute;
+                bottom: 40px;
+                transform: translateX(-50%);
+            }
+            & .loading {
+                position: absolute;
+                bottom: 40px;
+                background: white;
+                border: 1px #888888 solid;
+                transform: translateX(-50%);
+            }
+        }
+        & input {
+            flex-grow: 1;
+            margin-left: 4px;
+            border-radius: 10px;
+            text-indent: 5px;
+            height: 80%;
+        }
+    }
+}
+
+.chatPanel {
     & .panelContent {
         overflow-anchor: none;
         display: flex;
@@ -35,50 +103,6 @@
     }
 }
 
-.messages {
-    width: var(--room-width);
-    height: 350px;
-    padding: 4px;
-    background: white;
-    border: 1px #DDDDDD solid;
-    display: flex;
-    flex-direction: column;
-    overflow: scroll;
-}
-.inputBar {
-    background: #F1F1F1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    height: 34px;
-    padding-right: 4px;
-    position: relative;
-    & .nonText {
-        cursor: pointer;
-        font-size: 22px;
-        margin-left: 4px;
-        & .emojiPicker {
-            position: absolute;
-            bottom: 40px;
-            transform: translateX(-50%);
-        }
-        & .loading {
-            position: absolute;
-            bottom: 40px;
-            background: white;
-            border: 1px #888888 solid;
-            transform: translateX(-50%);
-        }
-    }
-    & input {
-        flex-grow: 1;
-        margin-left: 4px;
-        border-radius: 10px;
-        text-indent: 5px;
-        height: 28px;
-    }
-}
-/* 在 chatContent 之中 */
 .messageBlock {
     margin-bottom: 6px;
     display: flex;

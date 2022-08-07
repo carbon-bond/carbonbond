@@ -1,70 +1,114 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
-import { useSearchParams } from 'react-router-dom';
-import { NotificationState } from '../../global_state/notification';
-import { NumberOver } from '../../components/number_over';
+import { MobileChatRoomPanel } from '../../chatroom_panel';
+import { BottomPanelState, RoomKind, SimpleRoomData } from '../../global_state/bottom_panel';
+import { AllChatState, DirectChatData } from '../../global_state/chat';
 
-export enum FooterOption {
-    Home = '',
-    Notification = 'notification',
-	Editor = 'editor',
-	Chat = 'chat',
-	Account = 'account',
+function ChatBubble(props: {
+	chat: DirectChatData,
+	onClick: () => void,
+}): JSX.Element {
+	return <div
+		onClick={props.onClick}
+		className={`${style.chatBubble} ${props.chat.isUnread() ? style.unread : ''}`}>
+		{props.chat.toAvatar(style.avatar)}
+	</div>;
+}
+
+type ChosenBubble = {
+	kind: 'chat',
+	chatroom: SimpleRoomData,
+} | {
+	kind: 'editor',
 };
 
-export function useCurrentFooter(): FooterOption {
-	let [search_params, _] = useSearchParams();
-	let footer = search_params.get('footer');
-	if (footer == 'editor') {
-		return FooterOption.Editor;
-	} else if (footer == 'notification') {
-		return FooterOption.Notification;
-	} else if (footer == 'chat') {
-		return FooterOption.Chat;
-	} else if (footer == 'account') {
-		return FooterOption.Account;
+function FooterPanel(props: {chosen: ChosenBubble | null}): JSX.Element {
+	if (props.chosen == null) {
+		return <></>;
 	}
-	document.body.style.overflow = 'auto';
-	return FooterOption.Home;
+	switch (props.chosen.kind) {
+		case 'chat': {
+			return <MobileChatRoomPanel room={props.chosen.chatroom} />;
+		}
+		case 'editor': {
+			return <></>;
+		}
+	}
 }
 
 export function Footer(): JSX.Element {
-	let {getNotificationNumber} = NotificationState.useContainer();
-	return <div className={style.footer}>
-		<IconBlock icon={<>🏠</>} current_option={FooterOption.Home} />
-		<IconBlock
-			icon={<NumberOver number={getNotificationNumber(null)}>🔔</NumberOver>}
-			current_option={FooterOption.Notification} />
-		<IconBlock icon={<>✏️</>} current_option={FooterOption.Editor} />
-		<IconBlock icon={<>🗨️</>} current_option={FooterOption.Chat} />
-		<IconBlock icon={<>🐷</>} current_option={FooterOption.Account} />
-	</div>;
-}
+	const { all_chat } = AllChatState.useContainer();
+	let [is_init, set_is_init] = React.useState<boolean>(true);
+	let [chosen, setChosen_] = React.useState<ChosenBubble | null>(null);
+	const { chatrooms } = BottomPanelState.useContainer();
 
-function IconBlock(props: { icon: JSX.Element, current_option: FooterOption }): JSX.Element {
-	const footer_option = useCurrentFooter();
-	let [search_params, setSearchParams] = useSearchParams();
-	let is_current = footer_option == props.current_option;
+	React.useEffect(() => {
+		if (
+			chatrooms.find(room => {
+				return chosen
+					&& chosen.kind == 'chat'
+					&& room.kind == RoomKind.Simple
+					&& room.id == chosen.chatroom.id;
+			}) == undefined
+		) {
+			setChosen(null);
+		}
+	}, [chatrooms, chosen]);
 
-	function onClick(): void {
-		if (is_current) {
-			return;
-		}
-		if (props.current_option == FooterOption.Home) {
-			search_params.delete('footer');
-			document.body.style.overflow = 'auto';
-		} else {
-			search_params.set('footer', props.current_option);
-			document.body.style.overflow = 'hidden';
-		}
-		setSearchParams(search_params);
+	function setChosen(chosen: ChosenBubble | null): void {
+		set_is_init(false);
+		setChosen_(chosen);
 	}
 
-	return <div
-		className={is_current ? `${style.iconBlockSelected} ${style.iconBlock}` : style.iconBlock}
-		onClick={onClick}>
-		<div className={style.icon}>
-			{props.icon}
+	function getPanelClassName(): string {
+		if (is_init) {
+			return style.panelInit;
+		} else if (chosen == null) {
+			return style.panelClose;
+		} else {
+			return style.panelOpen;
+		}
+	}
+
+	function getFooterClassName(): string {
+		if (is_init) {
+			return style.footerInit;
+		} else if (chosen == null) {
+			return style.footerClose;
+		} else {
+			return style.footerOpen;
+		}
+	}
+
+
+	return <>
+		<div
+			className={`${style.footer} ${getFooterClassName()}`}
+		>
+			{
+				chatrooms.
+					reduce((chats: [DirectChatData, SimpleRoomData][], room) => {
+						if (room.kind == RoomKind.Simple) {
+							const chat = all_chat.direct[room.id];
+							chats.push([chat, room]);
+						} else {
+							console.warn('尚不支援含頻道聊天室');
+						}
+						return chats;
+					}, [])
+					.map(([chat, room]) => <ChatBubble key={chat.id} chat={chat} onClick={() => {
+						if (chosen == null
+							|| chosen.kind != 'chat'
+							|| (chosen.kind == 'chat' && chosen.chatroom.id != room.id)) {
+							setChosen({ kind: 'chat', chatroom: room });
+						} else {
+							setChosen(null);
+						}
+					}} />)
+			}
+		</div >
+		<div className={`${style.panel} ${getPanelClassName()}`}>
+			<FooterPanel chosen={chosen} />
 		</div>
-	</div>;
+	</>;
 }

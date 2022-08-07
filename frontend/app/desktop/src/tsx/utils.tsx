@@ -87,7 +87,7 @@ function useInputValue(initialValue: string = '', onChange: (s: string) => void 
 function useScrollBottom(): [React.RefObject<HTMLDivElement>, () => void] {
 	const ref = React.useRef<HTMLDivElement>(null);
 	function scrollToBottom(): void {
-		if (ref != null && ref.current != null) {
+		if (ref?.current) {
 			ref.current.scrollTop = ref.current.scrollHeight;
 		}
 	}

@@ -56,6 +56,7 @@ position: fixed 的 menubar
     .menubar {
         height: 100vh;
         font-size: 28px;
+        z-index: 600;
         & .icon {
             padding: 28px 0px;
         }
@@ -89,5 +90,6 @@ position: fixed 的 menubar
         height: 100vh;
         position: absolute;
         width: 70vw;
+        z-index: 600;
     }
 }
