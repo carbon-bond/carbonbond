@@ -218,6 +218,7 @@
         & .editButton {}
     }
     & .boardCard {
+        margin: 5px 0px;
         width: 100%;
         border: 1px solid var(--border-color);
         padding: 2px;
@@ -228,11 +229,16 @@
         }
         & .boardTitle {
             font-size: 12px;
-            padding: 3px 0px;
+            padding-top: 4px;
+            padding-bottom: 10px;
+        }
+        & .boardStatistics {
+            font-size: 12px;
+            color: var(--light-font-color);
         }
     }
     & .boardCard:hover {
-        background: var(--lighter-gray);
+        background: var(--light-gray);
     }
     & .info {
         & .item {
