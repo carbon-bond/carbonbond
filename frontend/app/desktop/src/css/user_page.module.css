@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     border-bottom: 1px var(--border-color) solid;
 }
 
@@ -11,8 +12,17 @@
 }
 
 .profileActionWrap {
-    width: 150px;
-    padding: 30px 0px;
+    width: 200px;
+    padding: 0px 0px 10px;
+}
+
+@media only screen and (max-width: 600px) {
+    .up {
+        flex-direction: column;
+    }
+    .profileOverviewWrap {
+        width: 100%;
+    }
 }
 
 .account {
@@ -28,16 +38,24 @@
     & .abstract {
         width: 300px;
         margin: 30px 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        & > div:not(:first-child) {
+            margin-top: 10px;
+        }
         & .username {
             font-size: 32px;
         }
         & .sentence {
             font-size: 20px;
+            display: flex;
+            & .words {
+                max-width: 240px;
+                display: inline-block;
+                overflow:hidden; 
+                white-space:nowrap; 
+                text-overflow: ellipsis;
+            }
             & button {
-                margin-left: 15px;
+                margin-left: 10px;
                 font-size: 14px;
             }
         }
@@ -48,6 +66,30 @@
             & button {
                 margin-left: 15px;
                 font-size: 14px;
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .account {
+        height: 120px;
+        margin-bottom: 10px;
+        & .avatarContainer {
+            width: 120px;
+            height: 120px;
+            margin: 0px;
+        }
+        & .abstract {
+            flex: 1;
+            margin: 10px 10px;
+            & .username {
+                font-size: 28px;
+            }
+            & .sentence {
+                & .words {
+                    max-width: 180px;
+                }
             }
         }
     }
@@ -91,24 +133,18 @@
     width: 100%;
     & .links {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         & > :not(:first-child) {
-            margin-top: 10px;
+            margin-left: 10px;
+        }
+        & .linkButton {
+            flex: 1;
+            & button {
+                width: 100%;
+            }
         }
         & button:hover {
             cursor: pointer;
-        }
-        & .personalBoard {
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            padding: 2px;
-            border-radius: 3px;
-        }
-        & .personalBoard:hover {
-            background: var(--lightest-gray);
         }
     }
 }
@@ -198,6 +234,29 @@
             flex-grow: 1;
         }
         & .editButton {}
+    }
+    & .boardCard {
+        margin: 5px 0px;
+        width: 100%;
+        border: 1px solid var(--border-color);
+        padding: 2px;
+        border-radius: 3px;
+        background: var(--lightest-gray);
+        & .boardName {
+            font-size: 16px;
+        }
+        & .boardTitle {
+            font-size: 12px;
+            padding-top: 4px;
+            padding-bottom: 10px;
+        }
+        & .boardStatistics {
+            font-size: 12px;
+            color: var(--light-font-color);
+        }
+    }
+    & .boardCard:hover {
+        background: var(--light-gray);
     }
     & .info {
         & .item {
