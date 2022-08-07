@@ -614,60 +614,31 @@ export function ProfileAction(props: {profile_user: User,
 	</div>;
 }
 
-function ProfileWorks(props: { profile_user: User, user_state: UserStateType }): JSX.Element {
+function ProfileTab(props: {children: JSX.Element[] }): JSX.Element {
 	const [selectTab, setSelectTab] = React.useState<number>(0);
-	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
-
-	React.useEffect(() => {
-		Promise.all([
-			fetchArticles(props.profile_user.user_name),
-		]).then(([more_articles]) => {
-			try {
-				setArticles(more_articles);
-			} catch (err) {
-				toastErr(err);
-			}
-		});
-	}, [props.profile_user.user_name]);
 
 	function handleSelectTab(tabIndex: number): void {
-		switch (tabIndex) {
-			case 0:
-				Promise.all([
-					fetchArticles(props.profile_user.user_name),
-				]).then(([more_articles]) => {
-					try {
-						setArticles(more_articles);
-					} catch (err) {
-						toastErr(err);
-					}
-				});
-				break;
-			case 1:
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			default:
-				break;
-		}
 		setSelectTab(tabIndex);
 	}
 
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
-			<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(0); }}>文章</div>
-			{/* 暫時不顯示一個帳號的所有留言 */}
-			{/* <div className={style.navigateTab + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(1); }}>留言</div> */}
-			<div className={style.navigateTab + (selectTab == 2 ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(2); }}>收藏</div>
+			{props.children.map((tab_item, index) => (
+				<div key={index} className={style.navigateTab + (selectTab == index ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(index); }}>{tab_item.props.title}</div>
+			))}
 		</div>
 		<div className={style.content}>
-			{selectTab == 0 && <Articles articles={articles} />}
-			{/* {selectTab == 1 && <Comments />} */}
-			{selectTab == 2 && <Favorites profile_user={props.profile_user} />}
+			{props.children.map((tab_item, index) => (
+				<div>
+					{selectTab == index ? tab_item.props.element : <></>}
+				</div>
+			))}
 		</div>
 	</div>;
+}
+
+function ProfileTabItem(props: {title: string, element: JSX.Element}): JSX.Element {
+	return props.element;
 }
 
 function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
@@ -756,6 +727,8 @@ function UserPage(): JSX.Element {
 	const [user, setUser] = React.useState<User | null>(null);
 	const { setCurrentLocation } = LocationState.useContainer();
 
+	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
+
 	React.useEffect(() => {
 		API_FETCHER.userQuery.queryUser(user_name).then((user) => {
 			try {
@@ -765,6 +738,16 @@ function UserPage(): JSX.Element {
 			}
 		});
 	}, [user_name, reload]);
+
+	React.useEffect(() => {
+		fetchArticles(user_name).then(articles => {
+			try {
+				setArticles(articles);
+			} catch (err) {
+				toastErr(err);
+			}
+		});
+	}, [user_name]);
 
 	React.useEffect(() => {
 		setCurrentLocation(new UserLocation(user_name));
@@ -784,7 +767,12 @@ function UserPage(): JSX.Element {
 			</div>
 		</div>
 		<div className={style.down}>
-			<ProfileWorks profile_user={user} user_state={user_state} />
+			<div className={style.profileTabWrap}>
+				<ProfileTab>
+					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
+					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
+				</ProfileTab>
+			</div>
 			<div className={style.profileDetailWrap}>
 				<ProfileDetail profile_user={user} />
 			</div>
