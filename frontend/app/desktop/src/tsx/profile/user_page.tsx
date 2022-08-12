@@ -125,22 +125,23 @@ function PersonalBoardCard(props: { board: Board }) : JSX.Element {
 	</div>;
 }
 
-export function ProfileDetail(props: { profile_user: User }): JSX.Element {
+export function ProfileDetail(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>>}): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	let { user_state } = UserState.useContainer();
-	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
-	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
-	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
-	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
 	const [fetching, setFetching] = React.useState(true);
 	const [board, setBoard] = React.useState<Board | null>(null);
 
 	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		try {
 			unwrap(await API_FETCHER.userQuery.updateInformation(introduction, job, city));
-			setIntroduction(introduction);
-			setJob(job);
-			setCity(city);
+			let new_state = produce(props.profile_user, nxt => {
+				if (nxt != null) {
+					nxt.introduction = introduction;
+					nxt.job = job;
+					nxt.city = city;
+				}
+			});
+			props.setProfileUser(new_state);
 			setEditing(false);
 		} catch (err) {
 			toastErr(err);
@@ -149,26 +150,18 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		if (props.profile_user) {
-			setIntroduction(props.profile_user.introduction);
-			setGender(props.profile_user.gender);
-			setJob(props.profile_user.job);
-			setCity(props.profile_user.city);
-
-			API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
-				try {
-					let board = unwrap(res);
-					setBoard(board);
-					console.log('haha');
-				} catch (err) {
-					return Promise.reject(err);
-				}
-			}).catch(err => {
-				console.error(err);
-			}).finally(() => {
-				setFetching(false);
-			});
-		}
+		API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
+			try {
+				let board = unwrap(res);
+				setBoard(board);
+			} catch (err) {
+				return Promise.reject(err);
+			}
+		}).catch(err => {
+			console.error(err);
+		}).finally(() => {
+			setFetching(false);
+		});
 	}, [props.profile_user]);
 
 	function EditModal(props: { introduction: string, gender: string, birth_year: number, job: string, city: string }): JSX.Element {
@@ -235,8 +228,8 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
 			</div>
 			{
-				introduction ? <div className={style.info}>
-					<ShowText text={introduction} />
+				props.profile_user.introduction ? <div className={style.info}>
+					<ShowText text={props.profile_user.introduction} />
 				</div> : <div className={style.noSentence}>
 					尚未設置自我介紹
 				</div>
@@ -249,9 +242,9 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 				</div> : <></>
 			}
 			<div className={style.info}>
-				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
-				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
-				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
+				<div className={style.item}>性別<span className={style.key}>{props.profile_user.gender}</span></div>
+				<div className={style.item}>職業為<span className={style.key}>{props.profile_user.job}</span></div>
+				<div className={style.item}>現居<span className={style.key}>{props.profile_user.city}</span></div>
 			</div>
 			<div className={style.titleCertificate}>
 				<div className={style.item}>已認證稱號：</div>
@@ -264,7 +257,11 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 					))}
 			</div>
 		</div>
-		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
+		<EditModal introduction={props.profile_user.introduction}
+			gender={props.profile_user.gender}
+			birth_year={props.profile_user.birth_year}
+			job={props.profile_user.job}
+			city={props.profile_user.city} />
 	</div>;
 }
 
@@ -830,7 +827,7 @@ function UserPage(): JSX.Element {
 				</ProfileTab>
 			</div>
 			<div className={style.profileDetailWrap}>
-				<ProfileDetail profile_user={user} />
+				<ProfileDetail profile_user={user} setProfileUser={setUser} />
 			</div>
 		</div>
 	</div>;
