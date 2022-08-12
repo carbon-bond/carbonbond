@@ -234,9 +234,13 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 				<div className={style.title}>自我介紹</div>
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
 			</div>
-			<div className={style.info}>
-				<ShowText text={introduction} />
-			</div>
+			{
+				introduction ? <div className={style.info}>
+					<ShowText text={introduction} />
+				</div> : <div className={style.noSentence}>
+					尚未設置自我介紹
+				</div>
+			}
 			{
 				board ? <div className={style.personalBoard}>
 					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
