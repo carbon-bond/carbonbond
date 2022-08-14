@@ -7,16 +7,11 @@ import { ModalButton, ModalWindow } from '../components/modal_window';
 import { isEmail } from '../../ts/regex_util';
 import style from '../../css/header/login_modal.module.css';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
-
-enum Status {
-	ForgetPassword,
-	Login
-};
+import { ModalStatus } from '.';
 
 function LoginStatus(
 	props: {
-		setLogining: (logining: boolean) => void,
-		setStatus: (status: Status) => void
+		setModalStatus: (modal_stauts: ModalStatus | null) => void,
 	}
 ): JSX.Element {
 	const [password_visible, SetPasswordVisible] = React.useState(false);
@@ -26,7 +21,7 @@ function LoginStatus(
 	async function login_request(name: string, password: string): Promise<void> {
 		try {
 			let user = unwrap(await API_FETCHER.userQuery.login(name, password));
-			props.setLogining(false);
+			props.setModalStatus(null);
 			if (user) {
 				setLogin({
 					user_name: user.user_name,
@@ -48,13 +43,13 @@ function LoginStatus(
 		if (e.keyCode == 13) {
 			login_request(name.value, password.value);
 		} else if (e.key == 'Escape') {
-			props.setLogining(false);
+			props.setModalStatus(null);
 		}
 	}
 
 	const buttons: ModalButton[] = [
 		{ text: '登入', handler: () => login_request(name.value, password.value) },
-		{ text: '取消', handler: () => props.setLogining(false) }
+		{ text: '取消', handler: () => props.setModalStatus(null) }
 	];
 
 	function getBody(): JSX.Element {
@@ -65,8 +60,20 @@ function LoginStatus(
 					<input type={password_visible ? 'text' : 'password'} className={style.password} placeholder="🔒 密碼" {...password} onKeyDown={onKeyDown} />
 					<span className={style.eye} onClick={() => {SetPasswordVisible(!password_visible);}}>{password_visible ? '🙈' : '👁️'}</span>
 				</div>
-				<div className={style.fogetPassword} onClick={() => {props.setStatus(Status.ForgetPassword);}}>忘記密碼？</div>
+				<div
+					className={style.fogetPassword}
+					onClick={() => { props.setModalStatus(ModalStatus.ForgetPassword); }}>
+					忘記密碼？
+				</div>
 			</div>
+		</div>;
+	}
+
+	function getSecondBody(): JSX.Element {
+		return <div
+			className={style.noAccount}
+			onClick={() => { props.setModalStatus(ModalStatus.Signup); }}>
+			還沒有帳號嗎？點此創建
 		</div>;
 	}
 
@@ -75,16 +82,17 @@ function LoginStatus(
 		body={getBody()}
 		buttons={buttons}
 		visible={true}
-		setVisible={props.setLogining}
+		setVisible={() => {props.setModalStatus(null);}}
+		second_body={getSecondBody()}
 	/>;
 }
 
 function ForgetPasswordStatus(
 	props: {
-		setLogining: (logining: boolean) => void,
-		setStatus: (status: Status) => void
+		setModalStatus: (modal_stauts: ModalStatus | null) => void,
 	}
 ): JSX.Element {
+	console.log('fogot');
 	const [sent, setSent] = React.useState(false);
 	let email = useInputValue('').input_props;
 	async function reset_password_request(email: string): Promise<void> {
@@ -102,7 +110,11 @@ function ForgetPasswordStatus(
 
 	function getBody(): JSX.Element {
 		return <div className={style.loginModal}>
-			<input type="text" placeholder="😎 信箱" autoFocus {...email} />
+			<input
+				className={style.inputContainer}
+				type="text"
+				placeholder="📧 信箱"
+				autoFocus {...email} />
 			{
 				sent ?
 					<p>已寄出重置密碼信</p> :
@@ -112,30 +124,21 @@ function ForgetPasswordStatus(
 	}
 	const buttons: ModalButton[] = [
 		{ text: sent ? '再一次' : '重置密碼', handler: () => reset_password_request(email.value) },
-		{ text: '返回', handler: () => props.setStatus(Status.Login) }
+		{ text: '返回', handler: () => props.setModalStatus(ModalStatus.Login) }
 	];
 	return <ModalWindow
 		title="找回密碼"
 		body={getBody()}
 		buttons={buttons}
 		visible={true}
-		setVisible={props.setLogining}
+		setVisible={() => {props.setModalStatus(null);}}
 	/>;
 }
 
-export function LoginModal(props: { setLogining: (logining: boolean) => void }): JSX.Element {
-	let ref_all = React.useRef(null);
-	useOnClickOutside(ref_all, () => { props.setLogining(false); });
-	const [status, setStatus] = React.useState<Status>(Status.Login);
-	switch (status) {
-		case Status.Login:
-			return <LoginStatus {...props} setStatus={setStatus}/>;
-		case Status.ForgetPassword:
-			return <ForgetPasswordStatus {...props} setStatus={setStatus}/>;
-	}
-}
-
-export function SignupModal(props: {setSignuping: (signing: boolean) => void}): JSX.Element {
+export function SignupStatus(
+	props: {
+		setModalStatus: (modal_stauts: ModalStatus | null) => void,
+	}): JSX.Element {
 	let email = useInputValue('').input_props;
 	async function signup_request(email: string): Promise<void> {
 		if (!isEmail(email)) {
@@ -148,19 +151,19 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 			toastErr(err);
 		}
 		toast(`註冊信已送出，請至 ${email} 查收`);
-		props.setSignuping(false);
+		props.setModalStatus(null);
 	}
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
 		if (e.keyCode == 13) {
 			signup_request(email.value);
 		} else if (e.key == 'Escape') {
-			props.setSignuping(false);
+			props.setModalStatus(null);
 		}
 	}
 
 	const buttons: ModalButton[] = [
 		{ text: '註冊', handler: () => signup_request(email.value) },
-		{ text: '取消', handler: () => props.setSignuping(false) }
+		{ text: '取消', handler: () => props.setModalStatus(null) }
 	];
 
 	function getBody(): JSX.Element {
@@ -182,6 +185,25 @@ export function SignupModal(props: {setSignuping: (signing: boolean) => void}): 
 		body={getBody()}
 		buttons={buttons}
 		visible={true}
-		setVisible={props.setSignuping}
+		setVisible={() => {props.setModalStatus(null);}}
 	/>;
+}
+
+export function LoginModal(
+	props: {
+		setModalStatus: (modal_stauts: ModalStatus | null) => void,
+		modal_status: ModalStatus
+	}
+): JSX.Element {
+	let ref_all = React.useRef(null);
+	useOnClickOutside(ref_all, () => { props.setModalStatus(null); });
+	console.log(props.modal_status);
+	switch (props.modal_status) {
+		case ModalStatus.Signup:
+			return <SignupStatus {...props} />;
+		case ModalStatus.Login:
+			return <LoginStatus {...props}/>;
+		case ModalStatus.ForgetPassword:
+			return <ForgetPasswordStatus {...props}/>;
+	}
 }

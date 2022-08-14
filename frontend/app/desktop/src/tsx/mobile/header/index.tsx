@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router';
 import { LoginModal } from '../../header/login_modal';
 import { PanelMain, PanelMenu, Option } from '../../left_panel';
 import { STORAGE_NAME } from '../../../ts/constants';
+import { ModalStatus } from '../../header';
 
 // 當左邊欄展開時，給原本的畫面加一層濾鏡
 function Filter(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
@@ -52,7 +53,7 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 function Header(): JSX.Element {
 	const { current_location } = LocationState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
-	let [logining, setLogining] = React.useState(false);
+	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
 	const navigate = useNavigate();
 
 	let title = current_location ? current_location.show_in_header() : '所有看板';
@@ -73,7 +74,7 @@ function Header(): JSX.Element {
 					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
 					<SearchBar cur_board={current_location ? current_location.show_in_header() : ''} hide_select_board/>
 				</div>
-				{ logining ? <LoginModal setLogining={setLogining}/> : null }
+				{ modal_status ? <LoginModal setModalStatus={setModalStatus} modal_status={modal_status}/> : null }
 			</div>
 		</div>
 	);
