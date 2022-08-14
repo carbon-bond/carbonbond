@@ -32,6 +32,7 @@
     color: red;
 }
 .body {
+    border: var(--border-color) 1px solid;
     background: var(--background-color);
     padding: 0px 20px 10px;
 }

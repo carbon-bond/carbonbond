@@ -38,14 +38,6 @@
                 width: 40px;
             }
         }
-        & .location {
-            color: var(--light-font-color);
-            font-size: 18px;
-            margin-left: 10px;
-            cursor: pointer;
-            width: auto;
-            white-space: nowrap;
-        }
     }
     & .middleSet {
         flex: 1;
@@ -60,6 +52,7 @@
             display: flex;
             align-self: center;
             justify-content: center;
+            align-items: center;
             height: 100%;
             width: 100%;
             & .userInfo:hover {
@@ -73,10 +66,6 @@
                 display: flex;
                 align-self: center;
                 align-items: center;
-                & img {
-                    height: 48px;
-                    width: 48px;
-                }
                 & .userName {
                     margin-left: 10px;
                     color: var(--font-color);
@@ -112,17 +101,39 @@
                 text-align: center;
                 align-items: center;
                 display: flex;
-                padding-left: 20px;
-                padding-right: 20px;
+                padding-left: 18px;
+                padding-right: 18px;
+                @media only screen and (max-width: 600px) {
+                    height: 65%;
+                    font-size: 14px;
+                    border-radius: 8px;
+                    background-color: var(--theme-color);
+                    color: var(--background-color);
+                    margin-right: 10px;
+                }
             }
         }
     }
 }
+.location {
+    color: var(--light-font-color);
+    font-size: 18px;
+    margin-left: 18px;
+    cursor: pointer;
+    width: auto;
+    white-space: nowrap;
+}
 .space {
     min-width: 25px;
 }
-
-
+.avatar {
+    height: 90%;
+    width: auto;
+    margin-right: 8px;
+    @media only screen and (max-width: 600px) {
+        border-radius: 100%;
+    }
+}
 .icon {
     height: 100%;
     cursor: pointer;

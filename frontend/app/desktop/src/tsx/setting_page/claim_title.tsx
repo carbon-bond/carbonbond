@@ -79,7 +79,7 @@ export function ClaimLawerTitle(props: {setSignuping: (signing: boolean) => void
 	}
 
 	function getBody(): JSX.Element {
-		return <div className={style.signupModal}>
+		return <div className={style.claimTitleModal}>
 			<div className={style.description}>
 				輸入關鍵字後按下查詢，本站將使用法務部律師查詢系統搜尋您的個人資料。
 			</div>

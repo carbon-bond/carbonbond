@@ -11,6 +11,7 @@ export function ModalWindow(props: {
 	title: string,
 	body: JSX.Element,
 	buttons: ModalButton[],
+	second_body?: JSX.Element
 	visible: boolean,
 	setVisible: Function,
 	onCancel?: Function | undefined
@@ -26,9 +27,8 @@ export function ModalWindow(props: {
 			if (props.onCancel) {props.onCancel();}
 			props.setVisible(false);
 		}}
-		className={'ModalWindow--Content'}
 		style={{
-			overlay: { zIndex: 200 },
+			overlay: { zIndex: 2000 },
 			content: {
 				position: 'absolute',
 				top: '50%',
@@ -57,6 +57,7 @@ export function ModalWindow(props: {
 			<div className={style.buttonBar}>
 				{buttons}
 			</div>
+			{props.second_body ?? <></>}
 		</div>
 	</ReactModal>;
 }
@@ -67,7 +68,7 @@ export function SimpleModal(props: { close: () => void, children: React.ReactNod
 		isOpen={true}
 		onRequestClose={() => props.close()}
 		style={{
-			overlay: { zIndex: 200 },
+			overlay: { zIndex: 2000 },
 			content: {
 				position: 'absolute',
 				top: '50%',

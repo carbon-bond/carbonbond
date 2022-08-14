@@ -5,11 +5,12 @@ import left_panel_style from '../../../css/mobile/left_panel.module.css';
 
 import { ArticleLocation, LocationState } from '../../global_state/location';
 
-import { SearchBar } from '../../header/search_bar';
 import { useNavigate } from 'react-router';
 import { LoginModal } from '../../header/login_modal';
 import { PanelMain, PanelMenu, Option } from '../../left_panel';
 import { STORAGE_NAME } from '../../../ts/constants';
+import { ModalStatus } from '../../header';
+import { UserState } from '../../global_state/user';
 
 // 當左邊欄展開時，給原本的畫面加一層濾鏡
 function Filter(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
@@ -52,8 +53,9 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 function Header(): JSX.Element {
 	const { current_location } = LocationState.useContainer();
 	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
-	let [logining, setLogining] = React.useState(false);
+	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
 	const navigate = useNavigate();
+	const { user_state } = UserState.useContainer();
 
 	let title = current_location ? current_location.show_in_header() : '所有看板';
 	function routeToBoard(): void {
@@ -69,11 +71,19 @@ function Header(): JSX.Element {
 				<div className={style.leftSet} onClick={() => setExpandingMenu(true)}>
 					☰
 				</div>
-				<div className={style.rightSet}>
+				<div className={style.middleSet}>
 					<div className={style.location} style={{ fontSize: 14 }} onClick={routeToBoard}>{title}</div>
-					<SearchBar cur_board={current_location ? current_location.show_in_header() : ''} hide_select_board/>
 				</div>
-				{ logining ? <LoginModal setLogining={setLogining}/> : null }
+				<div className={style.rightSet}>
+					<div className={style.wrap}>
+						{
+							user_state.login
+								? <img className={style.avatar} src={`/avatar/${user_state.user_name}`} />
+								: user_state.fetching ? <></> : <div className={style.login} onClick={() => setModalStatus(ModalStatus.Login)}>登入</div>
+						}
+					</div>
+				</div>
+				{ modal_status ? <LoginModal setModalStatus={setModalStatus} modal_status={modal_status}/> : null }
 			</div>
 		</div>
 	);
