@@ -28,7 +28,7 @@ export function ModalWindow(props: {
 		}}
 		className={'ModalWindow--Content'}
 		style={{
-			overlay: { zIndex: 200 },
+			overlay: { zIndex: 2000 },
 			content: {
 				position: 'absolute',
 				top: '50%',
@@ -67,7 +67,7 @@ export function SimpleModal(props: { close: () => void, children: React.ReactNod
 		isOpen={true}
 		onRequestClose={() => props.close()}
 		style={{
-			overlay: { zIndex: 200 },
+			overlay: { zIndex: 2000 },
 			content: {
 				position: 'absolute',
 				top: '50%',

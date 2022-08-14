@@ -101,7 +101,7 @@ function ForgetPasswordStatus(
 	}
 
 	function getBody(): JSX.Element {
-		return <div className={style.signupModal}>
+		return <div className={style.loginModal}>
 			<input type="text" placeholder="😎 信箱" autoFocus {...email} />
 			{
 				sent ?

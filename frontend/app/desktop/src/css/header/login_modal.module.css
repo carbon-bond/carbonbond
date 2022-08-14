@@ -1,5 +1,6 @@
 .loginModal {
-    width: 300px;
+    width: 100%;
+    max-width: 300px;
     height: 150px;
     display: flex;
     flex-direction: column;
@@ -45,7 +46,7 @@
     }
 }
 
-.signupModal {
+.claimTitleModal {
     width: 360px;
     height: 450px;
     position: relative;
