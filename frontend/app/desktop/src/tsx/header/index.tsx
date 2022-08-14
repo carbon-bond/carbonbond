@@ -106,7 +106,7 @@ function Header(): JSX.Element {
 						forced_expanded={expanding_user}
 						button={
 							<div className={style.userInfo} onClick={() => setExpandingUser(!expanding_user)}>
-								<img src={`/avatar/${user_state.user_name}`} />
+								<img className={style.avatar} src={`/avatar/${user_state.user_name}`} />
 								<div className={style.userName}>{user_state.user_name}</div>
 								<div className={style.energy}>☘ {user_state.energy}</div>
 							</div>}

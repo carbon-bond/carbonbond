@@ -1,5 +1,6 @@
 .wrap {
     position: relative;
+    height: 100%;
     & .button {
         height: 100%;
         cursor: pointer;
