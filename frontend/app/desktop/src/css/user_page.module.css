@@ -142,6 +142,9 @@
             & button {
                 width: 100%;
             }
+            & .sentenceEditComponent {
+                max-width: 50%;
+            }
         }
         & button:hover {
             cursor: pointer;

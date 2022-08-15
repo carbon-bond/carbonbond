@@ -26,7 +26,7 @@ import { KeepAlive } from 'react-activation';
 function Sentence(props: {sentence: string}): JSX.Element {
 	if (props.sentence == '') {
 		return <div className={style.noSentence}>
-			尚未設置一句話介紹
+			尚無一句話介紹
 		</div>;
 	} else {
 		return <div className={style.sentence}>{props.sentence}</div>;
@@ -191,7 +191,7 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 				props.profile_user.introduction ? <div className={style.info}>
 					<ShowText text={props.profile_user.introduction} />
 				</div> : <div className={style.noSentence}>
-					尚未設置自我介紹
+					尚無自我介紹
 				</div>
 			}
 			{
@@ -529,7 +529,7 @@ function SentenceEditModal(props: {
 	buttons.push({ text: '取消', handler: () => onCancel() });
 
 	return <ModalWindow
-		title={'✏ 編輯一句話'}
+		title={'✏ 編輯'}
 		body={getBody()}
 		buttons={buttons}
 		visible={props.visible}
@@ -542,7 +542,7 @@ function SentenceEditModal(props: {
 function SentenceEditComponent(props: {profile_user: User, setSentence: ((sentence: string) => void)}) : JSX.Element {
 	const [visible, setVisible] = React.useState<boolean>(false);
 	return <div className={style.sentenceEditComponent}>
-		<button onClick={() => setVisible(true)}>✏ 編輯一句話</button>
+		<button onClick={() => setVisible(true)}>✏ 編輯</button>
 		<SentenceEditModal visible={visible} setVisible={setVisible} {...props}/>
 	</div>;
 }
