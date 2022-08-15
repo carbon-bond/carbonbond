@@ -15,7 +15,7 @@ import { SearchBar } from './search_bar';
 import { ArticleLocation, LocationState } from '../global_state/location';
 import { NotificationIcon } from './notification';
 import { DropDown } from '../components/drop_down';
-import { SignupModal, LoginModal } from './login_modal';
+import { LoginModal } from './login_modal';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { NotificationQuality } from '../global_state/notification';
 
@@ -31,9 +31,14 @@ export function Row<T>(props: { children: T, onClick?: () => void }): JSX.Elemen
 	</div>;
 }
 
+export enum ModalStatus {
+	ForgetPassword,
+	Login,
+	Signup,
+};
+
 function Header(): JSX.Element {
-	const [logining, setLogining] = React.useState(false);
-	const [signuping, setSignuping] = React.useState(false);
+	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
 	const { user_state, setLogout } = UserState.useContainer();
 	const { current_location } = LocationState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
@@ -101,7 +106,7 @@ function Header(): JSX.Element {
 						forced_expanded={expanding_user}
 						button={
 							<div className={style.userInfo} onClick={() => setExpandingUser(!expanding_user)}>
-								<img src={`/avatar/${user_state.user_name}`} />
+								<img className={style.avatar} src={`/avatar/${user_state.user_name}`} />
 								<div className={style.userName}>{user_state.user_name}</div>
 								<div className={style.energy}>☘ {user_state.energy}</div>
 							</div>}
@@ -111,8 +116,8 @@ function Header(): JSX.Element {
 			</>;
 		} else {
 			return <div className={style.wrap}>
-				<div className={style.login} onClick={() => setLogining(true)}>登入 🔫</div>
-				<div className={style.login} onClick={() => setSignuping(true)}>註冊 ⭐</div>
+				<div className={style.login} onClick={() => setModalStatus(ModalStatus.Login)}>登入 🔫</div>
+				<div className={style.login} onClick={() => setModalStatus(ModalStatus.Signup)}>註冊 ⭐</div>
 			</div>;
 		}
 	}
@@ -126,8 +131,7 @@ function Header(): JSX.Element {
 
 	return (
 		<div className={`header ${style.header}`}>
-			{logining ? <LoginModal setLogining={setLogining} /> : null}
-			{signuping ? <SignupModal setSignuping={setSignuping}/> : null}
+			{modal_status != null ? <LoginModal setModalStatus={setModalStatus} modal_status={modal_status} /> : <></>}
 			<div className={style.container}>
 				<div className={style.leftSet}>
 					<Link to="/app">

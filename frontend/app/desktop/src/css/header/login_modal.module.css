@@ -1,6 +1,7 @@
 .loginModal {
-    width: 300px;
-    height: 150px;
+    width: 100%;
+    max-width: 300px;
+    padding: 25px 0px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -38,14 +39,25 @@
     }
     & .fogetPassword {
         margin-top: 3px;
-        color: var(--light-font-color);
+        color: var(--link-color);
         font-size: 12px;
         text-decoration: underline;
         cursor: pointer;
     }
 }
+.noAccount {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    color: var(--link-color);
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+}
 
-.signupModal {
+.claimTitleModal {
     width: 360px;
     height: 450px;
     position: relative;
