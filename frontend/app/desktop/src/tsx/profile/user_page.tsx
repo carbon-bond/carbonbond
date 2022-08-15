@@ -512,8 +512,8 @@ function SentenceEditModal(props: {
 
 	async function onChangeSentence(sentence: string): Promise<void> {
 		try {
-			await API_FETCHER.userQuery.updateSentence(input_props.value);
-			props.setSentence(input_props.value);
+			await API_FETCHER.userQuery.updateSentence(sentence);
+			props.setSentence(sentence);
 		} catch (err) {
 			toastErr(err);
 		}
@@ -563,10 +563,10 @@ function ProfileOverview(props: { profile_user: User,
 			<div className={style.username}>{props.profile_user.user_name}</div>
 			<Sentence sentence={props.profile_user.sentence} />
 			<ProfileAction profile_user={props.profile_user}
-					user_state={props.user_state}
-					reload={props.reload}
-					setReload={props.setReload}
-					setProfileUser={props.setProfileUser}/>
+				user_state={props.user_state}
+				reload={props.reload}
+				setReload={props.setReload}
+				setProfileUser={props.setProfileUser}/>
 		</div>
 	</div>;
 }
