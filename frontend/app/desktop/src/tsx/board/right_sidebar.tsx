@@ -173,7 +173,7 @@ function UserIntroduction(props: {article: Article}): JSX.Element {
 				{
 					user ?
 						<div className={style.action}>
-							<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload}/>
+							<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload} setProfileUser={setUser}/>
 						</div>
 						: <></>
 				}
@@ -196,7 +196,7 @@ function UserIntroduction(props: {article: Article}): JSX.Element {
 			{
 				user ?
 					<div className={style.information}>
-						<ProfileDetail profile_user={user} />
+						<ProfileDetail profile_user={user} setProfileUser={setUser}/>
 					</div>
 					: <></>
 			}

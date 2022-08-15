@@ -23,50 +23,10 @@ import { Link, useParams } from 'react-router-dom';
 import { KeepAlive } from 'react-activation';
 
 
-function EditSentence(props: { sentence: string, setSentence: (sentence: string) => void }): JSX.Element {
-	const [is_editing, setIsEditing] = React.useState<boolean>(false);
-	const { input_props, setValue } = useInputValue(props.sentence);
-	React.useEffect(() => {
-		setValue(props.sentence);
-	}, [props.sentence, setValue]);
-
-	async function updateSentence(): Promise<void> {
-		try {
-			await API_FETCHER.userQuery.updateSentence(input_props.value);
-			props.setSentence(input_props.value);
-		} catch (err) {
-			toastErr(err);
-		}
-		setIsEditing(false);
-	}
-
-	if (is_editing) {
-		return <div>
-			<input {...input_props} type="text" autoFocus />
-			<div>
-				<button onClick={updateSentence}>確定</button>
-				<button onClick={() => { setValue(props.sentence); setIsEditing(false); }}>取消</button>
-			</div>
-		</div>;
-	} else if (props.sentence == '') {
+function Sentence(props: {sentence: string}): JSX.Element {
+	if (props.sentence == '') {
 		return <div className={style.noSentence}>
-			尚未設置一句話介紹
-			<button onClick={() => setIsEditing(true)}>✏</button>
-		</div>;
-	} else {
-		return <div className={style.sentence}>
-			<span className={style.words}>{props.sentence}</span>
-			<button onClick={() => setIsEditing(true)}>✏</button>
-		</div>;
-	}
-}
-
-function Sentence(props: { is_me: boolean, sentence: string, setSentence: ((sentence: string) => void) | null}): JSX.Element {
-	if (props.is_me && props.setSentence) {
-		return <EditSentence sentence={props.sentence} setSentence={props.setSentence} />;
-	} else if (props.sentence == '') {
-		return <div className={style.noSentence}>
-			尚未設置一句話介紹
+			尚無一句話介紹
 		</div>;
 	} else {
 		return <div className={style.sentence}>{props.sentence}</div>;
@@ -125,22 +85,23 @@ function PersonalBoardCard(props: { board: Board }) : JSX.Element {
 	</div>;
 }
 
-export function ProfileDetail(props: { profile_user: User }): JSX.Element {
+export function ProfileDetail(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>>}): JSX.Element {
 	const [editing, setEditing] = React.useState(false);
 	let { user_state } = UserState.useContainer();
-	const [introduction, setIntroduction] = React.useState<string>(props.profile_user ? props.profile_user.introduction : '');
-	const [gender, setGender] = React.useState<string>(props.profile_user ? props.profile_user.gender : '');
-	const [job, setJob] = React.useState<string>(props.profile_user ? props.profile_user.job : '');
-	const [city, setCity] = React.useState<string>(props.profile_user ? props.profile_user.city : '');
 	const [fetching, setFetching] = React.useState(true);
 	const [board, setBoard] = React.useState<Board | null>(null);
 
 	async function updateInformation(introduction: string, job: string, city: string): Promise<{}> {
 		try {
 			unwrap(await API_FETCHER.userQuery.updateInformation(introduction, job, city));
-			setIntroduction(introduction);
-			setJob(job);
-			setCity(city);
+			let new_state = produce(props.profile_user, nxt => {
+				if (nxt != null) {
+					nxt.introduction = introduction;
+					nxt.job = job;
+					nxt.city = city;
+				}
+			});
+			props.setProfileUser(new_state);
 			setEditing(false);
 		} catch (err) {
 			toastErr(err);
@@ -149,26 +110,18 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 	}
 
 	React.useEffect(() => {
-		if (props.profile_user) {
-			setIntroduction(props.profile_user.introduction);
-			setGender(props.profile_user.gender);
-			setJob(props.profile_user.job);
-			setCity(props.profile_user.city);
-
-			API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
-				try {
-					let board = unwrap(res);
-					setBoard(board);
-					console.log('haha');
-				} catch (err) {
-					return Promise.reject(err);
-				}
-			}).catch(err => {
-				console.error(err);
-			}).finally(() => {
-				setFetching(false);
-			});
-		}
+		API_FETCHER.boardQuery.queryBoard(props.profile_user.user_name, BoardType.Personal).then(res => {
+			try {
+				let board = unwrap(res);
+				setBoard(board);
+			} catch (err) {
+				return Promise.reject(err);
+			}
+		}).catch(err => {
+			console.error(err);
+		}).finally(() => {
+			setFetching(false);
+		});
 	}, [props.profile_user]);
 
 	function EditModal(props: { introduction: string, gender: string, birth_year: number, job: string, city: string }): JSX.Element {
@@ -234,9 +187,13 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 				<div className={style.title}>自我介紹</div>
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
 			</div>
-			<div className={style.info}>
-				<ShowText text={introduction} />
-			</div>
+			{
+				props.profile_user.introduction ? <div className={style.info}>
+					<ShowText text={props.profile_user.introduction} />
+				</div> : <div className={style.noSentence}>
+					尚無自我介紹
+				</div>
+			}
 			{
 				board ? <div className={style.personalBoard}>
 					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
@@ -245,9 +202,9 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 				</div> : <></>
 			}
 			<div className={style.info}>
-				<div className={style.item}>性別<span className={style.key}>{gender}</span></div>
-				<div className={style.item}>職業為<span className={style.key}>{job}</span></div>
-				<div className={style.item}>現居<span className={style.key}>{city}</span></div>
+				<div className={style.item}>性別<span className={style.key}>{props.profile_user.gender}</span></div>
+				<div className={style.item}>職業為<span className={style.key}>{props.profile_user.job}</span></div>
+				<div className={style.item}>現居<span className={style.key}>{props.profile_user.city}</span></div>
 			</div>
 			<div className={style.titleCertificate}>
 				<div className={style.item}>已認證稱號：</div>
@@ -260,7 +217,11 @@ export function ProfileDetail(props: { profile_user: User }): JSX.Element {
 					))}
 			</div>
 		</div>
-		<EditModal introduction={introduction} gender={gender} birth_year={props.profile_user ? props.profile_user.birth_year : 0} job={job} city={city} />
+		<EditModal introduction={props.profile_user.introduction}
+			gender={props.profile_user.gender}
+			birth_year={props.profile_user.birth_year}
+			job={props.profile_user.job}
+			city={props.profile_user.city} />
 	</div>;
 }
 
@@ -532,21 +493,65 @@ function RelationEditComponent(props: {target_user_id: number,
 	</div>;
 }
 
-function ProfileOverview(props: { profile_user: User, setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null,
+function SentenceEditModal(props: {
+			profile_user: User,
+			visible: boolean,
+			setVisible: React.Dispatch<React.SetStateAction<boolean>>,
+			setSentence: ((sentence: string) => void)}) : JSX.Element {
+	const { input_props, setValue } = useInputValue(props.profile_user.sentence);
+
+	React.useEffect(() => {
+		setValue(props.profile_user.sentence);
+	}, [props.profile_user.sentence, setValue]);
+
+	function getBody(): JSX.Element {
+		return <div>
+			<input {...input_props} type="text" autoFocus />
+		</div>;
+	}
+
+	async function onChangeSentence(sentence: string): Promise<void> {
+		try {
+			await API_FETCHER.userQuery.updateSentence(sentence);
+			props.setSentence(sentence);
+		} catch (err) {
+			toastErr(err);
+		}
+		props.setVisible(false);
+	}
+
+	function onCancel(): void {
+		props.setVisible(false);
+	}
+
+	let buttons: ModalButton[] = [];
+	buttons.push({ text: '儲存', handler: () => onChangeSentence(input_props.value) });
+	buttons.push({ text: '取消', handler: () => onCancel() });
+
+	return <ModalWindow
+		title={'✏ 編輯'}
+		body={getBody()}
+		buttons={buttons}
+		visible={props.visible}
+		setVisible={props.setVisible}
+		onCancel={onCancel}
+	/>;
+}
+
+
+function SentenceEditComponent(props: {profile_user: User, setSentence: ((sentence: string) => void)}) : JSX.Element {
+	const [visible, setVisible] = React.useState<boolean>(false);
+	return <div className={style.sentenceEditComponent}>
+		<button onClick={() => setVisible(true)}>✏ 編輯</button>
+		<SentenceEditModal visible={visible} setVisible={setVisible} {...props}/>
+	</div>;
+}
+
+function ProfileOverview(props: { profile_user: User,
+		setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null,
 		user_state: UserStateType,
 		reload: number,
 		setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
-
-	function setSentence(sentence: string): void {
-		let new_state = produce(props.profile_user, nxt => {
-			if (nxt != null) {
-				nxt.sentence = sentence;
-			}
-		});
-		if (props.setProfileUser) {
-			props.setProfileUser(new_state);
-		}
-	}
 
 	const is_me = props.user_state.login && props.user_state.user_name == props.profile_user.user_name;
 
@@ -556,8 +561,12 @@ function ProfileOverview(props: { profile_user: User, setProfileUser: React.Disp
 		</div>
 		<div className={style.abstract}>
 			<div className={style.username}>{props.profile_user.user_name}</div>
-			<Sentence is_me={is_me} sentence={props.profile_user.sentence} setSentence={props.setProfileUser ? setSentence : null} />
-			<ProfileAction profile_user={props.profile_user} user_state={props.user_state} reload={props.reload} setReload={props.setReload}/>
+			<Sentence sentence={props.profile_user.sentence} />
+			<ProfileAction profile_user={props.profile_user}
+				user_state={props.user_state}
+				reload={props.reload}
+				setReload={props.setReload}
+				setProfileUser={props.setProfileUser}/>
 		</div>
 	</div>;
 }
@@ -609,7 +618,9 @@ export function ProfileRelation(props: {profile_user: User,
 
 export function ProfileAction(props: {profile_user: User,
 	user_state: UserStateType,
-	reload: number, setReload: React.Dispatch<React.SetStateAction<number>> }): JSX.Element {
+	reload: number,
+	setReload: React.Dispatch<React.SetStateAction<number>>
+	setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null}): JSX.Element {
 	const [relation_type, setRelationType] = React.useState<UserRelationKind>(UserRelationKind.None);
 	const [relation_public, setRelationPublic] = React.useState<boolean>(false);
 	const { addRoom } = BottomPanelState.useContainer();
@@ -634,6 +645,17 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}, [props.profile_user, props.user_state.login, props.reload]);
 
+	function setSentence(sentence: string): void {
+		let new_state = produce(props.profile_user, nxt => {
+			if (nxt != null) {
+				nxt.sentence = sentence;
+			}
+		});
+		if (props.setProfileUser) {
+			props.setProfileUser(new_state);
+		}
+	}
+
 	function onStartChat(): void {
 		const user_name = props.profile_user.user_name;
 		const user_id = props.profile_user.id;
@@ -647,12 +669,17 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}
 
-	if (!props.user_state.login || props.user_state.user_name == props.profile_user.user_name) {
+	if (!props.user_state.login) {
 		return <></>;
 	}
 
 	return <div className={style.operation}>
-		<div className={style.links}>
+		{ props.user_state.user_name == props.profile_user.user_name ? <div className={style.links}>
+			<div className={style.linkButton}>
+				<SentenceEditComponent profile_user={props.profile_user}
+					setSentence={setSentence}/>
+			</div>
+		</div> : <div className={style.links}>
 			<div className={style.linkButton}>
 				<RelationEditComponent target_user_id={props.profile_user.id}
 					relation_type={relation_type} setRelationType={setRelationType}
@@ -662,7 +689,7 @@ export function ProfileAction(props: {profile_user: User,
 			<div className={style.linkButton}>
 				<button onClick={onStartChat}>🗨️ 私訊</button>
 			</div>
-		</div>
+		</div> }
 	</div>;
 }
 
@@ -826,7 +853,7 @@ function UserPage(): JSX.Element {
 				</ProfileTab>
 			</div>
 			<div className={style.profileDetailWrap}>
-				<ProfileDetail profile_user={user} />
+				<ProfileDetail profile_user={user} setProfileUser={setUser} />
 			</div>
 		</div>
 	</div>;
