@@ -84,15 +84,6 @@
                     }
                     background-color: var(--background-color);
                     font-size: 18px;
-                    & .row:hover {
-                        background-color: var(--hover-background-color);
-                    }
-                    & .row {
-                        padding: 5px 0px;
-                        cursor: pointer;
-                        display: flex;
-                        flex-wrap: wrap;
-                    }
                 }
             }
             & .login {
@@ -123,8 +114,17 @@
     width: auto;
     white-space: nowrap;
 }
-.space {
-    min-width: 25px;
+.row {
+    padding: 5px 0px;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    & .space {
+        min-width: 25px;
+    }
+}
+.row:hover {
+    background-color: var(--hover-background-color);
 }
 .avatar {
     height: 90%;

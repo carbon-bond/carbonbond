@@ -1,15 +1,36 @@
-@keyframes slide {
+@keyframes slide-from-left {
     from { left: calc(calc(0px - var(--left-panel-width)) - var(--menubar-width)); }
     to { left: 0px; }
+}
+
+@keyframes slide-from-right {
+    from { right: calc(0px - var(--right-panel-width)); }
+    to { right: 0px; }
 }
 
 .leftPanel {
     display: flex;
     flex-direction: row;
     position: absolute;
-    animation-name: slide;
+    animation-name: slide-from-left;
     animation-duration: 0.2s;
     animation-timing-function: ease;
+}
+
+.rightPanel {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    animation-name: slide-from-right;
+    animation-duration: 0.2s;
+    animation-timing-function: ease;
+    right: 0px;
+
+    width: var(--right-panel-width);
+    height: 100vh;
+    background-color: var(--background-color);
+    z-index: 550;
+    font-size: 150%;
 }
 
 @keyframes fade {
