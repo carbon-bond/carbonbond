@@ -397,6 +397,7 @@
 
 .friendshipWrapper {
     display: inline-block;
-    width: 50%;
-    padding: 10px 10px;
+    width: calc(50% - 20px);
+    margin: 10px 10px;
+    border: 1px solid var(--border-color);
 }

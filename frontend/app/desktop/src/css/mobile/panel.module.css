@@ -30,7 +30,12 @@
     height: 100vh;
     background-color: var(--background-color);
     z-index: 550;
-    font-size: 150%;
+    & .userCardWrap {
+        margin: 12px;
+    }
+    & .links {
+        font-size: 120%;
+    }
 }
 
 @keyframes fade {

@@ -120,7 +120,7 @@
     display: flex;
     flex-wrap: wrap;
     & .space {
-        min-width: 25px;
+        min-width: 12px;
     }
 }
 .row:hover {

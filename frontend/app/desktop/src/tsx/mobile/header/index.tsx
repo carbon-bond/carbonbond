@@ -11,6 +11,7 @@ import { PanelMain, PanelMenu, Option } from '../../left_panel';
 import { STORAGE_NAME } from '../../../ts/constants';
 import { Links, ModalStatus } from '../../header';
 import { UserState } from '../../global_state/user';
+import { UserCard } from '../../profile/user_card';
 
 // 當左邊欄展開時，給原本的畫面加一層濾鏡
 function Filter(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
@@ -51,10 +52,19 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 }
 
 function RightPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	if (!user_state.login) {
+		return <></>;
+	}
 	return (
 		<>
 			<div className={panel_style.rightPanel} onClick={() => props.setExpanding(false)}>
-				{Links()}
+				<div className={panel_style.userCardWrap}>
+					<UserCard user={user_state}/>
+				</div>
+				<div className={panel_style.links}>
+					{Links()}
+				</div>
 			</div>
 			<Filter setExpanding={props.setExpanding} />
 		</>
