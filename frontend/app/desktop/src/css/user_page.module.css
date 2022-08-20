@@ -175,13 +175,15 @@
             height: 30px;
             font-size: 20px;
             & .navigateTab {
+                flex: 1;
+                max-width: 200px;
+                text-align: center;
                 cursor: pointer;
-                padding: 0px 40px;
                 border-bottom: 1px solid var(--border-color);
             }
             & .navigateTabActive {
                 font-weight: bold;
-                border-bottom: 2px solid var(--blue);
+                border-bottom: 3px solid var(--deep-gray);
             }
         }
         & .content {
@@ -215,10 +217,10 @@
     flex-direction: column;
     border: 1px var(--border-color) solid;
     border-radius: 10px;
-    & > div > div:not(:first-child) {
+    & > div:not(:first-child) {
         border-top: 1px solid var(--border-color);
     }
-    & > div > div {
+    & > div {
         padding: 6px 0px;
     }
     /* width: 300px; */
@@ -237,37 +239,6 @@
             flex-grow: 1;
         }
         & .editButton {}
-    }
-    & .boardCard {
-        margin: 5px 0px;
-        width: 100%;
-        border: 1px solid var(--border-color);
-        padding: 2px;
-        border-radius: 3px;
-        background: var(--lightest-gray);
-        & .boardName {
-            font-size: 16px;
-        }
-        & .boardTitle {
-            font-size: 12px;
-            padding-top: 4px;
-            padding-bottom: 10px;
-        }
-        & .boardStatistics {
-            font-size: 12px;
-            color: var(--light-font-color);
-        }
-    }
-    & .boardCard:hover {
-        background: var(--light-gray);
-    }
-    & .info {
-        & .item {
-            margin: 10px 0px;
-            & .key{
-                font-weight: bold;
-            }
-        }
     }
     & .titleLabel {
         margin: 0px 5px 0px 0px;
@@ -296,6 +267,53 @@
         font-style: italic;
         color: var(--disabled-color);
     }
+}
+
+.detailMobile {
+    & > div {
+        background-color: var(--background-color);
+        margin-top: 10px;
+        padding: 6px 0px;
+    }
+}
+
+.info {
+    & .item:not(:first-child) {
+        margin-top: 6px;
+    }
+    & .item {
+        & :not(:first-child) {
+            margin-top: 10px;
+        }
+        & .key{
+            font-weight: bold;
+        }
+    }
+}
+
+.boardCard {
+    margin: 5px 0px;
+    width: 100%;
+    border: 1px solid var(--border-color);
+    padding: 2px;
+    border-radius: 3px;
+    background: var(--lightest-gray);
+    & .boardName {
+        font-size: 16px;
+    }
+    & .boardTitle {
+        font-size: 12px;
+        padding-top: 4px;
+        padding-bottom: 10px;
+    }
+    & .boardStatistics {
+        font-size: 12px;
+        color: var(--light-font-color);
+    }
+}
+
+.boardCard:hover {
+    background: var(--light-gray);
 }
 
 .editModal {
@@ -373,7 +391,7 @@
         }
         & .navigateTabActive {
             font-weight: bold;
-            border-bottom: 2px solid var(--blue);
+            border-bottom: 2px solid var(--deep-gray);
         }
         & .navigateTabDisable {
             padding: 0px 40px;

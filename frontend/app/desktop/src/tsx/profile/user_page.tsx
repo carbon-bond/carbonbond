@@ -177,45 +177,45 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 
 	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
-	if (window.is_mobile || fetching) {
+	if (fetching) {
 		return <></>;
 	}
 
-	return <div className={style.detail}>
-		<div>
-			<div className={style.introduction}>
+	return <div className={window.is_mobile ? style.detailMobile : style.detail}>
+		{
+			!window.is_mobile ? <div className={style.introduction}>
 				<div className={style.title}>自我介紹</div>
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
+			</div> : <></>
+		}
+		{
+			props.profile_user.introduction ? <div className={style.info}>
+				<ShowText text={props.profile_user.introduction} />
+			</div> : <div className={style.noSentence}>
+				尚無自我介紹
 			</div>
-			{
-				props.profile_user.introduction ? <div className={style.info}>
-					<ShowText text={props.profile_user.introduction} />
-				</div> : <div className={style.noSentence}>
-					尚無自我介紹
+		}
+		{
+			board ? <div className={style.info}>
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+					<PersonalBoardCard board={board} />
+				</Link>
+			</div> : <></>
+		}
+		<div className={style.info}>
+			<div className={style.item}>性別 <span className={style.key}>{props.profile_user.gender}</span></div>
+			<div className={style.item}>職業為 <span className={style.key}>{props.profile_user.job}</span></div>
+			<div className={style.item}>現居 <span className={style.key}>{props.profile_user.city}</span></div>
+		</div>
+		<div className={style.titleCertificate}>
+			<div className={style.item}>已認證稱號：</div>
+			{!props.profile_user.titles || props.profile_user.titles === '' ?
+				<div className={style.title_empty}>
+					無
 				</div>
-			}
-			{
-				board ? <div className={style.personalBoard}>
-					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-						<PersonalBoardCard board={board} />
-					</Link>
-				</div> : <></>
-			}
-			<div className={style.info}>
-				<div className={style.item}>性別<span className={style.key}>{props.profile_user.gender}</span></div>
-				<div className={style.item}>職業為<span className={style.key}>{props.profile_user.job}</span></div>
-				<div className={style.item}>現居<span className={style.key}>{props.profile_user.city}</span></div>
-			</div>
-			<div className={style.titleCertificate}>
-				<div className={style.item}>已認證稱號：</div>
-				{!props.profile_user.titles || props.profile_user.titles === '' ?
-					<div className={style.title_empty}>
-						無
-					</div>
-					: props.profile_user.titles.split(',').map(title => (
-						<CertificationItem title={title} key={`${title}`}/>
-					))}
-			</div>
+				: props.profile_user.titles.split(',').map(title => (
+					<CertificationItem title={title} key={`${title}`}/>
+				))}
 		</div>
 		<EditModal introduction={props.profile_user.introduction}
 			gender={props.profile_user.gender}
@@ -847,14 +847,18 @@ function UserPage(): JSX.Element {
 		</div>
 		<div className={style.down}>
 			<div className={style.profileTabWrap}>
-				<ProfileTab>
+				{window.is_mobile ? <ProfileTab>
+					<ProfileTabItem title="自我介紹" element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
 					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
 					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
-				</ProfileTab>
+				</ProfileTab> : <ProfileTab>
+					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
+					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
+				</ProfileTab>}
 			</div>
-			<div className={style.profileDetailWrap}>
+			{window.is_mobile ? <></> : <div className={style.profileDetailWrap}>
 				<ProfileDetail profile_user={user} setProfileUser={setUser} />
-			</div>
+			</div> }
 		</div>
 	</div>;
 }
