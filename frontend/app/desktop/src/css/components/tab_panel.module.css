@@ -1,0 +1,28 @@
+.works {
+    width: 100%;
+    & .navigateBar {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 30px;
+        font-size: 20px;
+        & .navigateTab {
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+        & .navigateTabActive {
+            font-weight: bold;
+            border-bottom: 3px solid var(--deep-gray);
+        }
+    }
+    & .content {
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}

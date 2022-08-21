@@ -9,6 +9,7 @@ import { UserState, UserStateType } from '../global_state/user';
 import { LocationState, UserLocation } from '../global_state/location';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
+import { TabPanel, TabPanelItem } from '../components/tab_panel';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
@@ -693,33 +694,6 @@ export function ProfileAction(props: {profile_user: User,
 	</div>;
 }
 
-function ProfileTab(props: {children: JSX.Element[] }): JSX.Element {
-	const [selectTab, setSelectTab] = React.useState<number>(0);
-
-	function handleSelectTab(tabIndex: number): void {
-		setSelectTab(tabIndex);
-	}
-
-	return <div className={style.works}>
-		<div className={style.navigateBar}>
-			{props.children.map((tab_item, index) => (
-				<div key={index} className={style.navigateTab + (selectTab == index ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(index); }}>{tab_item.props.title}</div>
-			))}
-		</div>
-		<div className={style.content}>
-			{props.children.map((tab_item, index) => (
-				<div>
-					{selectTab == index ? tab_item.props.element : <></>}
-				</div>
-			))}
-		</div>
-	</div>;
-}
-
-function ProfileTabItem(props: {title: string, element: JSX.Element}): JSX.Element {
-	return props.element;
-}
-
 function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
 		{props.articles.map(article => (
@@ -847,14 +821,16 @@ function UserPage(): JSX.Element {
 		</div>
 		<div className={style.down}>
 			<div className={style.profileTabWrap}>
-				{window.is_mobile ? <ProfileTab>
-					<ProfileTabItem title="自我介紹" element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
-					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
-					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
-				</ProfileTab> : <ProfileTab>
-					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
-					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
-				</ProfileTab>}
+				<div className={style.profileTabPanel}>
+					{window.is_mobile ? <TabPanel>
+						<TabPanelItem title="自我介紹" element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
+						<TabPanelItem title="文章" element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" element={<Favorites profile_user={user} />}/>
+					</TabPanel> : <TabPanel>
+						<TabPanelItem title="文章" element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" element={<Favorites profile_user={user} />}/>
+					</TabPanel>}
+				</div>
 			</div>
 			{window.is_mobile ? <></> : <div className={style.profileDetailWrap}>
 				<ProfileDetail profile_user={user} setProfileUser={setUser} />
