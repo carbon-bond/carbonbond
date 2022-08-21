@@ -14,6 +14,13 @@
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
         }
+        & .navigateTabDisable {
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+            color: gray;
+            border-bottom: 1px solid var(--border-color);
+        }
         & .navigateTabActive {
             font-weight: bold;
             border-bottom: 3px solid var(--deep-gray);

@@ -116,6 +116,7 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 				let board = unwrap(res);
 				setBoard(board);
 			} catch (err) {
+				setBoard(null);
 				return Promise.reject(err);
 			}
 		}).catch(err => {
@@ -232,12 +233,10 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 		visible: boolean, setVisible: React.Dispatch<React.SetStateAction<boolean>>, reload: number }): JSX.Element {
 	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
 	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
-	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
 		setPublicUsers([]);
 		setPrivateUsers([]);
-		setSelectTab(0);
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
 			fetchUsers(props.user.id)
@@ -289,42 +288,31 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 			break;
 	}
 
+	function UserList(props: {users: UserMini[], empty_string: string}): JSX.Element {
+		if (props.users.length == 0) {
+			return <div>
+				<div className={style.emptyContainer}>
+					<div>{props.empty_string}</div>
+				</div>
+			</div>;
+		}
+		return <div>
+			{props.users.map(user => (
+				<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
+					<UserCard user={user} />
+				</div>
+			))}
+		</div>;
+	}
+
 	function getBody(): JSX.Element {
 		return <div className={style.userListContainer}>
-			<div className={style.navigateBar}>
-				<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')}
-					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `喜歡 (${public_count})` : `仇視 (${public_count})`}</div>
-				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
-					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
-			</div>
-			<div className={style.content}>
-				{selectTab == 0 && <div>
-					{public_users.length == 0 ? (
-						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開喜歡的人' : '沒有公開仇視的人'}</div>
-						</div>
-					) : (
-						public_users.map(user => (
-							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
-								<UserCard user={user} />
-							</div>
-						))
-					)}
-				</div>}
-				{selectTab == 1 && <div>
-					{private_users.length == 0 ? (
-						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷喜歡的人' : '沒有偷偷仇視的人'}</div>
-						</div>
-					) : (
-						private_users.map(user => (
-							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
-								<UserCard user={user} />
-							</div>
-						))
-					)}
-				</div>}
-			</div>
+			<TabPanel>
+				<TabPanelItem is_disable={false} title={(props.kind == 'follower' || props.kind == 'following') ? `喜歡 (${public_count})` : `仇視 (${public_count})`}
+					element={<UserList users={public_users} empty_string={(props.kind == 'follower' || props.kind == 'following') ? '沒有公開喜歡的人' : '沒有公開仇視的人'}/>} />
+				<TabPanelItem is_disable={!props.is_myself} title={(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}
+					element={<UserList users={private_users} empty_string={(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷喜歡的人' : '沒有偷偷仇視的人'}/>} />
+			</TabPanel>
 		</div>;
 	}
 
@@ -823,12 +811,12 @@ function UserPage(): JSX.Element {
 			<div className={style.profileTabWrap}>
 				<div className={style.profileTabPanel}>
 					{window.is_mobile ? <TabPanel>
-						<TabPanelItem title="自我介紹" element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
-						<TabPanelItem title="文章" element={<Articles articles={articles} />}/>
-						<TabPanelItem title="收藏" element={<Favorites profile_user={user} />}/>
+						<TabPanelItem title="自我介紹" is_disable={false} element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
+						<TabPanelItem title="文章" is_disable={false} element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" is_disable={false} element={<Favorites profile_user={user} />}/>
 					</TabPanel> : <TabPanel>
-						<TabPanelItem title="文章" element={<Articles articles={articles} />}/>
-						<TabPanelItem title="收藏" element={<Favorites profile_user={user} />}/>
+						<TabPanelItem title="文章" is_disable={false} element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" is_disable={false} element={<Favorites profile_user={user} />}/>
 					</TabPanel>}
 				</div>
 			</div>

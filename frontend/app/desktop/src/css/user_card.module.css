@@ -5,6 +5,9 @@
     padding: 7px 10px;
     position: relative;
     & .userAvatar {
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
         & img {
             width: 64px;
             height: 64px;
@@ -46,4 +49,15 @@
 
 .userContainer:hover {
     box-shadow: inset 0 0 5px var(--theme-color);
+}
+
+@media only screen and (max-width: 600px) {
+    .userContainer {
+        & .userAvatar {
+            & img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    }
 }

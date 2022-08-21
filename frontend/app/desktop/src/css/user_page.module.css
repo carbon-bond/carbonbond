@@ -351,40 +351,11 @@
     height: 280px;
     overflow-y: auto;
     padding: 10px 0px;
-    & .navigateBar {
-        margin: 10px auto 2px;
+    & .emptyContainer {
+        height: 30px;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 30px;
-        font-size: 20px;
-        & .navigateTab {
-            padding: 0px 40px;
-            cursor: pointer;
-            padding: 0px 40px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        & .navigateTabActive {
-            font-weight: bold;
-            border-bottom: 2px solid var(--deep-gray);
-        }
-        & .navigateTabDisable {
-            padding: 0px 40px;
-            color: gray;
-            border-bottom: 1px solid var(--border-color);
-        }
-    }
-    & .content {
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        & .emptyContainer {
-            height: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
     }
 }
 
@@ -392,4 +363,15 @@
     display: inline-block;
     width: 50%;
     padding: 10px 10px;
+}
+
+@media only screen and (max-width: 600px) {
+    .userListContainer {
+        width: 320px;
+    }
+    .friendshipWrapper {
+        display: inline-block;
+        width: 50%;
+        padding: 10px 2px;
+    }
 }
