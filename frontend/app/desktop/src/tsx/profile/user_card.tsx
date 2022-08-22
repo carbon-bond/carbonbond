@@ -13,10 +13,14 @@ function UserCard(props: { user: UserMini }): JSX.Element {
 			</div>
 			<div className={style.userDetail}>
 				<div className={style.userName}>{props.user.user_name}</div>
-				<div className={style.userSentence}>{props.user.sentence}</div>
+				<div className={style.userSentence}>{
+					props.user.sentence.length == 0 ?
+						<i>尚無一句話介紹</i> :
+						props.user.sentence
+				}</div>
 				<div className={style.userFooter}>
 					<div className={style.userFooterItem}>
-						☘️<span className={style.num}>{props.user.energy}</span>鍵能
+						☘️ 鍵能 <span className={style.num}>{props.user.energy}</span>
 					</div>
 				</div>
 			</div>

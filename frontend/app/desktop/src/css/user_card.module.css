@@ -1,16 +1,16 @@
 .userContainer {
     display: flex;
     flex-direction: row;
-    border: 1px var(--lighter-gray) solid;
-    padding: 7px 10px;
+    /* padding: 7px 10px; */
     position: relative;
     & .userAvatar {
         display: flex;
         flex-direction: column;
         justify-content: center; 
         & img {
-            width: 64px;
-            height: 64px;
+            /* border-radius: 100%; */
+            height: 80px;
+            width: 80px;
         }
     }
     & .userDetail {
@@ -18,22 +18,19 @@
         padding: 0px 0px 0px 10px;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         & .userName {
-            font-size: 20px;
-            margin: 0px 0px 2px;
+            font-size: 24px;
         }
         & .userSentence {
-            font-size: 16px;
-            height: 16px;
+            font-size: 14px;
             color: var(--gray);
-            margin: 0px 0px 4px;
         }
         & .userFooter {
-            flex: 1;
             display: flex;
             flex-direction: row;
             & .userFooterItem {
-                font-size: 12px;
+                font-size: 14px;
                 align-self: flex-end;
                 & .num {
                     margin-right: 2px;
@@ -44,20 +41,5 @@
     & .overlay {
         position: absolute;
         left:0; top:0; bottom:0; right:0;
-    }
-}
-
-.userContainer:hover {
-    box-shadow: inset 0 0 5px var(--theme-color);
-}
-
-@media only screen and (max-width: 600px) {
-    .userContainer {
-        & .userAvatar {
-            & img {
-                width: 50px;
-                height: 50px;
-            }
-        }
     }
 }

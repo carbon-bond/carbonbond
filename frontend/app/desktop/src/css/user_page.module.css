@@ -198,7 +198,6 @@
     & > div {
         padding: 6px 0px;
     }
-    /* width: 300px; */
     padding: 10px;
     background: var(--background-color);
     font-size: 14px;
@@ -248,7 +247,7 @@
     & > div {
         background-color: var(--background-color);
         margin-top: 10px;
-        padding: 6px 0px;
+        padding: 6px 7px;
     }
 }
 
@@ -361,8 +360,9 @@
 
 .friendshipWrapper {
     display: inline-block;
-    width: 50%;
-    padding: 10px 10px;
+    width: calc(50% - 20px);
+    margin: 4px 10px;
+    border: 1px solid var(--border-color);
 }
 
 @media only screen and (max-width: 600px) {
@@ -370,8 +370,6 @@
         width: 320px;
     }
     .friendshipWrapper {
-        display: inline-block;
-        width: 50%;
-        padding: 10px 2px;
+        width: calc(100% - 20px);
     }
 }
