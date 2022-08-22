@@ -9,6 +9,7 @@ import { UserState, UserStateType } from '../global_state/user';
 import { LocationState, UserLocation } from '../global_state/location';
 import { toastErr, useInputValue } from '../utils';
 import { ModalButton, ModalWindow } from '../components/modal_window';
+import { TabPanel, TabPanelItem } from '../components/tab_panel';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
@@ -115,6 +116,7 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 				let board = unwrap(res);
 				setBoard(board);
 			} catch (err) {
+				setBoard(null);
 				return Promise.reject(err);
 			}
 		}).catch(err => {
@@ -177,45 +179,45 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 
 	const is_me = user_state.login && user_state.user_name == props.profile_user.user_name;
 
-	if (window.is_mobile || fetching) {
+	if (fetching) {
 		return <></>;
 	}
 
-	return <div className={style.detail}>
-		<div>
-			<div className={style.introduction}>
+	return <div className={window.is_mobile ? style.detailMobile : style.detail}>
+		{
+			!window.is_mobile ? <div className={style.introduction}>
 				<div className={style.title}>自我介紹</div>
 				{is_me && <button className={style.editButton} onClick={() => setEditing(true)}>✏</button>}
+			</div> : <></>
+		}
+		{
+			props.profile_user.introduction ? <div className={style.info}>
+				<ShowText text={props.profile_user.introduction} />
+			</div> : <div className={style.noSentence}>
+				尚無自我介紹
 			</div>
-			{
-				props.profile_user.introduction ? <div className={style.info}>
-					<ShowText text={props.profile_user.introduction} />
-				</div> : <div className={style.noSentence}>
-					尚無自我介紹
+		}
+		{
+			board ? <div className={style.info}>
+				<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
+					<PersonalBoardCard board={board} />
+				</Link>
+			</div> : <></>
+		}
+		<div className={style.info}>
+			<div className={style.item}>性別 <span className={style.key}>{props.profile_user.gender}</span></div>
+			<div className={style.item}>職業為 <span className={style.key}>{props.profile_user.job}</span></div>
+			<div className={style.item}>現居 <span className={style.key}>{props.profile_user.city}</span></div>
+		</div>
+		<div className={style.titleCertificate}>
+			<div className={style.item}>已認證稱號：</div>
+			{!props.profile_user.titles || props.profile_user.titles === '' ?
+				<div className={style.title_empty}>
+					無
 				</div>
-			}
-			{
-				board ? <div className={style.personalBoard}>
-					<Link style={{ textDecoration: 'none', color: 'inherit' }} to={`/app/b/personal/${props.profile_user.user_name}`}>
-						<PersonalBoardCard board={board} />
-					</Link>
-				</div> : <></>
-			}
-			<div className={style.info}>
-				<div className={style.item}>性別<span className={style.key}>{props.profile_user.gender}</span></div>
-				<div className={style.item}>職業為<span className={style.key}>{props.profile_user.job}</span></div>
-				<div className={style.item}>現居<span className={style.key}>{props.profile_user.city}</span></div>
-			</div>
-			<div className={style.titleCertificate}>
-				<div className={style.item}>已認證稱號：</div>
-				{!props.profile_user.titles || props.profile_user.titles === '' ?
-					<div className={style.title_empty}>
-						無
-					</div>
-					: props.profile_user.titles.split(',').map(title => (
-						<CertificationItem title={title} key={`${title}`}/>
-					))}
-			</div>
+				: props.profile_user.titles.split(',').map(title => (
+					<CertificationItem title={title} key={`${title}`}/>
+				))}
 		</div>
 		<EditModal introduction={props.profile_user.introduction}
 			gender={props.profile_user.gender}
@@ -231,12 +233,10 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 		visible: boolean, setVisible: React.Dispatch<React.SetStateAction<boolean>>, reload: number }): JSX.Element {
 	const [public_users, setPublicUsers] = React.useState<UserMini[]>([]);
 	const [private_users, setPrivateUsers] = React.useState<UserMini[]>([]);
-	const [selectTab, setSelectTab] = React.useState<number>(0);
 
 	React.useEffect(() => {
 		setPublicUsers([]);
 		setPrivateUsers([]);
-		setSelectTab(0);
 		if (props.kind == 'following' || props.kind == 'hating') {
 			let fetchUsers = props.kind == 'following' ? fetchPublicFollowings : fetchPublicHatings;
 			fetchUsers(props.user.id)
@@ -288,42 +288,31 @@ function RelationModal(props: { user: User, kind: RelationKind, is_myself: boole
 			break;
 	}
 
+	function UserList(props: {users: UserMini[], empty_string: string}): JSX.Element {
+		if (props.users.length == 0) {
+			return <div>
+				<div className={style.emptyContainer}>
+					<div>{props.empty_string}</div>
+				</div>
+			</div>;
+		}
+		return <div>
+			{props.users.map(user => (
+				<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
+					<UserCard user={user} />
+				</div>
+			))}
+		</div>;
+	}
+
 	function getBody(): JSX.Element {
 		return <div className={style.userListContainer}>
-			<div className={style.navigateBar}>
-				<div className={style.navigateTab + (selectTab == 0 ? ` ${style.navigateTabActive}` : '')}
-					onClick={() => { setSelectTab(0); }}>{(props.kind == 'follower' || props.kind == 'following') ? `喜歡 (${public_count})` : `仇視 (${public_count})`}</div>
-				<div className={(!props.is_myself ? `${style.navigateTabDisable}` : (`${style.navigateTab}` + (selectTab == 1 ? ` ${style.navigateTabActive}` : '')))}
-					onClick={() => { if (props.is_myself) { setSelectTab(1); } }}>{(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}</div>
-			</div>
-			<div className={style.content}>
-				{selectTab == 0 && <div>
-					{public_users.length == 0 ? (
-						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有公開喜歡的人' : '沒有公開仇視的人'}</div>
-						</div>
-					) : (
-						public_users.map(user => (
-							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
-								<UserCard user={user} />
-							</div>
-						))
-					)}
-				</div>}
-				{selectTab == 1 && <div>
-					{private_users.length == 0 ? (
-						<div className={style.emptyContainer}>
-							<div>{(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷喜歡的人' : '沒有偷偷仇視的人'}</div>
-						</div>
-					) : (
-						private_users.map(user => (
-							<div className={style.friendshipWrapper} key={`friendship-${user.id}`}>
-								<UserCard user={user} />
-							</div>
-						))
-					)}
-				</div>}
-			</div>
+			<TabPanel>
+				<TabPanelItem is_disable={false} title={(props.kind == 'follower' || props.kind == 'following') ? `喜歡 (${public_count})` : `仇視 (${public_count})`}
+					element={<UserList users={public_users} empty_string={(props.kind == 'follower' || props.kind == 'following') ? '沒有公開喜歡的人' : '沒有公開仇視的人'}/>} />
+				<TabPanelItem is_disable={!props.is_myself} title={(props.kind == 'follower' || props.kind == 'following') ? `偷偷喜歡 (${private_count})` : `偷偷仇視 (${private_count})`}
+					element={<UserList users={private_users} empty_string={(props.kind == 'follower' || props.kind == 'following') ? '沒有偷偷喜歡的人' : '沒有偷偷仇視的人'}/>} />
+			</TabPanel>
 		</div>;
 	}
 
@@ -693,33 +682,6 @@ export function ProfileAction(props: {profile_user: User,
 	</div>;
 }
 
-function ProfileTab(props: {children: JSX.Element[] }): JSX.Element {
-	const [selectTab, setSelectTab] = React.useState<number>(0);
-
-	function handleSelectTab(tabIndex: number): void {
-		setSelectTab(tabIndex);
-	}
-
-	return <div className={style.works}>
-		<div className={style.navigateBar}>
-			{props.children.map((tab_item, index) => (
-				<div key={index} className={style.navigateTab + (selectTab == index ? ` ${style.navigateTabActive}` : '')} onClick={() => { handleSelectTab(index); }}>{tab_item.props.title}</div>
-			))}
-		</div>
-		<div className={style.content}>
-			{props.children.map((tab_item, index) => (
-				<div>
-					{selectTab == index ? tab_item.props.element : <></>}
-				</div>
-			))}
-		</div>
-	</div>;
-}
-
-function ProfileTabItem(props: {title: string, element: JSX.Element}): JSX.Element {
-	return props.element;
-}
-
 function Articles(props: { articles: ArticleMetaWithBonds[] }): JSX.Element {
 	return <div>
 		{props.articles.map(article => (
@@ -847,14 +809,20 @@ function UserPage(): JSX.Element {
 		</div>
 		<div className={style.down}>
 			<div className={style.profileTabWrap}>
-				<ProfileTab>
-					<ProfileTabItem title="文章" element={<Articles articles={articles} />}/>
-					<ProfileTabItem title="收藏" element={<Favorites profile_user={user} />}/>
-				</ProfileTab>
+				<div className={style.profileTabPanel}>
+					{window.is_mobile ? <TabPanel>
+						<TabPanelItem title="自我介紹" is_disable={false} element={<ProfileDetail profile_user={user} setProfileUser={setUser} />}/>
+						<TabPanelItem title="文章" is_disable={false} element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" is_disable={false} element={<Favorites profile_user={user} />}/>
+					</TabPanel> : <TabPanel>
+						<TabPanelItem title="文章" is_disable={false} element={<Articles articles={articles} />}/>
+						<TabPanelItem title="收藏" is_disable={false} element={<Favorites profile_user={user} />}/>
+					</TabPanel>}
+				</div>
 			</div>
-			<div className={style.profileDetailWrap}>
+			{window.is_mobile ? <></> : <div className={style.profileDetailWrap}>
 				<ProfileDetail profile_user={user} setProfileUser={setUser} />
-			</div>
+			</div> }
 		</div>
 	</div>;
 }
