@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import style from '../../../css/header/index.module.css';
-import left_panel_style from '../../../css/mobile/left_panel.module.css';
+import panel_style from '../../../css/mobile/panel.module.css';
 
 import { ArticleLocation, LocationState } from '../../global_state/location';
 
@@ -9,8 +9,9 @@ import { useNavigate } from 'react-router';
 import { LoginModal } from '../../header/login_modal';
 import { PanelMain, PanelMenu, Option } from '../../left_panel';
 import { STORAGE_NAME } from '../../../ts/constants';
-import { ModalStatus } from '../../header';
+import { Links, ModalStatus } from '../../header';
 import { UserState } from '../../global_state/user';
+import { UserCard } from '../../profile/user_card';
 
 // 當左邊欄展開時，給原本的畫面加一層濾鏡
 function Filter(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
@@ -18,7 +19,7 @@ function Filter(props: { setExpanding: (expanding: boolean) => void }): JSX.Elem
 		onClick={() => {
 			props.setExpanding(false);
 		}}
-		className={left_panel_style.filter} >
+		className={panel_style.filter} >
 	</div>;
 }
 
@@ -41,7 +42,7 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 
 	return (
 		<>
-			<div className={left_panel_style.leftPanel}>
+			<div className={panel_style.leftPanel}>
 				<PanelMenu option={option} toggleOption={toggleOption}/>
 				<PanelMain option={option} onLinkClick={() => { props.setExpanding(false); }}/>
 			</div>
@@ -50,9 +51,30 @@ function LeftPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.E
 	);
 }
 
+function RightPanel(props: { setExpanding: (expanding: boolean) => void }): JSX.Element {
+	const { user_state } = UserState.useContainer();
+	if (!user_state.login) {
+		return <></>;
+	}
+	return (
+		<>
+			<div className={panel_style.rightPanel} onClick={() => props.setExpanding(false)}>
+				<div className={panel_style.userCardWrap}>
+					<UserCard user={user_state}/>
+				</div>
+				<div className={panel_style.links}>
+					{Links()}
+				</div>
+			</div>
+			<Filter setExpanding={props.setExpanding} />
+		</>
+	);
+}
+
 function Header(): JSX.Element {
 	const { current_location } = LocationState.useContainer();
-	const [ expanding_menu, setExpandingMenu ] = React.useState(false);
+	const [ expanding_left_panel, setExpandingLeftPanel ] = React.useState(false);
+	const [ expanding_right_panel, setExpandingRightPanel ] = React.useState(false);
 	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
 	const navigate = useNavigate();
 	const { user_state } = UserState.useContainer();
@@ -66,9 +88,10 @@ function Header(): JSX.Element {
 
 	return (
 		<div className={`header ${style.header}`}>
-			{ expanding_menu ? <LeftPanel setExpanding={setExpandingMenu}/> : null }
+			{ expanding_left_panel ? <LeftPanel setExpanding={setExpandingLeftPanel}/> : null }
+			{ expanding_right_panel ? <RightPanel setExpanding={setExpandingRightPanel}/> : null }
 			<div className={style.container}>
-				<div className={style.leftSet} onClick={() => setExpandingMenu(true)}>
+				<div className={style.leftSet} onClick={() => setExpandingLeftPanel(true)}>
 					☰
 				</div>
 				<div className={style.middleSet}>
@@ -78,8 +101,13 @@ function Header(): JSX.Element {
 					<div className={style.wrap}>
 						{
 							user_state.login
-								? <img className={style.avatar} src={`/avatar/${user_state.user_name}`} />
-								: user_state.fetching ? <></> : <div className={style.login} onClick={() => setModalStatus(ModalStatus.Login)}>登入</div>
+								? <img
+									onClick={() => setExpandingRightPanel(true)}
+									className={style.avatar}
+									src={`/avatar/${user_state.user_name}`} />
+								: user_state.fetching
+									? <></>
+									: <div className={style.login} onClick={() => setModalStatus(ModalStatus.Login)}>登入</div>
 						}
 					</div>
 				</div>

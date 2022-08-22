@@ -25,6 +25,7 @@ function LoginStatus(
 			if (user) {
 				setLogin({
 					user_name: user.user_name,
+					sentence: user.sentence,
 					id: user.id,
 					email: user.email,
 					energy: user.energy,

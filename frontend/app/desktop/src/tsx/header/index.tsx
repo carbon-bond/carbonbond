@@ -37,21 +37,13 @@ export enum ModalStatus {
 	Signup,
 };
 
-function Header(): JSX.Element {
-	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
+export function Links(): JSX.Element[] {
 	const { user_state, setLogout } = UserState.useContainer();
-	const { current_location } = LocationState.useContainer();
 	const { setEditorPanelData } = EditorPanelState.useContainer();
-
-	let [expanding_user, setExpandingUser] = React.useState(false);
-	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
-
 	async function logout_request(): Promise<{}> {
 		try {
 			unwrap(await API_FETCHER.userQuery.logout());
 			setLogout();
-			setExpandingUser(false);
-			setExpandingQuality(null);
 			// TODO: 詢問是否儲存草稿
 			setEditorPanelData(null);
 			toast('您已登出');
@@ -60,17 +52,30 @@ function Header(): JSX.Element {
 		}
 		return {};
 	}
+	if (!user_state.login) { return []; }
+	return [
+		<Link to={`/app/b/personal/${user_state.user_name}`}> <Row>🏯 我的個板</Row> </Link>,
+		<Link to={`/app/user/${user_state.user_name}`}> <Row>📜 我的卷宗</Row> </Link>,
+		<Link to={'/app/party'}> <Row>👥 我的政黨</Row> </Link>,
+		<Link to={'/app/signup_invite'}> <Row>🎟️ 我的邀請碼</Row> </Link>,
+		<Link to={'/app/setting'}> <Row>️⚙️  設定</Row> </Link>,
+		<Row onClick={() => logout_request()}>🏳 登出</Row>
+	];
+}
+
+function Header(): JSX.Element {
+	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
+	const { user_state } = UserState.useContainer();
+	const { current_location } = LocationState.useContainer();
+
+	let [expanding_user, setExpandingUser] = React.useState(false);
+	let [expanding_quality, setExpandingQuality] = React.useState<null | NotificationQuality>(null);
 
 	function DropdownBody(): JSX.Element {
 		if (user_state.login) {
 			return <div className={style.dropdown}>
-				<div className={style.features}>
-					<Link to={`/app/b/personal/${user_state.user_name}`}> <Row>🏯 我的個板</Row> </Link>
-					<Link to={`/app/user/${user_state.user_name}`}> <Row>📜 我的卷宗</Row> </Link>
-					<Link to={'/app/party'}> <Row>👥 我的政黨</Row> </Link>
-					<Link to={'/app/signup_invite'}> <Row>🎟️ 我的邀請碼</Row> </Link>
-					<Link to={'/app/setting'}> <Row>️⚙️  設定</Row> </Link>
-					<Row onClick={() => logout_request()}>🏳 登出</Row>
+				<div className={style.features} onClick={() => setExpandingUser(false)}>
+					{ Links() }
 				</div>
 			</div>;
 		} else {

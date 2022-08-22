@@ -13,6 +13,7 @@ export type UserStateType = {
 	id: number,
 	user_name: string,
 	email: string,
+	sentence: string,
 	energy: number,
 	titles: string[],
 };
@@ -20,6 +21,7 @@ export type UserStateType = {
 interface LoginData {
 	id: number,
 	user_name: string,
+	sentence: string,
 	email: string,
 	energy: number,
 	titles: string | null
@@ -49,6 +51,7 @@ function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData
 	function setLogin(data: LoginData): void {
 		setUserState({
 			login: true,
+			sentence: data.sentence,
 			id: data.id,
 			user_name: data.user_name,
 			email: data.email,
