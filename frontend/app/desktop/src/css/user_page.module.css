@@ -107,7 +107,7 @@
     }
     & .follow {
         & .relationLink {
-            color: var(--gray);
+            color: var(--gray-5);
             cursor: pointer;
         }
         & .relationLink:hover {
@@ -116,7 +116,7 @@
     }
     & .hate {
         & .relationLink {
-            color: var(--gray);
+            color: var(--gray-5);
             cursor: pointer;
         }
         & .relationLink:hover {
@@ -222,7 +222,7 @@
             margin: 0px 0px 5px;
         }
         & .titleBlock {
-            background-color: var(--lighter-gray);
+            background-color: var(--gray-3);
             border-radius: 3px;
             display: inline-block;
             padding: 2px 5px 2px 2px;

@@ -40,7 +40,7 @@
         }
         & hr {
             margin: 5px 0px;
-            color: var(--light-gray);
+            color: var(--gray-2);
         }
     }
 }

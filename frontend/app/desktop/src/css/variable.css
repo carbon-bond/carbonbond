@@ -4,11 +4,16 @@
     --menubar-width: 56px;
     --left-panel-width: 300px;
 
-    --deep-gray: #212429;
-    --gray: #616569;
-    --lighter-gray: #aaaaaa;
-    --light-gray: #e4e4e4;
-    --lightest-gray: #f1f1f1;
+    /* 灰色系列 */
+    --gray-1: #f1f1f1;
+    --gray-2: #e4e4e4;
+    --gray-3: #aaaaaa;
+    --gray-4: #888888;
+    --gray-5: #616569;
+    --gray-6: #444444;
+    --gray-7: #212429;
+    --gray-8: #111111;
+
     --white: #fafafa;
     --blue: #0366d6;
     --red: #d51a30;
@@ -22,14 +27,14 @@
     --sub-theme-color: var(--orange);
     --third-theme-color: var(--pink);
 
-    --font-color: var(--deep-gray);
-    --light-font-color: var(--gray);
+    --font-color: var(--gray-8);
+    --light-font-color: var(--gray-5);
     --reverse-font-color: var(--white);
     --light-reverse-font-color: #e9dffa;
 
-    --disabled-color: var(--lighter-gray);
+    --disabled-color: var(--gray-3);
 
-    --border-color: var(--light-gray);
+    --border-color: var(--gray-2);
 
     --link-color: var(--blue);
 

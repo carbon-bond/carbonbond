@@ -47,8 +47,8 @@ position: fixed 的 menubar
         background-color: var(--hover-background-color);
     }
     & .isCurrent {
-        background-color: var(--light-gray);
-        border-left: 4px var(--gray) solid;
+        background-color: var(--gray-2);
+        border-left: 4px var(--gray-5) solid;
     }
 }
 
