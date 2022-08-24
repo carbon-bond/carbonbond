@@ -148,3 +148,23 @@
         margin-right: 10px;
     }
 }
+.unreadCount {
+    border-radius: 100%;
+    height: 16;
+    width: 16;
+    font-size: 16;
+    background-color: pink;
+    position: absolute;
+    text-align: center;
+    top: 32px;
+    left: 15;
+}
+.notificationDropdown {
+    right: -100px;
+    width: 400px;
+    position: absolute;
+    overflow-y: auto;
+    overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
+    max-height: calc(0.9 * (100vh - var(--header-height)));
+    background-color: var(--background-color);
+}
