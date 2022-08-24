@@ -26,7 +26,7 @@
 }
 
 .other {
-    background-color: var(--lightest-gray);
+    background-color: var(--gray-1);
     top: var(--header-height); 
     min-height: calc(100vh - var(--header-height));
     display: flex;

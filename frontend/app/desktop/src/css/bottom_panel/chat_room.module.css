@@ -125,12 +125,12 @@
             }
             & .date {
                 font-size: 12px;
-                color: var(--gray);
+                color: var(--gray-5);
                 margin-left: 5px;
             }
         }
         & .normal {
-            color: var(--deep-gray);
+            color: var(--gray-7);
             word-break: break-all;
             margin-top: 4px;
             font-size: 15px;

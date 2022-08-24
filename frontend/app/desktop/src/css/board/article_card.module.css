@@ -62,7 +62,7 @@
     font-size: 80%;
     position: relative;
     bottom: 1px;
-    border: 1px solid var(--gray);
+    border: 1px solid var(--gray-5);
     border-radius: 2px;
     margin-right: 4px;
     padding: 0px 3px;
@@ -95,7 +95,7 @@
     & .articleBtns {
         display: flex;
         & .hit {
-            background: var(--light-gray);
+            background: var(--gray-2);
         }
         & .articleBtnItem {
             float: left;
@@ -242,7 +242,7 @@
         margin-top: 2px;
         margin-bottom: 8px;
         color: var(--font-color);
-        background-color: var(--lightest-gray);
+        background-color: var(--gray-1);
         border-radius: 5px;
         padding: 10px;
     }

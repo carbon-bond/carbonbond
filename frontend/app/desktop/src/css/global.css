@@ -12,7 +12,7 @@ body {
     background-color: var(--lower-background-color);
 }
 a:not(.styleless) {
-    color: var(--gray);
+    color: var(--gray-5);
 }
 a:not(.styleless):hover {
     color: var(--link-color);

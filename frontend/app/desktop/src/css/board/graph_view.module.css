@@ -19,14 +19,14 @@
         color: gray;
 
         & hr {
-            border-color: var(--lightest-gray);
+            border-color: var(--gray-1);
         }
     }
 }
 .svgBlock {
     width: 100%;
     position: relative;
-    background-color: var(--lightest-gray);
+    background-color: var(--gray-1);
     & svg:active {
         cursor: move;
     }

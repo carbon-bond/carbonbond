@@ -14,7 +14,7 @@
             }
         }
         & hr {
-            border: 1px solid var(--light-gray);
+            border: 1px solid var(--gray-2);
         }
     }
 }

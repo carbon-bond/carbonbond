@@ -10,7 +10,7 @@
     & .draft {
         cursor: pointer;
         height: 38px;
-        border: 1px var(--light-gray) solid;
+        border: 1px var(--gray-2) solid;
         display: flex;
         flex-direction: row;
         & .info {

@@ -24,7 +24,7 @@
         }
         & .userSentence {
             font-size: 14px;
-            color: var(--gray);
+            color: var(--gray-5);
         }
         & .userFooter {
             display: flex;
