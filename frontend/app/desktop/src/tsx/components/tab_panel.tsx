@@ -28,7 +28,7 @@ export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>
 		</div>
 		<div className={style.content}>
 			{props.children.map((tab_item, index) => (
-				<div>
+				<div key={tab_item.props.title}>
 					{selectTab == index ? tab_item.props.element : <></>}
 				</div>
 			))}
