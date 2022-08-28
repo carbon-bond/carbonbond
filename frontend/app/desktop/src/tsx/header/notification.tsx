@@ -5,6 +5,7 @@ import style from '../../css/header/index.module.css';
 import { DropDown } from '../components/drop_down';
 import { NotificationList } from '../notification';
 import { mapQuality, NotificationQuality, NotificationState } from '../global_state/notification';
+import { NumberOver } from '../components/number_over';
 
 type Props = {
     icon: string,
@@ -27,17 +28,13 @@ export function NotificationIcon(props: Props): JSX.Element {
 
 	return <DropDown
 		button={
-			<div className={style.icon}>
+			<NumberOver
+				className={style.icon}
+				left="15px"
+				top="6px"
+				number={getNotificationNumber(props.quality)} >
 				{props.icon}
-				{
-					(() => {
-						let unread_count = getNotificationNumber(props.quality);
-						if (unread_count > 0) {
-							return <div className={style.unreadCount}>{unread_count}</div>;
-						}
-					})()
-				}
-			</div>
+			</NumberOver>
 		}
 		forced_expanded={props.expanding_quality == props.quality}
 		onExtended={onClick}

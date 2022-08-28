@@ -86,23 +86,6 @@
                     font-size: 18px;
                 }
             }
-            & .login {
-                cursor: pointer;
-                font-size: 120%;
-                text-align: center;
-                align-items: center;
-                display: flex;
-                padding-left: 18px;
-                padding-right: 18px;
-                @media only screen and (max-width: 600px) {
-                    height: 65%;
-                    font-size: 14px;
-                    border-radius: 8px;
-                    background-color: var(--theme-color);
-                    color: var(--background-color);
-                    margin-right: 10px;
-                }
-            }
         }
     }
 }
@@ -131,7 +114,9 @@
     width: auto;
     margin-right: 8px;
     @media only screen and (max-width: 600px) {
+        height: 80%;
         border-radius: 100%;
+        margin-left: 8px;
     }
 }
 .icon {
@@ -145,4 +130,30 @@
 }
 .icon:hover {
     background-color: var(--hover-background-color);
+}
+.login {
+    cursor: pointer;
+    font-size: 120%;
+    text-align: center;
+    align-items: center;
+    display: flex;
+    padding-left: 18px;
+    padding-right: 18px;
+    @media only screen and (max-width: 600px) {
+        height: 65%;
+        font-size: 14px;
+        border-radius: 8px;
+        background-color: var(--theme-color);
+        color: var(--background-color);
+        margin-right: 10px;
+    }
+}
+.notificationDropdown {
+    right: -100px;
+    width: 400px;
+    position: absolute;
+    overflow-y: auto;
+    overflow-x: hidden; /* 避免右卷軸把寬度撐開而顯現出下卷軸 */
+    max-height: calc(0.9 * (100vh - var(--header-height)));
+    background-color: var(--background-color);
 }
