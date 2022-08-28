@@ -12,6 +12,9 @@ import { STORAGE_NAME } from '../../../ts/constants';
 import { Links, ModalStatus } from '../../header';
 import { UserState } from '../../global_state/user';
 import { UserCard } from '../../profile/user_card';
+import { NotificationState } from '../../global_state/notification';
+import { NotificationList } from '../../notification';
+import { NumberOver } from '../../components/number_over';
 
 // 當左邊欄展開時，給原本的畫面加一層濾鏡
 function Filter(props: { setClose: () => void }): JSX.Element {
@@ -72,14 +75,15 @@ function NavigationPanel(props: { setClose: () => void }): JSX.Element {
 }
 
 function NotificationPanel(props: { setClose: () => void }): JSX.Element {
-	const { user_state } = UserState.useContainer();
-	if (!user_state.login) {
-		return <></>;
+	let {notifications, getNotificationNumber, readNotification} = NotificationState.useContainer();
+	// 一開啓本組件即已讀
+	if (getNotificationNumber(null) > 0) {
+		readNotification(null);
 	}
 	return (
 		<>
 			<div className={panel_style.rightPanel} onClick={() => props.setClose()}>
-				通知
+				<NotificationList notifications={notifications}	/>
 			</div>
 			<Filter setClose={props.setClose} />
 		</>
@@ -110,6 +114,7 @@ function Header(): JSX.Element {
 	const [modal_status, setModalStatus] = React.useState<ModalStatus | null>(null);
 	const navigate = useNavigate();
 	const { user_state } = UserState.useContainer();
+	let { getNotificationNumber } = NotificationState.useContainer();
 
 	let title = current_location ? current_location.show_in_header() : '所有看板';
 	function routeToBoard(): void {
@@ -133,10 +138,15 @@ function Header(): JSX.Element {
 					{
 						user_state.login
 							? <div className={style.wrap}>
-								<div className={style.icon}
-									onClick={() => setRightPanelState(RightPanelState.Notification)}>
-									🔔
-								</div>
+								<NumberOver
+									left="16px"
+									top="-2px"
+									number={getNotificationNumber(null)}>
+									<div className={style.icon}
+										onClick={() => setRightPanelState(RightPanelState.Notification)}>
+										🔔
+									</div>
+								</NumberOver>
 								<img
 									onClick={() => setRightPanelState(RightPanelState.Navigation)}
 									className={style.avatar}
