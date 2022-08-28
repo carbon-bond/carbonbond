@@ -25,6 +25,10 @@
         & .userSentence {
             font-size: 14px;
             color: var(--gray-5);
+            max-width: 130px;
+            overflow:hidden; 
+            white-space:nowrap; 
+            text-overflow: ellipsis;
         }
         & .userFooter {
             display: flex;
@@ -41,5 +45,15 @@
     & .overlay {
         position: absolute;
         left:0; top:0; bottom:0; right:0;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .userContainer {
+        & .userDetail {
+            & .userSentence {
+                max-width: 170px;
+            }
+        }
     }
 }
