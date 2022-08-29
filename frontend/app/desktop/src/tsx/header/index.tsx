@@ -54,12 +54,12 @@ export function Links(): JSX.Element[] {
 	}
 	if (!user_state.login) { return []; }
 	return [
-		<Link to={`/app/b/personal/${user_state.user_name}`}> <Row>🏯 我的個板</Row> </Link>,
-		<Link to={`/app/user/${user_state.user_name}`}> <Row>📜 我的卷宗</Row> </Link>,
-		<Link to={'/app/party'}> <Row>👥 我的政黨</Row> </Link>,
-		<Link to={'/app/signup_invite'}> <Row>🎟️ 我的邀請碼</Row> </Link>,
-		<Link to={'/app/setting'}> <Row>️⚙️  設定</Row> </Link>,
-		<Row onClick={() => logout_request()}>🏳 登出</Row>
+		<Link key={0} to={`/app/b/personal/${user_state.user_name}`}> <Row>🏯 我的個板</Row> </Link>,
+		<Link key={1} to={`/app/user/${user_state.user_name}`}> <Row>📜 我的卷宗</Row> </Link>,
+		<Link key={2} to={'/app/party'}> <Row>👥 我的政黨</Row> </Link>,
+		<Link key={3} to={'/app/signup_invite'}> <Row>🎟️ 我的邀請碼</Row> </Link>,
+		<Link key={4} to={'/app/setting'}> <Row>️⚙️  設定</Row> </Link>,
+		<Row key={5} onClick={() => logout_request()}>🏳 登出</Row>
 	];
 }
 
