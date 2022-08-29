@@ -25,6 +25,10 @@
         & .userSentence {
             font-size: 14px;
             color: var(--gray-5);
+            overflow:hidden; 
+            -webkit-line-clamp: 2;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
         }
         & .userFooter {
             display: flex;
