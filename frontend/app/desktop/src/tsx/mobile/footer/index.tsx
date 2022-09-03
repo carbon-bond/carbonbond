@@ -1,7 +1,7 @@
 import * as React from 'react';
 import style from '../../../css/mobile/footer.module.css';
 import { MobileChatRoomPanel } from '../../chatroom_panel';
-import { BottomPanelState, RoomKind, SimpleRoomData } from '../../global_state/bottom_panel';
+import { BottomPanelState, RoomKind, SimpleRoomData, ChosenBubble } from '../../global_state/bottom_panel';
 import { AllChatState, DirectChatData } from '../../global_state/chat';
 
 function ChatBubble(props: {
@@ -14,13 +14,6 @@ function ChatBubble(props: {
 		{props.chat.toAvatar(style.avatar)}
 	</div>;
 }
-
-type ChosenBubble = {
-	kind: 'chat',
-	chatroom: SimpleRoomData,
-} | {
-	kind: 'editor',
-};
 
 function FooterPanel(props: {chosen: ChosenBubble | null}): JSX.Element {
 	if (props.chosen == null) {
@@ -36,34 +29,34 @@ function FooterPanel(props: {chosen: ChosenBubble | null}): JSX.Element {
 	}
 }
 
+// 將 setChosen 變成 context
 export function Footer(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
-	let [is_init, set_is_init] = React.useState<boolean>(true);
-	let [chosen, setChosen_] = React.useState<ChosenBubble | null>(null);
-	const { chatrooms } = BottomPanelState.useContainer();
+	let [is_init, set_is_init] = React.useState<boolean>(false);
+	const { chatrooms, chosen_bubble, setChosenBubble } = BottomPanelState.useContainer();
 
 	React.useEffect(() => {
 		if (
 			chatrooms.find(room => {
-				return chosen
-					&& chosen.kind == 'chat'
+				return chosen_bubble
+					&& chosen_bubble.kind == 'chat'
 					&& room.kind == RoomKind.Simple
-					&& room.id == chosen.chatroom.id;
+					&& room.id == chosen_bubble.chatroom.id;
 			}) == undefined
 		) {
-			setChosen(null);
+			setChosenBubble(null);
 		}
-	}, [chatrooms, chosen]);
+	}, [chatrooms, chosen_bubble, setChosenBubble]);
 
 	function setChosen(chosen: ChosenBubble | null): void {
 		set_is_init(false);
-		setChosen_(chosen);
+		setChosenBubble(chosen);
 	}
 
 	function getPanelClassName(): string {
 		if (is_init) {
 			return style.panelInit;
-		} else if (chosen == null) {
+		} else if (chosen_bubble == null) {
 			return style.panelClose;
 		} else {
 			return style.panelOpen;
@@ -73,7 +66,7 @@ export function Footer(): JSX.Element {
 	function getFooterClassName(): string {
 		if (is_init) {
 			return style.footerInit;
-		} else if (chosen == null) {
+		} else if (chosen_bubble == null) {
 			return style.footerClose;
 		} else {
 			return style.footerOpen;
@@ -97,9 +90,9 @@ export function Footer(): JSX.Element {
 						return chats;
 					}, [])
 					.map(([chat, room]) => <ChatBubble key={chat.id} chat={chat} onClick={() => {
-						if (chosen == null
-							|| chosen.kind != 'chat'
-							|| (chosen.kind == 'chat' && chosen.chatroom.id != room.id)) {
+						if (chosen_bubble == null
+							|| chosen_bubble.kind != 'chat'
+							|| (chosen_bubble.kind == 'chat' && chosen_bubble.chatroom.id != room.id)) {
 							setChosen({ kind: 'chat', chatroom: room });
 						} else {
 							setChosen(null);
@@ -108,7 +101,7 @@ export function Footer(): JSX.Element {
 			}
 		</div >
 		<div className={`${style.panel} ${getPanelClassName()}`}>
-			<FooterPanel chosen={chosen} />
+			<FooterPanel chosen={chosen_bubble} />
 		</div>
 	</>;
 }

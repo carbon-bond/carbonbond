@@ -466,6 +466,10 @@ function MobileSimpleChatRoomPanel(props: { room: SimpleRoomData }): JSX.Element
 	const [prev_scroll_top, setPrevScrollTop] = React.useState(0);
 	const [initializing, setInitializing] = React.useState(true);
 
+	React.useEffect(() => {
+		setInitializing(true);
+	}, [props.room]);
+
 	return <div className={`${style.roomContent} ${style.fullHeight} ${style.chatPanel}`}>
 		<div className={`${roomTitle}`}>
 			<div className={leftSet}>{chat.getLink()}</div>
