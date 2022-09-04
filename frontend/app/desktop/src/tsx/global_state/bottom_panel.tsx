@@ -25,7 +25,6 @@ export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
 	return (x as ChannelRoomData).channel !== undefined;
 }
 
-
 // 僅用於行動版
 export type ChosenBubble = {
 	kind: 'chat',
