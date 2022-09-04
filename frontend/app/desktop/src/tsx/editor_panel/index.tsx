@@ -3,7 +3,7 @@ import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
-import { WindowState, EditorPanelState } from '../global_state/editor_panel';
+import { WindowState, EditorPanelState, EditorPanelData } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from 'carbonbond-api/api_utils';
 import { BoardName, force, NewArticle, UpdatedArticle } from 'carbonbond-api/api_trait';
 import { useForm } from 'react-hook-form';
@@ -78,6 +78,15 @@ function EditorUpperBar(): JSX.Element {
 	</div>;
 };
 
+// 僅用於行動版
+function MobileEditor(): JSX.Element {
+	return <div className={style.mobileEditorPanel}>
+		<EditorUpperBar />
+		<EditorBody />
+	</div>;
+}
+
+// 以下三者為桌面版的各種變化型
 function MinimizeEditor(): JSX.Element {
 	return <div className={style.editorPanel}>
 		<EditorUpperBar />
@@ -247,27 +256,38 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 // => 提示分類已經不存在，但仍可繼續使用原格式
 type ValidateInfo = { [index: string]: string | undefined };
 function EditorBody(): JSX.Element {
-	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
+	const { editor_panel_data } = EditorPanelState.useContainer();
+	if (editor_panel_data) {
+		return <EditorBody_ editor_panel_data={editor_panel_data} />;
+	} else {
+		return <></>;
+	}
+}
+function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
+	const navigate = useNavigate();
+	const editor_panel_data = props.editor_panel_data;
+	const { minimizeEditorPanel, setEditorPanelData, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
 	const [validate_info, set_info] = useState<ValidateInfo>({});
 	const { user_state } = UserState.useContainer();
-	const board = editor_panel_data!.board;
+	const board = editor_panel_data.board;
 	const [board_options, setBoardOptions] = useState<BoardName[]>([{
 		id: board.id,
 		board_name: board.board_name,
 	}]);
-	const board_info = getBoardInfo(board);
 	useEffect(() => {
 		API_FETCHER.boardQuery.queryBoardNameList()
 			.then(data => unwrap(data))
 			.then(data => setBoardOptions(data))
 			.catch(err => console.log(err));
 	}, []);
-	const force = board.force;
-	const navigate = useNavigate();
 
-	if (editor_panel_data == null || !user_state.login) { return <></>; }
+	if (!user_state.login) { return <></>; }
+
+	const board_info = getBoardInfo(board);
+	const force = board.force;
+
 	let found_category = force.categories.find(c => c.name == editor_panel_data.category_name);
 	const using_legacy_fields = (found_category == undefined) ||
 		!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields);
@@ -548,4 +568,4 @@ function ShowContent(props: {fields: force.Field[], content: force_util.Content}
 	</div>;
 }
 
-export { EditorPanel };
+export { MobileEditor, EditorPanel };
