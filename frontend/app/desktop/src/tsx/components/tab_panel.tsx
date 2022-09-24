@@ -25,12 +25,13 @@ export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			{props.children.map((tab_item, index) => (
-				<div key={index}
-					className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
-								((!tab_item.props.is_disable && selectTab == index) ? ` ${style.navigateTabActive}` : '')
+				<div className={style.navigateTabWrapper}>
+					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+									((!tab_item.props.is_disable && selectTab == index) ? ` ${style.navigateTabActive}` : '')
 					}
 					onClick={() => { if (!tab_item.props.is_disable) {handleSelectTab(index);} }}>
-					{tab_item.props.title}
+						{tab_item.props.title}
+					</div>
 				</div>
 			))}
 		</div>
@@ -52,12 +53,12 @@ export function TabPanelWithLink(props: {children: React.ReactElement<TabPanelWi
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			{props.children.map((tab_item, index) => (
-				<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
-						((!tab_item.props.is_disable && props.select_tab == index) ? ` ${style.navigateTabActive}` : '') }>
-					{!tab_item.props.is_disable ?  <Link to={tab_item.props.link} style={{ textDecoration: 'none' }}>
+				<Link to={tab_item.props.link} style={{ textDecoration: 'none'}} className={style.navigateTabWrapper}>
+					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+							((!tab_item.props.is_disable && props.select_tab == index) ? ` ${style.navigateTabActive}` : '') }>
 						{tab_item.props.title}
-					</Link> : <span>{tab_item.props.title}</span>}
-				</div>
+					</div>
+				</Link>
 			))}
 		</div>
 		<div className={style.content}>
