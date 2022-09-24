@@ -9,9 +9,8 @@ import style from '../css/board_list.module.css';
 import '../css/layout.css';
 import { getBoardInfo } from './board';
 import { SubscribedBoardsState } from './global_state/subscribed_boards';
-import { UserState } from './global_state/user';
 import { BoardOverview } from 'carbonbond-api/api_trait';
-import { TabPanel, TabPanelItem } from './components/tab_panel';
+import { TabPanelWithLink, TabPanelWithLinkItem } from './components/tab_panel';
 
 async function fetchBoardList(): Promise<Board[]> {
 	return unwrap_or(await API_FETCHER.boardQuery.queryBoardList(10), []);
@@ -53,7 +52,7 @@ function AllBoardList(props: {boards: Board[]}): JSX.Element {
 	</div>;
 }
 
-function HotBoardList(props: {boards: Board[], hot_boards: BoardOverview[]}): JSX.Element {
+function HotBoardListElement(props: {boards: Board[], hot_boards: BoardOverview[]}): JSX.Element {
 	const hot_board_ids = props.hot_boards.reduce((accu, curr) => {
 		accu.add(curr.id);
 		return accu;
@@ -74,7 +73,7 @@ function HotBoardList(props: {boards: Board[], hot_boards: BoardOverview[]}): JS
 
 type SubscribedBoards = {[key: number]: BoardOverview};
 
-function SubscribeBoardList(props: {boards: Board[], subscribe_boards: SubscribedBoards}): JSX.Element {
+function SubscribeBoardListElement(props: {boards: Board[], subscribe_boards: SubscribedBoards}): JSX.Element {
 	const subscribe_board_ids = Object.entries(props.subscribe_boards).reduce((accu, [_i, board]) => {
 		accu.add(board.id);
 		return accu;
@@ -94,10 +93,7 @@ function SubscribeBoardList(props: {boards: Board[], subscribe_boards: Subscribe
 }
 
 function BoardList(): JSX.Element {
-	let { subscribed_boards } = SubscribedBoardsState.useContainer();
-	let { user_state } = UserState.useContainer();
 	const { setCurrentLocation } = LocationState.useContainer();
-	let [hot_boards, setHotBoards] = React.useState<BoardOverview[]>([]);
 	let [all_boards, setAllBoards] = React.useState<Board[]>([]);
 
 	React.useEffect(() => {
@@ -110,6 +106,34 @@ function BoardList(): JSX.Element {
 		setCurrentLocation(new SimpleLocation('所有看板'));
 	}, [setCurrentLocation]);
 
+	return <TabPanelWithLink select_tab={2}>
+		<TabPanelWithLinkItem is_disable={false} title="訂閱看板"
+			link="/app/subscribe_board_list"
+			element={<></>}/>
+		<TabPanelWithLinkItem is_disable={false} title="熱門看板"
+			link="/app/hot_board_list"
+			element={<></>}/>
+		<TabPanelWithLinkItem is_disable={false} title="所有看板"
+			link="/app/board_list"
+			element={<AllBoardList boards={all_boards}/>} />
+	</TabPanelWithLink>;
+}
+
+function HotBoardList(): JSX.Element {
+	const { setCurrentLocation } = LocationState.useContainer();
+	let [hot_boards, setHotBoards] = React.useState<BoardOverview[]>([]);
+	let [all_boards, setAllBoards] = React.useState<Board[]>([]);
+
+	React.useEffect(() => {
+		fetchBoardList().then(board_list => {
+			setAllBoards(board_list);
+		});
+	}, []);
+
+	React.useEffect(() => {
+		setCurrentLocation(new SimpleLocation('熱門看板'));
+	}, [setCurrentLocation]);
+
 	React.useEffect(() => {
 		if (window.is_mobile) {
 			fetchHotBoards().then(boards => {
@@ -118,21 +142,45 @@ function BoardList(): JSX.Element {
 		}
 	}, []);
 
-	if (window.is_mobile) {
-		if (user_state.login) {
-			return <TabPanel>
-				<TabPanelItem is_disable={false} title="訂閱看板" element={<SubscribeBoardList boards={all_boards} subscribe_boards={subscribed_boards}/>} />
-				<TabPanelItem is_disable={false} title="熱門看板" element={<HotBoardList boards={all_boards} hot_boards={hot_boards}/>} />
-				<TabPanelItem is_disable={false} title="所有看板" element={<AllBoardList boards={all_boards}/>} />
-			</TabPanel>;
-		}
-		return <TabPanel>
-			<TabPanelItem is_disable={false} title="熱門看板" element={<HotBoardList boards={all_boards} hot_boards={hot_boards}/>} />
-			<TabPanelItem is_disable={false} title="所有看板" element={<AllBoardList boards={all_boards}/>} />
-		</TabPanel>;
-	}
-
-	return <AllBoardList boards={all_boards}/>;
+	return <TabPanelWithLink select_tab={1}>
+		<TabPanelWithLinkItem is_disable={false} title="訂閱看板"
+			link="/app/subscribe_board_list"
+			element={<></>}/>
+		<TabPanelWithLinkItem is_disable={false} title="熱門看板"
+			link="/app/hot_board_list"
+			element={<HotBoardListElement boards={all_boards} hot_boards={hot_boards}/>} />
+		<TabPanelWithLinkItem is_disable={false} title="所有看板"
+			link="/app/board_list"
+			element={<></>}/>
+	</TabPanelWithLink>;
 }
 
-export { BoardList };
+function SubscribeBoardList(): JSX.Element {
+	let { subscribed_boards } = SubscribedBoardsState.useContainer();
+	const { setCurrentLocation } = LocationState.useContainer();
+	let [all_boards, setAllBoards] = React.useState<Board[]>([]);
+
+	React.useEffect(() => {
+		fetchBoardList().then(board_list => {
+			setAllBoards(board_list);
+		});
+	}, []);
+
+	React.useEffect(() => {
+		setCurrentLocation(new SimpleLocation('訂閱看板'));
+	}, [setCurrentLocation]);
+
+	return <TabPanelWithLink select_tab={0}>
+		<TabPanelWithLinkItem is_disable={false} title="訂閱看板"
+			link="/app/subscribe_board_list"
+			element={<SubscribeBoardListElement boards={all_boards} subscribe_boards={subscribed_boards}/>} />
+		<TabPanelWithLinkItem is_disable={false} title="熱門看板"
+			link="/app/hot_board_list"
+			element={<></>}/>
+		<TabPanelWithLinkItem is_disable={false} title="所有看板"
+			link="/app/board_list"
+			element={<></>}/>
+	</TabPanelWithLink>;
+}
+
+export { BoardList, HotBoardList, SubscribeBoardList };
