@@ -45,28 +45,16 @@
             font-size: 32px;
         }
         & .sentence {
-            font-size: 20px;
-            display: flex;
-            & .words {
-                max-width: 240px;
-                display: inline-block;
-                overflow:hidden; 
-                white-space:nowrap; 
-                text-overflow: ellipsis;
-            }
-            & button {
-                margin-left: 10px;
-                font-size: 14px;
-            }
+            font-size: 16px;
+            overflow:hidden; 
+            -webkit-line-clamp: 2;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
         }
         & .noSentence {
             font-size: 20px;
             font-style: italic;
             color: var(--disabled-color);
-            & button {
-                margin-left: 15px;
-                font-size: 14px;
-            }
         }
     }
 }
@@ -85,11 +73,6 @@
             margin: 10px 10px;
             & .username {
                 font-size: 28px;
-            }
-            & .sentence {
-                & .words {
-                    max-width: 180px;
-                }
             }
         }
     }
@@ -138,6 +121,7 @@
             margin-left: 10px;
         }
         & .linkButton {
+            font-size: 16px;
             flex: 1;
             & button {
                 width: 100%;
@@ -331,6 +315,7 @@
 }
 
 .relationEditComponent {
+    font-size: 16px;
     width: 100%;
     & button {
         width: 100%;
@@ -346,8 +331,8 @@
 }
 
 .userListContainer {
-    width: 480px;
-    height: 280px;
+    width: 660px;
+    height: 50vh;
     overflow-y: auto;
     padding: 10px 0px;
     & .emptyContainer {
@@ -368,6 +353,7 @@
 @media only screen and (max-width: 600px) {
     .userListContainer {
         width: 320px;
+        height: 60vh;
     }
     .friendshipWrapper {
         width: calc(100% - 20px);

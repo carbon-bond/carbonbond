@@ -90,6 +90,7 @@ function BoardHeader(props: { board: Board}): JSX.Element {
 }
 
 function BoardPage(props: { board: Board | null}): JSX.Element {
+	console.log(`board = ${JSON.stringify(props.board)}`);
 	if (!props.board) {
 		return <></>;
 	}
@@ -181,6 +182,7 @@ function BoardPageWrap(): JSX.Element {
 				return Promise.reject(err);
 			}
 		}).catch(err => {
+			setBoard(null);
 			console.error(err);
 		}).finally(() => {
 			setFetching(false);
