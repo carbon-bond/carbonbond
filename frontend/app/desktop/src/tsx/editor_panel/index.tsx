@@ -31,6 +31,13 @@ function useDeleteEditor(): () => void {
 	};
 }
 
+function getEditorBarTitle(editor_panel_data: EditorPanelData): string {
+	const board_name = editor_panel_data.board?.board_name ?? '未選看板';
+	const article_title = editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title;
+
+	return `${board_name} / ${article_title}`;
+}
+
 function EditorUpperBar(): JSX.Element {
 	const { window_state, editor_panel_data, minimizeEditorPanel, expandEditorPanel, openEditorPanel }
 		= EditorPanelState.useContainer();
@@ -44,12 +51,9 @@ function EditorUpperBar(): JSX.Element {
 	}
 	if (editor_panel_data == null) { return <></>; }
 
-	const board_name = editor_panel_data.board?.board_name ?? '未選看板';
-	const article_title = editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title;
-
 	return <div className={roomTitle}>
 		<div onClick={() => onTitleClick()} className={leftSet}>
-			{`${board_name} / ${article_title}`}
+			{getEditorBarTitle(editor_panel_data)}
 		</div>
 		<div onClick={() => onTitleClick()} className={middleSet}>
 		</div>
@@ -79,12 +83,27 @@ function EditorUpperBar(): JSX.Element {
 			}
 		</div>
 	</div>;
-};
+}
+
+function MobileEditorUpperBar(): JSX.Element {
+	const {editor_panel_data} = EditorPanelState.useContainer();
+	const deleteEditor = useDeleteEditor();
+	if (editor_panel_data == null) { return <></>; }
+
+	return <div className={roomTitle}>
+		<div className={leftSet}>
+			{getEditorBarTitle(editor_panel_data)}
+		</div>
+		<div className={rightSet}>
+			<div className={button} onClick={deleteEditor}>✗</div>
+		</div>
+	</div>;
+}
 
 // 僅用於行動版
 function MobileEditor(): JSX.Element {
 	return <div className={style.mobileEditorPanel}>
-		<EditorUpperBar />
+		<MobileEditorUpperBar />
 		<EditorBody />
 	</div>;
 }
