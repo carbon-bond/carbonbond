@@ -7,23 +7,26 @@
         align-items: center;
         height: 30px;
         font-size: 20px;
-        & .navigateTab {
+        & .navigateTabWrapper {
             flex: 1;
             max-width: 200px;
             text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        & .navigateTab {
             cursor: pointer;
+            padding: 5px 25px;
             border-bottom: 1px solid var(--border-color);
         }
         & .navigateTabDisable {
-            flex: 1;
-            max-width: 200px;
-            text-align: center;
             color: gray;
             border-bottom: 1px solid var(--border-color);
         }
         & .navigateTabActive {
             font-weight: bold;
-            border-bottom: 3px solid var(--deep-gray);
+            background-color: var(--gray-2);
+            border-bottom: 3px solid var(--gray-5);
         }
     }
     & .content {
@@ -31,5 +34,12 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .navigateTab {
+        padding: 5px 0px;
+        width: 100%;
     }
 }

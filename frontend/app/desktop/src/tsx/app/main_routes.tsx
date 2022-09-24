@@ -6,7 +6,7 @@ import {
 	Navigate,
 } from 'react-router-dom';
 
-import { BoardList } from '../board_list';
+import { BoardList, HotBoardList, SubscribeBoardList } from '../board_list';
 import { SignupPage } from '../signup_page';
 import { ResetPassword } from '../reset_password';
 import { KeepAliveUserPage } from '../profile/user_page';
@@ -32,6 +32,8 @@ export function MainRoutes(): JSX.Element {
 		<Route path="/app/verify_title/:token" element={<VerifyTitle />} />
 		<Route path="/app" element={<BoardList />} />
 		<Route path="/app/board_list" element={<BoardList />} />
+		<Route path="/app/hot_board_list" element={<HotBoardList />} />
+		<Route path="/app/subscribe_board_list" element={<SubscribeBoardList />} />
 		<Route path="/app/search" element={<SearchPage />} />
 		<Route path="/app/party" element={<MyPartyList />} />
 		<Route path="/app/party/:party_name" element={<PartyDetail />} />

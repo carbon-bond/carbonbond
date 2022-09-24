@@ -1,10 +1,18 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import style from '../../css/components/tab_panel.module.css';
 
 interface TabPanelItemProps {
 	title: string
 	is_disable: boolean
 	element: JSX.Element
+}
+
+interface TabPanelWithLinkItemProps {
+	title: string
+	is_disable: boolean
+	element: JSX.Element
+	link: string
 }
 
 export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>[] }): JSX.Element {
@@ -17,18 +25,19 @@ export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			{props.children.map((tab_item, index) => (
-				<div key={index}
-					className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
-								((!tab_item.props.is_disable && selectTab == index) ? ` ${style.navigateTabActive}` : '')
+				<div className={style.navigateTabWrapper}>
+					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+									((!tab_item.props.is_disable && selectTab == index) ? ` ${style.navigateTabActive}` : '')
 					}
 					onClick={() => { if (!tab_item.props.is_disable) {handleSelectTab(index);} }}>
-					{tab_item.props.title}
+						{tab_item.props.title}
+					</div>
 				</div>
 			))}
 		</div>
 		<div className={style.content}>
 			{props.children.map((tab_item, index) => (
-				<div>
+				<div key={tab_item.props.title}>
 					{selectTab == index ? tab_item.props.element : <></>}
 				</div>
 			))}
@@ -37,5 +46,31 @@ export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>
 }
 
 export function TabPanelItem(props: {title: string, is_disable: boolean, element: JSX.Element}): JSX.Element {
+	return props.element;
+}
+
+export function TabPanelWithLink(props: {children: React.ReactElement<TabPanelWithLinkItemProps>[], select_tab: number }): JSX.Element {
+	return <div className={style.works}>
+		<div className={style.navigateBar}>
+			{props.children.map((tab_item, index) => (
+				<Link to={tab_item.props.link} style={{ textDecoration: 'none'}} className={style.navigateTabWrapper}>
+					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+							((!tab_item.props.is_disable && props.select_tab == index) ? ` ${style.navigateTabActive}` : '') }>
+						{tab_item.props.title}
+					</div>
+				</Link>
+			))}
+		</div>
+		<div className={style.content}>
+			{props.children.map((tab_item, index) => (
+				<div key={tab_item.props.title}>
+					{props.select_tab == index ? tab_item.props.element : <></>}
+				</div>
+			))}
+		</div>
+	</div>;
+}
+
+export function TabPanelWithLinkItem(props: {title: string, is_disable: boolean, element: JSX.Element, link: string}): JSX.Element {
 	return props.element;
 }
