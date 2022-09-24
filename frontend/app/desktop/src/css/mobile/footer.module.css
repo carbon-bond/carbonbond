@@ -1,5 +1,7 @@
 :root {
     --footer-animation-duration: 0.2s;
+    --triangle-size: 8px;
+    --panel-height: calc(100vh - var(--footer-height) - var(--triangle-size));
 }
 
 @keyframes breath {
@@ -14,18 +16,20 @@
 .footerInit {
   z-index: 200;
   bottom: 0px;
+  height: var(--footer-height);
 }
 
 .footerOpen {
   z-index: 400;
-  bottom: calc(100% - var(--footer-height));
+  bottom: var(--panel-height);
+  height: calc(var(--footer-height) + var(--triangle-size));
   animation: footerOpen var(--footer-animation-duration);
 }
 
 .footerClose {
   z-index: 200;
   bottom: 0px;
-  animation: footerClose var(--footer-animation-duration);
+  height: var(--footer-height);
 }
 
 @keyframes footerOpen {
@@ -33,33 +37,53 @@
     bottom: 0px;
   }
   to {
-    bottom: calc(100% - var(--footer-height));
+    bottom: var(--panel-height);
   }
 }
 
 @keyframes footerClose {
   from {
-    bottom: calc(100% - var(--footer-height));
+    height: var(--panel-height);
   }
   to {
     bottom: 0px;
   }
 }
 
+.icon {
+  font-size: 24px;
+  margin-right: 4px;
+}
+
 .footer {
-  height: var(--footer-height);
   width: 100%;
   position: fixed;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background: rgba(200, 200, 200, 0.4);
+  & .editorBubble {
+    margin: 0px 5px;
+    padding: 0px 5px;
+    height: var(--footer-height);
+    border-radius: 24px;
+    min-width: var(--footer-height);
+    font-size: 18px;
+    color: var(--reverse-font-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--theme-color);
+  }
   & .chatBubble {
     border-radius: 100%;
-    height: 100%;
+    height: var(--footer-height);
     width: auto;
     margin: 0px 4px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
     & .avatar {
       border-radius: 100%;
       height: 100%;
@@ -70,6 +94,17 @@
     box-shadow: 0px 0px 1px 3px var(--sub-theme-color);
     animation: breath 1s infinite alternate-reverse;
   }
+}
+
+.triangle {
+    position: absolute;
+    top: var(--footer-height);
+    align-self: center;
+    width: 0;
+    height: 0;
+    border-left: var(--triangle-size) solid transparent;
+    border-right: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid var(--sub-theme-color);
 }
 
 .panelInit {
@@ -94,13 +129,13 @@
     height: 0px;
   }
   to {
-    height: calc(100% - var(--footer-height));
+    height: var(--panel-height);
   }
 }
 
 @keyframes panelClose {
   from {
-    height: calc(100% - var(--footer-height));
+    height: var(--panel-height);
   }
   to {
     height: 0px;
@@ -122,7 +157,7 @@
 }
 
 .panelOpen {
-  height: calc(100% - var(--footer-height));
+  height: var(--panel-height);
   animation: panelOpen var(--footer-animation-duration);
 }
 

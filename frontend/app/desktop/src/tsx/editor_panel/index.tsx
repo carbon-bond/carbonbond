@@ -3,9 +3,9 @@ import { produce } from 'immer';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
 const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
-import { WindowState, EditorPanelState } from '../global_state/editor_panel';
+import { WindowState, EditorPanelState, EditorPanelData } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from 'carbonbond-api/api_utils';
-import { BoardName, force, NewArticle, UpdatedArticle } from 'carbonbond-api/api_trait';
+import { force, NewArticle, UpdatedArticle } from 'carbonbond-api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -31,6 +31,13 @@ function useDeleteEditor(): () => void {
 	};
 }
 
+function getEditorBarTitle(editor_panel_data: EditorPanelData): string {
+	const board_name = editor_panel_data.board?.board_name ?? '未選看板';
+	const article_title = editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title;
+
+	return `${board_name} / ${article_title}`;
+}
+
 function EditorUpperBar(): JSX.Element {
 	const { window_state, editor_panel_data, minimizeEditorPanel, expandEditorPanel, openEditorPanel }
 		= EditorPanelState.useContainer();
@@ -43,10 +50,10 @@ function EditorUpperBar(): JSX.Element {
 		}
 	}
 	if (editor_panel_data == null) { return <></>; }
+
 	return <div className={roomTitle}>
 		<div onClick={() => onTitleClick()} className={leftSet}>
-			{editor_panel_data.board.board_name + ' / ' +
-				(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
+			{getEditorBarTitle(editor_panel_data)}
 		</div>
 		<div onClick={() => onTitleClick()} className={middleSet}>
 		</div>
@@ -76,8 +83,32 @@ function EditorUpperBar(): JSX.Element {
 			}
 		</div>
 	</div>;
-};
+}
 
+function MobileEditorUpperBar(): JSX.Element {
+	const {editor_panel_data} = EditorPanelState.useContainer();
+	const deleteEditor = useDeleteEditor();
+	if (editor_panel_data == null) { return <></>; }
+
+	return <div className={roomTitle}>
+		<div className={leftSet}>
+			{getEditorBarTitle(editor_panel_data)}
+		</div>
+		<div className={rightSet}>
+			<div className={button} onClick={deleteEditor}>✗</div>
+		</div>
+	</div>;
+}
+
+// 僅用於行動版
+function MobileEditor(): JSX.Element {
+	return <div className={style.mobileEditorPanel}>
+		<MobileEditorUpperBar />
+		<EditorBody />
+	</div>;
+}
+
+// 以下三者為桌面版的各種變化型
 function MinimizeEditor(): JSX.Element {
 	return <div className={style.editorPanel}>
 		<EditorUpperBar />
@@ -247,33 +278,56 @@ function generate_submit_content(fields: force.Field[], original_content: { [ind
 // => 提示分類已經不存在，但仍可繼續使用原格式
 type ValidateInfo = { [index: string]: string | undefined };
 function EditorBody(): JSX.Element {
-	const { minimizeEditorPanel, setEditorPanelData, editor_panel_data, setUpdatedArticleId } = EditorPanelState.useContainer();
+	const { editor_panel_data } = EditorPanelState.useContainer();
+	if (editor_panel_data) {
+		return <EditorBody_ editor_panel_data={editor_panel_data} />;
+	} else {
+		return <></>;
+	}
+}
+
+type BoardOption = {
+	id: number,
+	board_name: string,
+};
+
+function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
+	const navigate = useNavigate();
+	const editor_panel_data = props.editor_panel_data;
+	const { minimizeEditorPanel, setEditorPanelData, setUpdatedArticleId } = EditorPanelState.useContainer();
 	const { setDraftData } = DraftState.useContainer();
 	const { handleSubmit } = useForm();
 	const [validate_info, set_info] = useState<ValidateInfo>({});
 	const { user_state } = UserState.useContainer();
-	const board = editor_panel_data!.board;
-	const [board_options, setBoardOptions] = useState<BoardName[]>([{
-		id: board.id,
-		board_name: board.board_name,
-	}]);
-	const board_info = getBoardInfo(board);
+	const board = editor_panel_data.board;
+	const [board_options, setBoardOptions] = useState<BoardOption[]>(
+		board ?
+			[{
+				id: board.id,
+				board_name: board.board_name,
+			}] :
+			[]
+	);
 	useEffect(() => {
 		API_FETCHER.boardQuery.queryBoardNameList()
 			.then(data => unwrap(data))
 			.then(data => setBoardOptions(data))
 			.catch(err => console.log(err));
 	}, []);
-	const force = board.force;
-	const navigate = useNavigate();
 
-	if (editor_panel_data == null || !user_state.login) { return <></>; }
-	let found_category = force.categories.find(c => c.name == editor_panel_data.category_name);
+	if (!user_state.login) { return <></>; }
+
+	const force = board?.force;
+
+	let found_category = force?.categories.find(c => c.name == editor_panel_data.category_name);
 	const using_legacy_fields = (found_category == undefined) ||
 		!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields);
 
 	const onSubmit = (): void => {
-		if (found_category == undefined) {
+		if (board == null) {
+			toastErr('請先選擇看板！');
+			return;
+		} else if (found_category == undefined) {
 			toastErr('請先選擇分類！');
 			return;
 		} else if (!Object.values(validate_info).every(info => info == undefined)) {
@@ -306,6 +360,7 @@ function EditorBody(): JSX.Element {
 				request = API_FETCHER.articleQuery.createArticle(article);
 			}
 			let info = editor_panel_data.id ?  '更新文章成功' : '發文成功';
+			const board_info = getBoardInfo(board);
 			request
 				.then(data => unwrap(data))
 				.then(id => {
@@ -327,6 +382,10 @@ function EditorBody(): JSX.Element {
 	};
 
 	const saveDraft = (): void => {
+		if (editor_panel_data.board == null) {
+			toastErr('請先選擇看板！');
+			return;
+		}
 		API_FETCHER.articleQuery.saveDraft(
 			editor_panel_data.draft_id ?? null,
 			editor_panel_data.board.id,
@@ -356,7 +415,7 @@ function EditorBody(): JSX.Element {
 	};
 
 	function changeCategory(new_category_name: string): void {
-		let new_category = force.categories.find(category => category.name == new_category_name)!;
+		let new_category = force?.categories.find(category => category.name == new_category_name)!;
 		if (!editor_panel_data) {
 			throw new Error('誤用 onChangeCategory');
 		}
@@ -402,7 +461,7 @@ function EditorBody(): JSX.Element {
 			<div className={style.location}>
 				<select required
 					className={style.board}
-					value={board.id}
+					value={board?.id ?? ''}
 					disabled={editor_panel_data.id != undefined}
 					onChange={(evt) => {
 						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
@@ -411,7 +470,7 @@ function EditorBody(): JSX.Element {
 							.catch(err => console.error(err));
 					}}
 				>
-					<option value="" disabled hidden>看板</option>
+					<option value="" disabled hidden>請選擇看板</option>
 					{
 						board_options.map(board =>
 							<option
@@ -429,8 +488,8 @@ function EditorBody(): JSX.Element {
 				>
 					<option value="" disabled hidden>請選擇文章分類</option>
 					{
-						force.categories.map(category =>
-							<option value={category.name} key={category.name}>{category.name}</option>)
+						force?.categories.map(category =>
+							<option value={category.name} key={category.name}>{category.name}</option>) ?? []
 					}
 				</select>
 				<label className={style.anonymous}>
@@ -467,9 +526,9 @@ function EditorBody(): JSX.Element {
 									}));
 								}} >
 								{
-									board.force.suggested_tags.map((tag) => {
+									board?.force.suggested_tags.map((tag) => {
 										return <option key={tag} value={tag}>{tag}</option>;
-									})
+									}) ?? []
 								}
 							</select>
 						</BondLine>
@@ -548,4 +607,4 @@ function ShowContent(props: {fields: force.Field[], content: force_util.Content}
 	</div>;
 }
 
-export { EditorPanel };
+export { MobileEditor, EditorPanel };

@@ -25,8 +25,18 @@ export function isChannelRoomData(x: RoomData): x is ChannelRoomData {
 	return (x as ChannelRoomData).channel !== undefined;
 }
 
+// 僅用於行動版
+export type ChosenBubble = {
+	kind: 'chat',
+	chatroom: RoomData,
+} | {
+	kind: 'editor',
+};
+
 function useBottomPanelState(): {
 	chatrooms: RoomData[],
+	chosen_bubble: ChosenBubble | null,
+	setChosenBubble: (chosen_bubble: ChosenBubble | null) => void,
 	clearRoom: () => void,
 	addRoom: (id: number) => void,
 	addRoomWithChannel: (id: number, channel: string) => void,
@@ -35,24 +45,23 @@ function useBottomPanelState(): {
 	toRealRoom: (fake_id: number, id: number) => void,
 	} {
 	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
+	let [chosen_bubble, setChosenBubble] = useState<ChosenBubble | null>(null);
 
 	function clearRoom(): void {
 		setChatrooms([]);
 	}
 	function addRoom(id: number): void {
 		// TODO: 調整聊天室添加順序
-		let room = chatrooms.find(room => room.id == id && room.kind == RoomKind.Simple);
+		let room = chatrooms.find(room => room.id == id && room.kind == RoomKind.Simple) ?? { id, kind: RoomKind.Simple };
 		let new_chatrooms = produce(chatrooms, draft => {
 			draft = draft.filter(room => room.id != id);
-			if (room) {
-				// 若聊天室已經存在，將其排列到第一位
-				draft.unshift(room);
-			} else {
-				draft.unshift({id, kind: RoomKind.Simple});
-			}
+			// 若聊天室已經存在，將其排列到第一位
+			// 若不存在，將其新增到第一位
+			draft.unshift(room);
 			return draft;
 		});
 		setChatrooms(new_chatrooms);
+		setChosenBubble({ kind: 'chat', chatroom: room });
 	}
 
 	function addRoomWithChannel(id: number, channel: string): void {
@@ -94,9 +103,20 @@ function useBottomPanelState(): {
 			}
 		});
 		setChatrooms(new_rooms);
+		setChosenBubble({ kind: 'chat', chatroom: { id, kind: RoomKind.Simple } });
 	}
 
-	return { chatrooms, clearRoom, addRoom, addRoomWithChannel, changeChannel, deleteRoom, toRealRoom };
+	return {
+		chatrooms,
+		chosen_bubble,
+		setChosenBubble,
+		clearRoom,
+		addRoom,
+		addRoomWithChannel,
+		changeChannel,
+		deleteRoom,
+		toRealRoom
+	};
 }
 
 export const BottomPanelState = createContainer(useBottomPanelState);

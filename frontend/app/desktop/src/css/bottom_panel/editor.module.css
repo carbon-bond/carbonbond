@@ -1,6 +1,19 @@
 :root {
     --input-height: 32px;
+    --button-bar-height: 35px;
 }
+
+.mobileEditorPanel {
+    background: var(--background-color);
+    height: 100%;
+    & .editorBody {
+        height: calc(100% - var(--room-title-height));
+        & .fields {
+            padding: 0px 15px;
+        }
+    }
+}
+
 .editorPanel {
     background: var(--background-color);
     box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.75);
@@ -10,26 +23,6 @@
         max-height: 70vh;
         & .fields {
             padding: 0px 15px;
-            & .field {
-                margin-top: 20px;
-                & input {
-                    height: var(--input-height);
-                    width: 100%;
-                }
-                & textarea {
-                    width: 100%;
-                    height: 150px;
-                }
-                & .textValueWrap {
-                    border: 1px solid black;
-                    padding: 4px;
-                }
-                & .deleteButton {
-                    cursor: pointer;
-                    margin-right: 5px;
-                    color: var(--red);
-                }
-            }
         }
     }
 }
@@ -96,6 +89,9 @@
 }
 
 .editorBody {
+    display: flex;
+    flex-direction: column;
+
     & .fields label {
         padding: 5px 10px 0px 10px;
         background-color: var(--gray-7);
@@ -108,15 +104,31 @@
             color: var(--light-reverse-font-color);
         }
     }
-    display: flex;
-    flex-direction: column;
-
+    & .field {
+        & input {
+            height: var(--input-height);
+            width: 100%;
+        }
+        & textarea {
+            width: 100%;
+            height: 150px;
+        }
+        & .textValueWrap {
+            border: 1px solid black;
+            padding: 4px;
+        }
+        & .deleteButton {
+            cursor: pointer;
+            margin-right: 5px;
+            color: var(--red);
+        }
+    }
     & .form {
         flex: 1;
         overflow-y: auto;
     }
     & .buttonBar {
-        height: 30px;
+        height: var(--button-bar-height);
         font-size: 18px;
         display: flex;
         flex-direction: row;
