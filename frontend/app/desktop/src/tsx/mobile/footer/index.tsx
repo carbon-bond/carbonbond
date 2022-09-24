@@ -7,7 +7,7 @@ import { AllChatState, DirectChatData } from '../../global_state/chat';
 import { EditorPanelState } from '../../global_state/editor_panel';
 
 function EditorBubble(): JSX.Element {
-	const { editor_panel_data, openEditorPanel } = EditorPanelState.useContainer();
+	const { editor_panel_data, openEditorPanel, setEmptyEditorData } = EditorPanelState.useContainer();
 	const { chosen_bubble, setChosenBubble } = BottomPanelState.useContainer();
 	const is_chosen = chosen_bubble?.kind == 'editor';
 	const title = editor_panel_data ?
@@ -15,8 +15,11 @@ function EditorBubble(): JSX.Element {
 			<i>未命名</i> : editor_panel_data.title
 		: '';
 	function onClick(): void {
-		console.log('on click');
 		if (!is_chosen && editor_panel_data) {
+			openEditorPanel();
+			setChosenBubble({kind: 'editor'});
+		} else if (!is_chosen && !editor_panel_data) {
+			setEmptyEditorData();
 			openEditorPanel();
 			setChosenBubble({kind: 'editor'});
 		} else if (is_chosen) {

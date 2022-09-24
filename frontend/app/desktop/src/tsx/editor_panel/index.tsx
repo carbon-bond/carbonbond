@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 import { DraftState } from '../global_state/draft';
 import { WindowState, EditorPanelState, EditorPanelData } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap, unwrap_or } from 'carbonbond-api/api_utils';
-import { BoardName, force, NewArticle, UpdatedArticle } from 'carbonbond-api/api_trait';
+import { force, NewArticle, UpdatedArticle } from 'carbonbond-api/api_trait';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { SimpleModal } from '../../tsx/components/modal_window';
@@ -43,10 +43,13 @@ function EditorUpperBar(): JSX.Element {
 		}
 	}
 	if (editor_panel_data == null) { return <></>; }
+
+	const board_name = editor_panel_data.board?.board_name ?? '未選看板';
+	const article_title = editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title;
+
 	return <div className={roomTitle}>
 		<div onClick={() => onTitleClick()} className={leftSet}>
-			{editor_panel_data.board.board_name + ' / ' +
-				(editor_panel_data.title.length == 0 ? '新文章' : editor_panel_data.title)}
+			{`${board_name} / ${article_title}`}
 		</div>
 		<div onClick={() => onTitleClick()} className={middleSet}>
 		</div>
@@ -263,6 +266,12 @@ function EditorBody(): JSX.Element {
 		return <></>;
 	}
 }
+
+type BoardOption = {
+	id: number,
+	board_name: string,
+};
+
 function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 	const navigate = useNavigate();
 	const editor_panel_data = props.editor_panel_data;
@@ -272,10 +281,14 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 	const [validate_info, set_info] = useState<ValidateInfo>({});
 	const { user_state } = UserState.useContainer();
 	const board = editor_panel_data.board;
-	const [board_options, setBoardOptions] = useState<BoardName[]>([{
-		id: board.id,
-		board_name: board.board_name,
-	}]);
+	const [board_options, setBoardOptions] = useState<BoardOption[]>(
+		board ?
+			[{
+				id: board.id,
+				board_name: board.board_name,
+			}] :
+			[]
+	);
 	useEffect(() => {
 		API_FETCHER.boardQuery.queryBoardNameList()
 			.then(data => unwrap(data))
@@ -285,15 +298,17 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 
 	if (!user_state.login) { return <></>; }
 
-	const board_info = getBoardInfo(board);
-	const force = board.force;
+	const force = board?.force;
 
-	let found_category = force.categories.find(c => c.name == editor_panel_data.category_name);
+	let found_category = force?.categories.find(c => c.name == editor_panel_data.category_name);
 	const using_legacy_fields = (found_category == undefined) ||
 		!force_util.equal_fields(editor_panel_data.value.fields, found_category.fields);
 
 	const onSubmit = (): void => {
-		if (found_category == undefined) {
+		if (board == null) {
+			toastErr('請先選擇看板！');
+			return;
+		} else if (found_category == undefined) {
 			toastErr('請先選擇分類！');
 			return;
 		} else if (!Object.values(validate_info).every(info => info == undefined)) {
@@ -326,6 +341,7 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 				request = API_FETCHER.articleQuery.createArticle(article);
 			}
 			let info = editor_panel_data.id ?  '更新文章成功' : '發文成功';
+			const board_info = getBoardInfo(board);
 			request
 				.then(data => unwrap(data))
 				.then(id => {
@@ -347,6 +363,10 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 	};
 
 	const saveDraft = (): void => {
+		if (editor_panel_data.board == null) {
+			toastErr('請先選擇看板！');
+			return;
+		}
 		API_FETCHER.articleQuery.saveDraft(
 			editor_panel_data.draft_id ?? null,
 			editor_panel_data.board.id,
@@ -376,7 +396,7 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 	};
 
 	function changeCategory(new_category_name: string): void {
-		let new_category = force.categories.find(category => category.name == new_category_name)!;
+		let new_category = force?.categories.find(category => category.name == new_category_name)!;
 		if (!editor_panel_data) {
 			throw new Error('誤用 onChangeCategory');
 		}
@@ -422,7 +442,7 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 			<div className={style.location}>
 				<select required
 					className={style.board}
-					value={board.id}
+					value={board?.id ?? ''}
 					disabled={editor_panel_data.id != undefined}
 					onChange={(evt) => {
 						API_FETCHER.boardQuery.queryBoardById(parseInt(evt.target.value))
@@ -431,7 +451,7 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 							.catch(err => console.error(err));
 					}}
 				>
-					<option value="" disabled hidden>看板</option>
+					<option value="" disabled hidden>請選擇看板</option>
 					{
 						board_options.map(board =>
 							<option
@@ -449,8 +469,8 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 				>
 					<option value="" disabled hidden>請選擇文章分類</option>
 					{
-						force.categories.map(category =>
-							<option value={category.name} key={category.name}>{category.name}</option>)
+						force?.categories.map(category =>
+							<option value={category.name} key={category.name}>{category.name}</option>) ?? []
 					}
 				</select>
 				<label className={style.anonymous}>
@@ -487,9 +507,9 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 									}));
 								}} >
 								{
-									board.force.suggested_tags.map((tag) => {
+									board?.force.suggested_tags.map((tag) => {
 										return <option key={tag} value={tag}>{tag}</option>;
-									})
+									}) ?? []
 								}
 							</select>
 						</BondLine>

@@ -6,7 +6,7 @@ import { Board, BondInfo, force } from 'carbonbond-api/api_trait';
 export type EditorPanelData = {
 	draft_id?: number,
 	id?: number,                   // 文章 id ，文章已經存在，更新文章時會用到
-	board: Board,
+	board?: Board,
 	category_name?: string,
 	title: string,
 	anonymous: boolean,
@@ -32,6 +32,7 @@ function useEditorPanelState(): {
 	minimizeEditorPanel: () => void,
 	editor_panel_data: EditorPanelData | null,
 	setEditorPanelData: (data: EditorPanelData | null) => void,
+	setEmptyEditorData: () => void,
 	updated_article_id: number | null,
 	setUpdatedArticleId: (data: number | null) => void,
 	} {
@@ -51,6 +52,17 @@ function useEditorPanelState(): {
 	function setEditorPanelData(data: EditorPanelData | null): void {
 		setData(data);
 	}
+	function setEmptyEditorData(): void {
+		setData({
+			title: '',
+			anonymous: false,
+			value: {
+				content: {},
+				fields: [],
+			},
+			bonds: [],
+		});
+	}
 	return {
 		window_state,
 		expandEditorPanel,
@@ -58,6 +70,7 @@ function useEditorPanelState(): {
 		minimizeEditorPanel,
 		editor_panel_data: data,
 		setEditorPanelData,
+		setEmptyEditorData,
 		updated_article_id,
 		setUpdatedArticleId
 	};
