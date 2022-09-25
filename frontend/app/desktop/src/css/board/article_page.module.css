@@ -31,7 +31,13 @@
         margin-bottom: 20px;
         word-wrap: break-word;
         & .fieldName {
-            color: var(--light-font-color);
+            padding: 0px 4px;
+            border-radius: 15%;
+            color: var(--reverse-font-color);
+            background-color: var(--gray-8);
+            margin-bottom: 2px;
+            width: -moz-fit-content;
+            width: fit-content;
         }
         & .cardWrap > div {
             border-radius: 10px;

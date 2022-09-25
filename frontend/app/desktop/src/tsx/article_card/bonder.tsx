@@ -79,5 +79,5 @@ function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta })
 			setChosenBubble({ kind: 'editor' });
 		}
 	};
-	return <button onClick={onClick}> {tag} </button>;
+	return <button className={style.replyButton} onClick={onClick}> {tag} </button>;
 }

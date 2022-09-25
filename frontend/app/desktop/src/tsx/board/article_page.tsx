@@ -24,7 +24,7 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 					{
 						field.name == '' ?
 							<></> :
-							<div className={style.fieldName}>{field.name}：</div>
+							<div className={style.fieldName}>{field.name}</div>
 					}
 					{
 						(field.kind == force.FieldKind.MultiLine || field.kind == force.FieldKind.OneLine) ?

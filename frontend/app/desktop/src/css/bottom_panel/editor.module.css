@@ -182,3 +182,15 @@
 .field {
     margin: 20px;
 }
+.deleteBondButton {
+    margin-right: 5px;
+    padding: 1px 4px;
+    height: 28px;
+    font-size: 18px;
+    background: var(--gray-2);
+    border: 0px;
+    color: var(--red);
+}
+.deleteBondButton:hover {
+    background: var(--gray-3);
+}

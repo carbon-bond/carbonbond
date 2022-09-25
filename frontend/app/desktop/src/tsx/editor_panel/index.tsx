@@ -513,11 +513,11 @@ function EditorBody_(props: {editor_panel_data: EditorPanelData}): JSX.Element {
 				editor_panel_data.bonds.map((bond, index) => {
 					return <div className={style.bond} key={`${bond.article_meta.id}#${bond.tag}`}>
 						<BondLine mini_meta={bond.article_meta}>
-							<button onClick={() => {
+							<button className={style.deleteBondButton} onClick={() => {
 								setEditorPanelData(produce(editor_panel_data, (data) => {
 									data.bonds.splice(index, 1);
 								}));
-							}}>✗</button>
+							}}>移除</button>
 							<select
 								value={bond.tag}
 								onChange={(evt: { target: { value: string } }) => {
