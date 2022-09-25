@@ -57,6 +57,11 @@
         margin: 0px 4px;
     }
 }
+@media only screen and (max-width: 600px) {
+    .bondLine {
+        margin: 4px 0px;
+    }
+}
 
 .border {
     font-size: 80%;
@@ -74,18 +79,19 @@
 
 .articleLine {
     color: black;
-    /* margin: 10px 0px; */
+    font-size: 20px;
     & .articleCategory {
+        font-size: 18px;
         font-weight: bold;
         margin-right: 8px;
+        border: 1px solid var(--gray-8);
+        padding: 1px 2px;
+        border-radius: 15%;
     }
     & .articleTitle {
-        font-size: 20px;
         color: black;
-        /* font-weight: bold; */
     }
     & .articleGraphViewIcon {
-        font-size: 20px;
         position: relative;
         z-index: 10;
     }

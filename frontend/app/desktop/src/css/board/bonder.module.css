@@ -1,3 +1,7 @@
 .replyButtons {
-    font-size: 14px;
+    font-size: 16px;
+    & .replyButton {
+        padding: 1px 3px;
+        margin-right: 5px;
+    }
 }
