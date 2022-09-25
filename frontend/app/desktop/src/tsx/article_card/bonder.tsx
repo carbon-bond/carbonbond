@@ -6,6 +6,7 @@ import { toastErr } from '../utils';
 import produce from 'immer';
 import { EditorPanelState } from '../global_state/editor_panel';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
+import { BottomPanelState } from '../global_state/bottom_panel';
 
 export function BonderCards(props: { article_id: number }): JSX.Element {
 	let [bonders, setBonders] = React.useState<[Edge, ArticleMeta][]>([]);
@@ -44,6 +45,7 @@ export function ReplyButtons(props: { board: Board, article: ArticleMeta }): JSX
 function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta }): JSX.Element {
 	const { tag, board, article } = props;
 	const { openEditorPanel, setEditorPanelData, editor_panel_data } = EditorPanelState.useContainer();
+	const { setChosenBubble } = BottomPanelState.useContainer();
 	const onClick = (): void => {
 		// 若原本編輯器沒資料或是沒設定分類
 		// 先設定分類並根據分類初始化編輯器資料
@@ -71,7 +73,10 @@ function ReplyButton(props: { tag: string, board: Board, article: ArticleMeta })
 				});
 			});
 			setEditorPanelData(data);
+			// 桌面版
 			openEditorPanel();
+			// 行動版
+			setChosenBubble({ kind: 'editor' });
 		}
 	};
 	return <button onClick={onClick}> {tag} </button>;
