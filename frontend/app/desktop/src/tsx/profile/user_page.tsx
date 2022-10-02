@@ -24,14 +24,35 @@ import { Link, useParams } from 'react-router-dom';
 import { KeepAlive } from 'react-activation';
 
 
-function Sentence(props: {sentence: string}): JSX.Element {
-	if (props.sentence == '') {
-		return <div className={style.noSentence}>
-			尚無一句話介紹
-		</div>;
-	} else {
-		return <div className={style.sentence}>{props.sentence}</div>;
+function Sentence(props: { profile_user: User,
+		user_state: UserStateType,
+		setProfileUser: React.Dispatch<React.SetStateAction<User | null>> | null }): JSX.Element {
+	function setSentence(sentence: string): void {
+		let new_state = produce(props.profile_user, nxt => {
+			if (nxt != null) {
+				nxt.sentence = sentence;
+			}
+		});
+		if (props.setProfileUser) {
+			props.setProfileUser(new_state);
+		}
 	}
+
+	if (!props.user_state.login) {
+		return <></>;
+	}
+
+	return <div className={style.sentenceComponent}>
+		{props.profile_user.sentence == '' ? <div className={style.noSentence}>
+			尚無一句話介紹
+		</div> : <div className={style.sentence}>
+			{props.profile_user.sentence}
+		</div> }
+		{props.user_state.user_name == props.profile_user.user_name && <div className={style.links}>
+			<SentenceEditComponent profile_user={props.profile_user}
+				setSentence={setSentence}/>
+		</div>}
+	</div>;
 }
 
 import 律師圖標 from '../../img/title/律師.png';
@@ -550,7 +571,9 @@ function ProfileOverview(props: { profile_user: User,
 		</div>
 		<div className={style.abstract}>
 			<div className={style.username}>{props.profile_user.user_name}</div>
-			<Sentence sentence={props.profile_user.sentence} />
+			<Sentence profile_user={props.profile_user}
+				user_state={props.user_state}
+				setProfileUser={props.setProfileUser}/>
 			<ProfileAction profile_user={props.profile_user}
 				user_state={props.user_state}
 				reload={props.reload}
@@ -634,17 +657,6 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}, [props.profile_user, props.user_state.login, props.reload]);
 
-	function setSentence(sentence: string): void {
-		let new_state = produce(props.profile_user, nxt => {
-			if (nxt != null) {
-				nxt.sentence = sentence;
-			}
-		});
-		if (props.setProfileUser) {
-			props.setProfileUser(new_state);
-		}
-	}
-
 	function onStartChat(): void {
 		const user_name = props.profile_user.user_name;
 		const user_id = props.profile_user.id;
@@ -658,17 +670,12 @@ export function ProfileAction(props: {profile_user: User,
 		}
 	}
 
-	if (!props.user_state.login) {
+	if (!props.user_state.login || props.user_state.user_name == props.profile_user.user_name) {
 		return <></>;
 	}
 
 	return <div className={style.operation}>
-		{ props.user_state.user_name == props.profile_user.user_name ? <div className={style.links}>
-			<div className={style.linkButton}>
-				<SentenceEditComponent profile_user={props.profile_user}
-					setSentence={setSentence}/>
-			</div>
-		</div> : <div className={style.links}>
+		<div className={style.links}>
 			<div className={style.linkButton}>
 				<RelationEditComponent target_user_id={props.profile_user.id}
 					relation_type={relation_type} setRelationType={setRelationType}
@@ -678,7 +685,7 @@ export function ProfileAction(props: {profile_user: User,
 			<div className={style.linkButton}>
 				<button onClick={onStartChat}>🗨️ 私訊</button>
 			</div>
-		</div> }
+		</div>
 	</div>;
 }
 
@@ -835,5 +842,6 @@ function KeepAliveUserPage(): JSX.Element {
 }
 
 export {
-	KeepAliveUserPage
+	KeepAliveUserPage,
+	Sentence
 };
