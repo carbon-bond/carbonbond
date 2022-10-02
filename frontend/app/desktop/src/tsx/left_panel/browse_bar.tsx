@@ -80,7 +80,7 @@ export function BrowseBar(props: { onLinkClick: () => void }): JSX.Element {
 						<span className={style.specialBlock}>🔥 全站熱門</span>
 					</div>
 				</InjectedLink>
-				<InjectedLink to={'/app/board_list'}>
+				<InjectedLink to={'/app/all_board_list'}>
 					<div>
 						<span className={style.specialBlock}>🛹 所有看板</span>
 					</div>
