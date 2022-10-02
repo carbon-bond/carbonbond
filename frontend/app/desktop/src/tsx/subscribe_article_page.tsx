@@ -5,11 +5,12 @@ import { ArticleMetaWithBonds } from 'carbonbond-api/api_trait';
 import { UserState } from './global_state/user';
 import { toastErr } from './utils';
 import { LocationState, SimpleLocation } from './global_state/location';
+import { TabPanelWithLink, TabPanelWithLinkItem } from './components/tab_panel';
 
 import style from '../css/pop_article_page.module.css';
 import '../css/layout.css';
 
-export function SubscribeArticlePage(): JSX.Element {
+export function SubscribeArticlePageElement(): JSX.Element {
 	const [articles, setArticles] = React.useState<ArticleMetaWithBonds[]>([]);
 	const { user_state } = UserState.useContainer();
 	const { setCurrentLocation } = LocationState.useContainer();
@@ -47,4 +48,15 @@ function Articles(props: {articles: ArticleMetaWithBonds[]}): JSX.Element {
 
 async function fetchSubscribeArticles(): Promise<ArticleMetaWithBonds[]> {
 	return unwrap_or(await API_FETCHER.articleQuery.getSubscribeArticle(10), []);
+}
+
+export function SubscribeArticlePage(): JSX.Element {
+	return <TabPanelWithLink select_tab={1}>
+		<TabPanelWithLinkItem is_disable={false} title="全站熱門"
+			link="/app/pop_article"
+			element={<></>} />
+		<TabPanelWithLinkItem is_disable={false} title="我的追蹤"
+			link="/app/subscribe_article"
+			element={<SubscribeArticlePageElement />}/>
+	</TabPanelWithLink>;
 }
