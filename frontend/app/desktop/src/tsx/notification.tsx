@@ -26,7 +26,7 @@ function NotificationRow<T>(props: { children: T, time?: Date }): JSX.Element {
 }
 
 export function NotificationList(props: { notifications: Notification[] }): JSX.Element {
-	return <div className={style.features}>
+	return <div className={style.notificationList}>
 		<div className={style.notificationRow}>
 			{
 				(() => {

@@ -7,10 +7,13 @@
     width: 80%;
     margin: 0 auto;
 }
-.notificationRow {
-    font-size: 14px;
-    & .notificationSpace {
-        min-width: 20px;
+.notificationList {
+    overflow: scroll;
+    & .notificationRow {
+        font-size: 14px;
+        & .notificationSpace {
+            min-width: 20px;
+        }
     }
 }
 .notificationMessage {
