@@ -38,7 +38,7 @@ async function fetchHotBoards(): Promise<BoardOverview[]> {
 	return boards;
 }
 
-function AllBoardList(props: {boards: Board[]}): JSX.Element {
+function AllBoardListElement(props: {boards: Board[]}): JSX.Element {
 	return <div className={style.boardList}>
 		<div className="mainContent">
 			{
@@ -92,7 +92,7 @@ function SubscribeBoardListElement(props: {boards: Board[], subscribe_boards: Su
 	</div>;
 }
 
-function BoardList(): JSX.Element {
+function AllBoardList(): JSX.Element {
 	const { setCurrentLocation } = LocationState.useContainer();
 	let [all_boards, setAllBoards] = React.useState<Board[]>([]);
 
@@ -114,8 +114,8 @@ function BoardList(): JSX.Element {
 			link="/app/hot_board_list"
 			element={<></>}/>
 		<TabPanelWithLinkItem is_disable={false} title="所有看板"
-			link="/app/board_list"
-			element={<AllBoardList boards={all_boards}/>} />
+			link="/app/all_board_list"
+			element={<AllBoardListElement boards={all_boards}/>} />
 	</TabPanelWithLink>;
 }
 
@@ -150,7 +150,7 @@ function HotBoardList(): JSX.Element {
 			link="/app/hot_board_list"
 			element={<HotBoardListElement boards={all_boards} hot_boards={hot_boards}/>} />
 		<TabPanelWithLinkItem is_disable={false} title="所有看板"
-			link="/app/board_list"
+			link="/app/all_board_list"
 			element={<></>}/>
 	</TabPanelWithLink>;
 }
@@ -178,9 +178,9 @@ function SubscribeBoardList(): JSX.Element {
 			link="/app/hot_board_list"
 			element={<></>}/>
 		<TabPanelWithLinkItem is_disable={false} title="所有看板"
-			link="/app/board_list"
+			link="/app/all_board_list"
 			element={<></>}/>
 	</TabPanelWithLink>;
 }
 
-export { BoardList, HotBoardList, SubscribeBoardList };
+export { AllBoardList, HotBoardList, SubscribeBoardList };
