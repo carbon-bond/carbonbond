@@ -85,39 +85,29 @@
     align-items: center;
     & .userTop {
         width: 100%;
-        padding: 10px;
+        padding: 10px 10px 0px;
         display: flex;
         flex-direction: row;
         justify-content: center;
         & .avatar {
-            flex: 1;
-            display: flex;
-            align-items: center;
             & img {
-                width: 120px;
-                height: 120px;
+                width: 180px;
+                height: 180px;
             }
-        }
-        & .action {
-            display: flex;
-            align-items: center;
-            width: 130px;
-            padding: 0px 5px;
         }
     }
     & .text {
         width: 100%;
         padding: 10px;
-        /* display: flex;
-        flex-direction: column;
-        justify-content: space-around; */
+        & > div:not(:first-child) {
+            margin-top: 10px;
+        }
         & .name {
             font-size: 32px;
         }
-        & .sentence {
-            font-size: 16px;
-            margin-top: 10px;
-            margin-bottom: 10px;
+        & .action {
+            display: flex;
+            align-items: center;
         }
     }
     & .information {

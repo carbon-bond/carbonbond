@@ -7,7 +7,7 @@ import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
 import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
-import { ProfileRelation, ProfileAction, ProfileDetail } from '../profile/user_page';
+import { ProfileRelation, ProfileAction, ProfileDetail, Sentence } from '../profile/user_page';
 import { ShowText } from '../display/show_text';
 import { AllChatState, OppositeKind, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
@@ -170,22 +170,21 @@ function UserIntroduction(props: {article: Article}): JSX.Element {
 				<div className={style.avatar}>
 					<img src={`/avatar/${user_name}`} />
 				</div>
-				{
-					user ?
-						<div className={style.action}>
-							<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload} setProfileUser={setUser}/>
-						</div>
-						: <></>
-				}
 			</div>
 			<div className={style.text}>
 				<div className={style.name}>
 					<Link to={`/app/user/${user_name}`}>{user_name}</Link>
 				</div>
 				{
-					user ?
-						<div className={style.sentence}> {user.sentence} </div>
-						: <></>
+					user ? <Sentence profile_user={user}
+						user_state={user_state}
+						setProfileUser={setUser}
+					/> : <></>
+				}
+				{
+					user && user_state.login && user.user_name != user_state.user_name ?  <div className={style.action}>
+						<ProfileAction profile_user={user} user_state={user_state} reload={reload} setReload={setReload} setProfileUser={setUser}/>
+					</div> : <></>
 				}
 				{
 					user ?

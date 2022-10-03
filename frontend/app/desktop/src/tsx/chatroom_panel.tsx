@@ -390,6 +390,7 @@ function SimplChatView(props: {
 	}
 
 	function focusPanel(): void {
+		if (window.is_mobile) { return; }
 		setToggleFocus(!toggle_focus);
 		// 若沒有選取任何文字，聚焦到輸入框
 		const selection = window.getSelection();

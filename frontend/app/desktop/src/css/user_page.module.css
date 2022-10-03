@@ -44,18 +44,21 @@
         & .username {
             font-size: 32px;
         }
-        & .sentence {
-            font-size: 16px;
-            overflow:hidden; 
-            -webkit-line-clamp: 2;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-        }
-        & .noSentence {
-            font-size: 20px;
-            font-style: italic;
-            color: var(--disabled-color);
-        }
+    }
+}
+
+.sentenceComponent {
+    & .sentence {
+        font-size: 16px;
+        overflow:hidden; 
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+    }
+    & .noSentence {
+        font-size: 16px;
+        font-style: italic;
+        color: var(--disabled-color);
     }
 }
 
@@ -125,9 +128,6 @@
             flex: 1;
             & button {
                 width: 100%;
-            }
-            & .sentenceEditComponent {
-                max-width: 50%;
             }
         }
         & button:hover {
