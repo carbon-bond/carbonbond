@@ -53,8 +53,8 @@ export function TabPanelWithLink(props: {children: React.ReactElement<TabPanelWi
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			{props.children.map((tab_item, index) => (
-				<Link to={tab_item.props.link} style={{ textDecoration: 'none'}} className={style.navigateTabWrapper}>
-					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+				<Link key={index} to={tab_item.props.link} style={{ textDecoration: 'none'}} className={style.navigateTabWrapper}>
+					<div className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
 							((!tab_item.props.is_disable && props.select_tab == index) ? ` ${style.navigateTabActive}` : '') }>
 						{tab_item.props.title}
 					</div>
