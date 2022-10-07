@@ -135,11 +135,9 @@ function HotBoardList(): JSX.Element {
 	}, [setCurrentLocation]);
 
 	React.useEffect(() => {
-		if (window.is_mobile) {
-			fetchHotBoards().then(boards => {
-				setHotBoards(boards);
-			});
-		}
+		fetchHotBoards().then(boards => {
+			setHotBoards(boards);
+		});
 	}, []);
 
 	return <TabPanelWithLink select_tab={1}>
