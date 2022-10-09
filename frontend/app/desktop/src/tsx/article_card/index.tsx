@@ -101,12 +101,22 @@ export function ArticleHeader(props: {
 	</div>;
 }
 
-export function ArticleLine(props: { category: string, title: string, id: number, board_info: {board_name: string, board_type: BoardType} }): JSX.Element {
+export function ArticleLine(props: {
+	category: string,
+	title: string,
+	id: number,
+	board_info: { board_name: string, board_type: BoardType }
+	h1?: boolean,
+}): JSX.Element {
 	let board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory}`}>{props.category}</span>
 		<Link to={`${board_info.to_url()}/article/${props.id}`} className="styleless">
-			<span className={style.articleTitle}>{props.title}</span>
+			{
+				props.h1 ?
+					<h1 className={style.articleTitle}>{props.title}</h1> :
+					<span className={style.articleTitle}>{props.title}</span>
+			}
 		</Link>
 		<Link className={style.articleGraphViewIcon} to={`${board_info.to_url()}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;

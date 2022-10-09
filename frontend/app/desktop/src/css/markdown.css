@@ -1,0 +1,26 @@
+.markdown {
+    & li {
+        margin: 2px 0px;
+    }
+    & ul {
+        padding-left: 20px;
+    }
+    & ol {
+        padding-left: 20px;
+    }
+    & p {
+        margin: 15px 0px;
+    }
+    & h2 {
+        margin: 15px 0px;
+    }
+    & h3 {
+        margin: 8px 0px;
+    }
+    & blockquote {
+        background: var(--gray-1);
+        border-left: 4px solid var(--gray-3);
+        margin: 8px 5px;
+        padding: 5px 10px;
+    }
+}
