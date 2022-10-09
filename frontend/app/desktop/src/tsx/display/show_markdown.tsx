@@ -2,9 +2,19 @@ import * as React from 'react';
 import MarkDownIt from 'markdown-it';
 import '../../css/markdown.css';
 
+import Prism from 'prismjs';
+
 const markdown_it = new MarkDownIt({
 	breaks: true,
 	linkify: true,
+	highlight: function (str, lang) {
+		if (lang && Prism.languages[lang]) {
+			try {
+				return Prism.highlight(str, Prism.languages[lang], lang);
+			} catch (__) { }
+		}
+		return '';
+	}
 });
 
 // 給 <a> 加上 <a target="_blank"> ，讓使用者點擊時開啓新分頁，而不用離開碳鍵

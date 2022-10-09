@@ -23,4 +23,13 @@
         margin: 8px 5px;
         padding: 5px 10px;
     }
+    & pre > code {
+        width: 100%;
+        display: inline-block;
+        overflow: scroll;
+        overflow-y: hidden;
+        background-color: black;
+        border-radius: 10px;
+        padding: 10px;
+    }
 }
