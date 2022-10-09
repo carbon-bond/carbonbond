@@ -31,7 +31,7 @@ import { Link } from 'react-router-dom';
 import { NewChat, server_trigger } from 'carbonbond-api/api_trait';
 import { useScroll } from 'react-use';
 import ReactDOM from 'react-dom';
-import { ShowLine } from './display/show_text';
+import { ShowLine } from './display/show_pure_text';
 
 const Picker = React.lazy(() => {
 	return import('emoji-mart')

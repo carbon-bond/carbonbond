@@ -10,7 +10,7 @@ import { ArticleSidebar } from './right_sidebar';
 import { ArticleLocation, LocationState } from '../global_state/location';
 import { BoardInfo, useBoardInfo } from '.';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { Format, ShowMultipleLine } from '../display/show_multiple_line';
+import { Format, ShowText } from '../display/show_text';
 
 export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
@@ -28,7 +28,7 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 					}
 					{
 						(field.kind == force.FieldKind.MultiLine || field.kind == force.FieldKind.OneLine) ?
-							<ShowMultipleLine
+							<ShowText
 								text={content[field.name]}
 								format={Format.Markdown} /> :
 							content[field.name]

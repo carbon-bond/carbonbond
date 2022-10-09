@@ -7,7 +7,7 @@ import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta,
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
 import { toastErr, useInputValue } from '../utils';
 import { ArticleContent } from '../board/article_page';
-import { ShowText } from '../display/show_text';
+import { ShowPureText } from '../display/show_pure_text';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
@@ -129,7 +129,7 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
 		<div className={style.commentContent}>
-			<ShowText text={props.comment.content} />
+			<ShowPureText text={props.comment.content} />
 		</div>
 	</div>;
 }
