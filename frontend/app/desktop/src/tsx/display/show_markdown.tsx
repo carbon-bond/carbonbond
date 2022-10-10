@@ -1,55 +1,48 @@
 import * as React from 'react';
-import MarkDownIt from 'markdown-it';
+import { marked } from 'marked';
 import '../../css/markdown.css';
 
 import Prism from 'prismjs';
 
-const markdown_it = new MarkDownIt({
+const renderer = {
+	heading(text: string, level: 1 | 2 | 3 | 4 | 5 | 6) {
+		const escaped_text = text.replace(/[\s]+/g, '_');
+		const new_level = level <= 5 ? level + 1 : level;
+		if (level == 1) {
+			return `
+            <h${new_level}>
+              <a name="${escaped_text}" class="anchor" href="#${escaped_text}">
+                <span class="header-link">⚓</span>
+              </a>
+              ${text}
+            </h${new_level}>`;
+		} else {
+			return `<h${new_level}>
+              ${text}
+            </h${new_level}>`;
+		}
+	},
+	link(href: string | null, _title: string | null, text: string) {
+		return `<a href="${href}" target="_blank">${text}</a>`;
+	}
+};
+
+marked.use({
+	gfm: true,
 	breaks: true,
-	linkify: true,
-	highlight: function (str, lang) {
+	sanitize: true,
+	renderer,
+	highlight:  function(code: string, lang: string) {
 		if (lang && Prism.languages[lang]) {
 			try {
-				return Prism.highlight(str, Prism.languages[lang], lang);
-			} catch (__) { }
+				return Prism.highlight(code, Prism.languages[lang], lang);
+			} catch (__) {
+				return code;
+			}
 		}
-		return '';
+		return code;
 	}
 });
-
-// 給 <a> 加上 <a target="_blank"> ，讓使用者點擊時開啓新分頁，而不用離開碳鍵
-const linkOpenDefaultRender = markdown_it.renderer.rules.link_open || function (tokens, idx, options, _env, self) {
-	return self.renderToken(tokens, idx, options);
-};
-
-markdown_it.renderer.rules.link_open = function (tokens, idx, options, env, self) {
-	const aIndex = tokens[idx].attrIndex('target');
-
-	if (aIndex < 0) {
-		tokens[idx].attrPush(['target', '_blank']);
-	} else {
-		tokens[idx].attrs![aIndex][1] = '_blank';
-	}
-
-	return linkOpenDefaultRender(tokens, idx, options, env, self);
-};
-
-// heading 等級從 h2 開始，以免 h1 被搜尋引擎誤認爲標題
-// h6 則維持 h6
-// h1 => h2, h2 => h3, h4 => h5, .... , h6 => h6
-const headingOpenDefaultRender = markdown_it.renderer.rules.heading_open || function (tokens, idx, options, _env, self) {
-	return self.renderToken(tokens, idx, options);
-};
-
-markdown_it.renderer.rules.heading_open = function (tokens, idx, options, env, self) {
-	const level = parseInt(tokens[idx].tag.slice(1));
-
-	const new_level = level <= 5 ? level + 1 : 6;
-
-	tokens[idx].tag = `h${new_level}`;
-
-	return headingOpenDefaultRender(tokens, idx, options, env, self);
-};
 
 export function ShowMarkdown(props: {
     text: string
@@ -57,7 +50,7 @@ export function ShowMarkdown(props: {
 	return <div
 		className="markdown"
 		dangerouslySetInnerHTML={{
-			__html: markdown_it.render(props.text)
+			__html: marked.parse(props.text)
 		}}>
 	</div>;
 }

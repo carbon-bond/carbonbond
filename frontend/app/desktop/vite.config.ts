@@ -31,7 +31,7 @@ export default defineConfig({
 			output: {
 				manualChunks: {
 					react_family: ['react', 'react-dom', 'react-router-dom', 'react-hook-form'],
-					markdown: ['markdown-it'],
+					marked: ['marked'],
 					emoji: ['emoji-mart'],
 					laws: [
 						'src/md/law/服務條款.md',
