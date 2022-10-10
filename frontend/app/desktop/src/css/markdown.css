@@ -25,11 +25,16 @@
     }
     & pre > code {
         width: 100%;
+        color: var(--gray-2);
         display: inline-block;
         overflow: scroll;
         overflow-y: hidden;
         background-color: black;
         border-radius: 10px;
         padding: 10px;
+        margin: 10px 0px;
+    }
+    & img {
+        max-width: 100%;
     }
 }
