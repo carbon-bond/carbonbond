@@ -8,7 +8,7 @@ import style from '../../css/board/right_sidebar.module.css';
 import { toastErr, useSubscribeBoard } from '../utils';
 import { Link } from 'react-router-dom';
 import { ProfileRelation, ProfileAction, ProfileDetail, Sentence } from '../profile/user_page';
-import { ShowText } from '../display/show_text';
+import { ShowPureText } from '../display/show_pure_text';
 import { AllChatState, OppositeKind, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { ConfigState } from '../global_state/config';
@@ -66,7 +66,7 @@ export function BoardSidebar(props: { board: Board }): JSX.Element {
 			<div className={style.rightSidebarBlock}>
 				<div className={style.header}>關於看板</div>
 				<div className={style.content}>
-					<ShowText text={props.board.detail} />
+					<ShowPureText text={props.board.detail} />
 				</div>
 			</div>
 		</div>

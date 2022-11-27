@@ -3,12 +3,21 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import mobilePlugin from './vite_plugins/mobile';
 import mdPlugin from 'vite-plugin-markdown';
+import prismjs from 'vite-plugin-prismjs';
 import { Mode as mdMode } from 'vite-plugin-markdown';
 
 export default defineConfig({
 	plugins: [
 		react({
 			jsxRuntime: 'classic'
+		}),
+		prismjs({
+			languages: [
+				'rust', 'c', 'cpp', 'csharp', 'javascript', 'typescript', 'css', 'sql', 'python', 'ruby',
+				'java', 'kotlin', 'go', 'lisp', 'swift', 'wasm', 'jsx', 'tsx', 'bash', 'lua', 'php', 'json'
+			],
+			css: true,
+			theme: 'tomorrow',
 		}),
 		mobilePlugin(),
 		mdPlugin({mode: [mdMode.REACT]}),
@@ -21,7 +30,8 @@ export default defineConfig({
 			},
 			output: {
 				manualChunks: {
-					react_family: ['react', 'react-dom', 'react-router-dom'],
+					react_family: ['react', 'react-dom', 'react-router-dom', 'react-hook-form'],
+					marked: ['marked'],
 					emoji: ['emoji-mart'],
 					laws: [
 						'src/md/law/服務條款.md',

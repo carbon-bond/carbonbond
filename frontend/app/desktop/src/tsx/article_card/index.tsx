@@ -7,7 +7,7 @@ import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta,
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
 import { toastErr, useInputValue } from '../utils';
 import { ArticleContent } from '../board/article_page';
-import { ShowText } from '../display/show_text';
+import { ShowPureText } from '../display/show_pure_text';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
@@ -101,12 +101,22 @@ export function ArticleHeader(props: {
 	</div>;
 }
 
-export function ArticleLine(props: { category: string, title: string, id: number, board_info: {board_name: string, board_type: BoardType} }): JSX.Element {
+export function ArticleLine(props: {
+	category: string,
+	title: string,
+	id: number,
+	board_info: { board_name: string, board_type: BoardType }
+	h1?: boolean,
+}): JSX.Element {
 	let board_info = getBoardInfo(props.board_info);
 	return <div className={style.articleLine}>
 		<span className={`${style.articleCategory}`}>{props.category}</span>
 		<Link to={`${board_info.to_url()}/article/${props.id}`} className="styleless">
-			<span className={style.articleTitle}>{props.title}</span>
+			{
+				props.h1 ?
+					<h1 className={style.articleTitle}>{props.title}</h1> :
+					<span className={style.articleTitle}>{props.title}</span>
+			}
 		</Link>
 		<Link className={style.articleGraphViewIcon} to={`${board_info.to_url()}/graph/${props.id}`}><span> 🗺</span></Link>
 	</div>;
@@ -119,7 +129,7 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
 		<div className={style.commentContent}>
-			<ShowText text={props.comment.content} />
+			<ShowPureText text={props.comment.content} />
 		</div>
 	</div>;
 }

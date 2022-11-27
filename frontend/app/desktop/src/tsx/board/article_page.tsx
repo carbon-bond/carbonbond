@@ -9,8 +9,8 @@ import { ReplyButtons } from '../article_card/bonder';
 import { ArticleSidebar } from './right_sidebar';
 import { ArticleLocation, LocationState } from '../global_state/location';
 import { BoardInfo, useBoardInfo } from '.';
-import { ShowText } from '../display/show_text';
 import { EditorPanelState } from '../global_state/editor_panel';
+import { Format, ShowText } from '../display/show_text';
 
 export function ArticleContent(props: { article: Article }): JSX.Element {
 	const article = props.article;
@@ -28,7 +28,9 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 					}
 					{
 						(field.kind == force.FieldKind.MultiLine || field.kind == force.FieldKind.OneLine) ?
-							<ShowText text={content[field.name]} /> :
+							<ShowText
+								text={content[field.name]}
+								format={Format.Markdown} /> :
 							content[field.name]
 					}
 				</div>
@@ -37,7 +39,7 @@ export function ArticleContent(props: { article: Article }): JSX.Element {
 	</div>;
 }
 
-function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Element {
+const ArticleDisplayPage = React.memo((props: { article: Article, board: Board }): JSX.Element => {
 	let { article, board } = props;
 	let { useMainScrollToBottom } = useMainScroll();
 	let scrollHandler = React.useCallback(() => { }, []);
@@ -54,6 +56,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 			with_button={true} />
 		<div className={style.articleLineWrap}>
 			<ArticleLine
+				h1={true}
 				board_info={props.board}
 				id={article.meta.id}
 				category={category}
@@ -64,7 +67,7 @@ function ArticleDisplayPage(props: { article: Article, board: Board }): JSX.Elem
 		<ArticleContent article={article} />
 		<ArticleFooter article={article.meta} hit={Hit.Comment} />
 	</div>;
-}
+});
 
 export function ArticlePage(): JSX.Element {
 	let params = useParams();

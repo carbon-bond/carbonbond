@@ -13,7 +13,7 @@ import { TabPanel, TabPanelItem } from '../components/tab_panel';
 import { AllChatState, DirectChatData } from '../global_state/chat';
 import { BottomPanelState } from '../global_state/bottom_panel';
 import { InvalidMessage } from '../../tsx/components/invalid_message';
-import { ShowText } from '../display/show_text';
+import { ShowPureText } from '../display/show_pure_text';
 import { createBrowserHistory } from 'history';
 
 import aritcle_wrapper_style from '../../css/article_wrapper.module.css';
@@ -213,7 +213,7 @@ export function ProfileDetail(props: { profile_user: User, setProfileUser: React
 		}
 		{
 			props.profile_user.introduction ? <div className={style.info}>
-				<ShowText text={props.profile_user.introduction} />
+				<ShowPureText text={props.profile_user.introduction} />
 			</div> : <div className={style.noSentence}>
 				尚無自我介紹
 			</div>

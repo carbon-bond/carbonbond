@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import style from '../css/law_page.module.css';
+import '../css/markdown.css';
 
 import { ReactComponent as TermsComponent } from '../md/law/服務條款.md';
 import { ReactComponent as RulesComponent } from '../md/law/論壇守則.md';
@@ -14,7 +15,7 @@ import {
 
 function LawPage(): JSX.Element {
 	return <div className={style.lawPage}>
-		<div>
+		<div className="markdown">
 			<Routes>
 				<Route path={encodeURIComponent('服務條款.md')} element={<TermsComponent />} />
 				<Route path={encodeURIComponent('論壇守則.md')} element={<RulesComponent />} />
