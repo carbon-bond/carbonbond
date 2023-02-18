@@ -21,7 +21,7 @@ jobs:
       with:
         directory: ./frontend
     - run: yarn install
-    - run: yarn workspace desktop build
+    - run: yarn workspace web build
     - name: 登入 DockerHub
       uses: docker/login-action@v1
       with:
@@ -30,10 +30,10 @@ jobs:
     - name: 建構並推送 docker 映像檔
       uses: docker/build-push-action@v2
       with:
-        context: ./frontend/app/desktop
+        context: ./frontend/app/web
         push: true
         tags: carbonbond/frontend:stable
-        file: ./frontend/app/desktop/deploy/Dockerfile
+        file: ./frontend/app/web/deploy/Dockerfile
     - name: 佈屬到正式環境
       if: ${{ success() }}
       uses: distributhor/workflow-webhook@v2
