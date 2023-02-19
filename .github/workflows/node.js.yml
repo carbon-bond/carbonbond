@@ -24,9 +24,8 @@ jobs:
         directory: ./frontend
     - run: yarn install
     - run: yarn lint
-    - run: yarn workspace desktop build
-    - run: yarn workspace desktop check-ts
-    - run: yarn workspace desktop check-css
-    - run: yarn workspace desktop test
-    - run: yarn workspace mobile test
+    - run: yarn workspace web build
+    - run: yarn workspace web check-ts
+    - run: yarn workspace web check-css
+    - run: yarn workspace web test
 
