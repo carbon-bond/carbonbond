@@ -29,7 +29,7 @@ pub fn get_mode() -> Mode {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RawConfig {
     pub server: RawServerConfig,
-    pub account: RawAccountConfig,
+    pub account: AccountConfig,
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
     pub business: BusinessConfig,
@@ -43,17 +43,6 @@ pub struct RawServerConfig {
     pub base_url: String,
     pub mail_domain: String,
     pub mail_from: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RawAccountConfig {
-    pub fake_email: Option<String>,
-    pub allow_self_signup: bool,
-    pub allow_invitation_signup: bool,
-    pub session_expire_seconds: usize,
-    pub min_password_length: usize,
-    pub max_password_length: usize,
-    pub email_whitelist: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,6 +101,7 @@ pub struct AccountConfig {
     pub session_expire_seconds: usize,
     pub min_password_length: usize,
     pub max_password_length: usize,
+    // 目前無作用
     pub email_whitelist: Vec<String>,
 }
 
@@ -127,21 +117,6 @@ impl From<RawServerConfig> for Fallible<ServerConfig> {
             base_url: orig.base_url,
             mail_domain: orig.mail_domain,
             mail_from: orig.mail_from,
-        })
-    }
-}
-
-impl From<RawAccountConfig> for Fallible<AccountConfig> {
-    fn from(orig: RawAccountConfig) -> Fallible<AccountConfig> {
-        Ok(AccountConfig {
-            fake_email: orig.fake_email,
-            allow_self_signup: orig.allow_self_signup,
-            allow_invitation_signup: orig.allow_invitation_signup,
-            session_expire_seconds: orig.session_expire_seconds,
-            min_password_length: orig.min_password_length,
-            max_password_length: orig.max_password_length,
-            // 目前無作用
-            email_whitelist: orig.email_whitelist,
         })
     }
 }
@@ -212,7 +187,7 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
         mode,
         file_name,
         server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        account: Fallible::<AccountConfig>::from(raw_config.account)?,
+        account: raw_config.account,
         database: raw_config.database,
         redis: raw_config.redis,
         business: raw_config.business,

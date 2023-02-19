@@ -42,4 +42,4 @@ email_whitelist = [
 ]
 
 [business]
-advertisement_contact_mail = "business@carbonbond.cc"
+advertisement_contact_mail = "business@mail.carbonbond.cc"
