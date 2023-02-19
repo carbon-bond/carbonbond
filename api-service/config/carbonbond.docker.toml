@@ -5,8 +5,8 @@ port = 8080
 base_url = "http://localhost"
 # mailgun_key_file 為一個檔案位置
 mailgun_key_file = "config/secret/MAILGUN_KEY"
-mail_domain = "mail.carbonbond.monster"
-mail_from = "碳鍵 <noreply@mail.carbonbond.monster>"
+mail_domain = "mail.carbonbond.cc"
+mail_from = "碳鍵 <noreply@mail.carbonbond.cc>"
 
 [database]
 # url 的格式為 "postgres://[用戶名]:[密碼]@[資料庫位址]:[埠口]/[資料庫名]"
@@ -42,4 +42,4 @@ email_whitelist = [
 ]
 
 [business]
-advertisement_contact_mail = "business@carbonbond.monster"
+advertisement_contact_mail = "business@carbonbond.cc"
