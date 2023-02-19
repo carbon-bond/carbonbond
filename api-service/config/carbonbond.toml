@@ -7,8 +7,8 @@ port = 8080
 base_url = "http://localhost:3000"
 
 [email]
-domain = "mail.carbonbond.cc"
-from = "碳鍵 <noreply@mail.carbonbond.cc>"
+domain = "mail.my-domain.com"
+from = "碳鍵 <noreply@mail.my-domain.com>"
 
 # 若設置 fake_receiver ，註冊信、邀請信、找回密碼信....等等所有信件將一律寄送至 fake_receiver
 # 開發時可將 fake_receiver 設爲自己的常用信箱，以避免誤寄
