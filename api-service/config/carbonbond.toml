@@ -3,12 +3,37 @@
 [server]
 address = "0.0.0.0"
 port = 8080
-# base_url 為前端網址（若反向代理，前端、後端的 IP 跟埠口可能不同）
+# base_url 為前端網址（若反向代理，前後端的 IP 跟埠口可能不同）
 base_url = "http://localhost:3000"
-# mailgun_key_file 為一個檔案位置
-mailgun_key_file = "config/secret/MAILGUN_KEY.example"
-mail_domain = "mail.carbonbond.cc"
-mail_from = "碳鍵 <noreply@mail.carbonbond.cc>"
+
+[email]
+domain = "mail.carbonbond.cc"
+from = "碳鍵 <noreply@mail.carbonbond.cc>"
+
+# 若設置 fake_receiver ，註冊信、邀請信、找回密碼信....等等所有信件將一律寄送至 fake_receiver
+# 開發時可將 fake_receiver 設爲自己的常用信箱，以避免誤寄
+# 上線時應刪除此行
+fake_receiver = "fake-receiver@email"
+
+# 目前無作用，未來預計作爲 email 的白名單，只有在白名單中的域名才有註冊資格
+# 可用於過濾學校、公司...等等組織單位
+signup_whitelist = []
+
+    [email.driver]
+    # email type 可以是 Log, SMTP, Mailgun 三種
+    # log 代表並不真的寄送 email ，僅僅把 email 的內容打印到 log 裡
+    type = "Log"
+
+    # 若 type = "Mailgun" ， 需額外提供 mailgun_key_file ，這是一個檔案路徑，其中安放 mailgun 的 API key。
+    # mailgun API key 的文件可參考
+    # https://help.mailgun.com/hc/en-us/articles/203380100-Where-Can-I-Find-My-API-Key-and-SMTP-Credentials-
+    # type = Mailgun
+    # mailgun_api_key = "API_KEY"
+
+    # 若 type = "SMTP" ， 需額外提供 smtp_username, smtp_password
+    # type = "SMTP"
+    # smtp_username = "user@mail.provider.com" # username 是一個完整的電郵地址
+    # smtp_password = "my_smtp_password"
 
 [database]
 # url 的格式為 "postgres://[用戶名]:[密碼]@[資料庫位址]:[埠口]/[資料庫名]"
@@ -25,39 +50,11 @@ max_conn = 10
 host = "redis://127.0.0.1/"
 
 [account]
-# 信件將一律寄送至 fake_email
-# 開發時可將 fake_email 設爲自己的常用信箱，以避免誤寄
-# 上線時應移除此設置
-fake_email = "fake@email"
 allow_self_signup = true
 allow_invitation_signup = true
 session_expire_seconds = 604800 # 604800 秒 = 一週
 min_password_length = 6
 max_password_length = 100
-email_whitelist = [
-    # 臺大
-    '@ntu\.edu\.tw$',
-    # 清大
-    '@(oz|m\d{2,3})\.nthu\.edu\.tw$',
-    # 交大
-    '@nctu\.edu\.tw$',
-    # 成大
-    '@mail\.ncku\.edu\.tw$',
-    # 政大
-    '@nccu\.edu\.tw$',
-    # 中央
-    '@cc\.ncu\.edu\.tw$',
-    # 中興
-    '@mail\.nchu\.edu\.tw$',
-    # 中山
-    '@student\.nsysu\.edu\.tw$',
-    # 中正
-    '@ccu\.edu\.tw$',
-    # 臺師大
-    '@ntnu\.edu\.tw$',
-    # 高師大
-    '@mail\.nknu\.edu\.tw$'
-]
 
 [business]
 advertisement_contact_mail = "business@my-domain.com"
