@@ -1,0 +1,16 @@
+{
+  "name": "carbonbond-docs",
+  "version": "0.1.0",
+  "description": "碳鍵論壇的文件網站",
+  "author": "金剛",
+  "license": "ISC",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0-alpha.47",
+    "vue": "^3.2.47"
+  }
+}
