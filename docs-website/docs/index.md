@@ -15,7 +15,7 @@ hero:
   actions:
     - theme: brand
       text: 出發
-      link: /概述/碳鍵是什麼
+      link: /介紹/碳鍵是什麼
     - theme: alt
       text: 源碼
       link: https://github.com/carbon-bond/carbonbond

@@ -20,14 +20,14 @@ cp carbonbond.docker.toml carbonbond.release.toml
 ```sh
 cd deploy
 sh build.sh
-docker-compose build
+docker compose build
 ```
 
 4. 啓動 docker
 
 ```sh
 cd deploy
-docker-compose up
+docker compose up
 ```
 
 需先關閉本地端的 postgresql ，否則埠口會撞到
