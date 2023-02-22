@@ -148,10 +148,10 @@ export function SignupStatus(
 		}
 		try {
 			unwrap(await API_FETCHER.userQuery.sendSignupEmail(email, false));
+			toast(`註冊信已送出，請至 ${email} 查收`);
 		} catch (err) {
 			toastErr(err);
 		}
-		toast(`註冊信已送出，請至 ${email} 查收`);
 		props.setModalStatus(null);
 	}
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {

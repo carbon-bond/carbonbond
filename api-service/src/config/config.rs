@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use crate::custom_error::{Contextable, Error, Fallible};
+use crate::custom_error::{Error, Fallible};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Mode {
@@ -26,50 +26,34 @@ pub fn get_mode() -> Mode {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RawConfig {
-    pub server: RawServerConfig,
-    pub account: RawAccountConfig,
-    pub database: DatabaseConfig,
-    pub redis: RedisConfig,
-    pub business: BusinessConfig,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RawServerConfig {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServerConfig {
     pub address: String,
     pub port: u64,
-    pub mailgun_key_file: PathBuf,
     pub base_url: String,
-    pub mail_domain: String,
-    pub mail_from: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RawAccountConfig {
-    pub fake_email: Option<String>,
-    pub allow_self_signup: bool,
-    pub allow_invitation_signup: bool,
-    pub session_expire_seconds: usize,
-    pub min_password_length: usize,
-    pub max_password_length: usize,
-    pub email_whitelist: Vec<String>,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "type")]
+pub enum EmailDriver {
+    Log,
+    SMTP {
+        smtp_username: String,
+        smtp_password: String,
+    },
+    Mailgun {
+        mailgun_api_key: String,
+    },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BusinessConfig {
-    pub advertisement_contact_mail: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct Config {
-    pub file_name: PathBuf,
-    pub mode: Mode,
-    pub server: ServerConfig,
-    pub database: DatabaseConfig,
-    pub account: AccountConfig,
-    pub redis: RedisConfig,
-    pub business: BusinessConfig,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EmailConfig {
+    pub driver: EmailDriver,
+    pub domain: String,
+    pub from: String,
+    pub fake_receiver: Option<String>,
+    // 目前無作用
+    pub signup_whitelist: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -94,56 +78,41 @@ impl DatabaseConfig {
 pub struct RedisConfig {
     pub host: String,
 }
-#[derive(Debug, Clone)]
-pub struct ServerConfig {
-    pub address: String,
-    pub port: u64,
-    pub mailgun_api_key: String,
-    pub base_url: String,
-    pub mail_domain: String,
-    pub mail_from: String,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountConfig {
-    pub fake_email: Option<String>,
     pub allow_self_signup: bool,
     pub allow_invitation_signup: bool,
     pub session_expire_seconds: usize,
     pub min_password_length: usize,
     pub max_password_length: usize,
-    pub email_whitelist: Vec<String>,
 }
 
-impl From<RawServerConfig> for Fallible<ServerConfig> {
-    fn from(orig: RawServerConfig) -> Fallible<ServerConfig> {
-        let mut mailgun_api_key = load_file_content(&orig.mailgun_key_file)
-            .context(format!("讀取設定檔 {:?} 時失敗", orig.mailgun_key_file))?;
-        mailgun_api_key = mailgun_api_key.trim().to_owned();
-        Ok(ServerConfig {
-            address: orig.address,
-            port: orig.port,
-            mailgun_api_key,
-            base_url: orig.base_url,
-            mail_domain: orig.mail_domain,
-            mail_from: orig.mail_from,
-        })
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BusinessConfig {
+    pub advertisement_contact_mail: Option<String>,
 }
 
-impl From<RawAccountConfig> for Fallible<AccountConfig> {
-    fn from(orig: RawAccountConfig) -> Fallible<AccountConfig> {
-        Ok(AccountConfig {
-            fake_email: orig.fake_email,
-            allow_self_signup: orig.allow_self_signup,
-            allow_invitation_signup: orig.allow_invitation_signup,
-            session_expire_seconds: orig.session_expire_seconds,
-            min_password_length: orig.min_password_length,
-            max_password_length: orig.max_password_length,
-            // 目前無作用
-            email_whitelist: orig.email_whitelist,
-        })
-    }
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RawConfig {
+    pub server: ServerConfig,
+    pub email: EmailConfig,
+    pub database: DatabaseConfig,
+    pub account: AccountConfig,
+    pub redis: RedisConfig,
+    pub business: BusinessConfig,
+}
+
+#[derive(Debug, Clone)]
+pub struct Config {
+    pub file_name: PathBuf,
+    pub mode: Mode,
+    pub email: EmailConfig,
+    pub server: ServerConfig,
+    pub database: DatabaseConfig,
+    pub account: AccountConfig,
+    pub redis: RedisConfig,
+    pub business: BusinessConfig,
 }
 
 fn load_file_content<P: AsRef<Path>>(path: P) -> Fallible<String> {
@@ -211,12 +180,15 @@ pub fn load_config(path: &Option<String>) -> Fallible<Config> {
     let config = Config {
         mode,
         file_name,
-        server: Fallible::<ServerConfig>::from(raw_config.server)?,
-        account: Fallible::<AccountConfig>::from(raw_config.account)?,
+        server: raw_config.server,
+        email: raw_config.email,
+        account: raw_config.account,
         database: raw_config.database,
         redis: raw_config.redis,
         business: raw_config.business,
     };
+
+    log::debug!("載入設定檔 {:#?}", config);
 
     Ok(config)
 }

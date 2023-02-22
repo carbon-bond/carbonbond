@@ -8,7 +8,13 @@ export default {
     ],
 	  sidebar: [
 		  {
-        text: '概述',
+        text: '介紹',
+        items: [
+          { text: '碳鍵是什麼？', link: '/概述/碳鍵是什麼.html' }
+        ]
+      },
+		  {
+        text: '開發',
         items: [
           { text: '碳鍵是什麼？', link: '/概述/碳鍵是什麼.html' }
         ]

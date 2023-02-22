@@ -38,6 +38,7 @@ percent-encoding = "2.1.0"
 warp = {version = "0.3.2", features = ["compression-gzip"]}
 futures = "0.3.13"
 urlencoding = "2.1.0"
+lettre = { version = "0.10.2", features = ["tokio1-native-tls"]}
 
 [dependencies.openssl]
 version = "0.10.29"

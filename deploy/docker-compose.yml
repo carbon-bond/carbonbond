@@ -22,7 +22,7 @@ services:
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../frontend/app/web
-    #   dockerfile: ../frontend/app/web/deploy/Dockerfile
+    #   dockerfile: deploy/Dockerfile
     restart: always
     ports:
       - ${FRONTEND_PORT:-80}:80
@@ -33,7 +33,7 @@ services:
     # 欲自行建置 docker image ，以下三行取代上一行
     # build:
     #   context: ../api-service
-    #   dockerfile: ../api-service/deploy/Dockerfile
+    #   dockerfile: deploy/Dockerfile
     volumes:
       - ../api-service/config:/app/api-service/config
     depends_on:
