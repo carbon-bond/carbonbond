@@ -30,9 +30,10 @@ signup_whitelist = []
     # type = Mailgun
     # mailgun_api_key = "API_KEY"
 
-    # 若 type = "SMTP" ， 需額外提供 smtp_username, smtp_password
+    # 若 type = "SMTP" ， 需額外提供 smtp_server, smtp_username, smtp_password
     # type = "SMTP"
-    # smtp_username = "user@mail.provider.com" # username 是一個完整的電郵地址
+    # smtp_server = "smtp.provider.com"
+    # smtp_username = "user@provider.com" # username 是一個完整的電郵地址
     # smtp_password = "my_smtp_password"
 
 [database]

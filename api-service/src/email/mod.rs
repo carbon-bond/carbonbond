@@ -39,6 +39,7 @@ async fn send_html_email(receiver: &str, subject: &str, html_content: String) ->
             .await
         }
         EmailDriver::SMTP {
+            smtp_server,
             smtp_username,
             smtp_password,
         } => {
@@ -47,6 +48,7 @@ async fn send_html_email(receiver: &str, subject: &str, html_content: String) ->
                 receiver,
                 subject,
                 html_content,
+                smtp_server,
                 smtp_username,
                 smtp_password,
             )

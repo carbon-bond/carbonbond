@@ -9,6 +9,7 @@ pub async fn send_via_smtp(
     receiver: &str,
     subject: &str,
     html_content: String,
+    smtp_server: &str,
     smtp_username: &str,
     smtp_password: &str,
 ) -> Fallible<()> {
@@ -23,7 +24,7 @@ pub async fn send_via_smtp(
     let creds = Credentials::new(smtp_username.to_owned(), smtp_password.to_owned());
 
     let mailer: AsyncSmtpTransport<Tokio1Executor> =
-        AsyncSmtpTransport::<Tokio1Executor>::relay("smtp.mailgun.org")
+        AsyncSmtpTransport::<Tokio1Executor>::relay(smtp_server)
             .unwrap()
             .credentials(creds)
             .build();
