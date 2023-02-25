@@ -32,7 +32,7 @@
 - 支援 Markdown 標記語言
     - 也考慮設計碳鍵自己的標記語言
 
-更多細節詳見[碳鍵指南](./doc/指南.md)。
+更多細節詳見[碳鍵文件](https://docs.carbonbond.cc)。
 
 ## 建置
 - 後端：使用 Rust 語言開發。
@@ -52,4 +52,4 @@
     + `yarn dev` 啓動前端伺服器，支援熱重載
     + `yarn lint` 檢查風格
 
-更詳細的步驟請見 [快速開始](./doc/快速開始.md)。
+更詳細的步驟請見 [快速開始](https://docs.carbonbond.cc/快速開始.html)。
