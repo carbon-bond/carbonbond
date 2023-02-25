@@ -17,12 +17,19 @@ export default {
     ],
 	  sidebar: [
 		  {
-        text: '介紹',
+        text: '基礎',
         items: [
-          { text: '碳鍵是什麼？', link: '/介紹/碳鍵是什麼.html' },
-          { text: '安裝', link: '/介紹/安裝.html' },
-          { text: '電郵設定', link: '/介紹/電郵設定.html' },
-          { text: 'HTTPS', link: '/介紹/HTTPS.html' }
+          { text: '碳鍵是什麼？', link: '/基礎/碳鍵是什麼.html' },
+          { text: '安裝', link: '/基礎/安裝.html' },
+          { text: '電郵設定', link: '/基礎/電郵設定.html' },
+          { text: '設定檔一覽', link: '/基礎/設定檔一覽.html' }
+        ]
+      },
+		  {
+        text: '進階',
+        items: [
+          { text: '架構', link: '/進階/架構.html' },
+          { text: 'HTTPS', link: '/進階/HTTPS.html' }
         ]
       },
 		  {
