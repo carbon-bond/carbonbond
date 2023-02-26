@@ -150,6 +150,7 @@
   justify-content: space-around;
   align-items: center;
   background: var(--background-color);
+  height: 0px;
 }
 
 .panelInit {
