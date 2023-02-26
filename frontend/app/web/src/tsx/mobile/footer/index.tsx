@@ -67,12 +67,14 @@ function FooterPanel(props: {chosen: ChosenBubble | null}): JSX.Element {
 		case 'editor': {
 			return <MobileEditor />;
 		}
+		case 'is_init': {
+			return <></>;
+		}
 	}
 }
 
 export function Footer(): JSX.Element {
 	const { all_chat } = AllChatState.useContainer();
-	let [is_init, set_is_init] = React.useState<boolean>(false);
 	const { chatrooms, chosen_bubble, setChosenBubble } = BottomPanelState.useContainer();
 	const { editor_panel_data } = EditorPanelState.useContainer();
 
@@ -93,13 +95,8 @@ export function Footer(): JSX.Element {
 		}
 	}, [chatrooms, chosen_bubble, editor_panel_data, setChosenBubble]);
 
-	function setChosen(chosen: ChosenBubble | null): void {
-		set_is_init(false);
-		setChosenBubble(chosen);
-	}
-
 	function getPanelClassName(): string {
-		if (is_init) {
+		if (chosen_bubble?.kind == 'is_init') {
 			return style.panelInit;
 		} else if (chosen_bubble == null) {
 			return style.panelClose;
@@ -109,7 +106,7 @@ export function Footer(): JSX.Element {
 	}
 
 	function getFooterClassName(): string {
-		if (is_init) {
+		if (chosen_bubble?.kind == 'is_init') {
 			return style.footerInit;
 		} else if (chosen_bubble == null) {
 			return style.footerClose;
@@ -143,9 +140,9 @@ export function Footer(): JSX.Element {
 							if (chosen_bubble == null
 								|| chosen_bubble.kind != 'chat'
 								|| (chosen_bubble.kind == 'chat' && chosen_bubble.chatroom.id != room.id)) {
-								setChosen({ kind: 'chat', chatroom: room });
+								setChosenBubble({ kind: 'chat', chatroom: room });
 							} else {
-								setChosen(null);
+								setChosenBubble(null);
 							}
 						}} />)
 			}

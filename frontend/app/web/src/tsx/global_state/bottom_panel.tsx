@@ -31,7 +31,10 @@ export type ChosenBubble = {
 	chatroom: RoomData,
 } | {
 	kind: 'editor',
+} | {
+	kind: 'is_init', // 初始狀態
 };
+
 
 function useBottomPanelState(): {
 	chatrooms: RoomData[],
@@ -45,7 +48,7 @@ function useBottomPanelState(): {
 	toRealRoom: (fake_id: number, id: number) => void,
 	} {
 	let [chatrooms, setChatrooms] = useState<RoomData[]>([]);
-	let [chosen_bubble, setChosenBubble] = useState<ChosenBubble | null>(null);
+	let [chosen_bubble, setChosenBubble] = useState<ChosenBubble | null>({kind: 'is_init'});
 
 	function clearRoom(): void {
 		setChatrooms([]);
