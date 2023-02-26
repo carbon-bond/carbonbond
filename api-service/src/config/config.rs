@@ -38,6 +38,7 @@ pub struct ServerConfig {
 pub enum EmailDriver {
     Log,
     SMTP {
+        smtp_server: String,
         smtp_username: String,
         smtp_password: String,
     },

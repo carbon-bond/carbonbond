@@ -10,6 +10,8 @@
     "preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "@types/node": "^18.14.0",
+    "markdown-it-footnote": "^3.0.3",
     "vitepress": "^1.0.0-alpha.47",
     "vue": "^3.2.47"
   }
