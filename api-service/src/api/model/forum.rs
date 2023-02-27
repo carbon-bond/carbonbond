@@ -17,6 +17,7 @@ pub mod forum_model_root {
     pub struct User {
         pub id: i64,
         pub user_name: String,
+        pub is_robot: bool,
         pub email: String,
         pub energy: i64,
         pub sentence: String,

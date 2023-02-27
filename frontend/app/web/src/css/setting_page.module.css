@@ -17,4 +17,8 @@
             border: 1px solid var(--gray-2);
         }
     }
+    & .warning {
+        margin-top: 12px;
+        color: var(--red);
+    }
 }

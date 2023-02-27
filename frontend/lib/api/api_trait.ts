@@ -13,7 +13,7 @@ export type Result<T, E> = {
 export type Fetcher = (query: Object) => Promise<string>;
 export type ClaimTitleRequest = 
  | { Lawer: { license_id: string } };
-export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string; titles: string | null };
+export type User = {     id: number; user_name: string; is_robot: boolean; email: string;     energy: number; sentence: string; hater_count_public: number;     hater_count_private: number; follower_count_public: number;     follower_count_private: number; hating_count_public: number;     hating_count_private: number; following_count_public: number;     following_count_private: number; introduction: string; gender: string; birth_year: number; job: string; city: string; titles: string |     null };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; now_lic_no: string; birthsday: number;     email: string };
@@ -215,6 +215,9 @@ export class UserQuery {
     }
     async resetPasswordByToken(password: string, token: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "ResetPasswordByToken": { password, token } } }));
+    }
+    async beRobot(): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "BeRobot": {  } } }));
     }
     async login(user_name: string, password: string): Promise<Result<Option<User>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Login": { user_name, password } } }));

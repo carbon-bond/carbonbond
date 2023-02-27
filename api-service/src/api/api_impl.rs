@@ -601,6 +601,13 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         db::user::reset_password_by_token(&password, &token).await
     }
 
+    async fn be_robot(&self,
+        context: &mut crate::Ctx,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::be_robot(id).await
+    }
+
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::forum::User>> {
         if let Some(id) = context.get_id().await? {
             Ok(Some(db::user::get_by_id(id).await?))

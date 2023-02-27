@@ -27,6 +27,7 @@ macro_rules! users {
             WITH metas AS (SELECT
                 users.id,
                 users.user_name,
+                users.is_robot,
                 users.email,
                 users.sentence,
                 users.energy,
@@ -583,6 +584,19 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
         FROM users
         WHERE reset_password.user_id = (SELECT user_id from reset_password where token = $1)",
         token
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn be_robot(id: i64) -> Fallible<()> {
+    log::trace!("用戶 {} 變成機器人", id);
+    let pool = get_pool();
+    sqlx::query!(
+        "UPDATE users SET is_robot = true
+        WHERE id = $1",
+        id
     )
     .execute(pool)
     .await?;

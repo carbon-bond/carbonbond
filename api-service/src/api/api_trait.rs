@@ -53,6 +53,7 @@ pub trait UserQueryRouter {
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
     async fn query_user_name_by_reset_password_token(&self, context: &mut crate::Ctx, token: String) -> Result<Option<String>, crate::custom_error::Error>;
     async fn reset_password_by_token(&self, context: &mut crate::Ctx, password: String, token: String) -> Result<(), crate::custom_error::Error>;
+    async fn be_robot(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
     async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn logout(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind, is_public: bool) -> Result<(), crate::custom_error::Error>;
@@ -183,6 +184,11 @@ pub trait UserQueryRouter {
             }
              UserQuery::ResetPasswordByToken { password, token } => {
                  let resp = self.reset_password_by_token(context, password, token).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::BeRobot {  } => {
+                 let resp = self.be_robot(context, ).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

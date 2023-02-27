@@ -110,6 +110,10 @@ pub enum UserQuery {
     #[chitin(leaf, response = "()")]
     ResetPasswordByToken { password: String, token: String },
 
+    // 變成機器人
+    #[chitin(leaf, response = "()")]
+    BeRobot{},
+
     #[chitin(leaf, response = "Option<super::model::forum::User>")]
     Login { user_name: String, password: String },
     #[chitin(leaf, response = "()")]
