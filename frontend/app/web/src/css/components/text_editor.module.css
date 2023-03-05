@@ -1,0 +1,9 @@
+.editor {
+  min-height: 70px !important;
+  background: var(--white);
+  color: var(--font-color);
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+  border: 1px solid var(--gray-3);
+}

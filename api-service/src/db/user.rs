@@ -680,3 +680,19 @@ pub async fn update_info(id: i64, introduction: String, job: String, city: Strin
     .await?;
     Ok(())
 }
+
+pub async fn search_user_name_by_prefix(prefix: String, count: usize) -> Fallible<Vec<String>> {
+    let pool = get_pool();
+    let records = sqlx::query!(
+        "
+        SELECT user_name from users
+        WHERE user_name ^@ $1
+        LIMIT $2
+        ",
+        prefix,
+        count as i64,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(records.into_iter().map(|record| record.user_name).collect())
+}

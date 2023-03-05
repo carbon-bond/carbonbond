@@ -601,9 +601,7 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         db::user::reset_password_by_token(&password, &token).await
     }
 
-    async fn be_robot(&self,
-        context: &mut crate::Ctx,
-    ) -> Result<(), crate::custom_error::Error> {
+    async fn be_robot(&self, context: &mut crate::Ctx) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::user::be_robot(id).await
     }
@@ -842,6 +840,14 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::user::update_info(id, introduction, job, city).await
+    }
+    async fn search_user_name_by_prefix(
+        &self,
+        _context: &mut crate::Ctx,
+        prefix: String,
+        count: usize,
+    ) -> Result<Vec<String>, crate::custom_error::Error> {
+        db::user::search_user_name_by_prefix(prefix, count).await
     }
 }
 

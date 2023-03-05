@@ -267,6 +267,9 @@ export class UserQuery {
     async updateInformation(introduction: string, job: string, city: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, job, city } } }));
     }
+    async searchUserNameByPrefix(prefix: string, count: number): Promise<Result<Array<string>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SearchUserNameByPrefix": { prefix, count } } }));
+    }
 }
 
 export class PartyQuery {

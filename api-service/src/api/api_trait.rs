@@ -70,6 +70,7 @@ pub trait UserQueryRouter {
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
     async fn update_sentence(&self, context: &mut crate::Ctx, sentence: String) -> Result<(), crate::custom_error::Error>;
     async fn update_information(&self, context: &mut crate::Ctx, introduction: String, job: String, city: String) -> Result<(), crate::custom_error::Error>;
+    async fn search_user_name_by_prefix(&self, context: &mut crate::Ctx, prefix: String, count: usize) -> Result<Vec<String>, crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: UserQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              UserQuery::QueryMe {  } => {
@@ -269,6 +270,11 @@ pub trait UserQueryRouter {
             }
              UserQuery::UpdateInformation { introduction, job, city } => {
                  let resp = self.update_information(context, introduction, job, city).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::SearchUserNameByPrefix { prefix, count } => {
+                 let resp = self.search_user_name_by_prefix(context, prefix, count).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

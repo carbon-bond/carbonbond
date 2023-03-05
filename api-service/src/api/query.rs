@@ -112,7 +112,7 @@ pub enum UserQuery {
 
     // 變成機器人
     #[chitin(leaf, response = "()")]
-    BeRobot{},
+    BeRobot {},
 
     #[chitin(leaf, response = "Option<super::model::forum::User>")]
     Login { user_name: String, password: String },
@@ -160,6 +160,10 @@ pub enum UserQuery {
         job: String,
         city: String,
     },
+
+    // 留言、文章中提及帳號名
+    #[chitin(leaf, response = "Vec<String>")]
+    SearchUserNameByPrefix { prefix: String, count: usize },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum PartyQuery {
