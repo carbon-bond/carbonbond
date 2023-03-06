@@ -1,6 +1,5 @@
 import { unwrap } from 'carbonbond-api/api_utils';
 import { RootQuery, BoardType, force } from 'carbonbond-api/api_trait';
-import request from 'request';
 import prompts from 'prompts';
 import minimist from 'minimist';
 
@@ -14,121 +13,70 @@ const protocal = args['s'] ? 'https' : 'http';
 const scripts = args._;
 const URL = `${protocal}://${host}:${port}/api`;
 
-type Context = {
-	token: string[],
-	is_logining: boolean,
-	is_locked: boolean,
-	selected_token: null | string,
-};
-
 console.log(`URL = ${URL}`);
 
-let {
-	API_FETCHER,
-	doLogin,
-	lockUser, // 在一對 lockUser 與 unlockUser 之間的 API_FETCHER 請求保證由同一個用戶發出
-	unlockUser
-} = (() => {
-	const context: Context  = {
-		token: [],
-		is_logining: false,
-		is_locked: false,
-		selected_token: null,
-	};
-	const lockUser = (): void => {
-		context.is_locked = true;
-		context.selected_token = null;
-	};
-	const unlockUser = (): void => {
-		context.is_locked = false;
-		context.selected_token = null;
-	};
-	const random_token = (): string => {
-		let rand = Math.floor(Math.random() * context.token.length);
-		return context.token[rand];
-	};
+async function doLogin(): Promise<string[]> {
+	let tokens: string[] = [];
+
 	const fetcher = async (query: Object): Promise<string> => {
-		const jar = request.jar();
-		if (!context.is_logining && !context.is_locked) {
-			const cookie = request.cookie(random_token())!;
-			jar.setCookie(cookie, URL);
-		} else if (!context.is_logining && context.is_locked) {
-			context.selected_token = context.selected_token ?? random_token();
-			const cookie = request.cookie(context.selected_token)!;
-			jar.setCookie(cookie, URL);
-		}
-		return new Promise((resolve, reject) => {
-			request(
-				{
-					url: URL,
-					jar,
-					method: 'POST',
-					gzip: true,
-					json: query,
-				},
-				(err, resp, body) => {
-					if (err) {
-						reject(err);
-					} else {
-						if (context.is_logining) {
-							let cookies = resp.headers['set-cookie'];
-							if (typeof cookies == 'undefined' || cookies.length == 0) {
-								reject(`登入失敗！${JSON.stringify(body)}`);
-							} else {
-								context.token.push(cookies[0]);
-							}
-						}
-						resolve(JSON.stringify(body));
-					}
-				}
-			);
+		return fetch(URL, {
+			body: JSON.stringify(query),
+			method: 'POST',
+		}).then(response => {
+			const cookie = response.headers.get('set-cookie');
+			if (cookie == null || cookie.length == 0) {
+				throw new Error(`登入失敗！${JSON.stringify(response.body)}`);
+			} else {
+				tokens.push(cookie);
+			}
+			return response.json();
+		}).then(json => {
+			return JSON.stringify(json);
 		});
 	};
 	const API_FETCHER = new RootQuery(fetcher);
-	const doLogin = async (): Promise<void> => {
-		context.is_logining = true;
-		let user_env = process.env.USERS;
-		if (user_env) {
-			for (let tuple of user_env.split(';')) {
-				let [user, password] = tuple.split(',');
-				try {
-					unwrap(await API_FETCHER.userQuery.login(user, password));
-				} catch (e) {
-					console.error(e);
-				}
-			}
-		} else {
-			console.log('\n### 請登入至少一組帳號 ###\n');
-			console.log('小技巧：你可以用環境變數來設定使用者列表。例如 USERS="金剛,aaa;石墨,bbb;巴克,ccc" yarn inject\n');
-			while (true) {
-				let user = await prompts({
-					type: 'text',
-					name: 'username',
-					message: '帳號（輸入空字串即結束登入）',
-				});
-				if (!user.username) {
-					break;
-				}
-				let password = await prompts({
-					type: 'password',
-					name: 'password',
-					message: '密碼',
-				});
-				try {
-					unwrap(await API_FETCHER.userQuery.login(user.username, password.password));
-				} catch (e) {
-					console.error(e);
-				}
-			}
-		}
-		if (context.token.length == 0) {
-			throw '至少須登入一個帳號！';
-		}
-		context.is_logining = false;
 
-	};
-	return { doLogin, API_FETCHER, lockUser, unlockUser };
-})();
+	let user_env = process.env.USERS;
+	if (user_env) {
+		for (let tuple of user_env.split(';')) {
+			let [user, password] = tuple.split(',');
+			try {
+				unwrap(await API_FETCHER.userQuery.login(user, password));
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	} else {
+		console.log('\n### 請登入至少一組帳號 ###\n');
+		console.log('小技巧：你可以用環境變數來設定使用者列表。例如 USERS="金剛,aaa;石墨,bbb;巴克,ccc" yarn inject\n');
+		while (true) {
+			let user = await prompts({
+				type: 'text',
+				name: 'username',
+				message: '帳號（輸入空字串即結束登入）',
+			});
+			if (!user.username) {
+				break;
+			}
+			let password = await prompts({
+				type: 'password',
+				name: 'password',
+				message: '密碼',
+			});
+			try {
+				unwrap(await API_FETCHER.userQuery.login(user.username, password.password));
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	}
+	if (tokens.length == 0) {
+		throw '至少須登入一個帳號！';
+	}
+	return tokens;
+}
+
+type IDMap = { [index: number]: number };
 
 type ArticleConentElt = number | string | force.Bond;
 type ArticleContent = ArticleConentElt[] | ArticleConentElt;
@@ -145,106 +93,157 @@ type BoardConfig = {
 	articles: ArticleConfig[];
 };
 
-export async function inject(file: string): Promise<void> {
+class RandomUser {
+	tokens: string[];
+	API_FETCHER: RootQuery;
+	is_locked: boolean;
+	locked_token: string | null;
+	constructor(tokens: string[]) {
+		this.tokens = tokens;
+		this.is_locked = false;
+		this.locked_token = null;
+		const fetcher = async (query: Object): Promise<string> => {
+			return fetch(URL, {
+				body: JSON.stringify(query),
+				method: 'POST',
+				headers: {
+					cookie: this.get_token(),
+					credentials: 'include'
+				}
+			}).then(response => response.json())
+			.then(json => {
+				return JSON.stringify(json);
+			});
+		};
+		this.API_FETCHER = new RootQuery(fetcher);
+	}
+	lockUser(): void {
+		this.is_locked = true;
+		this.locked_token = null;
+	};
+	unlockUser(): void {
+		this.is_locked = false;
+		this.locked_token = null;
+	};
+	random_token(): string {
+		let rand = Math.floor(Math.random() * this.tokens.length);
+		return this.tokens[rand];
+	};
+	get_token(): string {
+		if (this.is_locked) {
+			this.locked_token = this.locked_token ?? this.random_token();
+			return this.locked_token;
+		}
+		return this.random_token();
+	}
+	async injectBoard(board: BoardConfig): Promise<void> {
+		this.lockUser();
+		let party_id = -1;
+		try {
+
+			party_id = unwrap(
+				await this.API_FETCHER.partyQuery.createParty(
+					`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
+					null
+				)
+			);
+		} catch (err) {
+			console.error(err);
+		}
+
+		let categories = board.force.categories;
+		let index_to_database_id: IDMap = {};
+		let board_id: number;
+
+		try {
+			let b = unwrap(await this.API_FETCHER.boardQuery.queryBoard(board.name, BoardType.General));
+			board_id = b.id;
+		} catch (err) {
+			try {
+				console.log(`找不到看板 ${board.name}，嘗試創起來`);
+				board_id = unwrap(
+					await this.API_FETCHER.boardQuery.createBoard({
+						ruling_party_id: party_id,
+						board_name: board.name,
+						board_type: BoardType.General,
+						title: '測試標題',
+						detail: '測試',
+						force: board.force,
+					})
+				);
+				console.log(`創板成功 ${board.name} = ${board_id}`);
+			} catch (err) {
+				console.log(`創板失敗 ${err}`);
+				return;
+			}
+		} finally {
+			this.unlockUser();
+		}
+
+		for (let i = 0; i < board.articles.length; i++) {
+			let article = board.articles[i];
+			let category = categories.find(c => c.name = article.category);
+			if (category == undefined) {
+				throw `未知的分類 ${article.category}`;
+			}
+			let id = await this.injectArticle(board_id, article, category, index_to_database_id);
+			console.log(`發文成功 ${article.title} = ${id}`);
+			index_to_database_id[i] = id;
+		}
+	}
+	async injectArticle(
+		board_id: number,
+		article: ArticleConfig,
+		category: force.Category,
+		index_to_database_id: IDMap
+	): Promise<number> {
+		for (let field_name of Object.keys(article.content)) {
+			let field = category.fields.find((f) => f.name == field_name);
+			if (!field) {
+				throw `未知的欄位名 ${field_name}`;
+			}
+		}
+		let id = unwrap(
+			await this.API_FETCHER.articleQuery.createArticle(
+				{
+					board_id: board_id,
+					category_name: category.name,
+					title: article.title,
+					content: JSON.stringify(article.content),
+					bonds: article.bonds.map(bond => { return { ...bond, to: index_to_database_id[bond.to] }; }),
+					draft_id: null,
+					anonymous: false
+				}
+			)
+		);
+		return id;
+	}
+}
+
+export async function inject(file: string, tokens: string[]): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
 	try {
-		for (const board of boards) {
-			await injectBoard(board);
-		}
+		await Promise.all([boards.map((board) => {
+			const random_user = new RandomUser(tokens);
+			return random_user.injectBoard(board);
+		})]);
 	} catch (err) {
 		console.log(err);
 	}
 }
 
-type IDPosMap = { [pos: number]: number };
-async function injectBoard(board: BoardConfig): Promise<void> {
-	lockUser();
-	let party_id = unwrap(
-		await API_FETCHER.partyQuery.createParty(
-			`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
-			null
-		)
-	);
-
-	let categories = board.force.categories;
-	let id_pos_map: IDPosMap = {};
-	let board_id: number;
-
-	try {
-		let b = unwrap(await API_FETCHER.boardQuery.queryBoard(board.name, BoardType.General));
-		board_id = b.id;
-	} catch (err) {
-		try {
-			console.log(`找不到看板 ${board.name}，嘗試創起來`);
-			board_id = unwrap(
-				await API_FETCHER.boardQuery.createBoard({
-					ruling_party_id: party_id,
-					board_name: board.name,
-					board_type: BoardType.General,
-					title: '測試標題',
-					detail: '測試',
-					force: board.force,
-				})
-			);
-			console.log(`創板成功 ${board.name} = ${board_id}`);
-		} catch (err) {
-			console.log(`創板失敗 ${err}`);
-			return;
-		}
-	} finally {
-		unlockUser();
-	}
-
-	for (let i = 0; i < board.articles.length; i++) {
-		let article = board.articles[i];
-		let category = categories.find(c => c.name = article.category);
-		if (category == undefined) {
-			throw `未知的分類 ${article.category}`;
-		}
-		let id = await injectArticle(board_id, article, category, id_pos_map);
-		console.log(`發文成功 ${article.title} = ${id}`);
-		id_pos_map[i] = id;
-	}
-}
-async function injectArticle(
-	board_id: number,
-	article: ArticleConfig,
-	category: force.Category,
-	id_pos_map: IDPosMap
-): Promise<number> {
-	for (let field_name of Object.keys(article.content)) {
-		let field = category.fields.find((f) => f.name == field_name);
-		if (!field) {
-			throw `未知的欄位名 ${field_name}`;
-		}
-	}
-	let id = unwrap(
-		await API_FETCHER.articleQuery.createArticle(
-			{
-				board_id: board_id,
-				category_name: category.name,
-				title: article.title,
-				content: JSON.stringify(article.content),
-				bonds: article.bonds.map(bond => { return { ...bond, to: id_pos_map[bond.to] }; }),
-				draft_id: null,
-				anonymous: false
-			}
-		)
-	);
-	return id;
-}
-
 async function main(): Promise<void> {
 	try {
-		await doLogin();
+		const tokens = await doLogin();
+		console.log(tokens);
 		if (scripts.length > 0) {
 			for (let file of scripts) {
-				await inject(file);
+				await inject(file, tokens);
 			}
 		} else {
 			let p = path.resolve(__dirname, 'inject_config.default.json');
-			await inject(p);
+			await inject(p, tokens);
 		}
 	} catch (err) {
 		console.log(`錯誤 ${err}`);
