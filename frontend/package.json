@@ -10,7 +10,8 @@
   },
   "workspaces": [
     "app/**",
-    "lib/**"
+    "lib/**",
+    "script/**"
   ],
   "resolutions": {
     "@types/react": "17",

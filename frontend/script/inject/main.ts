@@ -3,8 +3,8 @@ import { RootQuery, BoardType, force } from 'carbonbond-api/api_trait';
 import prompts from 'prompts';
 import minimist from 'minimist';
 
-let path = require('path');
-let fs = require('fs');
+import * as path from 'path';
+import * as fs from 'fs';
 
 const args = minimist(process.argv.slice(2));
 const host = args['host'] || 'localhost';
@@ -222,7 +222,7 @@ class RandomUser {
 
 export async function inject(file: string, tokens: string[]): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
-	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
+	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file).toString());
 	try {
 		await Promise.all([boards.map((board) => {
 			const random_user = new RandomUser(tokens);
@@ -242,7 +242,7 @@ async function main(): Promise<void> {
 				await inject(file, tokens);
 			}
 		} else {
-			let p = path.resolve(__dirname, 'inject_config.default.json');
+			let p = path.resolve(__dirname, 'data/default.json');
 			await inject(p, tokens);
 		}
 	} catch (err) {
