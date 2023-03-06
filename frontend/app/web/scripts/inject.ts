@@ -14,21 +14,47 @@ const protocal = args['s'] ? 'https' : 'http';
 const scripts = args._;
 const URL = `${protocal}://${host}:${port}/api`;
 
-type Context = { token: string[], is_logining: boolean };
+type Context = {
+	token: string[],
+	is_logining: boolean,
+	is_locked: boolean,
+	selected_token: null | string,
+};
 
 console.log(`URL = ${URL}`);
 
-
-let { API_FETCHER, doLogin} = (() => {
+let {
+	API_FETCHER,
+	doLogin,
+	lockUser, // 在一對 lockUser 與 unlockUser 之間的 API_FETCHER 請求保證由同一個用戶發出
+	unlockUser
+} = (() => {
 	const context: Context  = {
 		token: [],
-		is_logining: false
+		is_logining: false,
+		is_locked: false,
+		selected_token: null,
+	};
+	const lockUser = (): void => {
+		context.is_locked = true;
+		context.selected_token = null;
+	};
+	const unlockUser = (): void => {
+		context.is_locked = false;
+		context.selected_token = null;
+	};
+	const random_token = (): string => {
+		let rand = Math.floor(Math.random() * context.token.length);
+		return context.token[rand];
 	};
 	const fetcher = async (query: Object): Promise<string> => {
 		const jar = request.jar();
-		if (!context.is_logining) {
-			let rand = Math.floor(Math.random() * context.token.length);
-			const cookie = request.cookie(context.token[rand])!;
+		if (!context.is_logining && !context.is_locked) {
+			const cookie = request.cookie(random_token())!;
+			jar.setCookie(cookie, URL);
+		} else if (!context.is_logining && context.is_locked) {
+			context.selected_token = context.selected_token ?? random_token();
+			const cookie = request.cookie(context.selected_token)!;
 			jar.setCookie(cookie, URL);
 		}
 		return new Promise((resolve, reject) => {
@@ -101,7 +127,7 @@ let { API_FETCHER, doLogin} = (() => {
 		context.is_logining = false;
 
 	};
-	return { doLogin, API_FETCHER };
+	return { doLogin, API_FETCHER, lockUser, unlockUser };
 })();
 
 type ArticleConentElt = number | string | force.Bond;
@@ -123,7 +149,9 @@ export async function inject(file: string): Promise<void> {
 	console.log(`載入設定檔 ${file}`);
 	let boards: BoardConfig[] = JSON.parse(fs.readFileSync(file));
 	try {
-		await Promise.all(boards.map((b) => injectBoard(b)));
+		for (const board of boards) {
+			await injectBoard(board);
+		}
 	} catch (err) {
 		console.log(err);
 	}
@@ -131,6 +159,7 @@ export async function inject(file: string): Promise<void> {
 
 type IDPosMap = { [pos: number]: number };
 async function injectBoard(board: BoardConfig): Promise<void> {
+	lockUser();
 	let party_id = unwrap(
 		await API_FETCHER.partyQuery.createParty(
 			`小工具專用黨-${Math.floor(Math.random() * 999999)}`,
@@ -163,6 +192,8 @@ async function injectBoard(board: BoardConfig): Promise<void> {
 			console.log(`創板失敗 ${err}`);
 			return;
 		}
+	} finally {
+		unlockUser();
 	}
 
 	for (let i = 0; i < board.articles.length; i++) {
