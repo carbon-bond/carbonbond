@@ -6,16 +6,16 @@ import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType, Attitude } from 'carbonbond-api/api_trait';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
 import { toastErr } from '../utils';
-import { Descendant } from 'slate';
+import { Descendant, Editor } from 'slate';
 import { ArticleContent } from '../board/article_page';
-import { ShowPureText } from '../display/show_pure_text';
+import { Transforms } from 'slate';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
 import { getBoardInfo } from '../board';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
-import { takeMentioned, TextEditor } from '../components/text_editor';
+import { CustomEditor, ShowComment, CommentEditor } from '../components/comment_editor';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -131,7 +131,7 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
 		<div className={style.commentContent}>
-			<ShowPureText text={props.comment.content} />
+			<ShowComment text={JSON.parse(props.comment.content)} />
 		</div>
 	</div>;
 }
@@ -140,7 +140,7 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 	let [comments, setComments] = React.useState<Comment[]>([]);
 	let [anonymous, setAnonymous] = React.useState<boolean>(false);
 	let [newComment, setNewComment] = React.useState<Descendant[]>([]);
-	let [mentionedAccount, setMentionedAccount] = React.useState<string[]>([]);
+	let [editor, setEditor] = React.useState<CustomEditor | null>(null);
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryCommentList(props.article_id).then(data => {
 			setComments(unwrap(data));
@@ -161,12 +161,27 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 				onChange={(evt) => setAnonymous(evt.target.checked)} />
 			匿名
 		</label>
-		<TextEditor setValue={setNewComment} />
+		<CommentEditor setValue={setNewComment} setEditor={setEditor} />
 		<button onClick={() => {
-			console.log(JSON.stringify(newComment, null, 2));
-			const [mentioned, plaintext] = takeMentioned(newComment);
-			console.log(JSON.stringify(mentioned));
-			console.log(plaintext);
+			API_FETCHER.articleQuery.createComment(
+				props.article_id,
+				JSON.stringify(newComment),
+				anonymous)
+			.then(_id => {
+				if (editor) {
+					Transforms.delete(editor, {
+						at: {
+							anchor: Editor.start(editor, []),
+							focus: Editor.end(editor, []),
+						},
+					});
+				}
+				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
+			}).then(data => {
+				setComments(unwrap(data));
+			}).catch(err => {
+				toastErr(err);
+			});
 		}}>
 			送出
 		</button>

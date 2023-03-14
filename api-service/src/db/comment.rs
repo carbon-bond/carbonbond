@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use super::get_pool;
 use crate::api::model::forum::{Author, Comment};
 use crate::custom_error::Fallible;
@@ -41,6 +43,23 @@ pub async fn get_by_article_id(article_id: i64, viewer_id: Option<i64>) -> Falli
     Ok(comments)
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(untagged)]
+enum Node {
+    Text {
+        text: String,
+    },
+    Mention {
+        kind: String,
+        account: String,
+        children: Vec<Node>, // children 無用途，僅爲了滿足 slate 的型別
+    },
+    Paragraph {
+        kind: String,
+        children: Vec<Node>,
+    },
+}
+
 pub async fn create(
     author_id: i64,
     article_id: i64,
@@ -48,6 +67,8 @@ pub async fn create(
     anonymous: bool,
 ) -> Fallible<i64> {
     let pool = get_pool();
+
+    let rich_text_comment: Vec<Node> = serde_json::from_str(&content)?;
 
     let comment_id = sqlx::query!(
         "

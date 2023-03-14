@@ -9,12 +9,10 @@ import {
 	Editable,
 	ReactEditor,
 	withReact,
-	useSelected,
-	useFocused,
 	RenderElementProps,
 	RenderLeafProps,
 } from 'slate-react';
-import style from '../../css/components/text_editor.module.css';
+import style from '../../css/components/comment_editor.module.css';
 
 type PortalProps = { children: React.ReactNode };
 
@@ -25,32 +23,34 @@ export const Portal = ({ children }: PortalProps): React.ReactPortal | null => {
 };
 
 type CustomText = {
-  text: string
+	text: string
 };
 
 type MentionElement = {
-  type: 'mention'
-  character: string
-  children: CustomText[]
+	kind: 'Mention'
+	account: string
+	children: CustomText[]
 };
 
 type ParagraphElement = {
-  type: 'paragraph'
-  children: (CustomText | MentionElement)[]
+	kind: 'Paragraph'
+	children: (CustomText | MentionElement)[]
 };
 
 type CustomElement = MentionElement | ParagraphElement;
+export type CustomEditor = BaseEditor & ReactEditor & HistoryEditor;
 
 declare module 'slate' {
-  interface CustomTypes {
-    Editor: BaseEditor & ReactEditor & HistoryEditor
-    Element: CustomElement
-    Text: CustomText
-  }
+	interface CustomTypes {
+		Editor: CustomEditor
+		Element: CustomElement
+		Text: CustomText
+	}
 }
 
 type EditorProps = {
 	setValue: (value: Descendant[]) => void
+	setEditor: (editor: CustomEditor) => void
 };
 
 const CANDIDATES_COUNT = 5;
@@ -60,7 +60,7 @@ async function lookupAccount(prefix: string): Promise<string[]> {
 		.then(candidates => unwrap_or(candidates, []));
 }
 
-export const TextEditor = (props: EditorProps): JSX.Element => {
+export const CommentEditor = (props: EditorProps): JSX.Element => {
 	const ref = useRef<HTMLDivElement | null>(null);
 	const [target, setTarget] = useState<Range | null>();
 	const [index, setIndex] = useState(0);
@@ -112,6 +112,7 @@ export const TextEditor = (props: EditorProps): JSX.Element => {
 	);
 
 	useEffect(() => {
+		props.setEditor(editor);
 		if (target && candidates.length > 0) {
 			const el = ref.current;
 			if (el) {
@@ -121,7 +122,7 @@ export const TextEditor = (props: EditorProps): JSX.Element => {
 				el.style.left = `${rect.left + window.pageXOffset}px`;
 			}
 		}
-	}, [candidates.length, editor, index, prefix, target]);
+	}, [candidates.length, editor, index, prefix, props, target]);
 
 	return (
 		<Slate
@@ -158,6 +159,7 @@ export const TextEditor = (props: EditorProps): JSX.Element => {
 				renderElement={renderElement}
 				renderLeaf={renderLeaf}
 				onKeyDown={onKeyDown}
+				autoFocus={true}
 				placeholder="我來留言"
 			/>
 			{target && candidates.length > 0 && (
@@ -199,25 +201,25 @@ const withMentions = (editor: Editor): Editor => {
 	const { isInline, isVoid, markableVoid } = editor;
 
 	editor.isInline = element => {
-		return element.type === 'mention' ? true : isInline(element);
+		return element.kind === 'Mention' ? true : isInline(element);
 	};
 
 	editor.isVoid = element => {
-		return element.type === 'mention' ? true : isVoid(element);
+		return element.kind === 'Mention' ? true : isVoid(element);
 	};
 
 	editor.markableVoid = element => {
-		return element.type === 'mention' || markableVoid(element);
+		return element.kind === 'Mention' || markableVoid(element);
 	};
 
 	return editor;
 };
 
-const insertMention = (editor: Editor, character: string): void => {
+const insertMention = (editor: Editor, account: string): void => {
 	const mention: MentionElement = {
-		type: 'mention',
-		character,
-		children: [{ text: '' }],
+		kind: 'Mention',
+		account: account,
+		children: [{ text: '' }], // TODO: children 爲空的話 slate 會報錯
 	};
 	Transforms.insertNodes(editor, mention);
 	Transforms.move(editor);
@@ -230,45 +232,33 @@ const Leaf = ({ attributes, children }: RenderLeafProps): JSX.Element => {
 
 const Element = (props: RenderElementProps): JSX.Element => {
 	const { attributes, children, element } = props;
-	switch (element.type) {
-		case 'mention':
+	switch (element.kind) {
+		case 'Mention':
 			return <Mention {...props} />;
 		default:
 			return <p {...attributes}>{children}</p>;
 	}
 };
 
-const Mention = ({ attributes, children, element }: RenderElementProps ): JSX.Element => {
-	const selected = useSelected();
-	const focused = useFocused();
-	const style: React.CSSProperties = {
-		padding: '3px 3px 2px',
-		margin: '0 1px',
-		verticalAlign: 'baseline',
-		display: 'inline-block',
-		borderRadius: '4px',
-		backgroundColor: '#eee',
-		fontSize: '0.9em',
-		boxShadow: selected && focused ? '0 0 0 2px #B4D5FF' : 'none',
-	};
-	if (element.type != 'mention') {
+const Mention = ({ attributes, children, element }: RenderElementProps): JSX.Element => {
+	if (element.kind != 'Mention') {
 		throw new Error('並非 mention');
 	}
 	return (
 		<span
 			{...attributes}
 			contentEditable={false}
-			data-cy={`mention-${element.character.replace(' ', '-')}`}
-			style={style}
+			data-cy={`mention-${element.account.replace(' ', '-')}`}
+			className={style.mention}
 		>
-			{children}@{element.character}
+			{children}@{element.account}
 		</span>
 	);
 };
 
 const initialValue: Descendant[] = [
 	{
-		type: 'paragraph',
+		kind: 'Paragraph',
 		children: [
 			{
 				text: '',
@@ -277,30 +267,21 @@ const initialValue: Descendant[] = [
 	},
 ];
 
-export function takeMentioned(value: Descendant[]): [string[], string] {
-	let plaintext = '';
-	let mentioned: string[] = [];
-
-	const extract = (descendant: Descendant): void => {
-		if ('children' in descendant){
-			switch (descendant.type) {
-				case 'mention': {
-					plaintext += descendant.character;
-					mentioned.push(descendant.character);
-					break;
+export function ShowComment(props: { text: Descendant[]; }): JSX.Element {
+	return <div>
+		{
+			props.text.map((descendant, index)=> {
+				if ('kind' in descendant) {
+					switch (descendant.kind) {
+						case 'Paragraph':
+							return <div key={index}><ShowComment text={descendant.children} /></div>;
+						case 'Mention':
+							return <span key={index} className={style.mention}>@{descendant.account}</span>;
+					}
+				} else {
+					return <span key={index}>{descendant.text}</span>;
 				}
-				case 'paragraph': {
-					descendant.children.forEach(extract);
-					plaintext += '/n';
-					break;
-				}
-			}
-		} else {
-			plaintext += descendant.text;
+			})
 		}
-	};
-
-	value.forEach(extract);
-
-	return [mentioned, plaintext];
+	</div>;
 }
