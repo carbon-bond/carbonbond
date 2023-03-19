@@ -256,8 +256,10 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         anonymous: bool,
     ) -> Fallible<i64> {
         let author_id = context.get_id_strict().await?;
-        let comment_id = db::comment::create(author_id, article_id, content, anonymous).await?;
-        service::notification::handle_comment(author_id, article_id, anonymous).await?;
+        let (comment_id, mentioned_ids) =
+            db::comment::create(author_id, article_id, content, anonymous).await?;
+        service::notification::handle_comment(author_id, article_id, anonymous, mentioned_ids)
+            .await?;
         Ok(comment_id)
     }
     async fn query_bonder(

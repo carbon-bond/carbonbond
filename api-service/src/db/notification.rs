@@ -149,6 +149,29 @@ pub async fn get_by_user(user_id: i64, all: bool) -> Fallible<Vec<Notification>>
         .collect()
 }
 
+pub async fn notify_mentioned_id(
+    author_id: i64,
+    article_id: i64,
+    board_id: i64,
+    anonymous: bool,
+    mentioned_ids: Vec<i64>,
+) -> Fallible {
+    // TODO: 用類似 Promise.all 的方式平行化
+    for mentioned_id in mentioned_ids {
+        create(
+            mentioned_id,
+            NotificationKind::MentionedInComment,
+            None,
+            if anonymous { None } else { Some(author_id) },
+            Some(board_id),
+            Some(article_id),
+            None,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
 pub async fn read(ids: &[i64], user_id: i64) -> Fallible {
     let pool = get_pool();
     sqlx::query!(

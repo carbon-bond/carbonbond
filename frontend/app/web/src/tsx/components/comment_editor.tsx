@@ -2,7 +2,7 @@ import { API_FETCHER, unwrap_or } from 'carbonbond-api/api_utils';
 import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useDebounce } from 'react-use';
-import { Editor, Transforms, Range, createEditor, Descendant, BaseEditor } from 'slate';
+import { Editor, Transforms, Range, createEditor, Descendant, BaseEditor, Node } from 'slate';
 import { HistoryEditor, withHistory } from 'slate-history';
 import {
 	Slate,
@@ -28,7 +28,7 @@ type CustomText = {
 
 type MentionElement = {
 	kind: 'Mention'
-	account: string
+	username: string
 	children: CustomText[]
 };
 
@@ -111,6 +111,7 @@ export const CommentEditor = (props: EditorProps): JSX.Element => {
 		[candidates, editor, index, target]
 	);
 
+
 	useEffect(() => {
 		props.setEditor(editor);
 		if (target && candidates.length > 0) {
@@ -159,7 +160,6 @@ export const CommentEditor = (props: EditorProps): JSX.Element => {
 				renderElement={renderElement}
 				renderLeaf={renderLeaf}
 				onKeyDown={onKeyDown}
-				autoFocus={true}
 				placeholder="我來留言"
 			/>
 			{target && candidates.length > 0 && (
@@ -215,11 +215,11 @@ const withMentions = (editor: Editor): Editor => {
 	return editor;
 };
 
-const insertMention = (editor: Editor, account: string): void => {
+const insertMention = (editor: Editor, username: string): void => {
 	const mention: MentionElement = {
 		kind: 'Mention',
-		account: account,
-		children: [{ text: '' }], // TODO: children 爲空的話 slate 會報錯
+		username: username,
+		children: [{ text: `@${username}` }], // TODO: children 爲空的話 slate 會報錯
 	};
 	Transforms.insertNodes(editor, mention);
 	Transforms.move(editor);
@@ -248,10 +248,10 @@ const Mention = ({ attributes, children, element }: RenderElementProps): JSX.Ele
 		<span
 			{...attributes}
 			contentEditable={false}
-			data-cy={`mention-${element.account.replace(' ', '-')}`}
+			data-cy={`mention-${element.username.replace(' ', '-')}`}
 			className={style.mention}
 		>
-			{children}@{element.account}
+			{children}@{element.username}
 		</span>
 	);
 };
@@ -263,25 +263,48 @@ const initialValue: Descendant[] = [
 			{
 				text: '',
 			},
+			{
+				text: '', // XXX: 如果只有空字串，會導致編輯器要多次點擊才能聚焦
+			},
 		],
 	},
 ];
 
-export function ShowComment(props: { text: Descendant[]; }): JSX.Element {
-	return <div>
+function ShowDescendents(props: { descendents: Descendant[]; }): JSX.Element {
+	if (props.descendents.map(Node.string).join('').length == 0) {
+		return <br />;
+	}
+	return <>
 		{
-			props.text.map((descendant, index)=> {
-				if ('kind' in descendant) {
-					switch (descendant.kind) {
-						case 'Paragraph':
-							return <div key={index}><ShowComment text={descendant.children} /></div>;
-						case 'Mention':
-							return <span key={index} className={style.mention}>@{descendant.account}</span>;
-					}
-				} else {
-					return <span key={index}>{descendant.text}</span>;
-				}
+			props.descendents.map((descendant, index)=> {
+				return <ShowDescendent key={index} descendent={descendant} />;
 			})
 		}
+	</>;
+}
+
+function ShowDescendent(props: { descendent: Descendant; }): JSX.Element {
+	const descendant = props.descendent;
+	if ('kind' in descendant) {
+		switch (descendant.kind) {
+			case 'Paragraph':
+				return <p>
+					<ShowDescendents descendents={descendant.children} />
+				</p>;
+			case 'Mention':
+				return <span className={style.mention}>
+					@{descendant.username}
+				</span>;
+			default:
+				throw new Error('未知的 slate 元素');
+		}
+	} else {
+		return <span>{descendant.text}</span>;
+	}
+}
+
+export function ShowComment(props: { descendents: Descendant[]; }): JSX.Element {
+	return <div>
+		<ShowDescendents {...props} />
 	</div>;
 }

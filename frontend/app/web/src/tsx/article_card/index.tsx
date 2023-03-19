@@ -131,7 +131,7 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
 		<div className={style.commentContent}>
-			<ShowComment text={JSON.parse(props.comment.content)} />
+			<ShowComment descendents={JSON.parse(props.comment.content)} />
 		</div>
 	</div>;
 }
@@ -148,13 +148,18 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 			toastErr(err);
 		});
 	}, [props.article_id]);
+	const RenderedComments = React.useMemo(() => {
+		return <>
+			{
+				comments.map((comment) => {
+					return <CommentCard comment={comment} key={comment.id} />;
+				})
+			}
+		</>;
+	}, [comments]);
 
 	return <div className={style.commentCards}>
-		{
-			comments.map((comment) => {
-				return <CommentCard comment={comment} key={comment.id} />;
-			})
-		}
+		{RenderedComments}
 		<label>
 			<input type="checkbox"
 				checked={anonymous}
@@ -163,6 +168,7 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 		</label>
 		<CommentEditor setValue={setNewComment} setEditor={setEditor} />
 		<button onClick={() => {
+			// console.log(JSON.stringify(newComment, null, 2));
 			API_FETCHER.articleQuery.createComment(
 				props.article_id,
 				JSON.stringify(newComment),
