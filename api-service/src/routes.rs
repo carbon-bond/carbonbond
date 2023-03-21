@@ -3,8 +3,9 @@ use crate::{
     api::api_trait::RootQueryRouter,
     api::query,
     chat,
+    context::{Context, Ctx},
     custom_error::{Contextable, ErrorCode, Fallible},
-    db, Context, Ctx,
+    db,
 };
 use hyper::{body::Bytes, HeaderMap};
 use hyper::{Body, Response, StatusCode};
@@ -52,7 +53,6 @@ async fn run_chitin(query: query::RootQuery, context: &mut Ctx) -> Fallible<Stri
         .handle(context, query.clone())
         .await
         .context("api 物件序列化錯誤（極異常！）")?;
-
     if let Some(err) = &resp.1 {
         log::warn!("執行 api {:?} 時發生錯誤： {}", query, err);
     }
