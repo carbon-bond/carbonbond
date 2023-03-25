@@ -1,6 +1,6 @@
 pub const MAX_ARTICLE_FIELD: usize = 15;
+use crate::service_manager::ServiceManager;
 
-use crate::chat;
 use crate::config::get_config;
 use crate::custom_error::{ErrorCode, Fallible};
 
@@ -11,6 +11,7 @@ use hyper::header::HeaderValue;
 use hyper::{HeaderMap, Response};
 use redis::AsyncCommands;
 use std::str::FromStr;
+use std::sync::Arc;
 
 #[async_trait]
 pub trait Context {
@@ -27,7 +28,7 @@ pub trait Context {
 pub struct Ctx {
     pub headers: HeaderMap<HeaderValue>,
     pub resp: Response<String>,
-    pub users: chat::control::Users,
+    pub service_manager: Arc<ServiceManager>,
 }
 
 impl Ctx {

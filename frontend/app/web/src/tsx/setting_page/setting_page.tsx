@@ -78,8 +78,6 @@ function AboutRobot(): JSX.Element {
 		<div className={style.name}>我是機器人嗎？</div>
 		<label>
 			<input type="checkbox"
-				// disabled={user_state.is_robot}
-				// checked={user_state.is_robot}
 				disabled={user_state.is_robot}
 				checked={user_state.is_robot}
 				onChange={() => {
@@ -98,7 +96,7 @@ function AboutRobot(): JSX.Element {
 				</div> :
 				<div className={style.warning}>
 					變成機器人後，無法再變回人類。
-					TODO: 未來碳鍵將限制沒有過任何活動（沒有發表過留言、文章...）的用戶才能變成機器人。
+					TODO: 未來碳鍵將限制只有純淨用戶（從未發表過留言、文章...）才能變成機器人。
 				</div>
 		}
 	</div>;

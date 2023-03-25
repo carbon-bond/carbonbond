@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use carbonbond::{
     config, custom_error::Fallible, db, redis, routes::get_routes, service::hot_articles,
-    service::hot_boards,
+    service::hot_boards, service_manager,
 };
+use service_manager::ServiceManager;
 use structopt::StructOpt;
 
 mod bin_util;
@@ -48,7 +51,9 @@ async fn main() -> Fallible<()> {
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
     log::info!("靜候於 http://{}", addr);
 
-    let routes = get_routes()?;
+    let service_manager = Arc::new(ServiceManager::default());
+
+    let routes = get_routes(service_manager)?;
     let web_service = warp::serve(routes).run(addr);
 
     tokio::select! {

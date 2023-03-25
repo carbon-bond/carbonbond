@@ -80,7 +80,8 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
             chat::chat::create_if_not_exist(user_id, new_chat, msg).await?;
         let chat = chat::chat::get_direct_chat_by_id(chat_id, opposite_id).await?;
         context
-            .users
+            .service_manager
+            .chat_service
             .send_api(opposite_id, server_trigger::API::NewChat(chat))
             .await;
         Ok(chat_id)
