@@ -53,6 +53,7 @@ export type SearchField =
 export type Edge = {     id: number; from: number; to: number; energy: number; tag: string     | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
 export type Config = {     min_password_length: number; max_password_length: number;     advertisement_contact_email: string | null };
+export type Webhook = {     id: number; target_url: string; secret: string; create_time:     string};
 export namespace force {
 export type Bond = { to: number; tag: string };
 export type Category = { name: string; fields: Field [] };
@@ -269,6 +270,15 @@ export class UserQuery {
     }
     async searchUserNameByPrefix(prefix: string, count: number): Promise<Result<Array<string>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "SearchUserNameByPrefix": { prefix, count } } }));
+    }
+    async queryWebhooks(): Promise<Result<Array<Webhook>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryWebhooks": {  } } }));
+    }
+    async addWebhook(target_url: string, secret: string): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "AddWebhook": { target_url, secret } } }));
+    }
+    async deleteWebhook(webhook_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "DeleteWebhook": { webhook_id } } }));
     }
 }
 

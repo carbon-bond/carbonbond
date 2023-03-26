@@ -1,5 +1,5 @@
 use super::model::chat::chat_model_root::NewChat;
-use super::model::forum::{Attitude, ClaimTitleRequest, NewArticle, UpdatedArticle};
+use super::model::forum::{Attitude, ClaimTitleRequest, NewArticle, UpdatedArticle, Webhook};
 use super::model::webhook::{self, MentionInComment};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
@@ -867,6 +867,30 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         count: usize,
     ) -> Result<Vec<String>, crate::custom_error::Error> {
         db::user::search_user_name_by_prefix(prefix, count).await
+    }
+    async fn query_webhooks(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<Webhook>, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::query_webhooks(id).await
+    }
+    async fn add_webhook(
+        &self,
+        context: &mut crate::Ctx,
+        target_url: String,
+        secret: String,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::add_webhook(id, target_url, secret).await
+    }
+    async fn delete_webhook(
+        &self,
+        context: &mut crate::Ctx,
+        webhook_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::delete_webhook(id, webhook_id).await
     }
 }
 

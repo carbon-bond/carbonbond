@@ -7,13 +7,9 @@ ALTER TYPE notification_kind ADD VALUE 'mention';
 
 CREATE TABLE webhooks (
   id bigserial PRIMARY KEY,
-  target_url text NOT NULL,
-  secrect varchar(32) NOT NULL DEFAULT ''
-);
-
-CREATE TABLE registered_webhook_events (
-  id bigserial PRIMARY KEY,
   user_id bigint REFERENCES users (id) NOT NULL,
-  event_set notification_kind,
-  webhook_id bigint REFERENCES webhooks (id) NOT NULL
+  target_url text NOT NULL,
+  secret varchar(32) NOT NULL DEFAULT '',
+  create_time timestamptz NOT NULL DEFAULT NOW()
+  -- event_set notification_kind,
 );

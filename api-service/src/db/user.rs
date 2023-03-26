@@ -2,6 +2,7 @@ use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::ClaimTitleRequest;
 use crate::api::model::forum::LawyerbcResult;
 use crate::api::model::forum::LawyerbcResultMini;
+use crate::api::model::forum::Webhook;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
@@ -695,4 +696,52 @@ pub async fn search_user_name_by_prefix(prefix: String, count: usize) -> Fallibl
     .fetch_all(pool)
     .await?;
     Ok(records.into_iter().map(|record| record.user_name).collect())
+}
+
+pub async fn query_webhooks(user_id: i64) -> Fallible<Vec<Webhook>> {
+    let pool = get_pool();
+    let webhooks = sqlx::query_as!(
+        Webhook,
+        "
+        SELECT id, target_url, secret, create_time from webhooks
+        WHERE user_id = $1
+        ",
+        user_id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(webhooks)
+}
+
+pub async fn add_webhook(user_id: i64, target_url: String, secret: String) -> Fallible<i64> {
+    let pool = get_pool();
+    let record = sqlx::query!(
+        "
+        INSERT INTO webhooks (user_id, target_url, secret)
+        VALUES ($1, $2, $3)
+        RETURNING id
+        ",
+        user_id,
+        target_url,
+        secret
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(record.id)
+}
+
+pub async fn delete_webhook(user_id: i64, webhook_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query_as!(
+        Webhook,
+        "
+        DELETE from webhooks
+        WHERE user_id = $1 AND id = $2
+        ",
+        user_id,
+        webhook_id,
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }

@@ -22,3 +22,19 @@
         color: var(--red);
     }
 }
+
+.webhookPage {
+    & .label {
+        display: inline-block;
+        width: 120px;
+    }
+    & .webhook {
+        padding: 10px;
+        margin-bottom: 30px;
+        border: 1px solid var(--gray-3);
+        flex-direction: row;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}

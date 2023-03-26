@@ -425,6 +425,14 @@ pub mod forum_model_root {
         #[chitin_model_use]
         pub use crate::force::{Bond, Category, Field, FieldKind, Force};
     }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Webhook {
+        pub id: i64,
+        pub target_url: String,
+        pub secret: String,
+        pub create_time: DateTime<Utc>,
+    }
 }
 
 pub use forum_model_root::*;
