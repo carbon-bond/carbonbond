@@ -154,12 +154,12 @@ pub async fn notify_mentioned_id(
     article_id: i64,
     board_id: i64,
     anonymous: bool,
-    mentioned_ids: Vec<i64>,
+    mentioned_ids: &Vec<i64>,
 ) -> Fallible {
     // TODO: 用類似 Promise.all 的方式平行化
     for mentioned_id in mentioned_ids {
         create(
-            mentioned_id,
+            *mentioned_id,
             NotificationKind::MentionedInComment,
             None,
             if anonymous { None } else { Some(author_id) },

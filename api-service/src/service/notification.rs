@@ -94,7 +94,7 @@ pub async fn handle_comment(
     author_id: i64,
     article_id: i64,
     anonymous: bool,
-    mentioned_ids: Vec<i64>,
+    mentioned_ids: &Vec<i64>,
 ) -> Fallible {
     let board_id = get_meta_by_id(article_id, None).await?.board_id;
     handle_reply(

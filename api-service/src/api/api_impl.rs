@@ -1,5 +1,6 @@
 use super::model::chat::chat_model_root::NewChat;
 use super::model::forum::{Attitude, ClaimTitleRequest, NewArticle, UpdatedArticle};
+use super::model::webhook::{self, MentionInComment};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
@@ -257,10 +258,25 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         anonymous: bool,
     ) -> Fallible<i64> {
         let author_id = context.get_id_strict().await?;
-        let (comment_id, mentioned_ids) =
-            db::comment::create(author_id, article_id, content, anonymous).await?;
-        service::notification::handle_comment(author_id, article_id, anonymous, mentioned_ids)
+        let (comment_id, mentioned_ids, plain_text) =
+            db::comment::create(author_id, article_id, &content, anonymous).await?;
+        service::notification::handle_comment(author_id, article_id, anonymous, &mentioned_ids)
             .await?;
+        for mention_id in mentioned_ids {
+            context
+                .service_manager
+                .notification_service
+                .send(
+                    mention_id,
+                    webhook::API::MentionedInComment(MentionInComment {
+                        article_id,
+                        comment_id,
+                        author_id,
+                        comment_content: plain_text.clone(),
+                    }),
+                )
+                .await;
+        }
         Ok(comment_id)
     }
     async fn query_bonder(

@@ -51,14 +51,10 @@ async fn main() -> Fallible<()> {
         format!("{}:{}", &conf.server.address, &conf.server.port).parse()?;
     log::info!("靜候於 http://{}", addr);
 
-    let service_manager = Arc::new(ServiceManager::default());
+    let service_manager = Arc::new(ServiceManager::new().await);
 
     let routes = get_routes(service_manager)?;
-    let web_service = warp::serve(routes).run(addr);
-
-    tokio::select! {
-        _ = web_service => {},
-    };
+    warp::serve(routes).run(addr).await;
 
     Ok(())
 }
