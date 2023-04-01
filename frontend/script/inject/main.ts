@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 const args = minimist(process.argv.slice(2));
-const host = args['host'] || 'localhost';
+const host = args['host'] || '127.0.0.1';
 const port = args['port'] || '8080';
 const protocal = args['s'] ? 'https' : 'http';
 const scripts = args._;
