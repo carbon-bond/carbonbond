@@ -1,0 +1,17 @@
+{
+  "name": "inject",
+  "version": "0.1.0",
+  "description": "用於注入碳鍵測試用的看板、文章",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "inject": "ts-node main.ts"
+  },
+  "devDependencies": {
+		"carbonbond-api": "0.1.0",
+    "@types/minimist": "^1.2.2",
+    "@types/prompts": "^2.4.2",
+    "minimist": "^1.2.8",
+    "prompts": "^2.4.2"
+  }
+}

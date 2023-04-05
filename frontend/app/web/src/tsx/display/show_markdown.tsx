@@ -30,7 +30,6 @@ const renderer = {
 marked.use({
 	gfm: true,
 	breaks: true,
-	sanitize: true,
 	renderer,
 	highlight:  function(code: string, lang: string) {
 		if (lang && Prism.languages[lang]) {

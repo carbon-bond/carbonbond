@@ -102,6 +102,19 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 			return <NotificationConcreteRow> 伺服器錯誤，留言通知不含有看板資訊，無法正確顯示通知 </NotificationConcreteRow>;
 		}
 	}
+	function MentionedInComment(): JSX.Element {
+		if (n.board_name && n.board_type) {
+			let board_info = getBoardInfo({ board_name: n.board_name, board_type: n.board_type });
+			return <NotificationConcreteRow>
+				{replier_name(n.user2_name)} 在
+				<Link to={board_info.to_url()}>{n.board_name}版</Link>的文章
+				<Link to={`${board_info.to_url()}/article/${n.article1_id!}`}>{n.article1_title}</Link>
+				留言提到您
+			</NotificationConcreteRow>;
+		} else {
+			return <NotificationConcreteRow> 伺服器錯誤，留言通知不含有看板資訊，無法正確顯示通知 </NotificationConcreteRow>;
+		}
+	}
 	switch (n.kind) {
 		case NotificationKind.Follow:
 			return <NotificationConcreteRow>{replier_name(n.user2_name)} 喜歡了你</NotificationConcreteRow>;
@@ -117,5 +130,7 @@ export function NotificationBlock(props: { notification: Notification }): JSX.El
 			return <CommentNotification />;
 		case NotificationKind.OtherCommentReplied:
 			return <OtherCommentNotification />;
+		case NotificationKind.MentionedInComment:
+			return <MentionedInComment />;
 	}
 }

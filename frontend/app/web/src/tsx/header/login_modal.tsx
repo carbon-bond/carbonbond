@@ -27,6 +27,7 @@ function LoginStatus(
 					user_name: user.user_name,
 					sentence: user.sentence,
 					id: user.id,
+					is_robot: user.is_robot,
 					email: user.email,
 					energy: user.energy,
 					titles: user.titles

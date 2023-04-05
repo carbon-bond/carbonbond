@@ -12,6 +12,7 @@ export type UserStateType = {
 	login: true,
 	id: number,
 	user_name: string,
+	is_robot: boolean,
 	email: string,
 	sentence: string,
 	energy: number,
@@ -21,6 +22,7 @@ export type UserStateType = {
 interface LoginData {
 	id: number,
 	user_name: string,
+	is_robot: boolean,
 	sentence: string,
 	email: string,
 	energy: number,
@@ -54,6 +56,7 @@ function useUserState(): { user_state: UserStateType, setLogin: (data: LoginData
 			sentence: data.sentence,
 			id: data.id,
 			user_name: data.user_name,
+			is_robot: data.is_robot,
 			email: data.email,
 			energy: data.energy,
 			titles: data.titles ? data.titles.split(',') : []

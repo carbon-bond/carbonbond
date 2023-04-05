@@ -79,5 +79,9 @@ fn gen_api_files() -> std::io::Result<()> {
     client_file.write_all(custom_error::gen_typescript().as_bytes())?;
     chitin_entry.root_codegen(&client_option, &mut client_file)?;
 
+    let mut webhook_file = File::create("../frontend/lib/api/webhook_type.ts")?;
+    webhook_file.write_all(b"/*eslint-disable*/\n")?;
+    webhook_file.write_all(model::webhook::gen_typescript().as_bytes())?;
+
     Ok(())
 }

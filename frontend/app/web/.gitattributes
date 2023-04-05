@@ -1,2 +1,5 @@
 src/ts/api/api_trait.ts linguist-generated=true
 src/ts/api/api_trait.ts -diff -merge
+
+src/ts/api/webhook_type.ts linguist-generated=true
+src/ts/api/webhook_type.ts -diff -merge

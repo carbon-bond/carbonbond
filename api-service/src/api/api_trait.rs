@@ -53,6 +53,7 @@ pub trait UserQueryRouter {
     async fn query_email_by_token(&self, context: &mut crate::Ctx, token: String) -> Result<String, crate::custom_error::Error>;
     async fn query_user_name_by_reset_password_token(&self, context: &mut crate::Ctx, token: String) -> Result<Option<String>, crate::custom_error::Error>;
     async fn reset_password_by_token(&self, context: &mut crate::Ctx, password: String, token: String) -> Result<(), crate::custom_error::Error>;
+    async fn be_robot(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
     async fn login(&self, context: &mut crate::Ctx, user_name: String, password: String) -> Result<Option<super::model::forum::User>, crate::custom_error::Error>;
     async fn logout(&self, context: &mut crate::Ctx, ) -> Result<(), crate::custom_error::Error>;
     async fn create_user_relation(&self, context: &mut crate::Ctx, target_user: i64, kind: super::model::forum::UserRelationKind, is_public: bool) -> Result<(), crate::custom_error::Error>;
@@ -69,6 +70,10 @@ pub trait UserQueryRouter {
     async fn update_avatar(&self, context: &mut crate::Ctx, image: String) -> Result<(), crate::custom_error::Error>;
     async fn update_sentence(&self, context: &mut crate::Ctx, sentence: String) -> Result<(), crate::custom_error::Error>;
     async fn update_information(&self, context: &mut crate::Ctx, introduction: String, job: String, city: String) -> Result<(), crate::custom_error::Error>;
+    async fn search_user_name_by_prefix(&self, context: &mut crate::Ctx, prefix: String, count: usize) -> Result<Vec<String>, crate::custom_error::Error>;
+    async fn query_webhooks(&self, context: &mut crate::Ctx, ) -> Result<Vec<super::model::forum::Webhook>, crate::custom_error::Error>;
+    async fn add_webhook(&self, context: &mut crate::Ctx, target_url: String, secret: String) -> Result<i64, crate::custom_error::Error>;
+    async fn delete_webhook(&self, context: &mut crate::Ctx, webhook_id: i64) -> Result<(), crate::custom_error::Error>;
     async fn handle(&self, context: &mut crate::Ctx, query: UserQuery) -> Result<(String, Option<crate::custom_error::Error>), Error> {
         match query {
              UserQuery::QueryMe {  } => {
@@ -186,6 +191,11 @@ pub trait UserQueryRouter {
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }
+             UserQuery::BeRobot {  } => {
+                 let resp = self.be_robot(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
              UserQuery::Login { user_name, password } => {
                  let resp = self.login(context, user_name, password).await;
                  let s = serde_json::to_string(&resp)?;
@@ -263,6 +273,26 @@ pub trait UserQueryRouter {
             }
              UserQuery::UpdateInformation { introduction, job, city } => {
                  let resp = self.update_information(context, introduction, job, city).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::SearchUserNameByPrefix { prefix, count } => {
+                 let resp = self.search_user_name_by_prefix(context, prefix, count).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::QueryWebhooks {  } => {
+                 let resp = self.query_webhooks(context, ).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::AddWebhook { target_url, secret } => {
+                 let resp = self.add_webhook(context, target_url, secret).await;
+                 let s = serde_json::to_string(&resp)?;
+                 Ok((s, resp.err()))
+            }
+             UserQuery::DeleteWebhook { webhook_id } => {
+                 let resp = self.delete_webhook(context, webhook_id).await;
                  let s = serde_json::to_string(&resp)?;
                  Ok((s, resp.err()))
             }

@@ -5,15 +5,17 @@ import { relativeDate } from '../../ts/date';
 import { Link } from 'react-router-dom';
 import { Article, Comment, ArticleMeta, Author, Edge, BondInfo, MiniArticleMeta, BoardType, Attitude } from 'carbonbond-api/api_trait';
 import { API_FETCHER, unwrap } from 'carbonbond-api/api_utils';
-import { toastErr, useInputValue } from '../utils';
+import { toastErr } from '../utils';
+import { Descendant, Editor } from 'slate';
 import { ArticleContent } from '../board/article_page';
-import { ShowPureText } from '../display/show_pure_text';
+import { Transforms } from 'slate';
 import { BonderCards } from './bonder';
 import { toast } from 'react-toastify';
 import { copyToClipboard } from '../../ts/utils';
 import { getBoardInfo } from '../board';
 import { UserState } from '../global_state/user';
 import { EditorPanelState } from '../global_state/editor_panel';
+import { CustomEditor, ShowComment, CommentEditor } from '../components/comment_editor';
 
 const MAX_BRIEF_LINE = 4;
 
@@ -129,7 +131,7 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 			<span>{relativeDate(new Date(props.comment.create_time))}</span>
 		</div>
 		<div className={style.commentContent}>
-			<ShowPureText text={props.comment.content} />
+			<ShowComment descendents={JSON.parse(props.comment.content)} />
 		</div>
 	</div>;
 }
@@ -137,24 +139,8 @@ export function CommentCard(props: {comment: Comment}): JSX.Element {
 export function CommentCards(props: { article_id: number }): JSX.Element {
 	let [comments, setComments] = React.useState<Comment[]>([]);
 	let [anonymous, setAnonymous] = React.useState<boolean>(false);
-	const { input_props, setValue } = useInputValue('');
-	function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
-		// 使用 mac 上的注音輸入法，在 safari 上按 enter 選字時
-		// e.key == 'Enter' ，使得選字事件與純按 enter 事件無法區分
-		// 但使用將要廢棄的 e.keyCode 反而能夠分辨，選字時 e.keyCode == 229
-		// 純按 enter 時， e.keyCode == 13
-		if (e.keyCode == 13 && !e.shiftKey && input_props.value.length > 0) {
-			API_FETCHER.articleQuery.createComment(props.article_id, input_props.value, anonymous).then(_id => {
-				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
-			}).then(data => {
-				setComments(unwrap(data));
-			}).catch(err => {
-				toastErr(err);
-			});
-			setValue('');
-			e.preventDefault();
-		}
-	}
+	let [newComment, setNewComment] = React.useState<Descendant[]>([]);
+	let [editor, setEditor] = React.useState<CustomEditor | null>(null);
 	React.useEffect(() => {
 		API_FETCHER.articleQuery.queryCommentList(props.article_id).then(data => {
 			setComments(unwrap(data));
@@ -162,20 +148,49 @@ export function CommentCards(props: { article_id: number }): JSX.Element {
 			toastErr(err);
 		});
 	}, [props.article_id]);
+	const RenderedComments = React.useMemo(() => {
+		return <>
+			{
+				comments.map((comment) => {
+					return <CommentCard comment={comment} key={comment.id} />;
+				})
+			}
+		</>;
+	}, [comments]);
 
 	return <div className={style.commentCards}>
-		{
-			comments.map((comment) => {
-				return <CommentCard comment={comment} key={comment.id} />;
-			})
-		}
+		{RenderedComments}
 		<label>
 			<input type="checkbox"
 				checked={anonymous}
 				onChange={(evt) => setAnonymous(evt.target.checked)} />
 			匿名
 		</label>
-		<textarea {...input_props} onKeyDown={onKeyDown} placeholder="我來留言" />
+		<CommentEditor setValue={setNewComment} setEditor={setEditor} />
+		<button onClick={() => {
+			// console.log(JSON.stringify(newComment, null, 2));
+			API_FETCHER.articleQuery.createComment(
+				props.article_id,
+				JSON.stringify(newComment),
+				anonymous)
+			.then(_id => {
+				if (editor) {
+					Transforms.delete(editor, {
+						at: {
+							anchor: Editor.start(editor, []),
+							focus: Editor.end(editor, []),
+						},
+					});
+				}
+				return API_FETCHER.articleQuery.queryCommentList(props.article_id);
+			}).then(data => {
+				setComments(unwrap(data));
+			}).catch(err => {
+				toastErr(err);
+			});
+		}}>
+			送出
+		</button>
 	</div>;
 }
 

@@ -110,6 +110,10 @@ pub enum UserQuery {
     #[chitin(leaf, response = "()")]
     ResetPasswordByToken { password: String, token: String },
 
+    // 變成機器人
+    #[chitin(leaf, response = "()")]
+    BeRobot {},
+
     #[chitin(leaf, response = "Option<super::model::forum::User>")]
     Login { user_name: String, password: String },
     #[chitin(leaf, response = "()")]
@@ -156,6 +160,18 @@ pub enum UserQuery {
         job: String,
         city: String,
     },
+
+    // 留言、文章中提及帳號名
+    #[chitin(leaf, response = "Vec<String>")]
+    SearchUserNameByPrefix { prefix: String, count: usize },
+
+    // Webhook
+    #[chitin(leaf, response = "Vec<super::model::forum::Webhook>")]
+    QueryWebhooks {},
+    #[chitin(leaf, response = "i64")]
+    AddWebhook { target_url: String, secret: String },
+    #[chitin(leaf, response = "()")]
+    DeleteWebhook { webhook_id: i64 },
 }
 #[derive(Serialize, Deserialize, ChitinRouter, Debug, Clone)]
 pub enum PartyQuery {

@@ -1,5 +1,6 @@
 use super::model::chat::chat_model_root::NewChat;
-use super::model::forum::{Attitude, ClaimTitleRequest, NewArticle, UpdatedArticle};
+use super::model::forum::{Attitude, ClaimTitleRequest, NewArticle, UpdatedArticle, Webhook};
+use super::model::webhook::{self, MentionInComment};
 use super::{api_trait, model};
 use crate::api::model::chat::chat_model_root::server_trigger;
 use crate::custom_error::{DataType, Error, ErrorCode, Fallible};
@@ -80,7 +81,8 @@ impl api_trait::ChatQueryRouter for ChatQueryRouter {
             chat::chat::create_if_not_exist(user_id, new_chat, msg).await?;
         let chat = chat::chat::get_direct_chat_by_id(chat_id, opposite_id).await?;
         context
-            .users
+            .service_manager
+            .chat_service
             .send_api(opposite_id, server_trigger::API::NewChat(chat))
             .await;
         Ok(chat_id)
@@ -256,8 +258,25 @@ impl api_trait::ArticleQueryRouter for ArticleQueryRouter {
         anonymous: bool,
     ) -> Fallible<i64> {
         let author_id = context.get_id_strict().await?;
-        let comment_id = db::comment::create(author_id, article_id, content, anonymous).await?;
-        service::notification::handle_comment(author_id, article_id, anonymous).await?;
+        let (comment_id, mentioned_ids, plain_text) =
+            db::comment::create(author_id, article_id, &content, anonymous).await?;
+        service::notification::handle_comment(author_id, article_id, anonymous, &mentioned_ids)
+            .await?;
+        for mention_id in mentioned_ids {
+            context
+                .service_manager
+                .notification_service
+                .send(
+                    mention_id,
+                    webhook::API::MentionedInComment(MentionInComment {
+                        article_id,
+                        comment_id,
+                        author_id,
+                        comment_content: plain_text.clone(),
+                    }),
+                )
+                .await;
+        }
         Ok(comment_id)
     }
     async fn query_bonder(
@@ -601,6 +620,11 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
         db::user::reset_password_by_token(&password, &token).await
     }
 
+    async fn be_robot(&self, context: &mut crate::Ctx) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::be_robot(id).await
+    }
+
     async fn query_me(&self, context: &mut crate::Ctx) -> Fallible<Option<model::forum::User>> {
         if let Some(id) = context.get_id().await? {
             Ok(Some(db::user::get_by_id(id).await?))
@@ -835,6 +859,38 @@ impl api_trait::UserQueryRouter for UserQueryRouter {
     ) -> Result<(), crate::custom_error::Error> {
         let id = context.get_id_strict().await?;
         db::user::update_info(id, introduction, job, city).await
+    }
+    async fn search_user_name_by_prefix(
+        &self,
+        _context: &mut crate::Ctx,
+        prefix: String,
+        count: usize,
+    ) -> Result<Vec<String>, crate::custom_error::Error> {
+        db::user::search_user_name_by_prefix(prefix, count).await
+    }
+    async fn query_webhooks(
+        &self,
+        context: &mut crate::Ctx,
+    ) -> Result<Vec<Webhook>, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::query_webhooks(id).await
+    }
+    async fn add_webhook(
+        &self,
+        context: &mut crate::Ctx,
+        target_url: String,
+        secret: String,
+    ) -> Result<i64, crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::add_webhook(id, target_url, secret).await
+    }
+    async fn delete_webhook(
+        &self,
+        context: &mut crate::Ctx,
+        webhook_id: i64,
+    ) -> Result<(), crate::custom_error::Error> {
+        let id = context.get_id_strict().await?;
+        db::user::delete_webhook(id, webhook_id).await
     }
 }
 

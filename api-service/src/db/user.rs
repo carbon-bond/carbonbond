@@ -2,6 +2,7 @@ use super::{get_pool, DBObject, ToFallible};
 use crate::api::model::forum::ClaimTitleRequest;
 use crate::api::model::forum::LawyerbcResult;
 use crate::api::model::forum::LawyerbcResultMini;
+use crate::api::model::forum::Webhook;
 use crate::api::model::forum::{SignupInvitation, SignupInvitationCredit, User};
 use crate::config::get_config;
 use crate::custom_error::{DataType, ErrorCode, Fallible};
@@ -27,6 +28,7 @@ macro_rules! users {
             WITH metas AS (SELECT
                 users.id,
                 users.user_name,
+                users.is_robot,
                 users.email,
                 users.sentence,
                 users.energy,
@@ -589,6 +591,19 @@ pub async fn reset_password_by_token(password: &str, token: &str) -> Fallible<()
     Ok(())
 }
 
+pub async fn be_robot(id: i64) -> Fallible<()> {
+    log::trace!("用戶 {} 變成機器人", id);
+    let pool = get_pool();
+    sqlx::query!(
+        "UPDATE users SET is_robot = true
+        WHERE id = $1",
+        id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub async fn check_password(id: i64, password: &str) -> Fallible<()> {
     let pool = get_pool();
     let record = sqlx::query!("SELECT salt, password_hashed from users WHERE id = $1", id)
@@ -661,6 +676,70 @@ pub async fn update_info(id: i64, introduction: String, job: String, city: Strin
         introduction,
         job,
         city
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn search_user_name_by_prefix(prefix: String, count: usize) -> Fallible<Vec<String>> {
+    let pool = get_pool();
+    let records = sqlx::query!(
+        "
+        SELECT user_name from users
+        WHERE user_name ^@ $1
+        LIMIT $2
+        ",
+        prefix,
+        count as i64,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(records.into_iter().map(|record| record.user_name).collect())
+}
+
+pub async fn query_webhooks(user_id: i64) -> Fallible<Vec<Webhook>> {
+    let pool = get_pool();
+    let webhooks = sqlx::query_as!(
+        Webhook,
+        "
+        SELECT id, target_url, secret, create_time from webhooks
+        WHERE user_id = $1
+        ",
+        user_id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(webhooks)
+}
+
+pub async fn add_webhook(user_id: i64, target_url: String, secret: String) -> Fallible<i64> {
+    let pool = get_pool();
+    let record = sqlx::query!(
+        "
+        INSERT INTO webhooks (user_id, target_url, secret)
+        VALUES ($1, $2, $3)
+        RETURNING id
+        ",
+        user_id,
+        target_url,
+        secret
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(record.id)
+}
+
+pub async fn delete_webhook(user_id: i64, webhook_id: i64) -> Fallible<()> {
+    let pool = get_pool();
+    sqlx::query_as!(
+        Webhook,
+        "
+        DELETE from webhooks
+        WHERE user_id = $1 AND id = $2
+        ",
+        user_id,
+        webhook_id,
     )
     .execute(pool)
     .await?;

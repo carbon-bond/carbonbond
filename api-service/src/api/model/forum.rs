@@ -17,6 +17,7 @@ pub mod forum_model_root {
     pub struct User {
         pub id: i64,
         pub user_name: String,
+        pub is_robot: bool,
         pub email: String,
         pub energy: i64,
         pub sentence: String,
@@ -370,6 +371,8 @@ pub mod forum_model_root {
         CommentReplied, // 發表的文章被回覆
         #[strum(serialize = "other_comment_replied")]
         OtherCommentReplied, // 你在 A 文章留言，其他人也在 A 文章留言時，會收到該通知
+        #[strum(serialize = "mentioned_in_comment")]
+        MentionedInComment, // 在留言中被提及
     }
     #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
     pub struct Notification {
@@ -421,6 +424,14 @@ pub mod forum_model_root {
         use super::*;
         #[chitin_model_use]
         pub use crate::force::{Bond, Category, Field, FieldKind, Force};
+    }
+
+    #[derive(Serialize, Deserialize, TypeScriptify, Clone, Debug)]
+    pub struct Webhook {
+        pub id: i64,
+        pub target_url: String,
+        pub secret: String,
+        pub create_time: DateTime<Utc>,
     }
 }
 

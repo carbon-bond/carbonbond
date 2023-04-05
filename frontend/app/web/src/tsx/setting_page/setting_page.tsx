@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { InvalidMessage } from '../components/invalid_message';
 import { EMAIL_REGEX } from '../../ts/regex_util';
 import { ClaimLawerTitle } from './claim_title';
+import { SetWebhook } from './set_webhook';
 
 function ChangeEmail(): JSX.Element {
 	const {
@@ -68,6 +69,43 @@ const CLAIMS = [
 	}
 ];
 
+function AboutRobot(): JSX.Element {
+	const { user_state, getLoginState } = UserState.useContainer();
+	if (!user_state.login) {
+		return <>尚未登入</>;
+	}
+	return <div className={style.setting}>
+		<div className={style.name}>我是機器人嗎？</div>
+		<label>
+			<input type="checkbox"
+				disabled={user_state.is_robot}
+				checked={user_state.is_robot}
+				onChange={() => {
+					if (confirm('您確定要變成機器人？變成機器人之後，無法再變回人類。')) {
+						API_FETCHER.userQuery.beRobot().then(() => {
+							getLoginState();
+						});
+					}
+				}} />
+			我是機器人
+		</label>
+		{
+			user_state.is_robot ?
+				<div>
+					<button>產生 API 金鑰</button>
+				</div> :
+				<div className={style.warning}>
+					變成機器人後，無法再變回人類。
+					TODO: 未來碳鍵將限制只有純淨用戶（從未發表過留言、文章...）才能變成機器人。
+				</div>
+		}
+	</div>;
+}
+
+// TODO: 設定已經很多項了，應改為分頁模式，分為幾大類：
+// 1. 帳號設定
+// 2. 機器人
+// 3. 稱號認證
 export function SettingPage(): JSX.Element {
 	const { setCurrentLocation } = LocationState.useContainer();
 	const [signuping, setSignuping] = React.useState(false);
@@ -82,12 +120,15 @@ export function SettingPage(): JSX.Element {
 		</div>;
 	}
 
-
 	return <div className={style.settingPage}>
 		<div className={style.settings}>
 			<ResetPassword />
 			<hr />
 			<ChangeEmail />
+			<hr />
+			<AboutRobot />
+			<hr />
+			<SetWebhook />
 			<hr />
 			<div className={style.setting}>
 				<div className={style.name}>認證稱號</div>

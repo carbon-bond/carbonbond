@@ -1,0 +1,1 @@
+ALTER TYPE notification_kind ADD VALUE 'mentioned_in_comment';

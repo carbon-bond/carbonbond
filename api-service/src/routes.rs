@@ -2,13 +2,14 @@ use crate::{
     api::api_impl,
     api::api_trait::RootQueryRouter,
     api::query,
-    chat,
+    context::{Context, Ctx},
     custom_error::{Contextable, ErrorCode, Fallible},
-    db, Context, Ctx,
+    db,
+    service_manager::{self, ServiceManager},
 };
 use hyper::{body::Bytes, HeaderMap};
 use hyper::{Body, Response, StatusCode};
-use std::convert::Infallible;
+use std::{convert::Infallible, sync::Arc};
 use warp::Filter;
 
 fn not_found() -> Response<Body> {
@@ -52,7 +53,6 @@ async fn run_chitin(query: query::RootQuery, context: &mut Ctx) -> Fallible<Stri
         .handle(context, query.clone())
         .await
         .context("api 物件序列化錯誤（極異常！）")?;
-
     if let Some(err) = &resp.1 {
         log::warn!("執行 api {:?} 時發生錯誤： {}", query, err);
     }
@@ -62,12 +62,12 @@ async fn run_chitin(query: query::RootQuery, context: &mut Ctx) -> Fallible<Stri
 async fn _handle_api(
     body: Bytes,
     headers: HeaderMap,
-    users: chat::control::Users,
+    service_manager: Arc<ServiceManager>,
 ) -> Fallible<Response<Body>> {
     let mut context = Ctx {
         headers: headers,
         resp: Response::new(String::new()),
-        users: users,
+        service_manager,
     };
 
     let query: query::RootQuery = serde_json::from_slice(&body.to_vec())
@@ -82,22 +82,24 @@ async fn _handle_api(
 async fn handle_api(
     body: Bytes,
     headers: HeaderMap,
-    users: chat::control::Users,
+    service_manager: Arc<ServiceManager>,
 ) -> Result<impl warp::Reply, Infallible> {
-    Ok(to_response(_handle_api(body, headers, users).await))
+    Ok(to_response(
+        _handle_api(body, headers, service_manager).await,
+    ))
 }
 
 async fn handle_chat(
     headers: HeaderMap,
     ws: warp::ws::Ws,
-    users: chat::control::Users,
+    service_manager: Arc<ServiceManager>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     let mut context = Ctx {
         headers,
         resp: Response::new(String::new()),
         // NOTE: handle_chat 其實不需要完整的 Ctx ，只是如此調用 context.get_id() 比較方便而已
         // 可抽出 get_id 的邏輯，以避免填入不需要的 users 欄位
-        users: users.clone(),
+        service_manager: service_manager.clone(),
     };
     let id = match context.get_id_strict().await {
         Ok(id) => id,
@@ -107,32 +109,36 @@ async fn handle_chat(
         }
     };
     log::info!("用戶 {} 連接聊天室", id);
-    let u = ws.on_upgrade(move |websocket| chat::control::user_connected(id, websocket, users));
+    let u = ws.on_upgrade(move |websocket| {
+        service_manager
+            .chat_service
+            .clone()
+            .user_connected(id, websocket)
+    });
 
     Ok(Box::new(u))
 }
 
 pub fn get_routes(
+    service_manager: Arc<ServiceManager>,
 ) -> Fallible<impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone> {
     // 設定前端
-    let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
-    let users = chat::control::Users::default();
-    let users_clone = users.clone();
-    let _users = warp::any().map(move || users_clone.clone());
+    let service_manager_clone = service_manager.clone();
+
     let chat = warp::path!("chat")
         .and(warp::header::headers_cloned())
         .and(warp::ws())
-        .and(_users)
+        .and(warp::any().map(move || service_manager_clone.clone()))
         .and_then(handle_chat);
 
-    let users_clone = users.clone();
-    let _users = warp::any().map(move || users_clone.clone());
     let api = warp::path!("api")
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())
-        .and(_users)
+        .and(warp::any().map(move || service_manager.clone()))
         .and_then(handle_api)
         .with(warp::filters::compression::gzip());
+
+    let avatar = warp::path!("avatar" / String).and_then(handle_avatar);
 
     let gets = warp::get().and(avatar.or(chat));
 

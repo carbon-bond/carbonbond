@@ -13,7 +13,7 @@ export type Result<T, E> = {
 export type Fetcher = (query: Object) => Promise<string>;
 export type ClaimTitleRequest = 
  | { Lawer: { license_id: string } };
-export type User = {     id: number; user_name: string; email: string; energy: number;     sentence: string; hater_count_public: number; hater_count_private:     number; follower_count_public: number; follower_count_private: number; hating_count_public: number; hating_count_private: number;     following_count_public: number; following_count_private: number;     introduction: string; gender: string; birth_year: number; job:     string; city: string; titles: string | null };
+export type User = {     id: number; user_name: string; is_robot: boolean; email: string;     energy: number; sentence: string; hater_count_public: number;     hater_count_private: number; follower_count_public: number;     follower_count_private: number; hating_count_public: number;     hating_count_private: number; following_count_public: number;     following_count_private: number; introduction: string; gender: string; birth_year: number; job: string; city: string; titles: string |     null };
 export type UserMini = { id: number; user_name: string; energy: number; sentence: string };
 export type LawyerbcResultMini = { name: string; now_lic_no: string };
 export type LawyerbcResult = {     name: string; sex: string; now_lic_no: string; birthsday: number;     email: string };
@@ -45,7 +45,7 @@ export type BoardOverview = {     id: number; board_name: string; board_type: Bo
 export enum Attitude { Good = "Good", Bad = "Bad", None = "None" };
 export enum UserRelationKind { Follow = "Follow", Hate = "Hate", None = "None" };
 export type UserRelation = {     from_user: number; to_user: number; kind: UserRelationKind;     is_public: boolean };
-export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied", CommentReplied = "CommentReplied",     OtherCommentReplied = "OtherCommentReplied" };
+export enum NotificationKind {     Follow = "Follow", Hate = "Hate", ArticleReplied = "ArticleReplied",     ArticleGoodReplied = "ArticleGoodReplied", ArticleBadReplied =     "ArticleBadReplied", CommentReplied = "CommentReplied",     OtherCommentReplied = "OtherCommentReplied", MentionedInComment =     "MentionedInComment" };
 export type Notification = {     id: number; kind: NotificationKind; user_id: number; read: boolean; quality: boolean | null; create_time: string; board_name:     string | null; board_type: BoardType | null; board_id: number | null;     user2_name: string | null; user2_id: number | null; article1_title:     string | null; article2_title: string | null; article1_id: number |     null; article2_id: number | null };
 export type SearchField = 
  | { String: string } 
@@ -53,6 +53,7 @@ export type SearchField =
 export type Edge = {     id: number; from: number; to: number; energy: number; tag: string     | null };
 export type Graph = { nodes: ArticleMeta []; edges: Edge [] };
 export type Config = {     min_password_length: number; max_password_length: number;     advertisement_contact_email: string | null };
+export type Webhook = {     id: number; target_url: string; secret: string; create_time:     string};
 export namespace force {
 export type Bond = { to: number; tag: string };
 export type Category = { name: string; fields: Field [] };
@@ -216,6 +217,9 @@ export class UserQuery {
     async resetPasswordByToken(password: string, token: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "ResetPasswordByToken": { password, token } } }));
     }
+    async beRobot(): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "BeRobot": {  } } }));
+    }
     async login(user_name: string, password: string): Promise<Result<Option<User>, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "Login": { user_name, password } } }));
     }
@@ -263,6 +267,18 @@ export class UserQuery {
     }
     async updateInformation(introduction: string, job: string, city: string): Promise<Result<null, Error>> {
         return JSON.parse(await this.fetchResult({ "User": { "UpdateInformation": { introduction, job, city } } }));
+    }
+    async searchUserNameByPrefix(prefix: string, count: number): Promise<Result<Array<string>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "SearchUserNameByPrefix": { prefix, count } } }));
+    }
+    async queryWebhooks(): Promise<Result<Array<Webhook>, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "QueryWebhooks": {  } } }));
+    }
+    async addWebhook(target_url: string, secret: string): Promise<Result<number, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "AddWebhook": { target_url, secret } } }));
+    }
+    async deleteWebhook(webhook_id: number): Promise<Result<null, Error>> {
+        return JSON.parse(await this.fetchResult({ "User": { "DeleteWebhook": { webhook_id } } }));
     }
 }
 

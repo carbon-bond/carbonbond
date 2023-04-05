@@ -25,8 +25,8 @@ export function TabPanel(props: {children: React.ReactElement<TabPanelItemProps>
 	return <div className={style.works}>
 		<div className={style.navigateBar}>
 			{props.children.map((tab_item, index) => (
-				<div className={style.navigateTabWrapper}>
-					<div key={index} className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
+				<div key={index} className={style.navigateTabWrapper}>
+					<div className={(tab_item.props.is_disable ? style.navigateTabDisable : style.navigateTab) +
 									((!tab_item.props.is_disable && selectTab == index) ? ` ${style.navigateTabActive}` : '')
 					}
 					onClick={() => { if (!tab_item.props.is_disable) {handleSelectTab(index);} }}>

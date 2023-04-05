@@ -13,6 +13,7 @@ fn quality(kind: NotificationKind) -> Option<bool> {
         NotificationKind::ArticleBadReplied => Some(false),
         NotificationKind::CommentReplied => None,
         NotificationKind::OtherCommentReplied => None,
+        NotificationKind::MentionedInComment => None,
     }
 }
 
@@ -89,7 +90,12 @@ pub async fn handle_article(
     Ok(())
 }
 
-pub async fn handle_comment(author_id: i64, article_id: i64, anonymous: bool) -> Fallible {
+pub async fn handle_comment(
+    author_id: i64,
+    article_id: i64,
+    anonymous: bool,
+    mentioned_ids: &Vec<i64>,
+) -> Fallible {
     let board_id = get_meta_by_id(article_id, None).await?.board_id;
     handle_reply(
         author_id,
@@ -98,6 +104,14 @@ pub async fn handle_comment(author_id: i64, article_id: i64, anonymous: bool) ->
         article_id,
         anonymous,
         NotificationKind::CommentReplied,
+    )
+    .await?;
+    db::notification::notify_mentioned_id(
+        author_id,
+        article_id,
+        board_id,
+        anonymous,
+        mentioned_ids,
     )
     .await?;
     db::notification::notify_all_commenter(author_id, article_id, board_id, anonymous).await

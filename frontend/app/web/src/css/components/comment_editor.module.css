@@ -1,0 +1,19 @@
+.editor {
+  min-height: 70px !important;
+  background: var(--white);
+  color: var(--font-color);
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+  border: 1px solid var(--gray-3);
+}
+
+.mention {
+	padding: 1px 1px;
+	margin: 0px 3px;
+	display: inline-block;
+	border-radius: 4px;
+	background-color: var(--third-theme-color);
+	fontSize: 0.9em;
+	border: 1px solid black;
+}
